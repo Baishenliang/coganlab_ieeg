@@ -192,14 +192,14 @@ for channel_name in spectra_stim_rep_word.ch_names:
     ## Plot 1-7: Auditory-(Rep-YN)-Word
     ax_aud_rep_m_yn_word = fig.add_subplot(gs00[2, 0])
     spectra_stim_rep_m_yn_word.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                                  axes=ax_aud_rep_m_yn_word, cmap=parula_map, title=channel_name)
+                                  axes=ax_aud_rep_m_yn_word, cmap="RdBu_r", title=channel_name)
     ax_aud_rep_m_yn_word.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_aud_rep_m_yn_word.set_ylabel("Repeat - YesNo\nFrequency(Hz)")
 
     ## Plot 1-8: Delay-(Rep-YN)-Word
     ax_del_rep_m_yn_word = fig.add_subplot(gs00[2, 1])
     spectra_delay_rep_m_yn_word.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                                   axes=ax_del_rep_m_yn_word, cmap=parula_map, title=channel_name)
+                                   axes=ax_del_rep_m_yn_word, cmap="RdBu_r", title=channel_name)
     ax_del_rep_m_yn_word.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_del_rep_m_yn_word.set_xlabel("")
     ax_del_rep_m_yn_word.set_ylabel("")
@@ -208,7 +208,7 @@ for channel_name in spectra_stim_rep_word.ch_names:
     ## Plot 1-9: Resp-(Rep-YN)-Word
     ax_rsp_rep_m_yn_word = fig.add_subplot(gs00[2, 2])
     spectra_resp_rep_m_yn_word.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                                   axes=ax_rsp_rep_m_yn_word, cmap=parula_map, title=channel_name)
+                                   axes=ax_rsp_rep_m_yn_word, cmap="RdBu_r", title=channel_name)
     ax_rsp_rep_m_yn_word.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_rsp_rep_m_yn_word.set_xlabel("")
     ax_rsp_rep_m_yn_word.set_ylabel("")
@@ -285,39 +285,36 @@ for channel_name in spectra_stim_rep_word.ch_names:
     ## Plot 2-7: Auditory-(Rep-YN)-Nonword
     ax_aud_rep_m_yn_nonword = fig.add_subplot(gs01[2, 0])
     spectra_stim_rep_m_yn_nonword.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                                  axes=ax_aud_rep_m_yn_nonword, cmap=parula_map, title=channel_name)
+                                  axes=ax_aud_rep_m_yn_nonword, cmap="RdBu_r", title=channel_name)
     ax_aud_rep_m_yn_nonword.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_aud_rep_m_yn_nonword.set_xlabel("")
     ax_aud_rep_m_yn_nonword.set_ylabel("")
-    ax_aud_rep_m_yn_nonword.set_xticklabels("")
     ax_aud_rep_m_yn_nonword.set_yticklabels("")
 
     ## Plot 2-8: Delay-(Rep-YN)-Nonword
     ax_del_rep_m_yn_nonword = fig.add_subplot(gs01[2, 1])
     spectra_delay_rep_m_yn_nonword.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                                   axes=ax_del_rep_m_yn_nonword, cmap=parula_map, title=channel_name)
+                                   axes=ax_del_rep_m_yn_nonword, cmap="RdBu_r", title=channel_name)
     ax_del_rep_m_yn_nonword.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_del_rep_m_yn_nonword.set_xlabel("")
     ax_del_rep_m_yn_nonword.set_ylabel("")
     ax_del_rep_m_yn_nonword.set_yticklabels("")
-    ax_del_rep_m_yn_nonword.set_xticklabels("")
 
     ## Plot 2-9: Resp-(Rep-YN)-Nonword
     ax_rsp_rep_m_yn_nonword = fig.add_subplot(gs01[2, 2])
     spectra_resp_rep_m_yn_nonword.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                                   axes=ax_rsp_rep_m_yn_nonword, cmap=parula_map, title=channel_name)
+                                   axes=ax_rsp_rep_m_yn_nonword, cmap="RdBu_r", title=channel_name)
     ax_rsp_rep_m_yn_nonword.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_rsp_rep_m_yn_nonword.set_xlabel("")
     ax_rsp_rep_m_yn_nonword.set_ylabel("")
     ax_rsp_rep_m_yn_nonword.set_yticklabels("")
-    ax_rsp_rep_m_yn_nonword.set_xticklabels("")
 
     ############################################################
 
     ## Plot 3-1: Auditory-Rep-(Word - Nonword)
     ax_aud_rep_word_m_nonword = fig.add_subplot(gs02[0, 0])
     spectra_stim_rep_word_m_nonword.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                               axes=ax_aud_rep_word_m_nonword, cmap=parula_map, title=channel_name)
+                               axes=ax_aud_rep_word_m_nonword, cmap="RdBu_r", title=channel_name)
     ax_aud_rep_word_m_nonword.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_aud_rep_word_m_nonword.set_title('\nStim')
     ax_aud_rep_word_m_nonword.set_xlabel("")
@@ -327,7 +324,7 @@ for channel_name in spectra_stim_rep_word.ch_names:
     ## Plot 3-2: Delay-Rep-(Word - Nonword)
     ax_delay_rep_word_m_nonword = fig.add_subplot(gs02[0, 1])
     spectra_delay_rep_word_m_nonword.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                               axes=ax_delay_rep_word_m_nonword, cmap=parula_map, title=channel_name)
+                               axes=ax_delay_rep_word_m_nonword, cmap="RdBu_r", title=channel_name)
     ax_delay_rep_word_m_nonword.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_delay_rep_word_m_nonword.set_title('Difference\nDelay')
     ax_delay_rep_word_m_nonword.set_xlabel("")
@@ -339,7 +336,7 @@ for channel_name in spectra_stim_rep_word.ch_names:
     ## Plot 3-3: Resp-Rep-(Word - Nonword)
     ax_resp_rep_word_m_nonword = fig.add_subplot(gs02[0, 2])
     spectra_resp_rep_word_m_nonword.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                               axes=ax_resp_rep_word_m_nonword, cmap=parula_map, title=channel_name)
+                               axes=ax_resp_rep_word_m_nonword, cmap="RdBu_r", title=channel_name)
     ax_resp_rep_word_m_nonword.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_resp_rep_word_m_nonword.set_title('\nResp')
     ax_resp_rep_word_m_nonword.set_xlabel("")
@@ -350,7 +347,7 @@ for channel_name in spectra_stim_rep_word.ch_names:
     ## Plot 3-4: Auditory-YN-(Word - Nonword)
     ax_aud_yn_word_m_nonword = fig.add_subplot(gs02[1, 0])
     spectra_stim_yn_word_m_nonword.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                               axes=ax_aud_yn_word_m_nonword, cmap=parula_map, title=channel_name)
+                               axes=ax_aud_yn_word_m_nonword, cmap="RdBu_r", title=channel_name)
     ax_aud_yn_word_m_nonword.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_aud_yn_word_m_nonword.set_xlabel("")
     ax_aud_yn_word_m_nonword.set_ylabel("")
@@ -359,7 +356,7 @@ for channel_name in spectra_stim_rep_word.ch_names:
     ## Plot 3-5: Delay-YN-(Word - Nonword)
     ax_delay_yn_word_m_nonword = fig.add_subplot(gs02[1, 1])
     spectra_delay_yn_word_m_nonword.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                               axes=ax_delay_yn_word_m_nonword, cmap=parula_map, title=channel_name)
+                               axes=ax_delay_yn_word_m_nonword, cmap="RdBu_r", title=channel_name)
     ax_delay_yn_word_m_nonword.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_delay_yn_word_m_nonword.set_xlabel("")
     ax_delay_yn_word_m_nonword.set_ylabel("")
@@ -369,7 +366,7 @@ for channel_name in spectra_stim_rep_word.ch_names:
     ## Plot 3-6: Resp-YN-(Word - Nonword)
     ax_resp_yn_word_m_nonword = fig.add_subplot(gs02[1, 2])
     spectra_resp_yn_word_m_nonword.plot(channel_name, vlim=vlim_diff, show=False, colorbar=False, fmax=200,
-                               axes=ax_resp_yn_word_m_nonword, cmap=parula_map, title=channel_name)
+                               axes=ax_resp_yn_word_m_nonword, cmap="RdBu_r", title=channel_name)
     ax_resp_yn_word_m_nonword.axvline(0, linewidth=0.5, color="black", linestyle=":")
     ax_resp_yn_word_m_nonword.set_xlabel("")
     ax_resp_yn_word_m_nonword.set_ylabel("")
