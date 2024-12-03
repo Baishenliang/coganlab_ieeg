@@ -8,6 +8,7 @@ from ieeg.calc.scaling import rescale
 from ieeg.viz.ensemble import chan_grid
 from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.viz.parula import parula_map
+import matplotlib.pyplot as plt
 save_dir='C:\\Users\\bl314\\Box\\CoganLab\\IndividualMeetings\\Baishen\\ieeg_results\\lexical_delay'
 HOME = os.path.expanduser("~")
 LAB_root = os.path.join(HOME, "Box", "CoganLab")
@@ -15,12 +16,15 @@ layout = get_data("LexicalDecRepDelay", root=LAB_root)
 subjects = layout.get(return_type="id", target="subject")
 
 # Subjects to be processed
-Subjs_proc=['D53','D54','D55','D57','D59','D63','D65','D66','D68','D69','D70','D71','D77','D81','D94','D96','D101','D102','D103','D107B']
+# Subjs_proc=['D0053','D0054','D0055','D0057','D0059','D0063','D0065','D0066','D0068','D0069','D0070','D0071','D0077','D0081','D0094','D0096','D0101','D0102','D0103','D0107']
+Subjs_proc = ['D0057', 'D0059', 'D0063', 'D0065', 'D0066', 'D0068', 'D0069', 'D0070',
+              'D0071', 'D0077', 'D0081', 'D0094', 'D0096', 'D0101', 'D0102', 'D0103', 'D0107']
 
 for subject in Subjs_proc:
     try:
 
         # load subject
+        print(subject)
         raw = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
                               preload=True)
 
@@ -81,6 +85,7 @@ for subject in Subjs_proc:
                     for fig in chan_grids:
                         figdir = os.path.join(save_dir, subject, 'multitaper_4cons', f'{tag}_{fig_count + 1}.jpg')
                         chan_grids[fig_count].savefig(figdir, dpi=300)
+                        plt.close(fig)
                         fig_count += 1
 
                     del trials, spectra_multitaper, filename
