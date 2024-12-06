@@ -16,9 +16,8 @@ layout = get_data("LexicalDecRepDelay", root=LAB_root)
 subjects = layout.get(return_type="id", target="subject")
 
 # Subjects to be processed
-# Subjs_proc=['D0053','D0054','D0055','D0057','D0059','D0063','D0065','D0066','D0068','D0069','D0070','D0071','D0077','D0081','D0094','D0096','D0101','D0102','D0103','D0107']
-Subjs_proc = ['D0057', 'D0059', 'D0063', 'D0065', 'D0066', 'D0068', 'D0069', 'D0070',
-              'D0071', 'D0077', 'D0081', 'D0094', 'D0096', 'D0101', 'D0102', 'D0103', 'D0107']
+Subjs_proc = ['D0053','D0054','D0055','D0057', 'D0059', 'D0063', 'D0065', 'D0066', 'D0068', 'D0069', 'D0070',
+              'D0071', 'D0077', 'D0079','D0081', 'D0094', 'D0096', 'D0101', 'D0102', 'D0103', 'D0107']
 
 for subject in Subjs_proc:
     try:
@@ -42,10 +41,10 @@ for subject in Subjs_proc:
         for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
             for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
                 for epoch, t, tag in zip(
-                        ('Auditory_stim/' + task + '/' + word + '/CORRECT', 'Delay/' + task + '/' + word + '/CORRECT', 'Go/' + task + '/' + word + '/CORRECT',
+                        ('Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT', 'Delay/' + task + '/' + word + '/CORRECT', 'Go/' + task + '/' + word + '/CORRECT',
                          'Resp/' + task + '/' + word + '/CORRECT'),
-                        ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
-                        ('Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
+                        ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
+                        ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
                 ):
 
                     # Get the spectras
@@ -65,7 +64,7 @@ for subject in Subjs_proc:
                     crop_pad(spectra_multitaper, "0.5s")  # cut the first and final 0.5s, change to zero
 
                     # Get the baseline
-                    if epoch == 'Auditory_stim/' + task + '/' + word + '/CORRECT':
+                    if epoch == 'Cue/' + task + '/' + word + '/CORRECT':
                         base_multitaper = spectra_multitaper.copy().crop(-0.5, 0)
                         base_multitaper = base_multitaper.average(lambda x: np.nanmean(x, axis=0), copy=True)
 

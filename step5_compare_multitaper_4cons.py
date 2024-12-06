@@ -7,8 +7,8 @@ import matplotlib.gridspec as gridspec
 from ieeg.viz.parula import parula_map
 save_dir='C:\\Users\\bl314\\Box\\CoganLab\\IndividualMeetings\\Baishen\\ieeg_results\\lexical_delay'
 
-Subjs_proc=['D0053','D0054','D0055','D0057','D0059','D0063','D0065','D0066','D0068','D0069','D0070','D0071','D0077','D0081','D0094','D0096','D0101','D0102','D0103','D0107']
-#Subjs_proc=['D0063']
+Subjs_proc = ['D0053','D0054','D0055','D0057', 'D0059', 'D0063', 'D0065', 'D0066', 'D0068', 'D0069', 'D0070',
+              'D0071', 'D0077', 'D0079','D0081', 'D0094', 'D0096', 'D0101', 'D0102', 'D0103', 'D0107']
 plot_dir_in_Tag='multitaper_4cons'
 plot_dir_out_Tag='multitaper_4cons_compare'
 
