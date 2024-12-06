@@ -3,7 +3,7 @@ import re
 import os
 
 
-def process_events_files(subj, search_dir='.'):
+def update_tsv(subj, search_dir='.'):
     """
     Searches for all TSV files matching the given `subj` identifier, processes each one by removing specific rows,
     and saves the updated file, overwriting the original.
@@ -41,7 +41,3 @@ def process_events_files(subj, search_dir='.'):
         # Overwrite the original file with the filtered data
         df_filtered.to_csv(input_file, sep="\t", index=False)
         print(f"Processed and replaced the original file: {input_file}")
-
-# Example usage
-subj = "D63"  # Replace with the actual subject ID
-process_events_files(subj)
