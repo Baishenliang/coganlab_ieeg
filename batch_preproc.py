@@ -28,7 +28,6 @@ save_dir=os.path.join(HOME, "Box", "CoganLab", "D_Data","LexicalDecRepDelay","Ba
 # Log
 current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt')
-log_file = open(log_file_path, 'a')
 
 # Subj list
 subject_processing_dict = {
@@ -59,6 +58,7 @@ for subject, processing_type in subject_processing_dict.items():
 
     if processing_type == "whole" or "linernoise" in processing_type:
         ## Line Noise Filtering
+        log_file = open(log_file_path, 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing line noise filter\n")
 
@@ -100,8 +100,10 @@ for subject, processing_type in subject_processing_dict.items():
 
         except Exception as e:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter failed with error: {str(e)}\n")
+        log_file.close()
 
     if processing_type == "whole" or "outlierchs" in processing_type:
+        log_file = open(log_file_path, 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing outlier chs removal\n")
             ## Mark outlier channels
@@ -115,9 +117,11 @@ for subject, processing_type in subject_processing_dict.items():
 
         except Exception as e:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal failed with error: {str(e)}\n")
+        log_file.close()
 
     if processing_type == "whole" or "wavelet" in processing_type:
         ## Wavelet
+        log_file = open(log_file_path, 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing wavelet\n")
 
@@ -179,7 +183,7 @@ for subject, processing_type in subject_processing_dict.items():
                     fig_count += 1
 
                 # Clean memory
-                del spectra_wavelet, filename
+                del spectra_wavelet, filename, chan_grids
 
             del base_wavelet
             log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet completed\n")
@@ -187,4 +191,4 @@ for subject, processing_type in subject_processing_dict.items():
         except Exception as e:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet failed with error: {str(e)}\n")
 
-log_file.close()
+        log_file.close()
