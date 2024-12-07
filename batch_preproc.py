@@ -30,8 +30,7 @@ subjects = layout.get(return_type="id", target="subject")
 # Log
 current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt')
-with open(log_file_path, 'a') as log_file:
-    log_file.write(f"\n\n--- New Batch Preoproc Session started at {datetime.datetime.now()} ---\n")
+log_file = open(log_file_path, 'a')
 
 # Subj list
 subjects=["D0053", "D0054", "D0055", "D0057", "D0059", "D0063", "D0065", "D0066", "D0068", "D0069", "D0070", "D0071", "D0077", "D0079", "D0081", "D0094", "D0096", "D0101", "D0102", "D0103", "D0107"]
@@ -162,3 +161,5 @@ for subject in subjects:
 
     except Exception as e:
         log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet failed with error: {str(e)}\n")
+
+log_file.close()
