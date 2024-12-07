@@ -83,7 +83,7 @@ def update_tsv(subj, search_dir='.'):
         df = pd.read_csv(input_file, sep="\t")
 
         # Remove rows with trial_type "BAD boundary" or "EDGE boundary"
-        df_filtered = df[~df['trial_type'].isin(["BAD boundary", "EDGE boundary"])]
+        df_filtered = df[~df['trial_type'].isin(["BAD boundary", "EDGE boundary", "BAD_ACQ_SKIP"])]
 
         # Overwrite the original file with the filtered data
         df_filtered.to_csv(input_file, sep="\t", index=False)
