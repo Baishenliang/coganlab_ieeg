@@ -87,7 +87,7 @@ for subject in Subjs_proc:
                         plt.close(fig)
                         fig_count += 1
 
-                    del trials, spectra_multitaper, filename
+                    del trials, spectra_multitaper, filename, chan_grids
                 del base_multitaper
 
     except Exception as e:
