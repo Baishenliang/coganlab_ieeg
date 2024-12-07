@@ -35,6 +35,10 @@ def get_unused_chs(folder_path):
     if 'name' not in electrodes_df.columns or 'name' not in channels_df.columns:
         raise ValueError("Both TSV files must contain a 'name' column.")
 
+    # Remove the 'Trigger' electrode from the channels list
+    channels_df = channels_df[channels_df['name'] != 'Trigger']
+    channels_df = channels_df[channels_df['type'] != 'TRIG']
+
     # Create sets of electrode names from each file
     electrodes_set = set(electrodes_df['name'])
     channels_set = set(channels_df['name'])
