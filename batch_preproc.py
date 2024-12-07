@@ -18,7 +18,7 @@ from ieeg.calc.scaling import rescale
 from ieeg.viz.ensemble import chan_grid
 from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.viz.parula import parula_map
-from bsliang_utils import get_unused_chs, update_tsv
+from bsliang_utils import get_unused_chs, update_tsv, detect_outlier
 from matplotlib import pyplot as plt
 
 HOME = os.path.expanduser("~")
@@ -31,8 +31,8 @@ log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt'
 
 # Subj list
 subject_processing_dict = {
-    "D0053": "outlierchs/wavelet",
-    "D0054": "outlierchs/wavelet",
+    "D0053": "whole",
+    "D0054": "wavelet",
     "D0055": "outlierchs/wavelet",
     "D0057": "outlierchs/wavelet",
     "D0059": "outlierchs/wavelet",
@@ -110,10 +110,17 @@ for subject, processing_type in subject_processing_dict.items():
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
             raw = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
                                   preload=True)
-            raw.info['bads'] = channel_outlier_marker(raw, 3, 2)
-            update(raw, layout, "outlier")
-            del raw
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal completed\n")
+            derivative_loc = os.path.join(LAB_root, "BIDS-1.0_LexicalDecRepDelay","BIDS","derivatives","a",f"sub-{subject}","ieeg")
+            is_outlier = detect_outlier(subject,derivative_loc)
+            if is_outlier == 1:
+                raise ValueError(
+                    f"Outlier channels for the {subject} have been removed. Skip outlier channels removal now. If you want to re-do it, mark all the channels in the derivative as good and n/a for status first."
+                )
+            else:
+                raw.info['bads'] = channel_outlier_marker(raw, 3, 2)
+                update(raw, layout, "outlier")
+                del raw
+                log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal completed\n")
 
         except Exception as e:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal failed with error: {str(e)}\n")
