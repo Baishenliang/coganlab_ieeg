@@ -52,10 +52,10 @@ def get_status(subj, base_dir, output_file):
     except Exception as e:
         print(f"Error processing file {file_path}: {e}")
 
-subjs=["D0053", "D0054", "D0055", "D0057", "D0059","D0063",  "D0065", "D0066", "D0068", "D0069", "D0070", "D0071", "D0077", "D0079", "D0081", "D0094", "D0096", "D0101", "D0102", "D0103", "D0107"]
+subjects=["D0053", "D0054", "D0055", "D0057", "D0059","D0063",  "D0065", "D0066", "D0068", "D0069", "D0070", "D0071", "D0077", "D0079", "D0081", "D0094", "D0096", "D0101", "D0102", "D0103", "D0107"]
 
-for subj in subjs:
+for subject in subjects:
     base_dir = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'a', f'sub-{subj}',
                            'ieeg')
-    output_path=os.path.join('data','muscle_chans',f'{subj}_muscle_chans.csv')
-    get_status(subj, base_dir, output_path)
+    output_path=os.path.join('data','muscle_chans',f'{subject}_muscle_chans.csv')
+    get_status(subject, base_dir, output_path)
