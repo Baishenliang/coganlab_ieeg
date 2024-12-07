@@ -1,0 +1,114 @@
+2024-12-07 12:01:36.977709, D0053, Executing outlier chs removal
+2024-12-07 12:01:36.977709, D0053, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.978722, D0053, Executing wavelet
+2024-12-07 12:01:36.978722, D0053, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.978722, D0054, Executing outlier chs removal
+2024-12-07 12:01:36.978722, D0054, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.979718, D0054, Executing wavelet
+2024-12-07 12:01:36.979718, D0054, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.980721, D0055, Executing outlier chs removal
+2024-12-07 12:01:36.980721, D0055, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.980721, D0055, Executing wavelet
+2024-12-07 12:01:36.980721, D0055, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.981718, D0057, Executing outlier chs removal
+2024-12-07 12:01:36.981718, D0057, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.981718, D0057, Executing wavelet
+2024-12-07 12:01:36.981718, D0057, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.982718, D0059, Executing outlier chs removal
+2024-12-07 12:01:36.982718, D0059, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.982718, D0059, Executing wavelet
+2024-12-07 12:01:36.982718, D0059, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.982718, D0063, Executing outlier chs removal
+2024-12-07 12:01:36.982718, D0063, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.983718, D0063, Executing wavelet
+2024-12-07 12:01:36.983718, D0063, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.983718, D0065, Executing line noise filter
+2024-12-07 12:01:36.983718, D0065, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.984718, D0065, Executing outlier chs removal
+2024-12-07 12:01:36.984718, D0065, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.984718, D0065, Executing wavelet
+2024-12-07 12:01:36.984718, D0065, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.984718, D0066, Executing line noise filter
+2024-12-07 12:01:36.984718, D0066, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0066, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0066, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0066, Executing wavelet
+2024-12-07 12:01:36.986226, D0066, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0068, Executing line noise filter
+2024-12-07 12:01:36.986226, D0068, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0068, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0068, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0068, Executing wavelet
+2024-12-07 12:01:36.986226, D0068, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0069, Executing line noise filter
+2024-12-07 12:01:36.986226, D0069, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0069, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0069, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0069, Executing wavelet
+2024-12-07 12:01:36.986226, D0069, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0070, Executing line noise filter
+2024-12-07 12:01:36.986226, D0070, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0070, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0070, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0070, Executing wavelet
+2024-12-07 12:01:36.986226, D0070, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0071, Executing line noise filter
+2024-12-07 12:01:36.986226, D0071, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0071, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0071, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0071, Executing wavelet
+2024-12-07 12:01:36.986226, D0071, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0077, Executing line noise filter
+2024-12-07 12:01:36.986226, D0077, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0077, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0077, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0077, Executing wavelet
+2024-12-07 12:01:36.986226, D0077, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0079, Executing line noise filter
+2024-12-07 12:01:36.986226, D0079, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0079, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0079, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0079, Executing wavelet
+2024-12-07 12:01:36.986226, D0079, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0081, Executing line noise filter
+2024-12-07 12:01:36.986226, D0081, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0081, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0081, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0081, Executing wavelet
+2024-12-07 12:01:36.986226, D0081, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0094, Executing line noise filter
+2024-12-07 12:01:36.986226, D0094, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0094, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0094, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0094, Executing wavelet
+2024-12-07 12:01:36.986226, D0094, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0096, Executing line noise filter
+2024-12-07 12:01:36.986226, D0096, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:36.986226, D0096, Executing outlier chs removal
+2024-12-07 12:01:36.986226, D0096, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0096, Executing wavelet
+2024-12-07 12:01:37.001892, D0096, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0101, Executing line noise filter
+2024-12-07 12:01:37.001892, D0101, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0101, Executing outlier chs removal
+2024-12-07 12:01:37.001892, D0101, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0101, Executing wavelet
+2024-12-07 12:01:37.001892, D0101, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0102, Executing line noise filter
+2024-12-07 12:01:37.001892, D0102, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0102, Executing outlier chs removal
+2024-12-07 12:01:37.001892, D0102, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0102, Executing wavelet
+2024-12-07 12:01:37.001892, D0102, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0103, Executing line noise filter
+2024-12-07 12:01:37.001892, D0103, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0103, Executing outlier chs removal
+2024-12-07 12:01:37.001892, D0103, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0103, Executing wavelet
+2024-12-07 12:01:37.001892, D0103, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0107, Executing line noise filter
+2024-12-07 12:01:37.001892, D0107, Line noise filter failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0107, Executing outlier chs removal
+2024-12-07 12:01:37.001892, D0107, Outlier chs removal failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'
+2024-12-07 12:01:37.001892, D0107, Executing wavelet
+2024-12-07 12:01:37.001892, D0107, Wavelet failed with error: [WinError 3] The system cannot find the path specified: 'C:\\Users\\bl314\\Box\\CoganLab'

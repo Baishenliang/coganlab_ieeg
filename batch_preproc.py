@@ -83,7 +83,7 @@ for subject, processing_type in subject_processing_dict.items():
             raw1 = crop_empty_data(raw)
             del raw
             raw = raw1
-            bids_root = 'C:\\Users\\bl314\\Box\\CoganLab\\BIDS-1.0_LexicalDecRepDelay\\BIDS'
+            bids_root = os.path.join(LAB_root,'BIDS-1.0_LexicalDecRepDelay','BIDS')
             if not os.path.exists(os.path.join(bids_root, "derivatives")):
                 os.mkdir(os.path.join(bids_root, "derivatives"))
                 os.mkdir(os.path.join(bids_root, "derivatives", "a"))
