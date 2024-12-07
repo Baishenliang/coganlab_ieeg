@@ -82,6 +82,7 @@ for subject in subjects:
     try:
         log_file.write(f"{datetime.datetime.now()}, {subject}, Executing outlier chs removal\n")
         ## Mark outlier channels
+        layout = get_data("LexicalDecRepDelay", root=LAB_root)
         raw = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
                               preload=True)
         raw.info['bads'] = channel_outlier_marker(raw, 3, 2)
@@ -98,6 +99,7 @@ for subject in subjects:
         log_file.write(f"{datetime.datetime.now()}, {subject}, Executing wavelet\n")
 
         # load data
+        layout = get_data("LexicalDecRepDelay", root=LAB_root)
         raw = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
                               preload=True)
 
