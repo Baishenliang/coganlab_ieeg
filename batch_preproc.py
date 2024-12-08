@@ -31,17 +31,17 @@ log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt'
 
 # Subj list
 subject_processing_dict = {
-    "D0053": "",
-    "D0054": "",
-    "D0055": "",
-    "D0057": "",
-    "D0059": "",
-    "D0063": "",
-    "D0065": "",
-    "D0066": "",
-    "D0068": "",
-    "D0069": "",
-    "D0070": "wavelet",
+    "D0053": "whole",
+    "D0054": "whole",
+    "D0055": "whole",
+    "D0057": "whole",
+    "D0059": "whole",
+    "D0063": "whole",
+    "D0065": "whole",
+    "D0066": "whole",
+    "D0068": "whole",
+    "D0069": "whole",
+    "D0070": "whole",
     "D0071": "whole",
     "D0077": "whole",
     "D0079": "whole",
@@ -80,9 +80,10 @@ for subject, processing_type in subject_processing_dict.items():
                         notch_widths=20)
 
             # crop and save data
-            raw1 = crop_empty_data(raw)
-            del raw
-            raw = raw1
+            if subject=="D0079":
+                raw1 = crop_empty_data(raw)
+                del raw
+                raw = raw1
             bids_root = os.path.join(LAB_root,'BIDS-1.0_LexicalDecRepDelay','BIDS')
             if not os.path.exists(os.path.join(bids_root, "derivatives")):
                 os.mkdir(os.path.join(bids_root, "derivatives"))

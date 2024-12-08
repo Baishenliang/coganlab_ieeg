@@ -1,0 +1,14 @@
+2024-12-08 11:44:17.793513, D0070, Executing wavelet
+2024-12-08 12:27:26.480634, D0070, Wavelet completed
+2024-12-08 12:27:26.483675, D0071, Executing line noise filter
+2024-12-08 12:51:10.636424, D0071, Line noise filter failed with error: [WinError 1450] Insufficient system resources exist to complete the requested service
+2024-12-08 12:51:10.649581, D0071, Executing outlier chs removal
+2024-12-08 12:51:38.176666, D0071, Outlier chs removal failed with error: No files match your search terms
+2024-12-08 12:51:38.177666, D0071, Executing wavelet
+2024-12-08 12:51:42.368571, D0071, Wavelet failed with error: No files match your search terms
+2024-12-08 12:51:42.369568, D0077, Executing line noise filter
+2024-12-08 12:52:56.088607, D0077, Line noise filter failed with error: Each element in 'ch_names' must be str, got [<class 'float'>].
+2024-12-08 12:52:56.089658, D0077, Executing outlier chs removal
+2024-12-08 12:53:00.433646, D0077, Outlier chs removal failed with error: No files match your search terms
+2024-12-08 12:53:00.433646, D0077, Executing wavelet
+2024-12-08 12:53:04.584023, D0077, Wavelet failed with error: No files match your search terms

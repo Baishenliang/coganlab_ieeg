@@ -46,7 +46,10 @@ def get_unused_chs(folder_path):
     # Identify names present in channels.tsv but not in electrodes.tsv
     missing_electrodes = list(channels_set - electrodes_set)
 
-    return missing_electrodes
+    if pd.isna(missing_electrodes).any():
+        return []
+    else:
+        return missing_electrodes
 
 
 
