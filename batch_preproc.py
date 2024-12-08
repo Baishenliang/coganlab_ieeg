@@ -31,12 +31,12 @@ log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt'
 
 # Subj list
 subject_processing_dict = {
-    "D0053": "whole",
-    "D0054": "wavelet",
-    "D0055": "outlierchs/wavelet",
-    "D0057": "outlierchs/wavelet",
-    "D0059": "outlierchs/wavelet",
-    "D0063": "outlierchs/wavelet",
+    "D0053": "",
+    "D0054": "",
+    "D0055": "",
+    "D0057": "",
+    "D0059": "",
+    "D0063": "wavelet",
     "D0065": "whole",
     "D0066": "whole",
     "D0068": "whole",
@@ -91,6 +91,7 @@ for subject, processing_type in subject_processing_dict.items():
                 os.mkdir(os.path.join(bids_root, "derivatives", "a"))
             save_derivative(raw, layout, "a", True)
             del raw
+            del layout
 
             # remove "bad boundary" in events.tsv
             tsv_loc = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'a', f'sub-{subject}',
@@ -119,8 +120,9 @@ for subject, processing_type in subject_processing_dict.items():
             else:
                 raw.info['bads'] = channel_outlier_marker(raw, 3, 2)
                 update(raw, layout, "outlier")
-                del raw
                 log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal completed\n")
+            del raw
+            del layout
 
         except Exception as e:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal failed with error: {str(e)}\n")
@@ -192,7 +194,7 @@ for subject, processing_type in subject_processing_dict.items():
                 # Clean memory
                 del spectra_wavelet, filename, chan_grids
 
-            del base_wavelet
+            del base_wavelet, raw, layout
             log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet completed\n")
 
         except Exception as e:
