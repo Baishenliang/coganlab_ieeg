@@ -31,13 +31,13 @@ log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt'
 
 # Subj list
 subject_processing_dict = {
-    "D0053": "whole",
-    "D0054": "whole",
-    "D0055": "whole",
-    "D0057": "whole",
+    "D0053": "wavelet",
+    "D0054": "wavelet",
+    "D0055": "wavelet",
+    "D0057": "wavelet",
     "D0059": "whole",
-    "D0063": "whole",
-    "D0065": "whole",
+    "D0063": "wavelet",
+    "D0065": "wavelet",
     "D0066": "whole",
     "D0068": "whole",
     "D0069": "whole",
@@ -58,6 +58,11 @@ for subject, processing_type in subject_processing_dict.items():
 
     if processing_type == "whole" or "linernoise" in processing_type:
         ## Line Noise Filtering
+
+        print('=========================\n')
+        print(f'Line Noise Filtering {subject}\n')
+        print('=========================\n')
+
         log_file = open(log_file_path, 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing line noise filter\n")
@@ -98,13 +103,18 @@ for subject, processing_type in subject_processing_dict.items():
             tsv_loc = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'a', f'sub-{subject}',
                                    'ieeg')
             update_tsv(subject, tsv_loc)
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter completed\n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter %%% completed %%% \n")
 
         except Exception as e:
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter failed with error: {str(e)}\n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter !!! failed with error !!! : {str(e)}\n")
         log_file.close()
 
     if processing_type == "whole" or "outlierchs" in processing_type:
+
+        print('=========================\n')
+        print(f'Outlier chs removal {subject}\n')
+        print('=========================\n')
+
         log_file = open(log_file_path, 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing outlier chs removal\n")
@@ -121,15 +131,20 @@ for subject, processing_type in subject_processing_dict.items():
             else:
                 raw.info['bads'] = channel_outlier_marker(raw, 3, 2)
                 update(raw, layout, "outlier")
-                log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal completed\n")
+                log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal %%% completed %%% \n")
             del raw
             del layout
 
         except Exception as e:
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal failed with error: {str(e)}\n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal !!! failed with error !!! : {str(e)}\n")
         log_file.close()
 
     if processing_type == "whole" or "wavelet" in processing_type:
+
+        print('=========================\n')
+        print(f'Wavelet {subject}\n')
+        print('=========================\n')
+
         ## Wavelet
         log_file = open(log_file_path, 'a')
         try:
@@ -196,9 +211,9 @@ for subject, processing_type in subject_processing_dict.items():
                 del spectra_wavelet, filename, chan_grids
 
             del base_wavelet, raw, layout
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet completed\n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet  %%% completed %%% \n")
 
         except Exception as e:
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet failed with error: {str(e)}\n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet  !!! failed with error !!! : {str(e)}\n")
 
         log_file.close()
