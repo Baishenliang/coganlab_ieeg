@@ -36,7 +36,7 @@ def get_unused_chs(folder_path):
         raise ValueError("Both TSV files must contain a 'name' column.")
 
     # Remove the 'Trigger' electrode from the channels list
-    channels_df = channels_df[channels_df['name'] != 'Trigger']
+    # channels_df = channels_df[channels_df['name'] != 'Trigger']
     channels_df = channels_df[channels_df['type'] != 'TRIG']
 
     # Create sets of electrode names from each file
@@ -91,10 +91,6 @@ def update_tsv(subj, search_dir='.'):
         # Overwrite the original file with the filtered data
         df_filtered.to_csv(input_file, sep="\t", index=False)
         print(f"Processed and replaced the original file: {input_file}")
-
-import os
-import re
-import pandas as pd
 
 def detect_outlier(subj, search_dir='.'):
     """

@@ -78,9 +78,9 @@ for subject, processing_type in subject_processing_dict.items():
                 raw.drop_channels(unused_chs)
 
             # line noise filtering
-            line_filter(raw, mt_bandwidth=10., n_jobs=-3, copy=False, verbose=10,
+            line_filter(raw, mt_bandwidth=10., n_jobs=-10, copy=False, verbose=10,
                         filter_length='700ms', freqs=[60], notch_widths=20)
-            line_filter(raw, mt_bandwidth=10., n_jobs=-3, copy=False, verbose=10,
+            line_filter(raw, mt_bandwidth=10., n_jobs=-10, copy=False, verbose=10,
                         filter_length='20s', freqs=[60, 120, 180, 240],
                         notch_widths=20)
 
@@ -152,8 +152,13 @@ for subject, processing_type in subject_processing_dict.items():
 
             # load data
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
-            raw = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
-                                  preload=True)
+            raw1 = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
+                                  preload=False)
+
+            # drop bad channels
+            raw = raw1.copy().drop_channels(raw1.info['bads'])
+            del raw1
+            raw.load_data()
 
             # ref to average
             ch_type = raw.get_channel_types(only_data_chs=True)[0]
