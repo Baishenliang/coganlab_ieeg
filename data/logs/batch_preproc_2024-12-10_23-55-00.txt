@@ -1,0 +1,49 @@
+2024-12-10 23:55:00.149755, D0053, Executing multitaper
+2024-12-11 00:12:16.119166, D0053, Multitaper  %%% completed %%% 
+2024-12-11 00:12:16.119166, D0054, Executing multitaper
+2024-12-11 00:23:08.001312, D0054, Multitaper  %%% completed %%% 
+2024-12-11 00:23:08.001312, D0055, Executing multitaper
+2024-12-11 00:24:44.422818, D0055, Multitaper !!! failed with error !!! : [Errno 2] No such file or directory: 'data\\muscle_chans\\D0055_muscle_chans.csv'
+2024-12-11 00:24:44.424815, D0057, Executing multitaper
+2024-12-11 00:41:23.523878, D0057, Multitaper  %%% completed %%% 
+2024-12-11 00:41:23.523878, D0059, Executing multitaper
+2024-12-11 00:53:17.544674, D0059, Multitaper  %%% completed %%% 
+2024-12-11 00:53:17.544674, D0063, Executing multitaper
+2024-12-11 01:25:48.644287, D0063, Multitaper  %%% completed %%% 
+2024-12-11 01:25:48.644287, D0065, Executing multitaper
+2024-12-11 01:26:10.267232, D0065, Multitaper !!! failed with error !!! : [Errno 2] No such file or directory: 'data\\muscle_chans\\D0065_muscle_chans.csv'
+2024-12-11 01:26:10.268391, D0066, Executing multitaper
+2024-12-11 01:26:33.703418, D0066, Multitaper !!! failed with error !!! : [Errno 2] No such file or directory: 'data\\muscle_chans\\D0066_muscle_chans.csv'
+2024-12-11 01:26:33.704418, D0068, Executing multitaper
+2024-12-11 01:45:49.052135, D0068, Multitaper  %%% completed %%% 
+2024-12-11 01:45:49.052135, D0069, Executing multitaper
+2024-12-11 01:55:20.636031, D0069, Multitaper  %%% completed %%% 
+2024-12-11 01:55:20.636031, D0070, Executing multitaper
+2024-12-11 02:26:19.179253, D0070, Multitaper  %%% completed %%% 
+2024-12-11 02:26:19.179253, D0077, Executing line noise filter
+2024-12-11 03:19:52.146878, D0077, Line noise filter %%% completed %%% 
+2024-12-11 03:19:52.148875, D0077, Executing outlier chs removal
+2024-12-11 03:21:17.338449, D0077, Outlier chs removal %%% completed %%% 
+2024-12-11 03:21:17.683314, D0077, Executing wavelet
+2024-12-11 03:43:35.329460, D0077, Wavelet  %%% completed %%% 
+2024-12-11 03:43:35.329460, D0077, Executing multitaper
+2024-12-11 04:00:58.765617, D0077, Multitaper  %%% completed %%% 
+2024-12-11 04:00:58.765617, D0077, Executing Gamma band-pass filter
+2024-12-11 04:00:58.765617, D0077, Gamma band-pass  %%% completed %%% 
+2024-12-11 04:00:58.765617, D0079, Executing line noise filter
+2024-12-11 04:18:37.824146, D0079, Line noise filter !!! failed with error !!! : [WinError 1450] Insufficient system resources exist to complete the requested service
+2024-12-11 04:18:37.839766, D0079, Executing outlier chs removal
+2024-12-11 04:18:56.319850, D0079, Outlier chs removal !!! failed with error !!! : No files match your search terms
+2024-12-11 04:18:56.319850, D0079, Executing wavelet
+2024-12-11 04:19:09.290488, D0079, Wavelet  !!! failed with error !!! : No files match your search terms
+2024-12-11 04:19:09.290488, D0079, Executing multitaper
+2024-12-11 04:19:22.401088, D0079, Multitaper !!! failed with error !!! : No files match your search terms
+2024-12-11 04:19:22.401088, D0079, Executing Gamma band-pass filter
+2024-12-11 04:19:22.401088, D0079, Gamma band-pass  %%% completed %%% 
+2024-12-11 04:19:22.401088, D0081, Executing line noise filter
+2024-12-11 06:37:12.722303, D0081, Line noise filter %%% completed %%% 
+2024-12-11 06:37:12.728302, D0081, Executing outlier chs removal
+2024-12-11 06:46:27.069515, D0081, Outlier chs removal %%% completed %%% 
+2024-12-11 06:46:27.709390, D0081, Executing wavelet
+2024-12-11 09:39:06.130553, D0081, Wavelet  %%% completed %%% 
+2024-12-11 09:39:06.146176, D0081, Executing multitaper
