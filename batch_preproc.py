@@ -18,7 +18,7 @@ from ieeg.calc.scaling import rescale
 from ieeg.viz.ensemble import chan_grid
 from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.viz.parula import parula_map
-from bsliang_utils import get_unused_chs, update_tsv, detect_outlier
+from bsliang_utils import get_unused_chs, update_tsv, detect_outlier, load_muscle_chs
 from matplotlib import pyplot as plt
 
 HOME = os.path.expanduser("~")
@@ -31,24 +31,24 @@ log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt'
 
 # Subj list
 subject_processing_dict = {
-    "D0053": "wavelet",
-    "D0054": "wavelet",
-    "D0055": "wavelet",
-    "D0057": "wavelet",
-    "D0059": "whole",
-    "D0063": "wavelet",
-    "D0065": "wavelet",
-    "D0066": "whole",
-    "D0068": "whole",
-    "D0069": "whole",
-    "D0070": "whole",
-    "D0071": "whole",
+    "D0053": "multitaper",
+    "D0054": "multitaper",
+    "D0055": "multitaper",
+    "D0057": "multitaper",
+    "D0059": "multitaper",
+    "D0063": "multitaper",
+    "D0065": "multitaper",
+    "D0066": "multitaper",
+    "D0068": "multitaper",
+    "D0069": "multitaper",
+    "D0070": "multitaper",
+    "D0071": "",
     "D0077": "whole",
     "D0079": "whole",
     "D0081": "whole",
     "D0094": "whole",
     "D0096": "whole",
-    "D0101": "whole",
+    "D0101": "",
     "D0102": "whole",
     "D0103": "whole",
     "D0107": "whole",
@@ -220,5 +220,121 @@ for subject, processing_type in subject_processing_dict.items():
 
         except Exception as e:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet  !!! failed with error !!! : {str(e)}\n")
+
+        log_file.close()
+
+    if processing_type == "whole" or "multitaper" in processing_type:
+
+        print('=========================\n')
+        print(f'Multitaper {subject}\n')
+        print('=========================\n')
+
+        log_file = open(log_file_path, 'a')
+        try:
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Executing multitaper\n")    
+            ## Multitaper
+            # load data
+            layout = get_data("LexicalDecRepDelay", root=LAB_root)
+            raw1 = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
+                                    preload=False)
+
+            # read muscle artifact channels and update
+            raw1_org_bads=raw1.info['bads']
+            muscle_chs=load_muscle_chs(subject)
+            muscle_chs_bads=[b for b in muscle_chs if b in raw1.ch_names]
+            bads_new=list(set(raw1_org_bads+muscle_chs_bads))
+            raw1.info.update(bads=bads_new)
+            update(raw1, layout, "muscle")
+
+            # drop bad channels
+            raw = raw1.copy().drop_channels(raw1.info['bads'])
+            del raw1
+            raw.load_data()
+
+            # ref to average
+            ch_type = raw.get_channel_types(only_data_chs=True)[0]
+            raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
+
+            # make direction
+            if not os.path.exists(os.path.join(save_dir, subject)):
+                os.mkdir(os.path.join(save_dir, subject))
+            if not os.path.exists(os.path.join(save_dir, subject, 'multitaper_4cons')):
+                os.mkdir(os.path.join(save_dir, subject, 'multitaper_4cons'))
+
+            # run multitaper
+            for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
+                for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
+                    for epoch, t, tag in zip(
+                            ('Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT', 'Delay/' + task + '/' + word + '/CORRECT', 'Go/' + task + '/' + word + '/CORRECT',
+                            'Resp/' + task + '/' + word + '/CORRECT'),
+                            ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
+                            ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
+                    ):
+
+                        # Get the spectras
+                        t1 = t[0] - 0.5
+                        t2 = t[1] + 0.5
+                        times = (t1, t2)
+                        trials = trial_ieeg(raw, epoch, times, preload=True)
+                        outliers_to_nan(trials, outliers=10)
+
+                        freq = np.linspace(0.5, 200, num=80)
+                        kwargs = dict(average=False, n_jobs=-3, freqs=freq, return_itc=False,
+                                    n_cycles=freq / 2, time_bandwidth=4,
+                                    # n_fft=int(trials.info['sfreq'] * 2.75),
+                                    decim=20, )
+                        # adaptive=True)
+                        spectra_multitaper = trials.compute_tfr(method="multitaper", **kwargs)
+                        crop_pad(spectra_multitaper, "0.5s")  # cut the first and final 0.5s, change to zero
+
+                        # Get the baseline
+                        if epoch == 'Cue/' + task + '/' + word + '/CORRECT':
+                            base_multitaper = spectra_multitaper.copy().crop(-0.5, 0)
+                            base_multitaper = base_multitaper.average(lambda x: np.nanmean(x, axis=0), copy=True)
+
+                        # Baseline correction
+                        spectra_multitaper = spectra_multitaper.average(lambda x: np.nanmean(x, axis=0), copy=True)
+                        spectra_multitaper = rescale(spectra_multitaper, base_multitaper, copy=True, mode='ratio')
+
+                        # Save spectras
+                        filename = os.path.join(save_dir, subject, 'multitaper_4cons', f'{tag}-tfr.h5')
+                        mne.time_frequency.write_tfrs(filename, spectra_multitaper, overwrite=True)
+
+                        # Make spectrograms
+                        chan_grids = chan_grid(spectra_multitaper, size=(20, 10), vlim=(0.7, 1.4), cmap=parula_map)
+
+                        # Save spectrograms
+                        fig_count = 0
+                        for fig in chan_grids:
+                            figdir = os.path.join(save_dir, subject, 'multitaper_4cons', f'{tag}_{fig_count + 1}.jpg')
+                            chan_grids[fig_count].savefig(figdir, dpi=300)
+                            plt.close(fig)
+                            fig_count += 1
+
+                        del trials, spectra_multitaper, filename, chan_grids
+                    del base_multitaper
+
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Multitaper  %%% completed %%% \n")
+
+        except Exception as e:
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Multitaper !!! failed with error !!! : {str(e)}\n")
+
+        log_file.close()
+
+    if processing_type == "whole" or "Gamma" in processing_type:
+
+        print('=========================\n')
+        print(f'Gamma band-pass filter {subject}\n')
+        print('=========================\n')
+    
+        ## Wavelet
+        log_file = open(log_file_path, 'a')
+        try:
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Executing Gamma band-pass filter\n")
+
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass  %%% completed %%% \n")
+
+        except Exception as e:
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass!!! failed with error !!! : {str(e)}\n")
 
         log_file.close()

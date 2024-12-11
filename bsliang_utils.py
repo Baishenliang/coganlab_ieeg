@@ -37,7 +37,7 @@ def get_unused_chs(folder_path):
 
     # Remove the 'Trigger' electrode from the channels list
     # channels_df = channels_df[channels_df['name'] != 'Trigger']
-    channels_df = channels_df[channels_df['type'] != 'TRIG']
+    # channels_df = channels_df[channels_df['type'] != 'TRIG']
 
     # Create sets of electrode names from each file
     electrodes_set = set(electrodes_df['name'])
@@ -123,3 +123,10 @@ def detect_outlier(subj, search_dir='.'):
             return 1
     
     return 0
+
+def load_muscle_chs(subject):
+        muscle_chs_loc=os.path.join('data','muscle_chans',f'{subject}_muscle_chans.csv')
+        df = pd.read_csv(muscle_chs_loc, header=None)
+        df.columns = ['muscle_chs']
+        muscle_chs = df['muscle_chs'].tolist()
+        return muscle_chs
