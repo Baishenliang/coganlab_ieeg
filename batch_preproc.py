@@ -30,33 +30,35 @@ current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt')
 
 # Subj list
-subject_processing_dict = {
-    "D0053": "multitaper",
-    "D0054": "multitaper",
-    "D0055": "multitaper",
-    "D0057": "multitaper",
-    "D0059": "multitaper",
-    "D0063": "multitaper",
-    "D0065": "multitaper",
-    "D0066": "multitaper",
-    "D0068": "multitaper",
-    "D0069": "multitaper",
-    "D0070": "multitaper",
-    "D0071": "",
-    "D0077": "whole",
-    "D0079": "whole",
-    "D0081": "whole",
-    "D0094": "whole",
-    "D0096": "whole",
-    "D0101": "",
-    "D0102": "whole",
-    "D0103": "whole",
-    "D0107": "whole",
-}
+# subject_processing_dict = {
+#     "D0053": "",
+#     "D0054": "",
+#     "D0055": "multitaper",
+#     "D0057": "",
+#     "D0059": "",
+#     "D0063": "",
+#     "D0065": "multitaper",
+#     "D0066": "multitaper",
+#     "D0068": "",
+#     "D0069": "",
+#     "D0070": "",
+#     "D0071": "linernoise/outlierchs/wavelet/multitaper",
+#     "D0077": "",
+#     "D0079": "linernoise/outlierchs/wavelet/multitaper",
+#     "D0081": "multitaper",
+#     "D0094": "linernoise/outlierchs/wavelet/multitaper",
+#     "D0096": "linernoise/outlierchs/wavelet/multitaper",
+#     "D0101": "linernoise/outlierchs/wavelet/multitaper",
+#     "D0102": "linernoise/outlierchs/wavelet/multitaper",
+#     "D0103": "linernoise/outlierchs/wavelet/multitaper",
+#     "D0107": "linernoise/outlierchs/wavelet/multitaper",
+# }
+
+subject_processing_dict = {"D0081": "multitaper"}
 
 for subject, processing_type in subject_processing_dict.items():
 
-    if processing_type == "whole" or "linernoise" in processing_type:
+    if "linernoise" in processing_type:
         ## Line Noise Filtering
 
         print('=========================\n')
@@ -109,7 +111,7 @@ for subject, processing_type in subject_processing_dict.items():
             log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter !!! failed with error !!! : {str(e)}\n")
         log_file.close()
 
-    if processing_type == "whole" or "outlierchs" in processing_type:
+    if "outlierchs" in processing_type:
 
         print('=========================\n')
         print(f'Outlier chs removal {subject}\n')
@@ -139,7 +141,7 @@ for subject, processing_type in subject_processing_dict.items():
             log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal !!! failed with error !!! : {str(e)}\n")
         log_file.close()
 
-    if processing_type == "whole" or "wavelet" in processing_type:
+    if "wavelet" in processing_type:
 
         print('=========================\n')
         print(f'Wavelet {subject}\n')
@@ -223,7 +225,7 @@ for subject, processing_type in subject_processing_dict.items():
 
         log_file.close()
 
-    if processing_type == "whole" or "multitaper" in processing_type:
+    if "multitaper" in processing_type:
 
         print('=========================\n')
         print(f'Multitaper {subject}\n')
@@ -321,7 +323,7 @@ for subject, processing_type in subject_processing_dict.items():
 
         log_file.close()
 
-    if processing_type == "whole" or "Gamma" in processing_type:
+    if "Gamma" in processing_type:
 
         print('=========================\n')
         print(f'Gamma band-pass filter {subject}\n')
