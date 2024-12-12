@@ -34,31 +34,29 @@ current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt')
 
 # Subj list
-# subject_processing_dict = {
-#     "D0053": "",
-#     "D0054": "",
-#     "D0055": "multitaper",
-#     "D0057": "",
-#     "D0059": "",
-#     "D0063": "",
-#     "D0065": "multitaper",
-#     "D0066": "multitaper",
-#     "D0068": "",
-#     "D0069": "",
-#     "D0070": "",
-#     "D0071": "linernoise/outlierchs/wavelet/multitaper",
-#     "D0077": "",
-#     "D0079": "linernoise/outlierchs/wavelet/multitaper",
-#     "D0081": "multitaper",
-#     "D0094": "linernoise/outlierchs/wavelet/multitaper",
-#     "D0096": "linernoise/outlierchs/wavelet/multitaper",
-#     "D0101": "linernoise/outlierchs/wavelet/multitaper",
-#     "D0102": "linernoise/outlierchs/wavelet/multitaper",
-#     "D0103": "linernoise/outlierchs/wavelet/multitaper",
-#     "D0107": "linernoise/outlierchs/wavelet/multitaper",
-# }
-
-subject_processing_dict = {"D0081": "gamma"}
+subject_processing_dict = {
+    "D0081": "",
+    "D0063": "gamma",
+    "D0066": "linernoise/outlierchs/multitaper/gamma",
+    "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0094": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0096": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0053": "/gamma",
+    "D0054": "/gamma",
+    "D0055": "multitaper/gamma",
+    "D0057": "/gamma",
+    "D0059": "/gamma",
+    "D0065": "multitaper/gamma",
+    "D0068": "/gamma",
+    "D0069": "/gamma",
+    "D0070": "/gamma",
+    "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0077": "/gamma",
+    "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0101": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0102": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0107": "linernoise/outlierchs/wavelet/multitaper/gamma",
+}
 
 for subject, processing_type in subject_processing_dict.items():
 
