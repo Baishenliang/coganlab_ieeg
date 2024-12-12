@@ -8,15 +8,19 @@
 # Preparation:
 
 import os
+import os.path as op
 import mne
 import datetime
 import numpy as np
+from itertools import product
 from ieeg.navigate import crop_empty_data, channel_outlier_marker, trial_ieeg, outliers_to_nan
 from ieeg.mt_filter import line_filter
 from ieeg.io import get_data, raw_from_layout, save_derivative, update
+from ieeg.calc import stats, scaling
 from ieeg.calc.scaling import rescale
 from ieeg.viz.ensemble import chan_grid
 from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
+from ieeg.timefreq import gamma, utils
 from ieeg.viz.parula import parula_map
 from bsliang_utils import get_unused_chs, update_tsv, detect_outlier, load_muscle_chs
 from matplotlib import pyplot as plt
@@ -54,7 +58,7 @@ log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt'
 #     "D0107": "linernoise/outlierchs/wavelet/multitaper",
 # }
 
-subject_processing_dict = {"D0081": "multitaper"}
+subject_processing_dict = {"D0081": "gamma"}
 
 for subject, processing_type in subject_processing_dict.items():
 
@@ -323,20 +327,138 @@ for subject, processing_type in subject_processing_dict.items():
 
         log_file.close()
 
-    if "Gamma" in processing_type:
+    if "gamma" in processing_type:
 
         print('=========================\n')
-        print(f'Gamma band-pass filter {subject}\n')
+        print(f'Gamma band-pass filter and permutation {subject}\n')
         print('=========================\n')
     
         ## Wavelet
         log_file = open(log_file_path, 'a')
         try:
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Executing Gamma band-pass filter\n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Executing Gamma band-pass filter and permutation \n")
 
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass  %%% completed %%% \n")
+            # load data
+            layout = get_data("LexicalDecRepDelay", root=LAB_root)
+            raw1 = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
+                                  preload=False)
+
+            # read muscle artifact channels and update
+            raw1_org_bads=raw1.info['bads']
+            muscle_chs=load_muscle_chs(subject)
+            muscle_chs_bads=[b for b in muscle_chs if b in raw1.ch_names]
+            bads_new=list(set(raw1_org_bads+muscle_chs_bads))
+            raw1.info.update(bads=bads_new)
+            update(raw1, layout, "muscle")
+
+            # drop bad channels
+            raw = raw1.copy().drop_channels(raw1.info['bads'])
+            del raw1
+            raw.load_data()
+
+            # ref to average
+            ch_type = raw.get_channel_types(only_data_chs=True)[0]
+            raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
+
+            # make direction
+            if not os.path.exists(os.path.join(save_dir, subject)):
+                os.mkdir(os.path.join(save_dir, subject))
+            if not os.path.exists(os.path.join(save_dir, subject, 'stats')):
+                os.mkdir(os.path.join(save_dir, subject, 'stats'))
+            
+            subj_gamma_dir=os.path.join(save_dir, subject, 'stats')
+
+            # extract gamma
+            out = []
+            for epoch, t, tag in zip(
+                    ('Cue/CORRECT', 'Cue/CORRECT', 'Auditory_stim/CORRECT','Delay/CORRECT', 'Go/CORRECT','Resp/CORRECT'),
+                    ((-0.5, 0), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
+                    ('Baseline', 'Cue', 'Auditory','Delay','Go','Resp')):
+
+                # Get the spectras
+                t1 = t[0] - 0.5
+                t2 = t[1] + 0.5
+                times = (t1, t2)
+                trials = trial_ieeg(raw, epoch, times, preload=True, reject_by_annotation=False)
+                outliers_to_nan(trials, outliers=10)
+
+                gamma.extract(trials, copy=False, n_jobs=-10)
+                utils.crop_pad(trials, "0.5s")
+                trials.resample(100)
+                trials.filenames = raw.filenames
+                out.append(trials)
+
+            # Get and cut baseline
+            base = out.pop(0)
+
+            # Prepare for permutation
+            mask = dict()
+            data = []
+            nperm = 100000
+            sig2 = base.get_data(copy=True)
+
+            # run permutation
+            for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
+                for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
+                    for epoch, t, tag in zip(
+                            (out[0]['Cue/' + task + '/' + word + '/CORRECT'], out[1]['Auditory_stim/' + task + '/' + word + '/CORRECT'], 
+                            out[2]['Delay/' + task + '/' + word + '/CORRECT'], out[3]['Go/' + task + '/' + word + '/CORRECT'],
+                            out[4]['Resp/' + task + '/' + word + '/CORRECT']),
+                            # (out[0][e] for e in ['Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT', 'Delay/' + task + '/' + word + '/CORRECT', 'Go/' + task + '/' + word + '/CORRECT',
+                            # 'Resp/' + task + '/' + word + '/CORRECT']),
+                            ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
+                            ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
+                    ):
+
+                        sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
+
+                        # time-perm
+                        mask[tag], p_act = stats.time_perm_cluster(
+                            sig1, sig2, p_thresh=0.05, axis=0, n_perm=nperm, n_jobs=-3,
+                            ignore_adjacency=1)
+                        epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
+                                                    tmin=t[0])
+
+                        # plot mask
+                        fig, ax = plt.subplots()
+                        ax.imshow(mask[tag], cmap='Reds')
+                        channel_names=epoch_mask.ch_names[::5]
+                        ax.set_yticks(range(0,len(channel_names)*5,5))
+                        ax.set_yticklabels(channel_names)
+                        time_stamps=epoch_mask.times[::20]
+                        ax.set_xticks(range(0,len(time_stamps)*20,20))
+                        ax.set_xticklabels(time_stamps)
+                        try:
+                            zero_time_index = np.where(epoch_mask.times == 0)[0][0]
+                            ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
+                        except Exception as e:
+                            print('no zero time found')
+                        fig.savefig(os.path.join(subj_gamma_dir,f'{tag}.jpg'), dpi=300)
+                        plt.close(fig)
+
+                        # baseline correction
+                        power = scaling.rescale(epoch, base, 'mean', copy=True)
+                        z_score = scaling.rescale(epoch, base, 'zscore', copy=True)
+
+                        # Calculate the p-value
+                        p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
+
+                        # p_vals = epoch_mask.copy()
+                        data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
+
+            for tag, epoch_mask, power, z_score, p_vals in data:
+
+                power.save(subj_gamma_dir + f"/{subject}_{tag}_power-epo.fif", overwrite=True,fmt='double')
+                z_score.save(subj_gamma_dir + f"/{subject}_{tag}_zscore-epo.fif", overwrite=True,fmt='double')
+                epoch_mask.save(subj_gamma_dir + f"/{subject}_{tag}_mask-ave.fif", overwrite=True)
+                p_vals.save(subj_gamma_dir + f"/{subject}_{tag}_pval-ave.fif", overwrite=True)
+            
+            base.save(subj_gamma_dir + f"/{subject}_base-epo.fif", overwrite=True)
+            del data
+
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation  %%% completed %%% \n")
 
         except Exception as e:
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass!!! failed with error !!! : {str(e)}\n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation !!! failed with error !!! : {str(e)}\n")
 
         log_file.close()
