@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/hpc/group/coganlab/bl314/codes/ieeg_tmp/lexicalrep_ln_outlier.py", line 48, in <module>
+    raw = raw_from_layout(layout, subject=subj, extension=".edf", desc=None,
+  File "/hpc/group/coganlab/bl314/miniconda3/envs/ieeg/lib/python3.10/site-packages/ieeg/io.py", line 117, in raw_from_layout
+    BIDS_path = bidspath_from_layout(layout, **kwargs)
+  File "/hpc/group/coganlab/bl314/miniconda3/envs/ieeg/lib/python3.10/site-packages/ieeg/io.py", line 66, in bidspath_from_layout
+    raise FileNotFoundError("No files match your search terms")
+FileNotFoundError: No files match your search terms

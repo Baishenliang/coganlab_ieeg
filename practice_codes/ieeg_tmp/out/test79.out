@@ -1,0 +1,3667 @@
+Extracting EDF parameters from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-01_run-01_ieeg.edf...
+EDF file detected
+Setting channel info structure...
+Creating raw.info structure...
+Reading events from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-01_run-01_events.tsv.
+Reading channel info from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_channels.tsv.
+Reading electrode coords from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_space-ACPC_electrodes.tsv.
+Extracting EDF parameters from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-02_run-02_ieeg.edf...
+EDF file detected
+Setting channel info structure...
+Creating raw.info structure...
+Reading events from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-02_run-02_events.tsv.
+Reading channel info from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_channels.tsv.
+Reading electrode coords from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_space-ACPC_electrodes.tsv.
+Extracting EDF parameters from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-02_run-03_ieeg.edf...
+EDF file detected
+Setting channel info structure...
+Creating raw.info structure...
+Reading events from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-02_run-03_events.tsv.
+Reading channel info from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_channels.tsv.
+Reading electrode coords from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_space-ACPC_electrodes.tsv.
+Extracting EDF parameters from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-02_run-04_ieeg.edf...
+EDF file detected
+Setting channel info structure...
+Creating raw.info structure...
+Reading events from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-02_run-04_events.tsv.
+Reading channel info from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_channels.tsv.
+Reading electrode coords from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0079/ieeg/sub-D0079_space-ACPC_electrodes.tsv.
+Reading 0 ... 26062847  =      0.000 ... 12726.000 secs...
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     60.00 :  357 windows
+     66.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 3269 windows
+     63.00 :    1 window
+     67.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  123 windows
+     61.00 :    1 window
+     63.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :  190 windows
+     61.00 :    2 windows
+     63.00 :    1 window
+     64.00 :    1 window
+     67.00 :    1 window
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     59.00 :    2 windows
+     60.00 : 1892 windows
+     63.00 :    1 window
+     64.00 :    3 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1645 windows
+     63.00 :    1 window
+     66.00 :    1 window
+     67.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 : 2821 windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 :  317 windows
+     61.00 :    1 window
+     67.00 :    1 window
+     69.00 :    3 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    2 windows
+     60.00 : 1733 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  258 windows
+     61.00 :    1 window
+     63.00 :    1 window
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     54.00 :    1 window
+     60.00 :  152 windows
+     63.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     59.00 :    2 windows
+     60.00 :  256 windows
+     61.00 :    1 window
+     67.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    3 windows
+     60.00 :  246 windows
+     64.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     57.00 :    1 window
+     60.00 :  217 windows
+     63.00 :    2 windows
+     66.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1460 windows
+     70.00 :    3 windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     59.00 :    1 window
+     60.00 : 1938 windows
+     64.00 :    1 window
+     70.00 :    5 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    3 windows
+     59.00 :    1 window
+     60.00 :  249 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    2 windows
+     60.00 :  766 windows
+     61.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 :  747 windows
+     63.00 :    1 window
+     64.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 :  938 windows
+     61.00 :    1 window
+     64.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1815 windows
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     60.00 :  152 windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     56.00 :    2 windows
+     60.00 : 2854 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     59.00 :    2 windows
+     60.00 : 3717 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  437 windows
+     67.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     54.00 :    1 window
+     56.00 :    1 window
+     60.00 :  146 windows
+     66.00 :    1 window
+     69.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 : 3640 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     56.00 :    3 windows
+     57.00 :    2 windows
+     60.00 :   28 windows
+     63.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     56.00 :    1 window
+     57.00 :    1 window
+     60.00 :  230 windows
+     61.00 :    1 window
+     63.00 :    2 windows
+     66.00 :    1 window
+     69.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     57.00 :    2 windows
+     60.00 :  123 windows
+     61.00 :    2 windows
+     63.00 :    1 window
+     67.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     57.00 :    6 windows
+     60.00 : 1215 windows
+     63.00 :    1 window
+     64.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     54.00 :    2 windows
+     56.00 :   12 windows
+     57.00 :    4 windows
+     60.00 :  222 windows
+     63.00 :    2 windows
+     64.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    2 windows
+     56.00 :   10 windows
+     57.00 :    3 windows
+     60.00 :  861 windows
+     63.00 :    1 window
+     64.00 :    1 window
+     67.00 :    1 window
+Removed notch frequencies (Hz):
+     56.00 :   12 windows
+     57.00 :    2 windows
+     60.00 :   80 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     54.00 :    1 window
+     56.00 :   16 windows
+     57.00 :    6 windows
+     60.00 :   85 windows
+     67.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     54.00 :    1 window
+     56.00 :    3 windows
+     57.00 :    3 windows
+     60.00 :  238 windows
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     57.00 :    1 window
+     60.00 : 2595 windows
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1065 windows
+     66.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     59.00 :    2 windows
+     60.00 : 2333 windows
+     66.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     59.00 :    1 window
+     60.00 : 2131 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     60.00 : 2013 windows
+     66.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     56.00 :    1 window
+     60.00 :  695 windows
+     63.00 :    1 window
+     66.00 :    2 windows
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    2 windows
+     60.00 :  208 windows
+     63.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :  284 windows
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    3 windows
+     53.00 :    1 window
+     57.00 :    1 window
+     59.00 :    1 window
+     60.00 :    1 window
+     61.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    2 windows
+     54.00 :    2 windows
+     60.00 :    9 windows
+     61.00 :    1 window
+     63.00 :    1 window
+     64.00 :    2 windows
+     66.00 :    2 windows
+     67.00 :    1 window
+     69.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     54.00 :    1 window
+     59.00 :    1 window
+     60.00 :    2 windows
+     61.00 :    1 window
+     64.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+    None
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 : 1548 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 : 10488 windows
+     70.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     57.00 :    1 window
+     60.00 : 6154 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    3 windows
+     53.00 :    1 window
+     60.00 :  268 windows
+     66.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     56.00 :    1 window
+     59.00 :    1 window
+     60.00 :   12 windows
+     63.00 :    1 window
+     67.00 :    2 windows
+     69.00 :    4 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     56.00 :    1 window
+     60.00 :   24 windows
+     61.00 :    1 window
+     66.00 :    3 windows
+     67.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     59.00 :    2 windows
+     60.00 :  470 windows
+     63.00 :    1 window
+     64.00 :    3 windows
+     66.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :  358 windows
+     66.00 :    1 window
+     67.00 :    1 window
+     69.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 3461 windows
+     61.00 :    2 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     59.00 :    1 window
+     60.00 : 7573 windows
+     61.00 :    2 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 10070 windows
+     61.00 :    3 windows
+     63.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 8384 windows
+     63.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    1 window
+     59.00 :    2 windows
+     60.00 : 1905 windows
+     63.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     59.00 :    1 window
+     60.00 : 6273 windows
+     63.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     59.00 :    1 window
+     60.00 :  304 windows
+     61.00 :    2 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     59.00 :    1 window
+     60.00 : 2172 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     57.00 :    1 window
+     59.00 :    1 window
+     60.00 : 2056 windows
+     63.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     57.00 :    2 windows
+     60.00 :  776 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     56.00 :    1 window
+     60.00 : 16659 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     59.00 :    3 windows
+     60.00 :  104 windows
+     63.00 :    2 windows
+     64.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  209 windows
+     66.00 :    1 window
+     70.00 :    1 window
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     56.00 :    1 window
+     57.00 :    1 window
+     59.00 :    2 windows
+     60.00 : 1253 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    2 windows
+     60.00 :  163 windows
+     61.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     59.00 :    1 window
+     60.00 :  175 windows
+     61.00 :    1 window
+     64.00 :    7 windows
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 7007 windows
+     64.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     56.00 :    1 window
+     60.00 : 18758 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    2 windows
+     54.00 :    1 window
+     56.00 :    2 windows
+     57.00 :    1 window
+     60.00 :  159 windows
+     69.00 :    1 window
+     70.00 :    2 windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     54.00 :    1 window
+     56.00 :    1 window
+     60.00 : 18375 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     54.00 :    2 windows
+     57.00 :    1 window
+     59.00 :    1 window
+     60.00 : 15776 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     59.00 :    2 windows
+     60.00 :  120 windows
+     64.00 :    1 window
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     59.00 :    3 windows
+     60.00 : 9333 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :   96 windows
+     63.00 :    3 windows
+     64.00 :    1 window
+     66.00 :    2 windows
+     67.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    2 windows
+     60.00 :  118 windows
+     63.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     56.00 :    1 window
+     57.00 :    1 window
+     59.00 :    2 windows
+     60.00 :  131 windows
+     64.00 :    1 window
+     69.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     60.00 :  208 windows
+     67.00 :    1 window
+     69.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    2 windows
+     59.00 :    2 windows
+     60.00 : 3058 windows
+     63.00 :    1 window
+     64.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     59.00 :    1 window
+     60.00 :  139 windows
+     61.00 :    3 windows
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :  247 windows
+     61.00 :    1 window
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     56.00 :    1 window
+     57.00 :    1 window
+     60.00 :  430 windows
+     61.00 :    3 windows
+     64.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 2197 windows
+     61.00 :    2 windows
+     66.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    1 window
+     57.00 :    3 windows
+     59.00 :    2 windows
+     60.00 :   50 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     60.00 :  138 windows
+     61.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     59.00 :    2 windows
+     60.00 :  400 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 : 1607 windows
+     63.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 : 3819 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     59.00 :    1 window
+     60.00 : 3451 windows
+     63.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 :   65 windows
+     61.00 :    1 window
+     64.00 :    2 windows
+     67.00 :    5 windows
+     69.00 :    1 window
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    1 window
+     54.00 :    1 window
+     60.00 :   56 windows
+     64.00 :    1 window
+     66.00 :    1 window
+     67.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    1 window
+     59.00 :    1 window
+     60.00 :   46 windows
+     61.00 :    2 windows
+     63.00 :    1 window
+     64.00 :    2 windows
+     69.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 :  244 windows
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  138 windows
+     63.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     54.00 :    3 windows
+     60.00 :  168 windows
+     66.00 :    1 window
+     67.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    1 window
+     60.00 :  153 windows
+     64.00 :    2 windows
+     66.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     59.00 :    2 windows
+     60.00 :  250 windows
+     63.00 :    2 windows
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     60.00 :  547 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     53.00 :    1 window
+     59.00 :    2 windows
+     60.00 : 1149 windows
+     63.00 :    1 window
+     66.00 :    2 windows
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    2 windows
+     60.00 : 1603 windows
+     61.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     57.00 :    2 windows
+     60.00 : 1205 windows
+     64.00 :    1 window
+     69.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     56.00 :    1 window
+     57.00 :    3 windows
+     60.00 :  252 windows
+     63.00 :    1 window
+     69.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  161 windows
+     61.00 :    1 window
+     64.00 :    1 window
+     70.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     56.00 :    1 window
+     57.00 :    3 windows
+     59.00 :    1 window
+     60.00 :   73 windows
+     64.00 :    2 windows
+     66.00 :    2 windows
+     70.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  297 windows
+     63.00 :    1 window
+     67.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  266 windows
+     61.00 :    3 windows
+     63.00 :    1 window
+     70.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     53.00 :    1 window
+     54.00 :    1 window
+     56.00 :    2 windows
+     59.00 :    1 window
+     60.00 :  414 windows
+     63.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :   51 windows
+     64.00 :    1 window
+     67.00 :    2 windows
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     59.00 :    1 window
+     60.00 :  144 windows
+     63.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    2 windows
+     59.00 :    1 window
+     60.00 :  114 windows
+     67.00 :    1 window
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     54.00 :    1 window
+     57.00 :    1 window
+     60.00 :   52 windows
+     61.00 :    1 window
+     66.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     53.00 :    1 window
+     54.00 :    1 window
+     59.00 :    3 windows
+     60.00 :   21 windows
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :  719 windows
+     61.00 :    3 windows
+     64.00 :    1 window
+     66.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     59.00 :    1 window
+     60.00 :   46 windows
+     63.00 :    2 windows
+     66.00 :    2 windows
+     69.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     60.00 :  454 windows
+     70.00 :    4 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 : 7574 windows
+     61.00 :    1 window
+     63.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 3343 windows
+     66.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 6505 windows
+     64.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 :  168 windows
+     66.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  712 windows
+     61.00 :    1 window
+     66.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     59.00 :    1 window
+     60.00 :  314 windows
+     66.00 :    1 window
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 :  147 windows
+     63.00 :    1 window
+     66.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     60.00 :  120 windows
+     61.00 :    2 windows
+     63.00 :    1 window
+     64.00 :    1 window
+     67.00 :    1 window
+     70.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     59.00 :    1 window
+     60.00 :  312 windows
+     63.00 :    3 windows
+     70.00 :    1 window
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     57.00 :    1 window
+     59.00 :    2 windows
+     60.00 :  215 windows
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 :  219 windows
+     64.00 :    2 windows
+     70.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1596 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 3242 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  140 windows
+     61.00 :    1 window
+     63.00 :    2 windows
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  288 windows
+     63.00 :    1 window
+     67.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 : 1254 windows
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 : 1546 windows
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1772 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 : 2650 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 3371 windows
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 4064 windows
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  636 windows
+     61.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :  932 windows
+     61.00 :    2 windows
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 : 2486 windows
+     61.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     59.00 :    2 windows
+     60.00 : 1928 windows
+     61.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     56.00 :    1 window
+     60.00 :  729 windows
+     61.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 : 2108 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 3820 windows
+     63.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     57.00 :    1 window
+     59.00 :    2 windows
+     60.00 :   44 windows
+     61.00 :    3 windows
+     64.00 :    6 windows
+     67.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     54.00 :    1 window
+     56.00 :    1 window
+     60.00 :   74 windows
+     61.00 :    1 window
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     57.00 :    1 window
+     60.00 : 4024 windows
+     64.00 :    3 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     57.00 :    3 windows
+     59.00 :    3 windows
+     60.00 :   10 windows
+     61.00 :    2 windows
+     63.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    3 windows
+     54.00 :    1 window
+     59.00 :    2 windows
+     60.00 :   27 windows
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     56.00 :    1 window
+     57.00 :    3 windows
+     59.00 :    1 window
+     60.00 :   50 windows
+     63.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  190 windows
+     63.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     59.00 :    2 windows
+     60.00 :  801 windows
+     63.00 :    2 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     57.00 :    1 window
+     59.00 :    1 window
+     60.00 : 2035 windows
+     63.00 :    3 windows
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     53.00 :    1 window
+     57.00 :    1 window
+     59.00 :    2 windows
+     60.00 :    6 windows
+     63.00 :    1 window
+     66.00 :    2 windows
+     67.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    4 windows
+     54.00 :    1 window
+     57.00 :    2 windows
+     60.00 :   19 windows
+     61.00 :    1 window
+     66.00 :    1 window
+     70.00 :    3 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     54.00 :    2 windows
+     57.00 :    1 window
+     60.00 :   30 windows
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    4 windows
+     53.00 :    1 window
+     54.00 :    1 window
+     56.00 :    2 windows
+     60.00 :   40 windows
+     64.00 :    1 window
+     67.00 :    1 window
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     54.00 :    3 windows
+     57.00 :    1 window
+     60.00 :   71 windows
+     66.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     56.00 :    4 windows
+     57.00 :    3 windows
+     60.00 :   33 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     54.00 :    1 window
+     56.00 :    1 window
+     60.00 :   58 windows
+     64.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    2 windows
+     60.00 :  653 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1133 windows
+     61.00 :    1 window
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1624 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     60.00 :  151 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 3139 windows
+     66.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  765 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 5178 windows
+     63.00 :    1 window
+     64.00 :    2 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     60.00 : 4966 windows
+     64.00 :    2 windows
+     66.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 5061 windows
+     64.00 :    2 windows
+     67.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 2600 windows
+     61.00 :    1 window
+     64.00 :    1 window
+     66.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 4351 windows
+     64.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 2916 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 : 2376 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     60.00 : 3666 windows
+     63.00 :    2 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     54.00 :    1 window
+     56.00 :    1 window
+     60.00 :   69 windows
+     66.00 :    1 window
+     67.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     54.00 :    1 window
+     60.00 : 4539 windows
+     61.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    2 windows
+     56.00 :    1 window
+     60.00 : 4103 windows
+     64.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     60.00 :  321 windows
+     64.00 :    1 window
+     66.00 :    2 windows
+     67.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     53.00 :    1 window
+     56.00 :    1 window
+     60.00 :    1 window
+     66.00 :    1 window
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    3 windows
+     59.00 :    1 window
+     63.00 :    1 window
+     64.00 :    1 window
+     67.00 :    2 windows
+     69.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 5206 windows
+     64.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     54.00 :    2 windows
+     60.00 :  737 windows
+     66.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     59.00 :    2 windows
+     60.00 :   88 windows
+     64.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 2724 windows
+     64.00 :    1 window
+     66.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 4780 windows
+     63.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 3694 windows
+     64.00 :    2 windows
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    2 windows
+     60.00 : 3939 windows
+     63.00 :    2 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1126 windows
+     63.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  213 windows
+     63.00 :    1 window
+     67.00 :    2 windows
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1287 windows
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    2 windows
+     60.00 :  799 windows
+     64.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 2633 windows
+     64.00 :    3 windows
+     67.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    1 window
+     60.00 :  504 windows
+     61.00 :    1 window
+     63.00 :    2 windows
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     60.00 :  215 windows
+     63.00 :    1 window
+     66.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 :  828 windows
+     64.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 2164 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 : 4573 windows
+     61.00 :    1 window
+     64.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 4455 windows
+     61.00 :    1 window
+     64.00 :    1 window
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 :  466 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     56.00 :    1 window
+     60.00 : 2905 windows
+     61.00 :    2 windows
+     66.00 :    1 window
+     70.00 :    4 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     59.00 :    1 window
+     60.00 : 1830 windows
+     61.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 :  229 windows
+     70.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    2 windows
+     57.00 :    4 windows
+     60.00 :  389 windows
+     61.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    2 windows
+     59.00 :    1 window
+     60.00 :   54 windows
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     56.00 :    1 window
+     59.00 :    1 window
+     60.00 :  726 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     60.00 :   62 windows
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     57.00 :    1 window
+     60.00 : 4119 windows
+     67.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :  649 windows
+     61.00 :    1 window
+     64.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     59.00 :    1 window
+     60.00 : 2321 windows
+     63.00 :    1 window
+     69.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     56.00 :    1 window
+     60.00 : 3474 windows
+     63.00 :    1 window
+     64.00 :    1 window
+     66.00 :    2 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     53.00 :    1 window
+     56.00 :    1 window
+     60.00 :  639 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    2 windows
+     54.00 :    1 window
+     59.00 :    1 window
+     60.00 : 1091 windows
+     61.00 :    1 window
+     63.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     60.00 :  326 windows
+     67.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     59.00 :    2 windows
+     60.00 :  319 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     60.00 :  127 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    3 windows
+     60.00 :  282 windows
+     63.00 :    1 window
+     64.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 :  273 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     60.00 : 6196 windows
+     64.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     57.00 :    1 window
+     60.00 :  746 windows
+     61.00 :    1 window
+     69.00 :    4 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    2 windows
+     57.00 :    1 window
+     60.00 : 3271 windows
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1573 windows
+     63.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 5808 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    2 windows
+     60.00 :  863 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1073 windows
+     61.00 :    1 window
+     67.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     60.00 : 3702 windows
+     64.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 2303 windows
+     67.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 4993 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1573 windows
+     63.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1314 windows
+     64.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     60.00 : 2031 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     60.00 : 3613 windows
+     61.00 :    1 window
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 2024 windows
+     61.00 :    1 window
+     64.00 :    1 window
+     69.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 : 3159 windows
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     57.00 :    1 window
+     60.00 : 2413 windows
+     61.00 :    2 windows
+     63.00 :    2 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     59.00 :    1 window
+     60.00 : 1985 windows
+     63.00 :    1 window
+     66.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 : 2607 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 3383 windows
+     63.00 :    1 window
+     64.00 :    1 window
+     67.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     59.00 :    1 window
+     60.00 : 1740 windows
+     63.00 :    1 window
+     70.00 :    1 window
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 2704 windows
+  Using multitaper spectrum estimation with 19 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 4562 windows
+     64.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1265 windows
+    120.00 :  923 windows
+    179.00 :    1 window
+    180.00 :   19 windows
+    240.00 :    3 windows
+Removed notch frequencies (Hz):
+     60.00 : 1319 windows
+    120.00 :  733 windows
+    180.00 :    6 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1439 windows
+    120.00 : 1038 windows
+    180.00 :   16 windows
+    189.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1279 windows
+    120.00 :  664 windows
+    180.00 :    7 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1709 windows
+    120.00 : 1253 windows
+    180.00 :   56 windows
+    238.00 :    1 window
+    240.00 :    1 window
+    243.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1183 windows
+    120.00 :  811 windows
+    180.00 :    6 windows
+    188.00 :    1 window
+    241.00 :    1 window
+    250.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1274 windows
+    110.00 :    1 window
+    120.00 :  988 windows
+    180.00 :   15 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1479 windows
+    120.00 : 1145 windows
+    180.00 :   29 windows
+Removed notch frequencies (Hz):
+     60.00 : 1669 windows
+    120.00 : 1230 windows
+    180.00 :   40 windows
+Removed notch frequencies (Hz):
+     60.00 : 1461 windows
+    118.00 :    1 window
+    120.00 : 1180 windows
+    178.00 :    1 window
+    180.00 :   50 windows
+Removed notch frequencies (Hz):
+     55.00 :    1 window
+     60.00 : 1179 windows
+    120.00 : 1027 windows
+    180.00 :   19 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1594 windows
+    116.00 :    1 window
+    120.00 :  904 windows
+    180.00 :   19 windows
+    183.00 :    1 window
+    230.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1275 windows
+    120.00 :  799 windows
+    170.00 :    1 window
+    180.00 :    9 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1595 windows
+    120.00 : 1220 windows
+    180.00 :   50 windows
+    181.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1636 windows
+    120.00 : 1184 windows
+    180.00 :   12 windows
+    188.00 :    1 window
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1640 windows
+    120.00 : 1166 windows
+    179.00 :    1 window
+    180.00 :   19 windows
+Removed notch frequencies (Hz):
+     60.00 : 1258 windows
+    120.00 :  807 windows
+    180.00 :   12 windows
+Removed notch frequencies (Hz):
+     60.00 : 1406 windows
+    120.00 :  367 windows
+    180.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1348 windows
+    118.00 :    1 window
+    120.00 : 1098 windows
+    180.00 :   29 windows
+Removed notch frequencies (Hz):
+     60.00 : 1235 windows
+    120.00 :  990 windows
+    180.00 :   16 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1595 windows
+    112.00 :    1 window
+    120.00 : 1204 windows
+    180.00 :   11 windows
+    238.00 :    1 window
+    240.00 :    1 window
+    249.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1402 windows
+    120.00 : 1032 windows
+    180.00 :   10 windows
+    246.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 : 1670 windows
+    120.00 : 1237 windows
+    180.00 :   16 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1293 windows
+    120.00 : 1125 windows
+    180.00 :   12 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     55.00 :    1 window
+     60.00 : 1223 windows
+    114.00 :    1 window
+    120.00 :  899 windows
+    180.00 :    7 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1685 windows
+    120.00 : 1285 windows
+    180.00 :   26 windows
+    240.00 :    2 windows
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1226 windows
+    120.00 :  913 windows
+    175.00 :    1 window
+    180.00 :    2 windows
+Removed notch frequencies (Hz):
+     60.00 : 1698 windows
+    120.00 : 1275 windows
+    180.00 :   21 windows
+    238.00 :    1 window
+    240.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1682 windows
+    120.00 : 1234 windows
+    180.00 :   27 windows
+    186.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     60.00 : 1546 windows
+    120.00 : 1266 windows
+    180.00 :   31 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1267 windows
+    114.00 :    1 window
+    120.00 : 1040 windows
+    180.00 :   14 windows
+    188.00 :    1 window
+    240.00 :    1 window
+    247.00 :    1 window
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  917 windows
+    120.00 :  555 windows
+    180.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1163 windows
+    120.00 :  804 windows
+    180.00 :    5 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+     60.00 : 1282 windows
+    120.00 : 1195 windows
+    180.00 :   16 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1671 windows
+    120.00 : 1219 windows
+    175.00 :    1 window
+    180.00 :   33 windows
+Removed notch frequencies (Hz):
+     60.00 : 1568 windows
+    120.00 : 1144 windows
+    180.00 :   21 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    1 window
+     60.00 : 1489 windows
+    120.00 : 1259 windows
+    177.00 :    1 window
+    180.00 :   26 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1096 windows
+    120.00 : 1105 windows
+    180.00 :   11 windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     57.00 :    1 window
+     60.00 : 1135 windows
+    120.00 : 1129 windows
+    180.00 :   16 windows
+    234.00 :    1 window
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1668 windows
+    120.00 : 1198 windows
+    180.00 :   29 windows
+    186.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1502 windows
+    120.00 : 1119 windows
+    180.00 :   21 windows
+    247.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1311 windows
+     69.00 :    1 window
+    120.00 :  974 windows
+    180.00 :    6 windows
+    232.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1661 windows
+    120.00 : 1208 windows
+    180.00 :   30 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1328 windows
+    120.00 :  895 windows
+    176.00 :    2 windows
+    180.00 :    1 window
+    241.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1316 windows
+    120.00 :  908 windows
+    121.00 :    1 window
+    178.00 :    1 window
+    180.00 :   10 windows
+    242.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :    1 window
+    120.00 :    1 window
+    177.00 :    1 window
+    184.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  624 windows
+    120.00 :  303 windows
+    189.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  246 windows
+    120.00 :   43 windows
+    180.00 :    1 window
+    184.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1758 windows
+    120.00 : 1092 windows
+    180.00 :    6 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     50.00 :    2 windows
+     51.00 :   11 windows
+     58.00 :    2 windows
+     60.00 : 1524 windows
+     61.00 :    5 windows
+     62.00 :    6 windows
+    110.00 :    1 window
+    111.00 :    8 windows
+    112.00 :    2 windows
+    120.00 : 1157 windows
+    122.00 :    1 window
+    180.00 :   14 windows
+    181.00 :    1 window
+    182.00 :    3 windows
+    230.00 :    1 window
+    231.00 :    1 window
+    232.00 :    5 windows
+    240.00 :    1 window
+    242.00 :    1 window
+    243.00 :    4 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    1 window
+     60.00 :  494 windows
+    120.00 :  138 windows
+    175.00 :    1 window
+    241.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 :  317 windows
+    120.00 :   44 windows
+    236.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1322 windows
+    120.00 : 1052 windows
+    180.00 :    5 windows
+    184.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1393 windows
+    120.00 : 1104 windows
+    180.00 :   32 windows
+    237.00 :    1 window
+    240.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1693 windows
+    120.00 : 1308 windows
+    173.00 :    1 window
+    180.00 :  114 windows
+    240.00 :    4 windows
+    241.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1733 windows
+    120.00 :  653 windows
+    170.00 :    1 window
+    178.00 :    1 window
+    237.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 : 1271 windows
+     54.00 : 1271 windows
+     60.00 : 1272 windows
+     63.00 : 1271 windows
+     66.00 : 1271 windows
+     69.00 : 1272 windows
+    120.00 :    1 window
+    123.00 : 2542 windows
+    128.00 : 1270 windows
+    129.00 : 1271 windows
+    171.00 : 1271 windows
+    177.00 : 1272 windows
+    180.00 : 1272 windows
+    183.00 : 1271 windows
+    186.00 : 1271 windows
+    231.00 : 1270 windows
+    234.00 : 2541 windows
+    237.00 : 1271 windows
+    243.00 : 1272 windows
+    246.00 : 1271 windows
+    248.00 : 1271 windows
+Removed notch frequencies (Hz):
+     60.00 : 1711 windows
+    120.00 : 1370 windows
+    180.00 :  161 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1719 windows
+    120.00 : 1334 windows
+    180.00 :  142 windows
+    236.00 :    1 window
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1722 windows
+    120.00 : 1349 windows
+    123.00 :    1 window
+    125.00 :    1 window
+    171.00 :    1 window
+    180.00 :  178 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1727 windows
+    120.00 : 1339 windows
+    180.00 :  184 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1618 windows
+    120.00 : 1288 windows
+    122.00 :    1 window
+    180.00 :  158 windows
+    234.00 :    1 window
+    240.00 :    1 window
+    245.00 :    1 window
+    247.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1609 windows
+    120.00 : 1261 windows
+    180.00 :  158 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1615 windows
+    120.00 : 1287 windows
+    179.00 :    1 window
+    180.00 :  178 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1440 windows
+    120.00 : 1239 windows
+    180.00 :  135 windows
+    188.00 :    1 window
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1196 windows
+    120.00 :  810 windows
+    178.00 :    1 window
+    180.00 :   14 windows
+    183.00 :    1 window
+    185.00 :    1 window
+    234.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1296 windows
+    120.00 : 1171 windows
+    177.00 :    1 window
+    180.00 :  122 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1261 windows
+    120.00 : 1104 windows
+    180.00 :   32 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1533 windows
+    120.00 : 1184 windows
+    126.00 :    1 window
+    180.00 :  110 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1138 windows
+    120.00 : 1074 windows
+    180.00 :   80 windows
+    188.00 :    1 window
+    235.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1220 windows
+    120.00 : 1088 windows
+    180.00 :   89 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     52.00 :    1 window
+     60.00 : 1249 windows
+    120.00 :  937 windows
+    180.00 :   26 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1288 windows
+    115.00 :    1 window
+    120.00 :  949 windows
+    180.00 :   22 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1733 windows
+    120.00 : 1298 windows
+    180.00 :   84 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1324 windows
+    120.00 : 1367 windows
+    176.00 :    1 window
+    180.00 :  119 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1165 windows
+    120.00 : 1317 windows
+    180.00 :   89 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1122 windows
+     61.00 :    1 window
+    120.00 : 1361 windows
+    180.00 :  112 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1101 windows
+    120.00 :  925 windows
+    180.00 :   21 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    1 window
+     60.00 : 1410 windows
+    120.00 : 1261 windows
+    180.00 :   24 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1736 windows
+    120.00 : 1243 windows
+    180.00 :   45 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1214 windows
+    120.00 :  847 windows
+    180.00 :   15 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1188 windows
+    120.00 :  895 windows
+    180.00 :   21 windows
+    190.00 :    1 window
+    231.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1283 windows
+    120.00 : 1105 windows
+    180.00 :   60 windows
+    240.00 :    3 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1219 windows
+    118.00 :    1 window
+    120.00 : 1063 windows
+    176.00 :    1 window
+    180.00 :   42 windows
+    234.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1634 windows
+    120.00 :  801 windows
+    170.00 :    1 window
+    177.00 :    1 window
+    180.00 :   13 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1383 windows
+    120.00 : 1148 windows
+    180.00 :   68 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1278 windows
+    120.00 :  992 windows
+    180.00 :   36 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1353 windows
+    120.00 : 1105 windows
+    180.00 :   44 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1004 windows
+    120.00 :  785 windows
+    180.00 :   11 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1216 windows
+    120.00 :  893 windows
+    180.00 :   34 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1581 windows
+     63.00 :    1 window
+    120.00 : 1242 windows
+    180.00 :   96 windows
+    188.00 :    1 window
+    240.00 :    2 windows
+    242.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1253 windows
+    120.00 : 1062 windows
+    180.00 :   50 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1719 windows
+    120.00 : 1202 windows
+    180.00 :   33 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1705 windows
+    120.00 : 1251 windows
+    180.00 :   59 windows
+Removed notch frequencies (Hz):
+     60.00 : 1030 windows
+    120.00 :  651 windows
+    180.00 :   36 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  978 windows
+    120.00 :  549 windows
+    180.00 :   36 windows
+Removed notch frequencies (Hz):
+     60.00 :  893 windows
+    120.00 :  369 windows
+    180.00 :   14 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1643 windows
+    120.00 : 1085 windows
+    178.00 :    1 window
+    180.00 :   17 windows
+    183.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1139 windows
+    120.00 :  814 windows
+    180.00 :   57 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1213 windows
+    110.00 :    1 window
+    120.00 :  954 windows
+    180.00 :   79 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1284 windows
+    120.00 :  950 windows
+    180.00 :   23 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1309 windows
+    113.00 :    1 window
+    120.00 : 1055 windows
+    125.00 :    1 window
+    176.00 :    2 windows
+    180.00 :   36 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1556 windows
+    120.00 : 1230 windows
+    180.00 :   64 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1586 windows
+    120.00 : 1235 windows
+    180.00 :   80 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1536 windows
+    120.00 : 1208 windows
+    180.00 :   68 windows
+    183.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1297 windows
+    120.00 :  986 windows
+    180.00 :   26 windows
+    185.00 :    1 window
+    188.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1397 windows
+     62.00 :    1 window
+    120.00 : 1145 windows
+    180.00 :   55 windows
+    185.00 :    1 window
+    239.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1214 windows
+    120.00 :  994 windows
+    180.00 :   28 windows
+    185.00 :    2 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1109 windows
+    120.00 :  698 windows
+    176.00 :    1 window
+    180.00 :    5 windows
+    235.00 :    1 window
+    240.00 :    1 window
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1284 windows
+    120.00 : 1067 windows
+    180.00 :   43 windows
+    182.00 :    1 window
+    184.00 :    1 window
+    238.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1366 windows
+    120.00 : 1154 windows
+    170.00 :    1 window
+    180.00 :   52 windows
+    232.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1176 windows
+    120.00 :  887 windows
+    180.00 :   14 windows
+    181.00 :    1 window
+    247.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1195 windows
+    120.00 : 1034 windows
+    174.00 :    1 window
+    180.00 :   24 windows
+    190.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 : 1306 windows
+    120.00 : 1084 windows
+    180.00 :   34 windows
+    239.00 :    1 window
+    240.00 :    2 windows
+    242.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  876 windows
+    115.00 :    1 window
+    120.00 :  866 windows
+    180.00 :   20 windows
+    190.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  982 windows
+    120.00 :  873 windows
+    176.00 :    1 window
+    180.00 :   21 windows
+    236.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1058 windows
+    120.00 :  813 windows
+    179.00 :    1 window
+    180.00 :    9 windows
+Removed notch frequencies (Hz):
+     60.00 : 1450 windows
+    120.00 : 1100 windows
+    180.00 :   26 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  975 windows
+     65.00 :    1 window
+    120.00 :  738 windows
+    180.00 :   15 windows
+    233.00 :    1 window
+    240.00 :    1 window
+    242.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1377 windows
+    120.00 : 1012 windows
+    180.00 :   36 windows
+    235.00 :    1 window
+    245.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1741 windows
+    120.00 : 1291 windows
+    180.00 :   95 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 : 1738 windows
+    120.00 : 1214 windows
+    180.00 :   51 windows
+    183.00 :    1 window
+    184.00 :    2 windows
+    245.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1258 windows
+    120.00 :  979 windows
+    176.00 :    1 window
+    180.00 :   40 windows
+    185.00 :    1 window
+    240.00 :    1 window
+    245.00 :    1 window
+    246.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1686 windows
+    120.00 : 1190 windows
+    180.00 :  119 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1361 windows
+    120.00 : 1065 windows
+    180.00 :   33 windows
+    184.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1161 windows
+    120.00 :  890 windows
+    173.00 :    1 window
+    176.00 :    1 window
+    180.00 :   13 windows
+    238.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+     60.00 : 1245 windows
+    120.00 :  989 windows
+    180.00 :   47 windows
+    184.00 :    1 window
+    243.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1478 windows
+    120.00 : 1106 windows
+    177.00 :    1 window
+    180.00 :   54 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1699 windows
+    120.00 :  944 windows
+    180.00 :   10 windows
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1229 windows
+    120.00 :  746 windows
+    180.00 :   18 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     52.00 :    1 window
+     60.00 : 1154 windows
+    120.00 :  258 windows
+    180.00 :    2 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1253 windows
+    120.00 :  379 windows
+    180.00 :    4 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1286 windows
+    120.00 :  528 windows
+    125.00 :    1 window
+    180.00 :    5 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1208 windows
+    120.00 :  401 windows
+    180.00 :    3 windows
+Removed notch frequencies (Hz):
+     60.00 : 1171 windows
+    120.00 :  412 windows
+    180.00 :    4 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1534 windows
+    120.00 :  793 windows
+    180.00 :   10 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1592 windows
+    120.00 :  875 windows
+    180.00 :    7 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1632 windows
+    120.00 :  927 windows
+    177.00 :    1 window
+    180.00 :   10 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1626 windows
+    120.00 :  931 windows
+    180.00 :    6 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1598 windows
+    120.00 :  409 windows
+    121.00 :    1 window
+    247.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1414 windows
+    120.00 :  288 windows
+    178.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1446 windows
+    120.00 : 1069 windows
+    175.00 :    1 window
+    180.00 :   20 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1714 windows
+    120.00 : 1225 windows
+    180.00 :   44 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1682 windows
+    120.00 : 1226 windows
+    174.00 :    1 window
+    180.00 :   59 windows
+    232.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1647 windows
+    120.00 : 1160 windows
+    180.00 :   31 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1537 windows
+    120.00 : 1083 windows
+    180.00 :   19 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1522 windows
+    120.00 : 1054 windows
+    180.00 :   13 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1723 windows
+    120.00 : 1193 windows
+    172.00 :    2 windows
+    180.00 :   49 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1566 windows
+    120.00 :  614 windows
+    178.00 :    1 window
+    180.00 :    4 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  716 windows
+    120.00 :  106 windows
+    180.00 :    6 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  847 windows
+    115.00 :    1 window
+    120.00 :  256 windows
+    180.00 :    6 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1015 windows
+    120.00 :  571 windows
+    180.00 :   24 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1026 windows
+    120.00 :  530 windows
+    180.00 :   13 windows
+    181.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1249 windows
+    120.00 :  895 windows
+    180.00 :   20 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1534 windows
+    120.00 : 1151 windows
+    180.00 :   59 windows
+    243.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1108 windows
+    120.00 :  691 windows
+    180.00 :   26 windows
+    245.00 :    1 window
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  494 windows
+    120.00 :   84 windows
+    123.00 :    1 window
+    180.00 :    6 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1657 windows
+    120.00 : 1231 windows
+    180.00 :   59 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  148 windows
+    120.00 :   13 windows
+    170.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  797 windows
+    120.00 :  288 windows
+    122.00 :    1 window
+    180.00 :    6 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  964 windows
+    120.00 :  592 windows
+    180.00 :   35 windows
+    245.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1084 windows
+     70.00 :    1 window
+    120.00 :  789 windows
+    180.00 :   41 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1010 windows
+    114.00 :    1 window
+    120.00 :  770 windows
+    180.00 :   47 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  905 windows
+    114.00 :    1 window
+    120.00 :  651 windows
+    173.00 :    1 window
+    180.00 :   41 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1237 windows
+    120.00 :  578 windows
+    171.00 :    1 window
+    180.00 :    3 windows
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1433 windows
+    120.00 : 1090 windows
+    179.00 :    1 window
+    180.00 :   85 windows
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1454 windows
+    120.00 :  930 windows
+    122.00 :    1 window
+    180.00 :   10 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1551 windows
+    120.00 : 1084 windows
+    180.00 :   17 windows
+    235.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1589 windows
+    120.00 : 1056 windows
+    178.00 :    1 window
+    180.00 :   15 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1679 windows
+    120.00 : 1132 windows
+    180.00 :   22 windows
+    245.00 :    1 window
+    246.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1710 windows
+    120.00 : 1061 windows
+    130.00 :    1 window
+    180.00 :   10 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1795 windows
+    120.00 : 1236 windows
+    177.00 :    1 window
+    180.00 :   40 windows
+    230.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1748 windows
+    120.00 : 1207 windows
+    180.00 :   37 windows
+    246.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1774 windows
+    120.00 : 1222 windows
+    173.00 :    1 window
+    180.00 :   39 windows
+    232.00 :    1 window
+    246.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1703 windows
+    120.00 : 1180 windows
+    180.00 :   22 windows
+    235.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1726 windows
+    120.00 : 1223 windows
+    180.00 :   35 windows
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1723 windows
+    120.00 : 1182 windows
+    180.00 :   25 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1695 windows
+    120.00 : 1170 windows
+    180.00 :   20 windows
+    183.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1672 windows
+    120.00 : 1189 windows
+    180.00 :   21 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1574 windows
+    120.00 :  502 windows
+    178.00 :    1 window
+    180.00 :    2 windows
+    246.00 :    1 window
+    249.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1340 windows
+    120.00 : 1111 windows
+    180.00 :   51 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1066 windows
+    120.00 :  930 windows
+    180.00 :   47 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :   14 windows
+    120.00 :   98 windows
+    180.00 :   21 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :   44 windows
+    120.00 :  411 windows
+    180.00 :   27 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1471 windows
+    120.00 : 1219 windows
+    180.00 :  111 windows
+    246.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1155 windows
+    120.00 : 1069 windows
+    172.00 :    1 window
+    180.00 :   49 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1701 windows
+    120.00 : 1230 windows
+    177.00 :    1 window
+    180.00 :   54 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1787 windows
+    120.00 : 1294 windows
+    178.00 :    1 window
+    180.00 :  120 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1760 windows
+    120.00 : 1263 windows
+    180.00 :   91 windows
+    240.00 :    1 window
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1802 windows
+    120.00 : 1296 windows
+    180.00 :  105 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1564 windows
+    120.00 : 1139 windows
+    180.00 :   67 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1721 windows
+    120.00 :  846 windows
+    180.00 :   10 windows
+    235.00 :    1 window
+    240.00 :    1 window
+    244.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1485 windows
+    120.00 :  373 windows
+    180.00 :    4 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1635 windows
+    120.00 : 1164 windows
+    180.00 :   71 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1480 windows
+    120.00 : 1014 windows
+    180.00 :   31 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1270 windows
+    120.00 :  940 windows
+    180.00 :   24 windows
+    235.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1406 windows
+    120.00 : 1057 windows
+    177.00 :    1 window
+    180.00 :   21 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1286 windows
+    118.00 :    1 window
+    120.00 :  952 windows
+    175.00 :    1 window
+    180.00 :   19 windows
+    247.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1620 windows
+    116.00 :    1 window
+    120.00 : 1099 windows
+    180.00 :    7 windows
+    231.00 :    1 window
+    242.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1511 windows
+    120.00 : 1149 windows
+    180.00 :   39 windows
+    189.00 :    1 window
+    237.00 :    1 window
+    241.00 :    1 window
+    245.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1742 windows
+    120.00 : 1294 windows
+    180.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1742 windows
+    120.00 : 1289 windows
+    180.00 :   71 windows
+    233.00 :    1 window
+    240.00 :    1 window
+    244.00 :    1 window
+    245.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1622 windows
+    120.00 : 1232 windows
+    180.00 :   44 windows
+    233.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1678 windows
+    120.00 : 1254 windows
+    172.00 :    1 window
+    180.00 :   61 windows
+    245.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1404 windows
+    120.00 : 1080 windows
+    180.00 :   28 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  980 windows
+    120.00 :  776 windows
+    173.00 :    1 window
+    180.00 :   15 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1252 windows
+    120.00 :  908 windows
+    180.00 :   16 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1380 windows
+    120.00 : 1008 windows
+    173.00 :    1 window
+    180.00 :   22 windows
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 :  997 windows
+    120.00 :  630 windows
+    180.00 :   11 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1465 windows
+    111.00 :    1 window
+    120.00 : 1097 windows
+    180.00 :   37 windows
+Removed notch frequencies (Hz):
+     60.00 : 1659 windows
+    120.00 : 1203 windows
+    124.00 :    1 window
+    180.00 :   25 windows
+    245.00 :    1 window
+    249.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1748 windows
+    120.00 : 1262 windows
+    180.00 :   60 windows
+    236.00 :    1 window
+    243.00 :    1 window
+    245.00 :    1 window
+    247.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1331 windows
+    120.00 :  959 windows
+    180.00 :   26 windows
+    237.00 :    1 window
+    250.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1435 windows
+    120.00 :  998 windows
+    180.00 :   27 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1452 windows
+    120.00 : 1032 windows
+    180.00 :   32 windows
+    181.00 :    1 window
+    184.00 :    1 window
+    245.00 :    1 window
+Removed notch frequencies (Hz):
+     60.00 : 1686 windows
+    120.00 : 1172 windows
+    180.00 :   15 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1317 windows
+    114.00 :    1 window
+    120.00 : 1041 windows
+    180.00 :   36 windows
+    237.00 :    1 window
+    245.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1300 windows
+    120.00 :  973 windows
+    180.00 :   28 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1194 windows
+    120.00 :  843 windows
+    180.00 :   17 windows
+    186.00 :    1 window
+    189.00 :    3 windows
+    240.00 :    1 window
+    242.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1316 windows
+    120.00 : 1033 windows
+    180.00 :   28 windows
+    236.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1545 windows
+    120.00 : 1141 windows
+    180.00 :   65 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1609 windows
+    120.00 :  643 windows
+    172.00 :    1 window
+    180.00 :    7 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1431 windows
+    120.00 :  978 windows
+    180.00 :   17 windows
+    232.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1693 windows
+    120.00 : 1112 windows
+    124.00 :    1 window
+    179.00 :    1 window
+    180.00 :   21 windows
+    246.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1518 windows
+    120.00 : 1015 windows
+    180.00 :   20 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1601 windows
+    120.00 : 1107 windows
+    180.00 :   23 windows
+    240.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1538 windows
+    120.00 : 1081 windows
+    180.00 :   20 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1632 windows
+    110.00 :    1 window
+    120.00 : 1192 windows
+    180.00 :   28 windows
+    232.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1815 windows
+    120.00 : 1260 windows
+    180.00 :   28 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1596 windows
+    120.00 : 1238 windows
+    180.00 :   82 windows
+    240.00 :    2 windows
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1814 windows
+    120.00 : 1260 windows
+    180.00 :   27 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1800 windows
+    120.00 : 1250 windows
+    180.00 :   25 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1679 windows
+    120.00 : 1208 windows
+    121.00 :    1 window
+    172.00 :    1 window
+    180.00 :   18 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1593 windows
+    120.00 : 1116 windows
+    180.00 :   11 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1725 windows
+    120.00 : 1279 windows
+    177.00 :    1 window
+    180.00 :  126 windows
+    240.00 :    2 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1620 windows
+    120.00 : 1222 windows
+    180.00 :   93 windows
+    230.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1702 windows
+    120.00 : 1105 windows
+    174.00 :    1 window
+    180.00 :    8 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1593 windows
+     62.00 :    1 window
+    120.00 : 1218 windows
+    180.00 :  102 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1655 windows
+    120.00 : 1263 windows
+    180.00 :   96 windows
+    181.00 :    1 window
+    245.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1701 windows
+    120.00 : 1292 windows
+    180.00 :  128 windows
+    240.00 :    1 window
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1758 windows
+    120.00 : 1308 windows
+    180.00 :   99 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1636 windows
+    120.00 : 1227 windows
+    180.00 :   57 windows
+    232.00 :    1 window
+    240.00 :    1 window
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 : 1662 windows
+    120.00 : 1238 windows
+    172.00 :    1 window
+    180.00 :   59 windows
+    181.00 :    1 window
+    234.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 1730 windows
+    120.00 : 1100 windows
+    180.00 :   33 windows
+    244.00 :    1 window
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0079/ieeg/sub-D0079_acq-01_space-ACPC_electrodes.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0079/ieeg/sub-D0079_acq-01_space-ACPC_coordsystem.json'...
+The provided raw data contains annotations, but you did not pass an "event_id" mapping from annotation descriptions to event codes. We will generate arbitrary event codes. To specify custom event codes, please pass "event_id".
+Used Annotations descriptions: [np.str_('Auditory_stim/Repeat/Nonword/delin/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/galel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/galel/NOISY_BSL'), np.str_('Auditory_stim/Repeat/Nonword/gapel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/havel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/herib/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/kelic/NOISY_BSL'), np.str_('Auditory_stim/Repeat/Nonword/labin/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/lamin/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/limid/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/menon/NOISY_BSL'), np.str_('Auditory_stim/Repeat/Nonword/norel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/nosen/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/palil/NOISY_BSL'), np.str_('Auditory_stim/Repeat/Nonword/sanis/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/tanic/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/zarin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/baron/CORRECT'), np.str_('Auditory_stim/Repeat/Word/civic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/civil/CORRECT'), np.str_('Auditory_stim/Repeat/Word/demon/CORRECT'), np.str_('Auditory_stim/Repeat/Word/latin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/legal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/libel/CORRECT'), np.str_('Auditory_stim/Repeat/Word/madam/NOISY_BSL'), np.str_('Auditory_stim/Repeat/Word/manic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/merit/CORRECT'), np.str_('Auditory_stim/Repeat/Word/petal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/petal/NOISY_BSL'), np.str_('Auditory_stim/Repeat/Word/rigid/CORRECT'), np.str_('Auditory_stim/Repeat/Word/rival/CORRECT'), np.str_('Auditory_stim/Repeat/Word/satin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/tonic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/tulip/CORRECT'), np.str_('Auditory_stim/Repeat/Word/vigil/CORRECT'), np.str_('Auditory_stim/Repeat/Word/woman/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/berin/NOISY_BSL'), np.str_('Auditory_stim/Yes_No/Nonword/caris/LATE_RESP/NOISY_BSL'), np.str_('Auditory_stim/Yes_No/Nonword/delin/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/delin/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Auditory_stim/Yes_No/Nonword/gapel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/herib/NOISY_BSL'), np.str_('Auditory_stim/Yes_No/Nonword/janem/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Nonword/lomic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/ranis/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/ronic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/solip/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/telen/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Auditory_stim/Yes_No/Nonword/terib/NOISY_BSL'), np.str_('Auditory_stim/Yes_No/Nonword/torel/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Nonword/toric/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/toric/NOISY_BSL'), np.str_('Auditory_stim/Yes_No/Word/bison/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/cabin/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/civil/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/facet/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Word/fatal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/focal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/haven/LATE_RESP/NOISY_BSL'), np.str_('Auditory_stim/Yes_No/Word/legal/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Word/madam/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/manic/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Word/merit/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Word/nasal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/naval/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/panic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/petal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/rabid/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/roman/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/satin/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/seven/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/tenet/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/tonic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/topic/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Word/tulip/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/vigil/CORRECT'), np.str_('BAD boundary'), np.str_('Cue/Repeat/Nonword/delin/CORRECT'), np.str_('Cue/Repeat/Nonword/galel/CORRECT'), np.str_('Cue/Repeat/Nonword/galel/NOISY_BSL'), np.str_('Cue/Repeat/Nonword/gapel/CORRECT'), np.str_('Cue/Repeat/Nonword/havel/CORRECT'), np.str_('Cue/Repeat/Nonword/herib/CORRECT'), np.str_('Cue/Repeat/Nonword/kelic/NOISY_BSL'), np.str_('Cue/Repeat/Nonword/labin/CORRECT'), np.str_('Cue/Repeat/Nonword/lamin/CORRECT'), np.str_('Cue/Repeat/Nonword/limid/CORRECT'), np.str_('Cue/Repeat/Nonword/menon/NOISY_BSL'), np.str_('Cue/Repeat/Nonword/norel/CORRECT'), np.str_('Cue/Repeat/Nonword/nosen/CORRECT'), np.str_('Cue/Repeat/Nonword/palil/NOISY_BSL'), np.str_('Cue/Repeat/Nonword/sanis/CORRECT'), np.str_('Cue/Repeat/Nonword/tanic/CORRECT'), np.str_('Cue/Repeat/Nonword/zarin/CORRECT'), np.str_('Cue/Repeat/Word/baron/CORRECT'), np.str_('Cue/Repeat/Word/civic/CORRECT'), np.str_('Cue/Repeat/Word/civil/CORRECT'), np.str_('Cue/Repeat/Word/demon/CORRECT'), np.str_('Cue/Repeat/Word/latin/CORRECT'), np.str_('Cue/Repeat/Word/legal/CORRECT'), np.str_('Cue/Repeat/Word/libel/CORRECT'), np.str_('Cue/Repeat/Word/madam/NOISY_BSL'), np.str_('Cue/Repeat/Word/manic/CORRECT'), np.str_('Cue/Repeat/Word/merit/CORRECT'), np.str_('Cue/Repeat/Word/petal/CORRECT'), np.str_('Cue/Repeat/Word/petal/NOISY_BSL'), np.str_('Cue/Repeat/Word/rigid/CORRECT'), np.str_('Cue/Repeat/Word/rival/CORRECT'), np.str_('Cue/Repeat/Word/satin/CORRECT'), np.str_('Cue/Repeat/Word/tonic/CORRECT'), np.str_('Cue/Repeat/Word/tulip/CORRECT'), np.str_('Cue/Repeat/Word/vigil/CORRECT'), np.str_('Cue/Repeat/Word/woman/CORRECT'), np.str_('Cue/Yes_No/Nonword/berin/NOISY_BSL'), np.str_('Cue/Yes_No/Nonword/caris/LATE_RESP/NOISY_BSL'), np.str_('Cue/Yes_No/Nonword/delin/CORRECT'), np.str_('Cue/Yes_No/Nonword/delin/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Cue/Yes_No/Nonword/gapel/CORRECT'), np.str_('Cue/Yes_No/Nonword/herib/NOISY_BSL'), np.str_('Cue/Yes_No/Nonword/janem/CORRECT'), np.str_('Cue/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Nonword/lomic/CORRECT'), np.str_('Cue/Yes_No/Nonword/ranis/CORRECT'), np.str_('Cue/Yes_No/Nonword/ronic/CORRECT'), np.str_('Cue/Yes_No/Nonword/solip/CORRECT'), np.str_('Cue/Yes_No/Nonword/telen/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Cue/Yes_No/Nonword/terib/NOISY_BSL'), np.str_('Cue/Yes_No/Nonword/torel/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Nonword/toric/CORRECT'), np.str_('Cue/Yes_No/Nonword/toric/NOISY_BSL'), np.str_('Cue/Yes_No/Word/bison/CORRECT'), np.str_('Cue/Yes_No/Word/cabin/CORRECT'), np.str_('Cue/Yes_No/Word/civil/CORRECT'), np.str_('Cue/Yes_No/Word/facet/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Word/fatal/CORRECT'), np.str_('Cue/Yes_No/Word/focal/CORRECT'), np.str_('Cue/Yes_No/Word/haven/LATE_RESP/NOISY_BSL'), np.str_('Cue/Yes_No/Word/legal/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Word/madam/CORRECT'), np.str_('Cue/Yes_No/Word/manic/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Word/merit/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Word/nasal/CORRECT'), np.str_('Cue/Yes_No/Word/naval/CORRECT'), np.str_('Cue/Yes_No/Word/panic/CORRECT'), np.str_('Cue/Yes_No/Word/petal/CORRECT'), np.str_('Cue/Yes_No/Word/rabid/CORRECT'), np.str_('Cue/Yes_No/Word/roman/CORRECT'), np.str_('Cue/Yes_No/Word/satin/CORRECT'), np.str_('Cue/Yes_No/Word/seven/CORRECT'), np.str_('Cue/Yes_No/Word/tenet/CORRECT'), np.str_('Cue/Yes_No/Word/tonic/CORRECT'), np.str_('Cue/Yes_No/Word/topic/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Word/tulip/CORRECT'), np.str_('Cue/Yes_No/Word/vigil/CORRECT'), np.str_('Delay/Repeat/Nonword/delin/CORRECT'), np.str_('Delay/Repeat/Nonword/galel/CORRECT'), np.str_('Delay/Repeat/Nonword/galel/NOISY_BSL'), np.str_('Delay/Repeat/Nonword/gapel/CORRECT'), np.str_('Delay/Repeat/Nonword/havel/CORRECT'), np.str_('Delay/Repeat/Nonword/herib/CORRECT'), np.str_('Delay/Repeat/Nonword/kelic/NOISY_BSL'), np.str_('Delay/Repeat/Nonword/labin/CORRECT'), np.str_('Delay/Repeat/Nonword/lamin/CORRECT'), np.str_('Delay/Repeat/Nonword/limid/CORRECT'), np.str_('Delay/Repeat/Nonword/menon/NOISY_BSL'), np.str_('Delay/Repeat/Nonword/norel/CORRECT'), np.str_('Delay/Repeat/Nonword/nosen/CORRECT'), np.str_('Delay/Repeat/Nonword/palil/NOISY_BSL'), np.str_('Delay/Repeat/Nonword/sanis/CORRECT'), np.str_('Delay/Repeat/Nonword/tanic/CORRECT'), np.str_('Delay/Repeat/Nonword/zarin/CORRECT'), np.str_('Delay/Repeat/Word/baron/CORRECT'), np.str_('Delay/Repeat/Word/civic/CORRECT'), np.str_('Delay/Repeat/Word/civil/CORRECT'), np.str_('Delay/Repeat/Word/demon/CORRECT'), np.str_('Delay/Repeat/Word/latin/CORRECT'), np.str_('Delay/Repeat/Word/legal/CORRECT'), np.str_('Delay/Repeat/Word/libel/CORRECT'), np.str_('Delay/Repeat/Word/madam/NOISY_BSL'), np.str_('Delay/Repeat/Word/manic/CORRECT'), np.str_('Delay/Repeat/Word/merit/CORRECT'), np.str_('Delay/Repeat/Word/petal/CORRECT'), np.str_('Delay/Repeat/Word/petal/NOISY_BSL'), np.str_('Delay/Repeat/Word/rigid/CORRECT'), np.str_('Delay/Repeat/Word/rival/CORRECT'), np.str_('Delay/Repeat/Word/satin/CORRECT'), np.str_('Delay/Repeat/Word/tonic/CORRECT'), np.str_('Delay/Repeat/Word/tulip/CORRECT'), np.str_('Delay/Repeat/Word/vigil/CORRECT'), np.str_('Delay/Repeat/Word/woman/CORRECT'), np.str_('Delay/Yes_No/Nonword/berin/NOISY_BSL'), np.str_('Delay/Yes_No/Nonword/caris/LATE_RESP/NOISY_BSL'), np.str_('Delay/Yes_No/Nonword/delin/CORRECT'), np.str_('Delay/Yes_No/Nonword/delin/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Delay/Yes_No/Nonword/gapel/CORRECT'), np.str_('Delay/Yes_No/Nonword/herib/NOISY_BSL'), np.str_('Delay/Yes_No/Nonword/janem/CORRECT'), np.str_('Delay/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Nonword/lomic/CORRECT'), np.str_('Delay/Yes_No/Nonword/ranis/CORRECT'), np.str_('Delay/Yes_No/Nonword/ronic/CORRECT'), np.str_('Delay/Yes_No/Nonword/solip/CORRECT'), np.str_('Delay/Yes_No/Nonword/telen/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Delay/Yes_No/Nonword/terib/NOISY_BSL'), np.str_('Delay/Yes_No/Nonword/torel/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Nonword/toric/CORRECT'), np.str_('Delay/Yes_No/Nonword/toric/NOISY_BSL'), np.str_('Delay/Yes_No/Word/bison/CORRECT'), np.str_('Delay/Yes_No/Word/cabin/CORRECT'), np.str_('Delay/Yes_No/Word/civil/CORRECT'), np.str_('Delay/Yes_No/Word/facet/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Word/fatal/CORRECT'), np.str_('Delay/Yes_No/Word/focal/CORRECT'), np.str_('Delay/Yes_No/Word/haven/LATE_RESP/NOISY_BSL'), np.str_('Delay/Yes_No/Word/legal/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Word/madam/CORRECT'), np.str_('Delay/Yes_No/Word/manic/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Word/merit/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Word/nasal/CORRECT'), np.str_('Delay/Yes_No/Word/naval/CORRECT'), np.str_('Delay/Yes_No/Word/panic/CORRECT'), np.str_('Delay/Yes_No/Word/petal/CORRECT'), np.str_('Delay/Yes_No/Word/rabid/CORRECT'), np.str_('Delay/Yes_No/Word/roman/CORRECT'), np.str_('Delay/Yes_No/Word/satin/CORRECT'), np.str_('Delay/Yes_No/Word/seven/CORRECT'), np.str_('Delay/Yes_No/Word/tenet/CORRECT'), np.str_('Delay/Yes_No/Word/tonic/CORRECT'), np.str_('Delay/Yes_No/Word/topic/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Word/tulip/CORRECT'), np.str_('Delay/Yes_No/Word/vigil/CORRECT'), np.str_('EDGE boundary'), np.str_('Go/Repeat/Nonword/delin/CORRECT'), np.str_('Go/Repeat/Nonword/galel/CORRECT'), np.str_('Go/Repeat/Nonword/galel/NOISY_BSL'), np.str_('Go/Repeat/Nonword/gapel/CORRECT'), np.str_('Go/Repeat/Nonword/havel/CORRECT'), np.str_('Go/Repeat/Nonword/herib/CORRECT'), np.str_('Go/Repeat/Nonword/kelic/NOISY_BSL'), np.str_('Go/Repeat/Nonword/labin/CORRECT'), np.str_('Go/Repeat/Nonword/lamin/CORRECT'), np.str_('Go/Repeat/Nonword/limid/CORRECT'), np.str_('Go/Repeat/Nonword/menon/NOISY_BSL'), np.str_('Go/Repeat/Nonword/norel/CORRECT'), np.str_('Go/Repeat/Nonword/nosen/CORRECT'), np.str_('Go/Repeat/Nonword/palil/NOISY_BSL'), np.str_('Go/Repeat/Nonword/sanis/CORRECT'), np.str_('Go/Repeat/Nonword/tanic/CORRECT'), np.str_('Go/Repeat/Nonword/zarin/CORRECT'), np.str_('Go/Repeat/Word/baron/CORRECT'), np.str_('Go/Repeat/Word/civic/CORRECT'), np.str_('Go/Repeat/Word/civil/CORRECT'), np.str_('Go/Repeat/Word/demon/CORRECT'), np.str_('Go/Repeat/Word/latin/CORRECT'), np.str_('Go/Repeat/Word/legal/CORRECT'), np.str_('Go/Repeat/Word/libel/CORRECT'), np.str_('Go/Repeat/Word/madam/NOISY_BSL'), np.str_('Go/Repeat/Word/manic/CORRECT'), np.str_('Go/Repeat/Word/merit/CORRECT'), np.str_('Go/Repeat/Word/petal/CORRECT'), np.str_('Go/Repeat/Word/petal/NOISY_BSL'), np.str_('Go/Repeat/Word/rigid/CORRECT'), np.str_('Go/Repeat/Word/rival/CORRECT'), np.str_('Go/Repeat/Word/satin/CORRECT'), np.str_('Go/Repeat/Word/tonic/CORRECT'), np.str_('Go/Repeat/Word/tulip/CORRECT'), np.str_('Go/Repeat/Word/vigil/CORRECT'), np.str_('Go/Repeat/Word/woman/CORRECT'), np.str_('Go/Yes_No/Nonword/berin/NOISY_BSL'), np.str_('Go/Yes_No/Nonword/caris/LATE_RESP/NOISY_BSL'), np.str_('Go/Yes_No/Nonword/delin/CORRECT'), np.str_('Go/Yes_No/Nonword/delin/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Go/Yes_No/Nonword/gapel/CORRECT'), np.str_('Go/Yes_No/Nonword/herib/NOISY_BSL'), np.str_('Go/Yes_No/Nonword/janem/CORRECT'), np.str_('Go/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Nonword/lomic/CORRECT'), np.str_('Go/Yes_No/Nonword/ranis/CORRECT'), np.str_('Go/Yes_No/Nonword/ronic/CORRECT'), np.str_('Go/Yes_No/Nonword/solip/CORRECT'), np.str_('Go/Yes_No/Nonword/telen/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Go/Yes_No/Nonword/terib/NOISY_BSL'), np.str_('Go/Yes_No/Nonword/torel/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Nonword/toric/CORRECT'), np.str_('Go/Yes_No/Nonword/toric/NOISY_BSL'), np.str_('Go/Yes_No/Word/bison/CORRECT'), np.str_('Go/Yes_No/Word/cabin/CORRECT'), np.str_('Go/Yes_No/Word/civil/CORRECT'), np.str_('Go/Yes_No/Word/facet/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Word/fatal/CORRECT'), np.str_('Go/Yes_No/Word/focal/CORRECT'), np.str_('Go/Yes_No/Word/haven/LATE_RESP/NOISY_BSL'), np.str_('Go/Yes_No/Word/legal/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Word/madam/CORRECT'), np.str_('Go/Yes_No/Word/manic/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Word/merit/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Word/nasal/CORRECT'), np.str_('Go/Yes_No/Word/naval/CORRECT'), np.str_('Go/Yes_No/Word/panic/CORRECT'), np.str_('Go/Yes_No/Word/petal/CORRECT'), np.str_('Go/Yes_No/Word/rabid/CORRECT'), np.str_('Go/Yes_No/Word/roman/CORRECT'), np.str_('Go/Yes_No/Word/satin/CORRECT'), np.str_('Go/Yes_No/Word/seven/CORRECT'), np.str_('Go/Yes_No/Word/tenet/CORRECT'), np.str_('Go/Yes_No/Word/tonic/CORRECT'), np.str_('Go/Yes_No/Word/topic/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Word/tulip/CORRECT'), np.str_('Go/Yes_No/Word/vigil/CORRECT'), np.str_('Resp/Repeat/Nonword/delin/CORRECT'), np.str_('Resp/Repeat/Nonword/galel/CORRECT'), np.str_('Resp/Repeat/Nonword/galel/NOISY_BSL'), np.str_('Resp/Repeat/Nonword/gapel/CORRECT'), np.str_('Resp/Repeat/Nonword/havel/CORRECT'), np.str_('Resp/Repeat/Nonword/herib/CORRECT'), np.str_('Resp/Repeat/Nonword/kelic/NOISY_BSL'), np.str_('Resp/Repeat/Nonword/labin/CORRECT'), np.str_('Resp/Repeat/Nonword/lamin/CORRECT'), np.str_('Resp/Repeat/Nonword/limid/CORRECT'), np.str_('Resp/Repeat/Nonword/menon/NOISY_BSL'), np.str_('Resp/Repeat/Nonword/norel/CORRECT'), np.str_('Resp/Repeat/Nonword/nosen/CORRECT'), np.str_('Resp/Repeat/Nonword/palil/NOISY_BSL'), np.str_('Resp/Repeat/Nonword/sanis/CORRECT'), np.str_('Resp/Repeat/Nonword/tanic/CORRECT'), np.str_('Resp/Repeat/Nonword/zarin/CORRECT'), np.str_('Resp/Repeat/Word/baron/CORRECT'), np.str_('Resp/Repeat/Word/civic/CORRECT'), np.str_('Resp/Repeat/Word/civil/CORRECT'), np.str_('Resp/Repeat/Word/demon/CORRECT'), np.str_('Resp/Repeat/Word/latin/CORRECT'), np.str_('Resp/Repeat/Word/legal/CORRECT'), np.str_('Resp/Repeat/Word/libel/CORRECT'), np.str_('Resp/Repeat/Word/madam/NOISY_BSL'), np.str_('Resp/Repeat/Word/manic/CORRECT'), np.str_('Resp/Repeat/Word/merit/CORRECT'), np.str_('Resp/Repeat/Word/petal/CORRECT'), np.str_('Resp/Repeat/Word/petal/NOISY_BSL'), np.str_('Resp/Repeat/Word/rigid/CORRECT'), np.str_('Resp/Repeat/Word/rival/CORRECT'), np.str_('Resp/Repeat/Word/satin/CORRECT'), np.str_('Resp/Repeat/Word/tonic/CORRECT'), np.str_('Resp/Repeat/Word/tulip/CORRECT'), np.str_('Resp/Repeat/Word/vigil/CORRECT'), np.str_('Resp/Repeat/Word/woman/CORRECT'), np.str_('Resp/Yes_No/Nonword/berin/NOISY_BSL'), np.str_('Resp/Yes_No/Nonword/caris/LATE_RESP/NOISY_BSL'), np.str_('Resp/Yes_No/Nonword/delin/CORRECT'), np.str_('Resp/Yes_No/Nonword/delin/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Resp/Yes_No/Nonword/gapel/CORRECT'), np.str_('Resp/Yes_No/Nonword/herib/NOISY_BSL'), np.str_('Resp/Yes_No/Nonword/janem/CORRECT'), np.str_('Resp/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Nonword/lomic/CORRECT'), np.str_('Resp/Yes_No/Nonword/ranis/CORRECT'), np.str_('Resp/Yes_No/Nonword/ronic/CORRECT'), np.str_('Resp/Yes_No/Nonword/solip/CORRECT'), np.str_('Resp/Yes_No/Nonword/telen/ERR_TASK/YN_REP/LATE_RESP'), np.str_('Resp/Yes_No/Nonword/terib/NOISY_BSL'), np.str_('Resp/Yes_No/Nonword/torel/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Nonword/toric/CORRECT'), np.str_('Resp/Yes_No/Nonword/toric/NOISY_BSL'), np.str_('Resp/Yes_No/Word/bison/CORRECT'), np.str_('Resp/Yes_No/Word/cabin/CORRECT'), np.str_('Resp/Yes_No/Word/civil/CORRECT'), np.str_('Resp/Yes_No/Word/facet/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Word/fatal/CORRECT'), np.str_('Resp/Yes_No/Word/focal/CORRECT'), np.str_('Resp/Yes_No/Word/haven/LATE_RESP/NOISY_BSL'), np.str_('Resp/Yes_No/Word/legal/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Word/madam/CORRECT'), np.str_('Resp/Yes_No/Word/manic/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Word/merit/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Word/nasal/CORRECT'), np.str_('Resp/Yes_No/Word/naval/CORRECT'), np.str_('Resp/Yes_No/Word/panic/CORRECT'), np.str_('Resp/Yes_No/Word/petal/CORRECT'), np.str_('Resp/Yes_No/Word/rabid/CORRECT'), np.str_('Resp/Yes_No/Word/roman/CORRECT'), np.str_('Resp/Yes_No/Word/satin/CORRECT'), np.str_('Resp/Yes_No/Word/seven/CORRECT'), np.str_('Resp/Yes_No/Word/tenet/CORRECT'), np.str_('Resp/Yes_No/Word/tonic/CORRECT'), np.str_('Resp/Yes_No/Word/topic/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Word/tulip/CORRECT'), np.str_('Resp/Yes_No/Word/vigil/CORRECT')]
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_events.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_events.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/dataset_description.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_ieeg.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0079/ieeg/sub-D0079_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_channels.tsv'...
+Copying data files to sub-D0079_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_ieeg.edf

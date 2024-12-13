@@ -1,0 +1,2787 @@
+Extracting EDF parameters from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-01_ieeg.edf...
+EDF file detected
+Setting channel info structure...
+Creating raw.info structure...
+Reading events from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-01_events.tsv.
+Reading channel info from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_channels.tsv.
+Reading electrode coords from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_space-ACPC_electrodes.tsv.
+Extracting EDF parameters from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-02_ieeg.edf...
+EDF file detected
+Setting channel info structure...
+Creating raw.info structure...
+Reading events from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-02_events.tsv.
+Reading channel info from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_channels.tsv.
+Reading electrode coords from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_space-ACPC_electrodes.tsv.
+Extracting EDF parameters from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-03_ieeg.edf...
+EDF file detected
+Setting channel info structure...
+Creating raw.info structure...
+Reading events from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-03_events.tsv.
+Reading channel info from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_channels.tsv.
+Reading electrode coords from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_space-ACPC_electrodes.tsv.
+Extracting EDF parameters from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-04_ieeg.edf...
+EDF file detected
+Setting channel info structure...
+Creating raw.info structure...
+Reading events from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-04_events.tsv.
+Reading channel info from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_channels.tsv.
+Reading electrode coords from /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/sub-D0102/ieeg/sub-D0102_space-ACPC_electrodes.tsv.
+Reading 0 ... 6832127  =      0.000 ...  3336.000 secs...
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9476 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9435 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9444 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9434 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9520 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9513 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9514 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9517 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9492 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9519 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9520 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9520 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9521 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 13 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9475 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9489 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9516 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+Removed notch frequencies (Hz):
+     60.00 : 9509 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9499 windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9511 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9520 windows
+  Using multitaper spectrum estimation with 18 DPSS windows
+Removed notch frequencies (Hz):
+     60.00 : 9522 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     55.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  650 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  641 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     68.00 :    1 window
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  657 windows
+    240.00 :   55 windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  651 windows
+    233.00 :    1 window
+    240.00 :   55 windows
+Removed notch frequencies (Hz):
+     50.00 :    1 window
+    114.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  643 windows
+    233.00 :    1 window
+    240.00 :   55 windows
+    241.00 :    1 window
+Removed notch frequencies (Hz):
+     69.00 :    1 window
+    120.00 :   42 windows
+    180.00 :  514 windows
+    240.00 :   49 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  657 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  659 windows
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  652 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  652 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  654 windows
+    233.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  632 windows
+    233.00 :    1 window
+    237.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  660 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+    242.00 :    1 window
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  666 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+    242.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    1 window
+     60.00 :    2 windows
+     69.00 :    1 window
+    120.00 :   34 windows
+    180.00 :  366 windows
+    240.00 :   35 windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   45 windows
+    180.00 :  614 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   44 windows
+    180.00 :  592 windows
+    240.00 :   55 windows
+    242.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     52.00 :    1 window
+    120.00 :   43 windows
+    180.00 :  585 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  604 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  619 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  654 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  660 windows
+    233.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  645 windows
+    240.00 :   56 windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  626 windows
+    235.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  623 windows
+    233.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  632 windows
+    233.00 :    1 window
+    237.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  599 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  651 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  569 windows
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    1 window
+    120.00 :   37 windows
+    180.00 :  438 windows
+    240.00 :   41 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  663 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     50.00 :    1 window
+    120.00 :   44 windows
+    180.00 :  638 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    1 window
+    120.00 :   37 windows
+    180.00 :  432 windows
+    240.00 :   41 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  634 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  676 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  667 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   50 windows
+    180.00 :  687 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  675 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  664 windows
+    240.00 :   56 windows
+    247.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  687 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  658 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  646 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     57.00 :    1 window
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  641 windows
+    240.00 :   56 windows
+    242.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   44 windows
+    180.00 :  525 windows
+    240.00 :   51 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  650 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+    242.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   44 windows
+    180.00 :  651 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  642 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  687 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  697 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  662 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   51 windows
+    180.00 :  714 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+    241.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  686 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  669 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  648 windows
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  706 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  692 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  661 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  697 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  702 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  724 windows
+    240.00 :   56 windows
+    241.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   45 windows
+    180.00 :  550 windows
+    240.00 :   52 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    4 windows
+    120.00 :   52 windows
+    180.00 :  708 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   51 windows
+    180.00 :  719 windows
+    233.00 :    1 window
+    240.00 :   58 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :   14 windows
+     63.00 :    2 windows
+    120.00 :   54 windows
+    180.00 :  744 windows
+    240.00 :   58 windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  485 windows
+    240.00 :   44 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  726 windows
+    233.00 :    1 window
+    240.00 :   58 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  726 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  739 windows
+    233.00 :    1 window
+    234.00 :    1 window
+    240.00 :   57 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  736 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   50 windows
+    180.00 :  728 windows
+    233.00 :    1 window
+    240.00 :   60 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  730 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  707 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+    120.00 :   50 windows
+    180.00 :  747 windows
+    233.00 :    1 window
+    240.00 :   58 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     63.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  734 windows
+    233.00 :    1 window
+    240.00 :   59 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  733 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  726 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  729 windows
+    240.00 :   58 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   49 windows
+    180.00 :  706 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  720 windows
+    240.00 :   58 windows
+    241.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    113.00 :    1 window
+    120.00 :   50 windows
+    180.00 :  737 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   49 windows
+    180.00 :  717 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    1 window
+    120.00 :   51 windows
+    180.00 :  736 windows
+    233.00 :    1 window
+    240.00 :   58 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  737 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  739 windows
+    240.00 :   58 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     56.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  722 windows
+    240.00 :   57 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  738 windows
+    240.00 :   57 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   50 windows
+    180.00 :  740 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  700 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   52 windows
+    180.00 :  741 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+     66.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  718 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     70.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  703 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  684 windows
+    240.00 :   56 windows
+    245.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  686 windows
+    233.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  717 windows
+    233.00 :    1 window
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  723 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  677 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  689 windows
+    238.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   49 windows
+    180.00 :  708 windows
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    122.00 :    1 window
+    180.00 :  679 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   49 windows
+    180.00 :  720 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  699 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  716 windows
+    240.00 :   56 windows
+    247.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  696 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+     70.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  720 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     52.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  697 windows
+    239.00 :    1 window
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   50 windows
+    180.00 :  700 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  724 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  715 windows
+    240.00 :   56 windows
+    242.00 :    2 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    2 windows
+     70.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  731 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  712 windows
+    240.00 :   59 windows
+Removed notch frequencies (Hz):
+    120.00 :   50 windows
+    180.00 :  708 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  719 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  692 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  736 windows
+    240.00 :   57 windows
+    244.00 :    1 window
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     52.00 :    1 window
+     55.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  705 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     70.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  707 windows
+    240.00 :   56 windows
+    241.00 :    1 window
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  733 windows
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     66.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  706 windows
+    240.00 :   55 windows
+    241.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   49 windows
+    180.00 :  706 windows
+    240.00 :   56 windows
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  688 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  718 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  697 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  693 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  700 windows
+    240.00 :   56 windows
+    241.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     54.00 :    1 window
+    114.00 :    1 window
+    120.00 :   45 windows
+    180.00 :  672 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    128.00 :    1 window
+    180.00 :  701 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   49 windows
+    180.00 :  652 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  710 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  677 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     69.00 :    1 window
+     70.00 :    1 window
+    114.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  700 windows
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    3 windows
+    120.00 :   55 windows
+    180.00 :  734 windows
+    240.00 :   59 windows
+    246.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    3 windows
+    120.00 :   48 windows
+    180.00 :  692 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     70.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  663 windows
+    239.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     69.00 :    1 window
+     70.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  682 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     68.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  713 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     64.00 :    1 window
+     69.00 :    1 window
+    120.00 :   49 windows
+    122.00 :    1 window
+    180.00 :  705 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  691 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     70.00 :    1 window
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  714 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   44 windows
+    180.00 :  639 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  639 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  631 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  624 windows
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  711 windows
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  625 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  683 windows
+    233.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  712 windows
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  623 windows
+    240.00 :   57 windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   45 windows
+    180.00 :  621 windows
+    240.00 :   53 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  626 windows
+    234.00 :    1 window
+    240.00 :   53 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     70.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  632 windows
+    234.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  722 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    124.00 :    1 window
+    180.00 :  622 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  644 windows
+    234.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  637 windows
+    234.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   40 windows
+    180.00 :  467 windows
+    240.00 :   50 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  631 windows
+    234.00 :    1 window
+    240.00 :   53 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  644 windows
+    234.00 :    1 window
+    240.00 :   55 windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  635 windows
+    240.00 :   53 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     68.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  658 windows
+    234.00 :    1 window
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  663 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  635 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  665 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   49 windows
+    180.00 :  694 windows
+    240.00 :   56 windows
+Removed notch frequencies (Hz):
+    120.00 :   50 windows
+    180.00 :  696 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    113.00 :    1 window
+    120.00 :   45 windows
+    180.00 :  644 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  693 windows
+    234.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  656 windows
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  663 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  684 windows
+    240.00 :   56 windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  692 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  696 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  675 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  678 windows
+    234.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  680 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   45 windows
+    180.00 :  669 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     64.00 :    1 window
+    114.00 :    2 windows
+    120.00 :   44 windows
+    180.00 :  658 windows
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  700 windows
+    240.00 :   57 windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  695 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  681 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     66.00 :    1 window
+    120.00 :   50 windows
+    180.00 :  693 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   46 windows
+    180.00 :  678 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   49 windows
+    180.00 :  690 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  674 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  700 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   41 windows
+    180.00 :  420 windows
+    240.00 :   44 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   44 windows
+    180.00 :  660 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  675 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   45 windows
+    180.00 :  670 windows
+    240.00 :   56 windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  679 windows
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  621 windows
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     66.00 :    1 window
+    120.00 :   45 windows
+    180.00 :  660 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  665 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  654 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     67.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  656 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  699 windows
+    240.00 :   56 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     69.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  708 windows
+    233.00 :    1 window
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  708 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  701 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  712 windows
+    240.00 :   55 windows
+    248.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  699 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  712 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  714 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  679 windows
+    238.00 :    1 window
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  679 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     53.00 :    1 window
+    114.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  668 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  692 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  679 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     58.00 :    2 windows
+    114.00 :    1 window
+    120.00 :   48 windows
+    180.00 :  667 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  674 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  695 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  665 windows
+    240.00 :   56 windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  696 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  698 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  691 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  666 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  679 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     50.00 :    1 window
+     69.00 :    1 window
+    120.00 :   41 windows
+    180.00 :  408 windows
+    240.00 :   39 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     64.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  629 windows
+    240.00 :   52 windows
+    243.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  674 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  683 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     50.00 :    1 window
+     69.00 :    1 window
+    120.00 :   41 windows
+    180.00 :  409 windows
+    240.00 :   40 windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  690 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  661 windows
+    240.00 :   56 windows
+    241.00 :    1 window
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  661 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   45 windows
+    180.00 :  689 windows
+    240.00 :   57 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  705 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  689 windows
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 398 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  682 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    111.00 :    1 window
+    120.00 :   47 windows
+    180.00 :  679 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    114.00 :    2 windows
+    120.00 :   45 windows
+    180.00 :  669 windows
+    240.00 :   55 windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  626 windows
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   47 windows
+    180.00 :  707 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  698 windows
+    240.00 :   55 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   45 windows
+    180.00 :  625 windows
+    240.00 :   52 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   40 windows
+    180.00 :  457 windows
+    240.00 :   35 windows
+    244.00 :    1 window
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   34 windows
+    180.00 :  324 windows
+    240.00 :   36 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   48 windows
+    180.00 :  618 windows
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   37 windows
+    180.00 :  469 windows
+    240.00 :   34 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     52.00 :    1 window
+     57.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  611 windows
+    240.00 :   54 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   39 windows
+    180.00 :  403 windows
+    240.00 :   40 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   46 windows
+    180.00 :  589 windows
+    240.00 :   51 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   37 windows
+    180.00 :  386 windows
+    240.00 :   36 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+    120.00 :   37 windows
+    180.00 :  442 windows
+    240.00 :   45 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     57.00 :    2 windows
+    120.00 :   48 windows
+    121.00 :    1 window
+    180.00 :  736 windows
+    233.00 :    1 window
+    240.00 :   56 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     62.00 :    1 window
+    120.00 :   43 windows
+    180.00 :  572 windows
+    240.00 :   52 windows
+  Using multitaper spectrum estimation with 518 DPSS windows
+Removed notch frequencies (Hz):
+     51.00 :    1 window
+     60.00 :    2 windows
+     69.00 :    1 window
+    120.00 :   49 windows
+    180.00 :  634 windows
+    240.00 :   56 windows
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_acq-01_space-ACPC_electrodes.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_acq-01_space-ACPC_coordsystem.json'...
+The provided raw data contains annotations, but you did not pass an "event_id" mapping from annotation descriptions to event codes. We will generate arbitrary event codes. To specify custom event codes, please pass "event_id".
+Used Annotations descriptions: [np.str_('Auditory_stim/Repeat/Nonword/berin/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/boril/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/cazel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/delin/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/havel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/janem/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/limid/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/lomic/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/lomic/NOISY_BSL'), np.str_('Auditory_stim/Repeat/Nonword/ranis/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/tanic/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/torel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/toric/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/zarin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/civic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/comet/CORRECT'), np.str_('Auditory_stim/Repeat/Word/fatal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/focal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/hazel/CORRECT'), np.str_('Auditory_stim/Repeat/Word/legal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/libel/CORRECT'), np.str_('Auditory_stim/Repeat/Word/madam/CORRECT'), np.str_('Auditory_stim/Repeat/Word/minus/CORRECT'), np.str_('Auditory_stim/Repeat/Word/modem/CORRECT'), np.str_('Auditory_stim/Repeat/Word/penal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/rabid/CORRECT'), np.str_('Auditory_stim/Repeat/Word/rigid/CORRECT'), np.str_('Auditory_stim/Repeat/Word/rival/CORRECT'), np.str_('Auditory_stim/Repeat/Word/roman/CORRECT'), np.str_('Auditory_stim/Repeat/Word/satin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/solid/CORRECT'), np.str_('Auditory_stim/Repeat/Word/sonic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/topic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/vigil/EARLY_RESP'), np.str_('Auditory_stim/Yes_No/Nonword/banic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/berin/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Nonword/boril/EARLY_RESP'), np.str_('Auditory_stim/Yes_No/Nonword/caris/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/cazel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/delin/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/devim/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/galed/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/galel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/gapel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/japel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/jokel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Nonword/malim/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/molec/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/monit/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/palil/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/ronic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/sanis/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/telen/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Nonword/terib/EARLY_RESP'), np.str_('Auditory_stim/Yes_No/Nonword/torel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/verem/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/zarin/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Word/baron/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/bison/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/cabin/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/comet/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/fatal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/focal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/haven/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/legal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/manic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/merit/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/naval/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/petal/EARLY_RESP'), np.str_('Auditory_stim/Yes_No/Word/rabid/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/rigid/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/rival/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/satin/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/seven/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/tenet/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/woman/CORRECT'), np.str_('BAD boundary'), np.str_('Cue/Repeat/Nonword/berin/CORRECT'), np.str_('Cue/Repeat/Nonword/boril/CORRECT'), np.str_('Cue/Repeat/Nonword/cazel/CORRECT'), np.str_('Cue/Repeat/Nonword/delin/CORRECT'), np.str_('Cue/Repeat/Nonword/havel/CORRECT'), np.str_('Cue/Repeat/Nonword/janem/CORRECT'), np.str_('Cue/Repeat/Nonword/limid/CORRECT'), np.str_('Cue/Repeat/Nonword/lomic/CORRECT'), np.str_('Cue/Repeat/Nonword/lomic/NOISY_BSL'), np.str_('Cue/Repeat/Nonword/ranis/CORRECT'), np.str_('Cue/Repeat/Nonword/tanic/CORRECT'), np.str_('Cue/Repeat/Nonword/torel/CORRECT'), np.str_('Cue/Repeat/Nonword/toric/CORRECT'), np.str_('Cue/Repeat/Nonword/zarin/CORRECT'), np.str_('Cue/Repeat/Word/civic/CORRECT'), np.str_('Cue/Repeat/Word/comet/CORRECT'), np.str_('Cue/Repeat/Word/fatal/CORRECT'), np.str_('Cue/Repeat/Word/focal/CORRECT'), np.str_('Cue/Repeat/Word/hazel/CORRECT'), np.str_('Cue/Repeat/Word/legal/CORRECT'), np.str_('Cue/Repeat/Word/libel/CORRECT'), np.str_('Cue/Repeat/Word/madam/CORRECT'), np.str_('Cue/Repeat/Word/minus/CORRECT'), np.str_('Cue/Repeat/Word/modem/CORRECT'), np.str_('Cue/Repeat/Word/penal/CORRECT'), np.str_('Cue/Repeat/Word/rabid/CORRECT'), np.str_('Cue/Repeat/Word/rigid/CORRECT'), np.str_('Cue/Repeat/Word/rival/CORRECT'), np.str_('Cue/Repeat/Word/roman/CORRECT'), np.str_('Cue/Repeat/Word/satin/CORRECT'), np.str_('Cue/Repeat/Word/solid/CORRECT'), np.str_('Cue/Repeat/Word/sonic/CORRECT'), np.str_('Cue/Repeat/Word/topic/CORRECT'), np.str_('Cue/Repeat/Word/vigil/EARLY_RESP'), np.str_('Cue/Yes_No/Nonword/banic/CORRECT'), np.str_('Cue/Yes_No/Nonword/berin/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Nonword/boril/EARLY_RESP'), np.str_('Cue/Yes_No/Nonword/caris/CORRECT'), np.str_('Cue/Yes_No/Nonword/cazel/CORRECT'), np.str_('Cue/Yes_No/Nonword/delin/CORRECT'), np.str_('Cue/Yes_No/Nonword/devim/CORRECT'), np.str_('Cue/Yes_No/Nonword/galed/CORRECT'), np.str_('Cue/Yes_No/Nonword/galel/CORRECT'), np.str_('Cue/Yes_No/Nonword/gapel/CORRECT'), np.str_('Cue/Yes_No/Nonword/japel/CORRECT'), np.str_('Cue/Yes_No/Nonword/jokel/CORRECT'), np.str_('Cue/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Nonword/malim/CORRECT'), np.str_('Cue/Yes_No/Nonword/molec/CORRECT'), np.str_('Cue/Yes_No/Nonword/monit/CORRECT'), np.str_('Cue/Yes_No/Nonword/palil/CORRECT'), np.str_('Cue/Yes_No/Nonword/ronic/CORRECT'), np.str_('Cue/Yes_No/Nonword/sanis/CORRECT'), np.str_('Cue/Yes_No/Nonword/telen/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Nonword/terib/EARLY_RESP'), np.str_('Cue/Yes_No/Nonword/torel/CORRECT'), np.str_('Cue/Yes_No/Nonword/verem/CORRECT'), np.str_('Cue/Yes_No/Nonword/zarin/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Word/baron/CORRECT'), np.str_('Cue/Yes_No/Word/bison/CORRECT'), np.str_('Cue/Yes_No/Word/cabin/CORRECT'), np.str_('Cue/Yes_No/Word/comet/CORRECT'), np.str_('Cue/Yes_No/Word/fatal/CORRECT'), np.str_('Cue/Yes_No/Word/focal/CORRECT'), np.str_('Cue/Yes_No/Word/haven/CORRECT'), np.str_('Cue/Yes_No/Word/legal/CORRECT'), np.str_('Cue/Yes_No/Word/manic/CORRECT'), np.str_('Cue/Yes_No/Word/merit/CORRECT'), np.str_('Cue/Yes_No/Word/naval/CORRECT'), np.str_('Cue/Yes_No/Word/petal/EARLY_RESP'), np.str_('Cue/Yes_No/Word/rabid/CORRECT'), np.str_('Cue/Yes_No/Word/rigid/CORRECT'), np.str_('Cue/Yes_No/Word/rival/CORRECT'), np.str_('Cue/Yes_No/Word/satin/CORRECT'), np.str_('Cue/Yes_No/Word/seven/CORRECT'), np.str_('Cue/Yes_No/Word/tenet/CORRECT'), np.str_('Cue/Yes_No/Word/woman/CORRECT'), np.str_('Delay/Repeat/Nonword/berin/CORRECT'), np.str_('Delay/Repeat/Nonword/boril/CORRECT'), np.str_('Delay/Repeat/Nonword/cazel/CORRECT'), np.str_('Delay/Repeat/Nonword/delin/CORRECT'), np.str_('Delay/Repeat/Nonword/havel/CORRECT'), np.str_('Delay/Repeat/Nonword/janem/CORRECT'), np.str_('Delay/Repeat/Nonword/limid/CORRECT'), np.str_('Delay/Repeat/Nonword/lomic/CORRECT'), np.str_('Delay/Repeat/Nonword/lomic/NOISY_BSL'), np.str_('Delay/Repeat/Nonword/ranis/CORRECT'), np.str_('Delay/Repeat/Nonword/tanic/CORRECT'), np.str_('Delay/Repeat/Nonword/torel/CORRECT'), np.str_('Delay/Repeat/Nonword/toric/CORRECT'), np.str_('Delay/Repeat/Nonword/zarin/CORRECT'), np.str_('Delay/Repeat/Word/civic/CORRECT'), np.str_('Delay/Repeat/Word/comet/CORRECT'), np.str_('Delay/Repeat/Word/fatal/CORRECT'), np.str_('Delay/Repeat/Word/focal/CORRECT'), np.str_('Delay/Repeat/Word/hazel/CORRECT'), np.str_('Delay/Repeat/Word/legal/CORRECT'), np.str_('Delay/Repeat/Word/libel/CORRECT'), np.str_('Delay/Repeat/Word/madam/CORRECT'), np.str_('Delay/Repeat/Word/minus/CORRECT'), np.str_('Delay/Repeat/Word/modem/CORRECT'), np.str_('Delay/Repeat/Word/penal/CORRECT'), np.str_('Delay/Repeat/Word/rabid/CORRECT'), np.str_('Delay/Repeat/Word/rigid/CORRECT'), np.str_('Delay/Repeat/Word/rival/CORRECT'), np.str_('Delay/Repeat/Word/roman/CORRECT'), np.str_('Delay/Repeat/Word/satin/CORRECT'), np.str_('Delay/Repeat/Word/solid/CORRECT'), np.str_('Delay/Repeat/Word/sonic/CORRECT'), np.str_('Delay/Repeat/Word/topic/CORRECT'), np.str_('Delay/Repeat/Word/vigil/EARLY_RESP'), np.str_('Delay/Yes_No/Nonword/banic/CORRECT'), np.str_('Delay/Yes_No/Nonword/berin/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Nonword/boril/EARLY_RESP'), np.str_('Delay/Yes_No/Nonword/caris/CORRECT'), np.str_('Delay/Yes_No/Nonword/cazel/CORRECT'), np.str_('Delay/Yes_No/Nonword/delin/CORRECT'), np.str_('Delay/Yes_No/Nonword/devim/CORRECT'), np.str_('Delay/Yes_No/Nonword/galed/CORRECT'), np.str_('Delay/Yes_No/Nonword/galel/CORRECT'), np.str_('Delay/Yes_No/Nonword/gapel/CORRECT'), np.str_('Delay/Yes_No/Nonword/japel/CORRECT'), np.str_('Delay/Yes_No/Nonword/jokel/CORRECT'), np.str_('Delay/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Nonword/malim/CORRECT'), np.str_('Delay/Yes_No/Nonword/molec/CORRECT'), np.str_('Delay/Yes_No/Nonword/monit/CORRECT'), np.str_('Delay/Yes_No/Nonword/palil/CORRECT'), np.str_('Delay/Yes_No/Nonword/ronic/CORRECT'), np.str_('Delay/Yes_No/Nonword/sanis/CORRECT'), np.str_('Delay/Yes_No/Nonword/telen/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Nonword/terib/EARLY_RESP'), np.str_('Delay/Yes_No/Nonword/torel/CORRECT'), np.str_('Delay/Yes_No/Nonword/verem/CORRECT'), np.str_('Delay/Yes_No/Nonword/zarin/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Word/baron/CORRECT'), np.str_('Delay/Yes_No/Word/bison/CORRECT'), np.str_('Delay/Yes_No/Word/cabin/CORRECT'), np.str_('Delay/Yes_No/Word/comet/CORRECT'), np.str_('Delay/Yes_No/Word/fatal/CORRECT'), np.str_('Delay/Yes_No/Word/focal/CORRECT'), np.str_('Delay/Yes_No/Word/haven/CORRECT'), np.str_('Delay/Yes_No/Word/legal/CORRECT'), np.str_('Delay/Yes_No/Word/manic/CORRECT'), np.str_('Delay/Yes_No/Word/merit/CORRECT'), np.str_('Delay/Yes_No/Word/naval/CORRECT'), np.str_('Delay/Yes_No/Word/petal/EARLY_RESP'), np.str_('Delay/Yes_No/Word/rabid/CORRECT'), np.str_('Delay/Yes_No/Word/rigid/CORRECT'), np.str_('Delay/Yes_No/Word/rival/CORRECT'), np.str_('Delay/Yes_No/Word/satin/CORRECT'), np.str_('Delay/Yes_No/Word/seven/CORRECT'), np.str_('Delay/Yes_No/Word/tenet/CORRECT'), np.str_('Delay/Yes_No/Word/woman/CORRECT'), np.str_('EDGE boundary'), np.str_('Go/Repeat/Nonword/berin/CORRECT'), np.str_('Go/Repeat/Nonword/boril/CORRECT'), np.str_('Go/Repeat/Nonword/cazel/CORRECT'), np.str_('Go/Repeat/Nonword/delin/CORRECT'), np.str_('Go/Repeat/Nonword/havel/CORRECT'), np.str_('Go/Repeat/Nonword/janem/CORRECT'), np.str_('Go/Repeat/Nonword/limid/CORRECT'), np.str_('Go/Repeat/Nonword/lomic/CORRECT'), np.str_('Go/Repeat/Nonword/lomic/NOISY_BSL'), np.str_('Go/Repeat/Nonword/ranis/CORRECT'), np.str_('Go/Repeat/Nonword/tanic/CORRECT'), np.str_('Go/Repeat/Nonword/torel/CORRECT'), np.str_('Go/Repeat/Nonword/toric/CORRECT'), np.str_('Go/Repeat/Nonword/zarin/CORRECT'), np.str_('Go/Repeat/Word/civic/CORRECT'), np.str_('Go/Repeat/Word/comet/CORRECT'), np.str_('Go/Repeat/Word/fatal/CORRECT'), np.str_('Go/Repeat/Word/focal/CORRECT'), np.str_('Go/Repeat/Word/hazel/CORRECT'), np.str_('Go/Repeat/Word/legal/CORRECT'), np.str_('Go/Repeat/Word/libel/CORRECT'), np.str_('Go/Repeat/Word/madam/CORRECT'), np.str_('Go/Repeat/Word/minus/CORRECT'), np.str_('Go/Repeat/Word/modem/CORRECT'), np.str_('Go/Repeat/Word/penal/CORRECT'), np.str_('Go/Repeat/Word/rabid/CORRECT'), np.str_('Go/Repeat/Word/rigid/CORRECT'), np.str_('Go/Repeat/Word/rival/CORRECT'), np.str_('Go/Repeat/Word/roman/CORRECT'), np.str_('Go/Repeat/Word/satin/CORRECT'), np.str_('Go/Repeat/Word/solid/CORRECT'), np.str_('Go/Repeat/Word/sonic/CORRECT'), np.str_('Go/Repeat/Word/topic/CORRECT'), np.str_('Go/Repeat/Word/vigil/EARLY_RESP'), np.str_('Go/Yes_No/Nonword/banic/CORRECT'), np.str_('Go/Yes_No/Nonword/berin/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Nonword/boril/EARLY_RESP'), np.str_('Go/Yes_No/Nonword/caris/CORRECT'), np.str_('Go/Yes_No/Nonword/cazel/CORRECT'), np.str_('Go/Yes_No/Nonword/delin/CORRECT'), np.str_('Go/Yes_No/Nonword/devim/CORRECT'), np.str_('Go/Yes_No/Nonword/galed/CORRECT'), np.str_('Go/Yes_No/Nonword/galel/CORRECT'), np.str_('Go/Yes_No/Nonword/gapel/CORRECT'), np.str_('Go/Yes_No/Nonword/japel/CORRECT'), np.str_('Go/Yes_No/Nonword/jokel/CORRECT'), np.str_('Go/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Nonword/malim/CORRECT'), np.str_('Go/Yes_No/Nonword/molec/CORRECT'), np.str_('Go/Yes_No/Nonword/monit/CORRECT'), np.str_('Go/Yes_No/Nonword/palil/CORRECT'), np.str_('Go/Yes_No/Nonword/ronic/CORRECT'), np.str_('Go/Yes_No/Nonword/sanis/CORRECT'), np.str_('Go/Yes_No/Nonword/telen/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Nonword/terib/EARLY_RESP'), np.str_('Go/Yes_No/Nonword/torel/CORRECT'), np.str_('Go/Yes_No/Nonword/verem/CORRECT'), np.str_('Go/Yes_No/Nonword/zarin/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Word/baron/CORRECT'), np.str_('Go/Yes_No/Word/bison/CORRECT'), np.str_('Go/Yes_No/Word/cabin/CORRECT'), np.str_('Go/Yes_No/Word/comet/CORRECT'), np.str_('Go/Yes_No/Word/fatal/CORRECT'), np.str_('Go/Yes_No/Word/focal/CORRECT'), np.str_('Go/Yes_No/Word/haven/CORRECT'), np.str_('Go/Yes_No/Word/legal/CORRECT'), np.str_('Go/Yes_No/Word/manic/CORRECT'), np.str_('Go/Yes_No/Word/merit/CORRECT'), np.str_('Go/Yes_No/Word/naval/CORRECT'), np.str_('Go/Yes_No/Word/petal/EARLY_RESP'), np.str_('Go/Yes_No/Word/rabid/CORRECT'), np.str_('Go/Yes_No/Word/rigid/CORRECT'), np.str_('Go/Yes_No/Word/rival/CORRECT'), np.str_('Go/Yes_No/Word/satin/CORRECT'), np.str_('Go/Yes_No/Word/seven/CORRECT'), np.str_('Go/Yes_No/Word/tenet/CORRECT'), np.str_('Go/Yes_No/Word/woman/CORRECT'), np.str_('Resp/Repeat/Nonword/berin/CORRECT'), np.str_('Resp/Repeat/Nonword/boril/CORRECT'), np.str_('Resp/Repeat/Nonword/cazel/CORRECT'), np.str_('Resp/Repeat/Nonword/delin/CORRECT'), np.str_('Resp/Repeat/Nonword/havel/CORRECT'), np.str_('Resp/Repeat/Nonword/janem/CORRECT'), np.str_('Resp/Repeat/Nonword/limid/CORRECT'), np.str_('Resp/Repeat/Nonword/lomic/CORRECT'), np.str_('Resp/Repeat/Nonword/lomic/NOISY_BSL'), np.str_('Resp/Repeat/Nonword/ranis/CORRECT'), np.str_('Resp/Repeat/Nonword/tanic/CORRECT'), np.str_('Resp/Repeat/Nonword/torel/CORRECT'), np.str_('Resp/Repeat/Nonword/toric/CORRECT'), np.str_('Resp/Repeat/Nonword/zarin/CORRECT'), np.str_('Resp/Repeat/Word/civic/CORRECT'), np.str_('Resp/Repeat/Word/comet/CORRECT'), np.str_('Resp/Repeat/Word/fatal/CORRECT'), np.str_('Resp/Repeat/Word/focal/CORRECT'), np.str_('Resp/Repeat/Word/hazel/CORRECT'), np.str_('Resp/Repeat/Word/legal/CORRECT'), np.str_('Resp/Repeat/Word/libel/CORRECT'), np.str_('Resp/Repeat/Word/madam/CORRECT'), np.str_('Resp/Repeat/Word/minus/CORRECT'), np.str_('Resp/Repeat/Word/modem/CORRECT'), np.str_('Resp/Repeat/Word/penal/CORRECT'), np.str_('Resp/Repeat/Word/rabid/CORRECT'), np.str_('Resp/Repeat/Word/rigid/CORRECT'), np.str_('Resp/Repeat/Word/rival/CORRECT'), np.str_('Resp/Repeat/Word/roman/CORRECT'), np.str_('Resp/Repeat/Word/satin/CORRECT'), np.str_('Resp/Repeat/Word/solid/CORRECT'), np.str_('Resp/Repeat/Word/sonic/CORRECT'), np.str_('Resp/Repeat/Word/topic/CORRECT'), np.str_('Resp/Repeat/Word/vigil/EARLY_RESP'), np.str_('Resp/Yes_No/Nonword/banic/CORRECT'), np.str_('Resp/Yes_No/Nonword/berin/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Nonword/boril/EARLY_RESP'), np.str_('Resp/Yes_No/Nonword/caris/CORRECT'), np.str_('Resp/Yes_No/Nonword/cazel/CORRECT'), np.str_('Resp/Yes_No/Nonword/delin/CORRECT'), np.str_('Resp/Yes_No/Nonword/devim/CORRECT'), np.str_('Resp/Yes_No/Nonword/galed/CORRECT'), np.str_('Resp/Yes_No/Nonword/galel/CORRECT'), np.str_('Resp/Yes_No/Nonword/gapel/CORRECT'), np.str_('Resp/Yes_No/Nonword/japel/CORRECT'), np.str_('Resp/Yes_No/Nonword/jokel/CORRECT'), np.str_('Resp/Yes_No/Nonword/lamin/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Nonword/malim/CORRECT'), np.str_('Resp/Yes_No/Nonword/molec/CORRECT'), np.str_('Resp/Yes_No/Nonword/monit/CORRECT'), np.str_('Resp/Yes_No/Nonword/palil/CORRECT'), np.str_('Resp/Yes_No/Nonword/ronic/CORRECT'), np.str_('Resp/Yes_No/Nonword/sanis/CORRECT'), np.str_('Resp/Yes_No/Nonword/telen/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Nonword/terib/EARLY_RESP'), np.str_('Resp/Yes_No/Nonword/torel/CORRECT'), np.str_('Resp/Yes_No/Nonword/verem/CORRECT'), np.str_('Resp/Yes_No/Nonword/zarin/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Word/baron/CORRECT'), np.str_('Resp/Yes_No/Word/bison/CORRECT'), np.str_('Resp/Yes_No/Word/cabin/CORRECT'), np.str_('Resp/Yes_No/Word/comet/CORRECT'), np.str_('Resp/Yes_No/Word/fatal/CORRECT'), np.str_('Resp/Yes_No/Word/focal/CORRECT'), np.str_('Resp/Yes_No/Word/haven/CORRECT'), np.str_('Resp/Yes_No/Word/legal/CORRECT'), np.str_('Resp/Yes_No/Word/manic/CORRECT'), np.str_('Resp/Yes_No/Word/merit/CORRECT'), np.str_('Resp/Yes_No/Word/naval/CORRECT'), np.str_('Resp/Yes_No/Word/petal/EARLY_RESP'), np.str_('Resp/Yes_No/Word/rabid/CORRECT'), np.str_('Resp/Yes_No/Word/rigid/CORRECT'), np.str_('Resp/Yes_No/Word/rival/CORRECT'), np.str_('Resp/Yes_No/Word/satin/CORRECT'), np.str_('Resp/Yes_No/Word/seven/CORRECT'), np.str_('Resp/Yes_No/Word/tenet/CORRECT'), np.str_('Resp/Yes_No/Word/woman/CORRECT')]
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_events.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_events.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/dataset_description.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_ieeg.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_channels.tsv'...
+Copying data files to sub-D0102_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_ieeg.edf
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/sub-D0102_scans.tsv'...
+Wrote /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/sub-D0102_scans.tsv entry with ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-01_desc-clean_ieeg.edf.
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_acq-01_space-ACPC_electrodes.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_acq-01_space-ACPC_coordsystem.json'...
+The provided raw data contains annotations, but you did not pass an "event_id" mapping from annotation descriptions to event codes. We will generate arbitrary event codes. To specify custom event codes, please pass "event_id".
+Used Annotations descriptions: [np.str_('Auditory_stim/Repeat/Nonword/caris/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/devim/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/galed/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/galel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/havel/ERR_RESP/REP_MIS/PAVEL'), np.str_('Auditory_stim/Repeat/Nonword/herib/ERR_RESP/REP_MIS/PERIB'), np.str_('Auditory_stim/Repeat/Nonword/japel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/lamin/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/malim/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/menon/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/molec/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/monit/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/norel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/nosen/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/palil/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/ranis/ERR_TASK/REP_YN'), np.str_('Auditory_stim/Repeat/Nonword/solip/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/telen/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/telen/EARLY_RESP'), np.str_('Auditory_stim/Repeat/Nonword/terib/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/terib/ERR_TASK/REP_YN'), np.str_('Auditory_stim/Repeat/Word/baron/CORRECT'), np.str_('Auditory_stim/Repeat/Word/civil/CORRECT'), np.str_('Auditory_stim/Repeat/Word/comet/CORRECT'), np.str_('Auditory_stim/Repeat/Word/demon/CORRECT'), np.str_('Auditory_stim/Repeat/Word/facet/CORRECT'), np.str_('Auditory_stim/Repeat/Word/fatal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/focal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/haven/CORRECT'), np.str_('Auditory_stim/Repeat/Word/latin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/madam/CORRECT'), np.str_('Auditory_stim/Repeat/Word/mason/EARLY_RESP'), np.str_('Auditory_stim/Repeat/Word/minus/CORRECT'), np.str_('Auditory_stim/Repeat/Word/naval/CORRECT'), np.str_('Auditory_stim/Repeat/Word/panel/CORRECT'), np.str_('Auditory_stim/Repeat/Word/panic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/rabid/CORRECT'), np.str_('Auditory_stim/Repeat/Word/rival/CORRECT'), np.str_('Auditory_stim/Repeat/Word/roman/CORRECT'), np.str_('Auditory_stim/Repeat/Word/tonic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/tulip/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/caris/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/cazel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/galed/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/gorel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/herib/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/kelic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/lamin/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/limid/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/lomic/EARLY_RESP'), np.str_('Auditory_stim/Yes_No/Nonword/monit/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/norel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/nosen/ERR_TASK/YN_REP'), np.str_('Auditory_stim/Yes_No/Nonword/ranis/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/solip/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/verem/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/baron/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/bison/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/cabin/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/civic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/facet/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/haven/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/hazel/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/merit/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/minus/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/modem/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/panel/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/panic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/penal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/satin/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/seven/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/solid/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/tonic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/tulip/EARLY_RESP'), np.str_('Auditory_stim/Yes_No/Word/vigil/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/vital/CORRECT'), np.str_('BAD boundary'), np.str_('Cue/Repeat/Nonword/caris/CORRECT'), np.str_('Cue/Repeat/Nonword/devim/CORRECT'), np.str_('Cue/Repeat/Nonword/galed/CORRECT'), np.str_('Cue/Repeat/Nonword/galel/CORRECT'), np.str_('Cue/Repeat/Nonword/havel/ERR_RESP/REP_MIS/PAVEL'), np.str_('Cue/Repeat/Nonword/herib/ERR_RESP/REP_MIS/PERIB'), np.str_('Cue/Repeat/Nonword/japel/CORRECT'), np.str_('Cue/Repeat/Nonword/lamin/CORRECT'), np.str_('Cue/Repeat/Nonword/malim/CORRECT'), np.str_('Cue/Repeat/Nonword/menon/CORRECT'), np.str_('Cue/Repeat/Nonword/molec/CORRECT'), np.str_('Cue/Repeat/Nonword/monit/CORRECT'), np.str_('Cue/Repeat/Nonword/norel/CORRECT'), np.str_('Cue/Repeat/Nonword/nosen/CORRECT'), np.str_('Cue/Repeat/Nonword/palil/CORRECT'), np.str_('Cue/Repeat/Nonword/ranis/ERR_TASK/REP_YN'), np.str_('Cue/Repeat/Nonword/solip/CORRECT'), np.str_('Cue/Repeat/Nonword/telen/CORRECT'), np.str_('Cue/Repeat/Nonword/telen/EARLY_RESP'), np.str_('Cue/Repeat/Nonword/terib/CORRECT'), np.str_('Cue/Repeat/Nonword/terib/ERR_TASK/REP_YN'), np.str_('Cue/Repeat/Word/baron/CORRECT'), np.str_('Cue/Repeat/Word/civil/CORRECT'), np.str_('Cue/Repeat/Word/comet/CORRECT'), np.str_('Cue/Repeat/Word/demon/CORRECT'), np.str_('Cue/Repeat/Word/facet/CORRECT'), np.str_('Cue/Repeat/Word/fatal/CORRECT'), np.str_('Cue/Repeat/Word/focal/CORRECT'), np.str_('Cue/Repeat/Word/haven/CORRECT'), np.str_('Cue/Repeat/Word/latin/CORRECT'), np.str_('Cue/Repeat/Word/madam/CORRECT'), np.str_('Cue/Repeat/Word/mason/EARLY_RESP'), np.str_('Cue/Repeat/Word/minus/CORRECT'), np.str_('Cue/Repeat/Word/naval/CORRECT'), np.str_('Cue/Repeat/Word/panel/CORRECT'), np.str_('Cue/Repeat/Word/panic/CORRECT'), np.str_('Cue/Repeat/Word/rabid/CORRECT'), np.str_('Cue/Repeat/Word/rival/CORRECT'), np.str_('Cue/Repeat/Word/roman/CORRECT'), np.str_('Cue/Repeat/Word/tonic/CORRECT'), np.str_('Cue/Repeat/Word/tulip/CORRECT'), np.str_('Cue/Yes_No/Nonword/caris/CORRECT'), np.str_('Cue/Yes_No/Nonword/cazel/CORRECT'), np.str_('Cue/Yes_No/Nonword/galed/CORRECT'), np.str_('Cue/Yes_No/Nonword/gorel/CORRECT'), np.str_('Cue/Yes_No/Nonword/herib/CORRECT'), np.str_('Cue/Yes_No/Nonword/kelic/CORRECT'), np.str_('Cue/Yes_No/Nonword/lamin/CORRECT'), np.str_('Cue/Yes_No/Nonword/limid/CORRECT'), np.str_('Cue/Yes_No/Nonword/lomic/EARLY_RESP'), np.str_('Cue/Yes_No/Nonword/monit/CORRECT'), np.str_('Cue/Yes_No/Nonword/norel/CORRECT'), np.str_('Cue/Yes_No/Nonword/nosen/ERR_TASK/YN_REP'), np.str_('Cue/Yes_No/Nonword/ranis/CORRECT'), np.str_('Cue/Yes_No/Nonword/solip/CORRECT'), np.str_('Cue/Yes_No/Nonword/verem/CORRECT'), np.str_('Cue/Yes_No/Word/baron/CORRECT'), np.str_('Cue/Yes_No/Word/bison/CORRECT'), np.str_('Cue/Yes_No/Word/cabin/CORRECT'), np.str_('Cue/Yes_No/Word/civic/CORRECT'), np.str_('Cue/Yes_No/Word/facet/CORRECT'), np.str_('Cue/Yes_No/Word/haven/CORRECT'), np.str_('Cue/Yes_No/Word/hazel/CORRECT'), np.str_('Cue/Yes_No/Word/merit/CORRECT'), np.str_('Cue/Yes_No/Word/minus/CORRECT'), np.str_('Cue/Yes_No/Word/modem/CORRECT'), np.str_('Cue/Yes_No/Word/panel/CORRECT'), np.str_('Cue/Yes_No/Word/panic/CORRECT'), np.str_('Cue/Yes_No/Word/penal/CORRECT'), np.str_('Cue/Yes_No/Word/satin/CORRECT'), np.str_('Cue/Yes_No/Word/seven/CORRECT'), np.str_('Cue/Yes_No/Word/solid/CORRECT'), np.str_('Cue/Yes_No/Word/tonic/CORRECT'), np.str_('Cue/Yes_No/Word/tulip/EARLY_RESP'), np.str_('Cue/Yes_No/Word/vigil/CORRECT'), np.str_('Cue/Yes_No/Word/vital/CORRECT'), np.str_('Delay/Repeat/Nonword/caris/CORRECT'), np.str_('Delay/Repeat/Nonword/devim/CORRECT'), np.str_('Delay/Repeat/Nonword/galed/CORRECT'), np.str_('Delay/Repeat/Nonword/galel/CORRECT'), np.str_('Delay/Repeat/Nonword/havel/ERR_RESP/REP_MIS/PAVEL'), np.str_('Delay/Repeat/Nonword/herib/ERR_RESP/REP_MIS/PERIB'), np.str_('Delay/Repeat/Nonword/japel/CORRECT'), np.str_('Delay/Repeat/Nonword/lamin/CORRECT'), np.str_('Delay/Repeat/Nonword/malim/CORRECT'), np.str_('Delay/Repeat/Nonword/menon/CORRECT'), np.str_('Delay/Repeat/Nonword/molec/CORRECT'), np.str_('Delay/Repeat/Nonword/monit/CORRECT'), np.str_('Delay/Repeat/Nonword/norel/CORRECT'), np.str_('Delay/Repeat/Nonword/nosen/CORRECT'), np.str_('Delay/Repeat/Nonword/palil/CORRECT'), np.str_('Delay/Repeat/Nonword/ranis/ERR_TASK/REP_YN'), np.str_('Delay/Repeat/Nonword/solip/CORRECT'), np.str_('Delay/Repeat/Nonword/telen/CORRECT'), np.str_('Delay/Repeat/Nonword/telen/EARLY_RESP'), np.str_('Delay/Repeat/Nonword/terib/CORRECT'), np.str_('Delay/Repeat/Nonword/terib/ERR_TASK/REP_YN'), np.str_('Delay/Repeat/Word/baron/CORRECT'), np.str_('Delay/Repeat/Word/civil/CORRECT'), np.str_('Delay/Repeat/Word/comet/CORRECT'), np.str_('Delay/Repeat/Word/demon/CORRECT'), np.str_('Delay/Repeat/Word/facet/CORRECT'), np.str_('Delay/Repeat/Word/fatal/CORRECT'), np.str_('Delay/Repeat/Word/focal/CORRECT'), np.str_('Delay/Repeat/Word/haven/CORRECT'), np.str_('Delay/Repeat/Word/latin/CORRECT'), np.str_('Delay/Repeat/Word/madam/CORRECT'), np.str_('Delay/Repeat/Word/mason/EARLY_RESP'), np.str_('Delay/Repeat/Word/minus/CORRECT'), np.str_('Delay/Repeat/Word/naval/CORRECT'), np.str_('Delay/Repeat/Word/panel/CORRECT'), np.str_('Delay/Repeat/Word/panic/CORRECT'), np.str_('Delay/Repeat/Word/rabid/CORRECT'), np.str_('Delay/Repeat/Word/rival/CORRECT'), np.str_('Delay/Repeat/Word/roman/CORRECT'), np.str_('Delay/Repeat/Word/tonic/CORRECT'), np.str_('Delay/Repeat/Word/tulip/CORRECT'), np.str_('Delay/Yes_No/Nonword/caris/CORRECT'), np.str_('Delay/Yes_No/Nonword/cazel/CORRECT'), np.str_('Delay/Yes_No/Nonword/galed/CORRECT'), np.str_('Delay/Yes_No/Nonword/gorel/CORRECT'), np.str_('Delay/Yes_No/Nonword/herib/CORRECT'), np.str_('Delay/Yes_No/Nonword/kelic/CORRECT'), np.str_('Delay/Yes_No/Nonword/lamin/CORRECT'), np.str_('Delay/Yes_No/Nonword/limid/CORRECT'), np.str_('Delay/Yes_No/Nonword/lomic/EARLY_RESP'), np.str_('Delay/Yes_No/Nonword/monit/CORRECT'), np.str_('Delay/Yes_No/Nonword/norel/CORRECT'), np.str_('Delay/Yes_No/Nonword/nosen/ERR_TASK/YN_REP'), np.str_('Delay/Yes_No/Nonword/ranis/CORRECT'), np.str_('Delay/Yes_No/Nonword/solip/CORRECT'), np.str_('Delay/Yes_No/Nonword/verem/CORRECT'), np.str_('Delay/Yes_No/Word/baron/CORRECT'), np.str_('Delay/Yes_No/Word/bison/CORRECT'), np.str_('Delay/Yes_No/Word/cabin/CORRECT'), np.str_('Delay/Yes_No/Word/civic/CORRECT'), np.str_('Delay/Yes_No/Word/facet/CORRECT'), np.str_('Delay/Yes_No/Word/haven/CORRECT'), np.str_('Delay/Yes_No/Word/hazel/CORRECT'), np.str_('Delay/Yes_No/Word/merit/CORRECT'), np.str_('Delay/Yes_No/Word/minus/CORRECT'), np.str_('Delay/Yes_No/Word/modem/CORRECT'), np.str_('Delay/Yes_No/Word/panel/CORRECT'), np.str_('Delay/Yes_No/Word/panic/CORRECT'), np.str_('Delay/Yes_No/Word/penal/CORRECT'), np.str_('Delay/Yes_No/Word/satin/CORRECT'), np.str_('Delay/Yes_No/Word/seven/CORRECT'), np.str_('Delay/Yes_No/Word/solid/CORRECT'), np.str_('Delay/Yes_No/Word/tonic/CORRECT'), np.str_('Delay/Yes_No/Word/tulip/EARLY_RESP'), np.str_('Delay/Yes_No/Word/vigil/CORRECT'), np.str_('Delay/Yes_No/Word/vital/CORRECT'), np.str_('EDGE boundary'), np.str_('Go/Repeat/Nonword/caris/CORRECT'), np.str_('Go/Repeat/Nonword/devim/CORRECT'), np.str_('Go/Repeat/Nonword/galed/CORRECT'), np.str_('Go/Repeat/Nonword/galel/CORRECT'), np.str_('Go/Repeat/Nonword/havel/ERR_RESP/REP_MIS/PAVEL'), np.str_('Go/Repeat/Nonword/herib/ERR_RESP/REP_MIS/PERIB'), np.str_('Go/Repeat/Nonword/japel/CORRECT'), np.str_('Go/Repeat/Nonword/lamin/CORRECT'), np.str_('Go/Repeat/Nonword/malim/CORRECT'), np.str_('Go/Repeat/Nonword/menon/CORRECT'), np.str_('Go/Repeat/Nonword/molec/CORRECT'), np.str_('Go/Repeat/Nonword/monit/CORRECT'), np.str_('Go/Repeat/Nonword/norel/CORRECT'), np.str_('Go/Repeat/Nonword/nosen/CORRECT'), np.str_('Go/Repeat/Nonword/palil/CORRECT'), np.str_('Go/Repeat/Nonword/ranis/ERR_TASK/REP_YN'), np.str_('Go/Repeat/Nonword/solip/CORRECT'), np.str_('Go/Repeat/Nonword/telen/CORRECT'), np.str_('Go/Repeat/Nonword/telen/EARLY_RESP'), np.str_('Go/Repeat/Nonword/terib/CORRECT'), np.str_('Go/Repeat/Nonword/terib/ERR_TASK/REP_YN'), np.str_('Go/Repeat/Word/baron/CORRECT'), np.str_('Go/Repeat/Word/civil/CORRECT'), np.str_('Go/Repeat/Word/comet/CORRECT'), np.str_('Go/Repeat/Word/demon/CORRECT'), np.str_('Go/Repeat/Word/facet/CORRECT'), np.str_('Go/Repeat/Word/fatal/CORRECT'), np.str_('Go/Repeat/Word/focal/CORRECT'), np.str_('Go/Repeat/Word/haven/CORRECT'), np.str_('Go/Repeat/Word/latin/CORRECT'), np.str_('Go/Repeat/Word/madam/CORRECT'), np.str_('Go/Repeat/Word/mason/EARLY_RESP'), np.str_('Go/Repeat/Word/minus/CORRECT'), np.str_('Go/Repeat/Word/naval/CORRECT'), np.str_('Go/Repeat/Word/panel/CORRECT'), np.str_('Go/Repeat/Word/panic/CORRECT'), np.str_('Go/Repeat/Word/rabid/CORRECT'), np.str_('Go/Repeat/Word/rival/CORRECT'), np.str_('Go/Repeat/Word/roman/CORRECT'), np.str_('Go/Repeat/Word/tonic/CORRECT'), np.str_('Go/Repeat/Word/tulip/CORRECT'), np.str_('Go/Yes_No/Nonword/caris/CORRECT'), np.str_('Go/Yes_No/Nonword/cazel/CORRECT'), np.str_('Go/Yes_No/Nonword/galed/CORRECT'), np.str_('Go/Yes_No/Nonword/gorel/CORRECT'), np.str_('Go/Yes_No/Nonword/herib/CORRECT'), np.str_('Go/Yes_No/Nonword/kelic/CORRECT'), np.str_('Go/Yes_No/Nonword/lamin/CORRECT'), np.str_('Go/Yes_No/Nonword/limid/CORRECT'), np.str_('Go/Yes_No/Nonword/lomic/EARLY_RESP'), np.str_('Go/Yes_No/Nonword/monit/CORRECT'), np.str_('Go/Yes_No/Nonword/norel/CORRECT'), np.str_('Go/Yes_No/Nonword/nosen/ERR_TASK/YN_REP'), np.str_('Go/Yes_No/Nonword/ranis/CORRECT'), np.str_('Go/Yes_No/Nonword/solip/CORRECT'), np.str_('Go/Yes_No/Nonword/verem/CORRECT'), np.str_('Go/Yes_No/Word/baron/CORRECT'), np.str_('Go/Yes_No/Word/bison/CORRECT'), np.str_('Go/Yes_No/Word/cabin/CORRECT'), np.str_('Go/Yes_No/Word/civic/CORRECT'), np.str_('Go/Yes_No/Word/facet/CORRECT'), np.str_('Go/Yes_No/Word/haven/CORRECT'), np.str_('Go/Yes_No/Word/hazel/CORRECT'), np.str_('Go/Yes_No/Word/merit/CORRECT'), np.str_('Go/Yes_No/Word/minus/CORRECT'), np.str_('Go/Yes_No/Word/modem/CORRECT'), np.str_('Go/Yes_No/Word/panel/CORRECT'), np.str_('Go/Yes_No/Word/panic/CORRECT'), np.str_('Go/Yes_No/Word/penal/CORRECT'), np.str_('Go/Yes_No/Word/satin/CORRECT'), np.str_('Go/Yes_No/Word/seven/CORRECT'), np.str_('Go/Yes_No/Word/solid/CORRECT'), np.str_('Go/Yes_No/Word/tonic/CORRECT'), np.str_('Go/Yes_No/Word/tulip/EARLY_RESP'), np.str_('Go/Yes_No/Word/vigil/CORRECT'), np.str_('Go/Yes_No/Word/vital/CORRECT'), np.str_('Resp/Repeat/Nonword/caris/CORRECT'), np.str_('Resp/Repeat/Nonword/devim/CORRECT'), np.str_('Resp/Repeat/Nonword/galed/CORRECT'), np.str_('Resp/Repeat/Nonword/galel/CORRECT'), np.str_('Resp/Repeat/Nonword/havel/ERR_RESP/REP_MIS/PAVEL'), np.str_('Resp/Repeat/Nonword/herib/ERR_RESP/REP_MIS/PERIB'), np.str_('Resp/Repeat/Nonword/japel/CORRECT'), np.str_('Resp/Repeat/Nonword/lamin/CORRECT'), np.str_('Resp/Repeat/Nonword/malim/CORRECT'), np.str_('Resp/Repeat/Nonword/menon/CORRECT'), np.str_('Resp/Repeat/Nonword/molec/CORRECT'), np.str_('Resp/Repeat/Nonword/monit/CORRECT'), np.str_('Resp/Repeat/Nonword/norel/CORRECT'), np.str_('Resp/Repeat/Nonword/nosen/CORRECT'), np.str_('Resp/Repeat/Nonword/palil/CORRECT'), np.str_('Resp/Repeat/Nonword/ranis/ERR_TASK/REP_YN'), np.str_('Resp/Repeat/Nonword/solip/CORRECT'), np.str_('Resp/Repeat/Nonword/telen/CORRECT'), np.str_('Resp/Repeat/Nonword/telen/EARLY_RESP'), np.str_('Resp/Repeat/Nonword/terib/CORRECT'), np.str_('Resp/Repeat/Nonword/terib/ERR_TASK/REP_YN'), np.str_('Resp/Repeat/Word/baron/CORRECT'), np.str_('Resp/Repeat/Word/civil/CORRECT'), np.str_('Resp/Repeat/Word/comet/CORRECT'), np.str_('Resp/Repeat/Word/demon/CORRECT'), np.str_('Resp/Repeat/Word/facet/CORRECT'), np.str_('Resp/Repeat/Word/fatal/CORRECT'), np.str_('Resp/Repeat/Word/focal/CORRECT'), np.str_('Resp/Repeat/Word/haven/CORRECT'), np.str_('Resp/Repeat/Word/latin/CORRECT'), np.str_('Resp/Repeat/Word/madam/CORRECT'), np.str_('Resp/Repeat/Word/mason/EARLY_RESP'), np.str_('Resp/Repeat/Word/minus/CORRECT'), np.str_('Resp/Repeat/Word/naval/CORRECT'), np.str_('Resp/Repeat/Word/panel/CORRECT'), np.str_('Resp/Repeat/Word/panic/CORRECT'), np.str_('Resp/Repeat/Word/rabid/CORRECT'), np.str_('Resp/Repeat/Word/rival/CORRECT'), np.str_('Resp/Repeat/Word/roman/CORRECT'), np.str_('Resp/Repeat/Word/tonic/CORRECT'), np.str_('Resp/Repeat/Word/tulip/CORRECT'), np.str_('Resp/Yes_No/Nonword/caris/CORRECT'), np.str_('Resp/Yes_No/Nonword/cazel/CORRECT'), np.str_('Resp/Yes_No/Nonword/galed/CORRECT'), np.str_('Resp/Yes_No/Nonword/gorel/CORRECT'), np.str_('Resp/Yes_No/Nonword/herib/CORRECT'), np.str_('Resp/Yes_No/Nonword/kelic/CORRECT'), np.str_('Resp/Yes_No/Nonword/lamin/CORRECT'), np.str_('Resp/Yes_No/Nonword/limid/CORRECT'), np.str_('Resp/Yes_No/Nonword/lomic/EARLY_RESP'), np.str_('Resp/Yes_No/Nonword/monit/CORRECT'), np.str_('Resp/Yes_No/Nonword/norel/CORRECT'), np.str_('Resp/Yes_No/Nonword/nosen/ERR_TASK/YN_REP'), np.str_('Resp/Yes_No/Nonword/ranis/CORRECT'), np.str_('Resp/Yes_No/Nonword/solip/CORRECT'), np.str_('Resp/Yes_No/Nonword/verem/CORRECT'), np.str_('Resp/Yes_No/Word/baron/CORRECT'), np.str_('Resp/Yes_No/Word/bison/CORRECT'), np.str_('Resp/Yes_No/Word/cabin/CORRECT'), np.str_('Resp/Yes_No/Word/civic/CORRECT'), np.str_('Resp/Yes_No/Word/facet/CORRECT'), np.str_('Resp/Yes_No/Word/haven/CORRECT'), np.str_('Resp/Yes_No/Word/hazel/CORRECT'), np.str_('Resp/Yes_No/Word/merit/CORRECT'), np.str_('Resp/Yes_No/Word/minus/CORRECT'), np.str_('Resp/Yes_No/Word/modem/CORRECT'), np.str_('Resp/Yes_No/Word/panel/CORRECT'), np.str_('Resp/Yes_No/Word/panic/CORRECT'), np.str_('Resp/Yes_No/Word/penal/CORRECT'), np.str_('Resp/Yes_No/Word/satin/CORRECT'), np.str_('Resp/Yes_No/Word/seven/CORRECT'), np.str_('Resp/Yes_No/Word/solid/CORRECT'), np.str_('Resp/Yes_No/Word/tonic/CORRECT'), np.str_('Resp/Yes_No/Word/tulip/EARLY_RESP'), np.str_('Resp/Yes_No/Word/vigil/CORRECT'), np.str_('Resp/Yes_No/Word/vital/CORRECT')]
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-02_desc-clean_events.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-02_desc-clean_events.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/dataset_description.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-02_desc-clean_ieeg.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-02_desc-clean_channels.tsv'...
+Copying data files to sub-D0102_task-LexicalDecRepDelay_acq-01_run-02_desc-clean_ieeg.edf
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/sub-D0102_scans.tsv'...
+Wrote /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/sub-D0102_scans.tsv entry with ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-02_desc-clean_ieeg.edf.
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_acq-01_space-ACPC_electrodes.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_acq-01_space-ACPC_coordsystem.json'...
+The provided raw data contains annotations, but you did not pass an "event_id" mapping from annotation descriptions to event codes. We will generate arbitrary event codes. To specify custom event codes, please pass "event_id".
+Used Annotations descriptions: [np.str_('Auditory_stim/Repeat/Nonword/banic/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/boril/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/cazel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/devim/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/galed/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/gapel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/gorel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/jokel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/kelic/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/lamin/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/likel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/limid/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/mafil/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/monit/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/nosen/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/ronic/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/sanis/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/valuk/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/verem/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/zarin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/cabin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/civil/CORRECT'), np.str_('Auditory_stim/Repeat/Word/demon/CORRECT'), np.str_('Auditory_stim/Repeat/Word/facet/CORRECT'), np.str_('Auditory_stim/Repeat/Word/legal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/manic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/mason/CORRECT'), np.str_('Auditory_stim/Repeat/Word/merit/CORRECT'), np.str_('Auditory_stim/Repeat/Word/nasal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/petal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/seven/CORRECT'), np.str_('Auditory_stim/Repeat/Word/sonic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/tenet/CORRECT'), np.str_('Auditory_stim/Repeat/Word/tonic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/tulip/CORRECT'), np.str_('Auditory_stim/Repeat/Word/vigil/CORRECT'), np.str_('Auditory_stim/Repeat/Word/woman/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/banic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/boril/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/galel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/gorel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/havel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/janem/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/japel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/labin/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/likel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/mafil/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/menon/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/molec/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/norel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/nosen/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/ronic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/tanic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/valuk/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/civic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/civil/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/demon/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/fatal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/hazel/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/latin/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/legal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/libel/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/madam/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/mason/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/minus/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/modem/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/panic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/rigid/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/rival/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/sonic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/tenet/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/topic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/tulip/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/vigil/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/woman/CORRECT'), np.str_('BAD boundary'), np.str_('Cue/Repeat/Nonword/banic/CORRECT'), np.str_('Cue/Repeat/Nonword/boril/CORRECT'), np.str_('Cue/Repeat/Nonword/cazel/CORRECT'), np.str_('Cue/Repeat/Nonword/devim/CORRECT'), np.str_('Cue/Repeat/Nonword/galed/CORRECT'), np.str_('Cue/Repeat/Nonword/gapel/CORRECT'), np.str_('Cue/Repeat/Nonword/gorel/CORRECT'), np.str_('Cue/Repeat/Nonword/jokel/CORRECT'), np.str_('Cue/Repeat/Nonword/kelic/CORRECT'), np.str_('Cue/Repeat/Nonword/lamin/CORRECT'), np.str_('Cue/Repeat/Nonword/likel/CORRECT'), np.str_('Cue/Repeat/Nonword/limid/CORRECT'), np.str_('Cue/Repeat/Nonword/mafil/CORRECT'), np.str_('Cue/Repeat/Nonword/monit/CORRECT'), np.str_('Cue/Repeat/Nonword/nosen/CORRECT'), np.str_('Cue/Repeat/Nonword/ronic/CORRECT'), np.str_('Cue/Repeat/Nonword/sanis/CORRECT'), np.str_('Cue/Repeat/Nonword/valuk/CORRECT'), np.str_('Cue/Repeat/Nonword/verem/CORRECT'), np.str_('Cue/Repeat/Nonword/zarin/CORRECT'), np.str_('Cue/Repeat/Word/cabin/CORRECT'), np.str_('Cue/Repeat/Word/civil/CORRECT'), np.str_('Cue/Repeat/Word/demon/CORRECT'), np.str_('Cue/Repeat/Word/facet/CORRECT'), np.str_('Cue/Repeat/Word/legal/CORRECT'), np.str_('Cue/Repeat/Word/manic/CORRECT'), np.str_('Cue/Repeat/Word/mason/CORRECT'), np.str_('Cue/Repeat/Word/merit/CORRECT'), np.str_('Cue/Repeat/Word/nasal/CORRECT'), np.str_('Cue/Repeat/Word/petal/CORRECT'), np.str_('Cue/Repeat/Word/seven/CORRECT'), np.str_('Cue/Repeat/Word/sonic/CORRECT'), np.str_('Cue/Repeat/Word/tenet/CORRECT'), np.str_('Cue/Repeat/Word/tonic/CORRECT'), np.str_('Cue/Repeat/Word/tulip/CORRECT'), np.str_('Cue/Repeat/Word/vigil/CORRECT'), np.str_('Cue/Repeat/Word/woman/CORRECT'), np.str_('Cue/Yes_No/Nonword/banic/CORRECT'), np.str_('Cue/Yes_No/Nonword/boril/CORRECT'), np.str_('Cue/Yes_No/Nonword/galel/CORRECT'), np.str_('Cue/Yes_No/Nonword/gorel/CORRECT'), np.str_('Cue/Yes_No/Nonword/havel/CORRECT'), np.str_('Cue/Yes_No/Nonword/janem/CORRECT'), np.str_('Cue/Yes_No/Nonword/japel/CORRECT'), np.str_('Cue/Yes_No/Nonword/labin/CORRECT'), np.str_('Cue/Yes_No/Nonword/likel/CORRECT'), np.str_('Cue/Yes_No/Nonword/mafil/CORRECT'), np.str_('Cue/Yes_No/Nonword/menon/CORRECT'), np.str_('Cue/Yes_No/Nonword/molec/CORRECT'), np.str_('Cue/Yes_No/Nonword/norel/CORRECT'), np.str_('Cue/Yes_No/Nonword/nosen/CORRECT'), np.str_('Cue/Yes_No/Nonword/ronic/CORRECT'), np.str_('Cue/Yes_No/Nonword/tanic/CORRECT'), np.str_('Cue/Yes_No/Nonword/valuk/CORRECT'), np.str_('Cue/Yes_No/Word/civic/CORRECT'), np.str_('Cue/Yes_No/Word/civil/CORRECT'), np.str_('Cue/Yes_No/Word/demon/CORRECT'), np.str_('Cue/Yes_No/Word/fatal/CORRECT'), np.str_('Cue/Yes_No/Word/hazel/CORRECT'), np.str_('Cue/Yes_No/Word/latin/CORRECT'), np.str_('Cue/Yes_No/Word/legal/CORRECT'), np.str_('Cue/Yes_No/Word/libel/CORRECT'), np.str_('Cue/Yes_No/Word/madam/CORRECT'), np.str_('Cue/Yes_No/Word/mason/CORRECT'), np.str_('Cue/Yes_No/Word/minus/CORRECT'), np.str_('Cue/Yes_No/Word/modem/CORRECT'), np.str_('Cue/Yes_No/Word/panic/CORRECT'), np.str_('Cue/Yes_No/Word/rigid/CORRECT'), np.str_('Cue/Yes_No/Word/rival/CORRECT'), np.str_('Cue/Yes_No/Word/sonic/CORRECT'), np.str_('Cue/Yes_No/Word/tenet/CORRECT'), np.str_('Cue/Yes_No/Word/topic/CORRECT'), np.str_('Cue/Yes_No/Word/tulip/CORRECT'), np.str_('Cue/Yes_No/Word/vigil/CORRECT'), np.str_('Cue/Yes_No/Word/woman/CORRECT'), np.str_('Delay/Repeat/Nonword/banic/CORRECT'), np.str_('Delay/Repeat/Nonword/boril/CORRECT'), np.str_('Delay/Repeat/Nonword/cazel/CORRECT'), np.str_('Delay/Repeat/Nonword/devim/CORRECT'), np.str_('Delay/Repeat/Nonword/galed/CORRECT'), np.str_('Delay/Repeat/Nonword/gapel/CORRECT'), np.str_('Delay/Repeat/Nonword/gorel/CORRECT'), np.str_('Delay/Repeat/Nonword/jokel/CORRECT'), np.str_('Delay/Repeat/Nonword/kelic/CORRECT'), np.str_('Delay/Repeat/Nonword/lamin/CORRECT'), np.str_('Delay/Repeat/Nonword/likel/CORRECT'), np.str_('Delay/Repeat/Nonword/limid/CORRECT'), np.str_('Delay/Repeat/Nonword/mafil/CORRECT'), np.str_('Delay/Repeat/Nonword/monit/CORRECT'), np.str_('Delay/Repeat/Nonword/nosen/CORRECT'), np.str_('Delay/Repeat/Nonword/ronic/CORRECT'), np.str_('Delay/Repeat/Nonword/sanis/CORRECT'), np.str_('Delay/Repeat/Nonword/valuk/CORRECT'), np.str_('Delay/Repeat/Nonword/verem/CORRECT'), np.str_('Delay/Repeat/Nonword/zarin/CORRECT'), np.str_('Delay/Repeat/Word/cabin/CORRECT'), np.str_('Delay/Repeat/Word/civil/CORRECT'), np.str_('Delay/Repeat/Word/demon/CORRECT'), np.str_('Delay/Repeat/Word/facet/CORRECT'), np.str_('Delay/Repeat/Word/legal/CORRECT'), np.str_('Delay/Repeat/Word/manic/CORRECT'), np.str_('Delay/Repeat/Word/mason/CORRECT'), np.str_('Delay/Repeat/Word/merit/CORRECT'), np.str_('Delay/Repeat/Word/nasal/CORRECT'), np.str_('Delay/Repeat/Word/petal/CORRECT'), np.str_('Delay/Repeat/Word/seven/CORRECT'), np.str_('Delay/Repeat/Word/sonic/CORRECT'), np.str_('Delay/Repeat/Word/tenet/CORRECT'), np.str_('Delay/Repeat/Word/tonic/CORRECT'), np.str_('Delay/Repeat/Word/tulip/CORRECT'), np.str_('Delay/Repeat/Word/vigil/CORRECT'), np.str_('Delay/Repeat/Word/woman/CORRECT'), np.str_('Delay/Yes_No/Nonword/banic/CORRECT'), np.str_('Delay/Yes_No/Nonword/boril/CORRECT'), np.str_('Delay/Yes_No/Nonword/galel/CORRECT'), np.str_('Delay/Yes_No/Nonword/gorel/CORRECT'), np.str_('Delay/Yes_No/Nonword/havel/CORRECT'), np.str_('Delay/Yes_No/Nonword/janem/CORRECT'), np.str_('Delay/Yes_No/Nonword/japel/CORRECT'), np.str_('Delay/Yes_No/Nonword/labin/CORRECT'), np.str_('Delay/Yes_No/Nonword/likel/CORRECT'), np.str_('Delay/Yes_No/Nonword/mafil/CORRECT'), np.str_('Delay/Yes_No/Nonword/menon/CORRECT'), np.str_('Delay/Yes_No/Nonword/molec/CORRECT'), np.str_('Delay/Yes_No/Nonword/norel/CORRECT'), np.str_('Delay/Yes_No/Nonword/nosen/CORRECT'), np.str_('Delay/Yes_No/Nonword/ronic/CORRECT'), np.str_('Delay/Yes_No/Nonword/tanic/CORRECT'), np.str_('Delay/Yes_No/Nonword/valuk/CORRECT'), np.str_('Delay/Yes_No/Word/civic/CORRECT'), np.str_('Delay/Yes_No/Word/civil/CORRECT'), np.str_('Delay/Yes_No/Word/demon/CORRECT'), np.str_('Delay/Yes_No/Word/fatal/CORRECT'), np.str_('Delay/Yes_No/Word/hazel/CORRECT'), np.str_('Delay/Yes_No/Word/latin/CORRECT'), np.str_('Delay/Yes_No/Word/legal/CORRECT'), np.str_('Delay/Yes_No/Word/libel/CORRECT'), np.str_('Delay/Yes_No/Word/madam/CORRECT'), np.str_('Delay/Yes_No/Word/mason/CORRECT'), np.str_('Delay/Yes_No/Word/minus/CORRECT'), np.str_('Delay/Yes_No/Word/modem/CORRECT'), np.str_('Delay/Yes_No/Word/panic/CORRECT'), np.str_('Delay/Yes_No/Word/rigid/CORRECT'), np.str_('Delay/Yes_No/Word/rival/CORRECT'), np.str_('Delay/Yes_No/Word/sonic/CORRECT'), np.str_('Delay/Yes_No/Word/tenet/CORRECT'), np.str_('Delay/Yes_No/Word/topic/CORRECT'), np.str_('Delay/Yes_No/Word/tulip/CORRECT'), np.str_('Delay/Yes_No/Word/vigil/CORRECT'), np.str_('Delay/Yes_No/Word/woman/CORRECT'), np.str_('EDGE boundary'), np.str_('Go/Repeat/Nonword/banic/CORRECT'), np.str_('Go/Repeat/Nonword/boril/CORRECT'), np.str_('Go/Repeat/Nonword/cazel/CORRECT'), np.str_('Go/Repeat/Nonword/devim/CORRECT'), np.str_('Go/Repeat/Nonword/galed/CORRECT'), np.str_('Go/Repeat/Nonword/gapel/CORRECT'), np.str_('Go/Repeat/Nonword/gorel/CORRECT'), np.str_('Go/Repeat/Nonword/jokel/CORRECT'), np.str_('Go/Repeat/Nonword/kelic/CORRECT'), np.str_('Go/Repeat/Nonword/lamin/CORRECT'), np.str_('Go/Repeat/Nonword/likel/CORRECT'), np.str_('Go/Repeat/Nonword/limid/CORRECT'), np.str_('Go/Repeat/Nonword/mafil/CORRECT'), np.str_('Go/Repeat/Nonword/monit/CORRECT'), np.str_('Go/Repeat/Nonword/nosen/CORRECT'), np.str_('Go/Repeat/Nonword/ronic/CORRECT'), np.str_('Go/Repeat/Nonword/sanis/CORRECT'), np.str_('Go/Repeat/Nonword/valuk/CORRECT'), np.str_('Go/Repeat/Nonword/verem/CORRECT'), np.str_('Go/Repeat/Nonword/zarin/CORRECT'), np.str_('Go/Repeat/Word/cabin/CORRECT'), np.str_('Go/Repeat/Word/civil/CORRECT'), np.str_('Go/Repeat/Word/demon/CORRECT'), np.str_('Go/Repeat/Word/facet/CORRECT'), np.str_('Go/Repeat/Word/legal/CORRECT'), np.str_('Go/Repeat/Word/manic/CORRECT'), np.str_('Go/Repeat/Word/mason/CORRECT'), np.str_('Go/Repeat/Word/merit/CORRECT'), np.str_('Go/Repeat/Word/nasal/CORRECT'), np.str_('Go/Repeat/Word/petal/CORRECT'), np.str_('Go/Repeat/Word/seven/CORRECT'), np.str_('Go/Repeat/Word/sonic/CORRECT'), np.str_('Go/Repeat/Word/tenet/CORRECT'), np.str_('Go/Repeat/Word/tonic/CORRECT'), np.str_('Go/Repeat/Word/tulip/CORRECT'), np.str_('Go/Repeat/Word/vigil/CORRECT'), np.str_('Go/Repeat/Word/woman/CORRECT'), np.str_('Go/Yes_No/Nonword/banic/CORRECT'), np.str_('Go/Yes_No/Nonword/boril/CORRECT'), np.str_('Go/Yes_No/Nonword/galel/CORRECT'), np.str_('Go/Yes_No/Nonword/gorel/CORRECT'), np.str_('Go/Yes_No/Nonword/havel/CORRECT'), np.str_('Go/Yes_No/Nonword/janem/CORRECT'), np.str_('Go/Yes_No/Nonword/japel/CORRECT'), np.str_('Go/Yes_No/Nonword/labin/CORRECT'), np.str_('Go/Yes_No/Nonword/likel/CORRECT'), np.str_('Go/Yes_No/Nonword/mafil/CORRECT'), np.str_('Go/Yes_No/Nonword/menon/CORRECT'), np.str_('Go/Yes_No/Nonword/molec/CORRECT'), np.str_('Go/Yes_No/Nonword/norel/CORRECT'), np.str_('Go/Yes_No/Nonword/nosen/CORRECT'), np.str_('Go/Yes_No/Nonword/ronic/CORRECT'), np.str_('Go/Yes_No/Nonword/tanic/CORRECT'), np.str_('Go/Yes_No/Nonword/valuk/CORRECT'), np.str_('Go/Yes_No/Word/civic/CORRECT'), np.str_('Go/Yes_No/Word/civil/CORRECT'), np.str_('Go/Yes_No/Word/demon/CORRECT'), np.str_('Go/Yes_No/Word/fatal/CORRECT'), np.str_('Go/Yes_No/Word/hazel/CORRECT'), np.str_('Go/Yes_No/Word/latin/CORRECT'), np.str_('Go/Yes_No/Word/legal/CORRECT'), np.str_('Go/Yes_No/Word/libel/CORRECT'), np.str_('Go/Yes_No/Word/madam/CORRECT'), np.str_('Go/Yes_No/Word/mason/CORRECT'), np.str_('Go/Yes_No/Word/minus/CORRECT'), np.str_('Go/Yes_No/Word/modem/CORRECT'), np.str_('Go/Yes_No/Word/panic/CORRECT'), np.str_('Go/Yes_No/Word/rigid/CORRECT'), np.str_('Go/Yes_No/Word/rival/CORRECT'), np.str_('Go/Yes_No/Word/sonic/CORRECT'), np.str_('Go/Yes_No/Word/tenet/CORRECT'), np.str_('Go/Yes_No/Word/topic/CORRECT'), np.str_('Go/Yes_No/Word/tulip/CORRECT'), np.str_('Go/Yes_No/Word/vigil/CORRECT'), np.str_('Go/Yes_No/Word/woman/CORRECT'), np.str_('Resp/Repeat/Nonword/banic/CORRECT'), np.str_('Resp/Repeat/Nonword/boril/CORRECT'), np.str_('Resp/Repeat/Nonword/cazel/CORRECT'), np.str_('Resp/Repeat/Nonword/devim/CORRECT'), np.str_('Resp/Repeat/Nonword/galed/CORRECT'), np.str_('Resp/Repeat/Nonword/gapel/CORRECT'), np.str_('Resp/Repeat/Nonword/gorel/CORRECT'), np.str_('Resp/Repeat/Nonword/jokel/CORRECT'), np.str_('Resp/Repeat/Nonword/kelic/CORRECT'), np.str_('Resp/Repeat/Nonword/lamin/CORRECT'), np.str_('Resp/Repeat/Nonword/likel/CORRECT'), np.str_('Resp/Repeat/Nonword/limid/CORRECT'), np.str_('Resp/Repeat/Nonword/mafil/CORRECT'), np.str_('Resp/Repeat/Nonword/monit/CORRECT'), np.str_('Resp/Repeat/Nonword/nosen/CORRECT'), np.str_('Resp/Repeat/Nonword/ronic/CORRECT'), np.str_('Resp/Repeat/Nonword/sanis/CORRECT'), np.str_('Resp/Repeat/Nonword/valuk/CORRECT'), np.str_('Resp/Repeat/Nonword/verem/CORRECT'), np.str_('Resp/Repeat/Nonword/zarin/CORRECT'), np.str_('Resp/Repeat/Word/cabin/CORRECT'), np.str_('Resp/Repeat/Word/civil/CORRECT'), np.str_('Resp/Repeat/Word/demon/CORRECT'), np.str_('Resp/Repeat/Word/facet/CORRECT'), np.str_('Resp/Repeat/Word/legal/CORRECT'), np.str_('Resp/Repeat/Word/manic/CORRECT'), np.str_('Resp/Repeat/Word/mason/CORRECT'), np.str_('Resp/Repeat/Word/merit/CORRECT'), np.str_('Resp/Repeat/Word/nasal/CORRECT'), np.str_('Resp/Repeat/Word/petal/CORRECT'), np.str_('Resp/Repeat/Word/seven/CORRECT'), np.str_('Resp/Repeat/Word/sonic/CORRECT'), np.str_('Resp/Repeat/Word/tenet/CORRECT'), np.str_('Resp/Repeat/Word/tonic/CORRECT'), np.str_('Resp/Repeat/Word/tulip/CORRECT'), np.str_('Resp/Repeat/Word/vigil/CORRECT'), np.str_('Resp/Repeat/Word/woman/CORRECT'), np.str_('Resp/Yes_No/Nonword/banic/CORRECT'), np.str_('Resp/Yes_No/Nonword/boril/CORRECT'), np.str_('Resp/Yes_No/Nonword/galel/CORRECT'), np.str_('Resp/Yes_No/Nonword/gorel/CORRECT'), np.str_('Resp/Yes_No/Nonword/havel/CORRECT'), np.str_('Resp/Yes_No/Nonword/janem/CORRECT'), np.str_('Resp/Yes_No/Nonword/japel/CORRECT'), np.str_('Resp/Yes_No/Nonword/labin/CORRECT'), np.str_('Resp/Yes_No/Nonword/likel/CORRECT'), np.str_('Resp/Yes_No/Nonword/mafil/CORRECT'), np.str_('Resp/Yes_No/Nonword/menon/CORRECT'), np.str_('Resp/Yes_No/Nonword/molec/CORRECT'), np.str_('Resp/Yes_No/Nonword/norel/CORRECT'), np.str_('Resp/Yes_No/Nonword/nosen/CORRECT'), np.str_('Resp/Yes_No/Nonword/ronic/CORRECT'), np.str_('Resp/Yes_No/Nonword/tanic/CORRECT'), np.str_('Resp/Yes_No/Nonword/valuk/CORRECT'), np.str_('Resp/Yes_No/Word/civic/CORRECT'), np.str_('Resp/Yes_No/Word/civil/CORRECT'), np.str_('Resp/Yes_No/Word/demon/CORRECT'), np.str_('Resp/Yes_No/Word/fatal/CORRECT'), np.str_('Resp/Yes_No/Word/hazel/CORRECT'), np.str_('Resp/Yes_No/Word/latin/CORRECT'), np.str_('Resp/Yes_No/Word/legal/CORRECT'), np.str_('Resp/Yes_No/Word/libel/CORRECT'), np.str_('Resp/Yes_No/Word/madam/CORRECT'), np.str_('Resp/Yes_No/Word/mason/CORRECT'), np.str_('Resp/Yes_No/Word/minus/CORRECT'), np.str_('Resp/Yes_No/Word/modem/CORRECT'), np.str_('Resp/Yes_No/Word/panic/CORRECT'), np.str_('Resp/Yes_No/Word/rigid/CORRECT'), np.str_('Resp/Yes_No/Word/rival/CORRECT'), np.str_('Resp/Yes_No/Word/sonic/CORRECT'), np.str_('Resp/Yes_No/Word/tenet/CORRECT'), np.str_('Resp/Yes_No/Word/topic/CORRECT'), np.str_('Resp/Yes_No/Word/tulip/CORRECT'), np.str_('Resp/Yes_No/Word/vigil/CORRECT'), np.str_('Resp/Yes_No/Word/woman/CORRECT')]
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-03_desc-clean_events.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-03_desc-clean_events.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/dataset_description.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-03_desc-clean_ieeg.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-03_desc-clean_channels.tsv'...
+Copying data files to sub-D0102_task-LexicalDecRepDelay_acq-01_run-03_desc-clean_ieeg.edf
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/sub-D0102_scans.tsv'...
+Wrote /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/sub-D0102_scans.tsv entry with ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-03_desc-clean_ieeg.edf.
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/participants.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_acq-01_space-ACPC_electrodes.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_acq-01_space-ACPC_coordsystem.json'...
+The provided raw data contains annotations, but you did not pass an "event_id" mapping from annotation descriptions to event codes. We will generate arbitrary event codes. To specify custom event codes, please pass "event_id".
+Used Annotations descriptions: [np.str_('Auditory_stim/Repeat/Nonword/banic/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/caris/EARLY_RESP'), np.str_('Auditory_stim/Repeat/Nonword/delin/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/galel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/gapel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/jokel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/kelic/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/labin/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/likel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/malim/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/menon/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/molec/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/norel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/palil/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/sanis/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/torel/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/toric/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/valuk/CORRECT'), np.str_('Auditory_stim/Repeat/Nonword/verem/CORRECT'), np.str_('Auditory_stim/Repeat/Word/baron/CORRECT'), np.str_('Auditory_stim/Repeat/Word/bison/CORRECT'), np.str_('Auditory_stim/Repeat/Word/cabin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/civic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/libel/CORRECT'), np.str_('Auditory_stim/Repeat/Word/merit/CORRECT'), np.str_('Auditory_stim/Repeat/Word/modem/CORRECT'), np.str_('Auditory_stim/Repeat/Word/nasal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/naval/CORRECT'), np.str_('Auditory_stim/Repeat/Word/panel/CORRECT'), np.str_('Auditory_stim/Repeat/Word/panic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/penal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/petal/CORRECT'), np.str_('Auditory_stim/Repeat/Word/satin/CORRECT'), np.str_('Auditory_stim/Repeat/Word/seven/CORRECT'), np.str_('Auditory_stim/Repeat/Word/solid/CORRECT'), np.str_('Auditory_stim/Repeat/Word/tenet/CORRECT'), np.str_('Auditory_stim/Repeat/Word/topic/CORRECT'), np.str_('Auditory_stim/Repeat/Word/vital/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/berin/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/delin/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/devim/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/gapel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/havel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/herib/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/jokel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/kelic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/labin/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/likel/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/limid/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/lomic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/mafil/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/malim/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/menon/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/palil/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/solip/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/tanic/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/telen/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/terib/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/toric/CORRECT'), np.str_('Auditory_stim/Yes_No/Nonword/zarin/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/civil/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/comet/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/demon/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/focal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/libel/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/manic/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/nasal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/naval/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/panel/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/penal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/petal/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/rabid/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/roman/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/solid/CORRECT'), np.str_('Auditory_stim/Yes_No/Word/sonic/CORRECT'), np.str_('BAD boundary'), np.str_('Cue/Repeat/Nonword/banic/CORRECT'), np.str_('Cue/Repeat/Nonword/caris/EARLY_RESP'), np.str_('Cue/Repeat/Nonword/delin/CORRECT'), np.str_('Cue/Repeat/Nonword/galel/CORRECT'), np.str_('Cue/Repeat/Nonword/gapel/CORRECT'), np.str_('Cue/Repeat/Nonword/jokel/CORRECT'), np.str_('Cue/Repeat/Nonword/kelic/CORRECT'), np.str_('Cue/Repeat/Nonword/labin/CORRECT'), np.str_('Cue/Repeat/Nonword/likel/CORRECT'), np.str_('Cue/Repeat/Nonword/malim/CORRECT'), np.str_('Cue/Repeat/Nonword/menon/CORRECT'), np.str_('Cue/Repeat/Nonword/molec/CORRECT'), np.str_('Cue/Repeat/Nonword/norel/CORRECT'), np.str_('Cue/Repeat/Nonword/palil/CORRECT'), np.str_('Cue/Repeat/Nonword/sanis/CORRECT'), np.str_('Cue/Repeat/Nonword/torel/CORRECT'), np.str_('Cue/Repeat/Nonword/toric/CORRECT'), np.str_('Cue/Repeat/Nonword/valuk/CORRECT'), np.str_('Cue/Repeat/Nonword/verem/CORRECT'), np.str_('Cue/Repeat/Word/baron/CORRECT'), np.str_('Cue/Repeat/Word/bison/CORRECT'), np.str_('Cue/Repeat/Word/cabin/CORRECT'), np.str_('Cue/Repeat/Word/civic/CORRECT'), np.str_('Cue/Repeat/Word/libel/CORRECT'), np.str_('Cue/Repeat/Word/merit/CORRECT'), np.str_('Cue/Repeat/Word/modem/CORRECT'), np.str_('Cue/Repeat/Word/nasal/CORRECT'), np.str_('Cue/Repeat/Word/naval/CORRECT'), np.str_('Cue/Repeat/Word/panel/CORRECT'), np.str_('Cue/Repeat/Word/panic/CORRECT'), np.str_('Cue/Repeat/Word/penal/CORRECT'), np.str_('Cue/Repeat/Word/petal/CORRECT'), np.str_('Cue/Repeat/Word/satin/CORRECT'), np.str_('Cue/Repeat/Word/seven/CORRECT'), np.str_('Cue/Repeat/Word/solid/CORRECT'), np.str_('Cue/Repeat/Word/tenet/CORRECT'), np.str_('Cue/Repeat/Word/topic/CORRECT'), np.str_('Cue/Repeat/Word/vital/CORRECT'), np.str_('Cue/Yes_No/Nonword/berin/CORRECT'), np.str_('Cue/Yes_No/Nonword/delin/CORRECT'), np.str_('Cue/Yes_No/Nonword/devim/CORRECT'), np.str_('Cue/Yes_No/Nonword/gapel/CORRECT'), np.str_('Cue/Yes_No/Nonword/havel/CORRECT'), np.str_('Cue/Yes_No/Nonword/herib/CORRECT'), np.str_('Cue/Yes_No/Nonword/jokel/CORRECT'), np.str_('Cue/Yes_No/Nonword/kelic/CORRECT'), np.str_('Cue/Yes_No/Nonword/labin/CORRECT'), np.str_('Cue/Yes_No/Nonword/likel/CORRECT'), np.str_('Cue/Yes_No/Nonword/limid/CORRECT'), np.str_('Cue/Yes_No/Nonword/lomic/CORRECT'), np.str_('Cue/Yes_No/Nonword/mafil/CORRECT'), np.str_('Cue/Yes_No/Nonword/malim/CORRECT'), np.str_('Cue/Yes_No/Nonword/menon/CORRECT'), np.str_('Cue/Yes_No/Nonword/palil/CORRECT'), np.str_('Cue/Yes_No/Nonword/solip/CORRECT'), np.str_('Cue/Yes_No/Nonword/tanic/CORRECT'), np.str_('Cue/Yes_No/Nonword/telen/CORRECT'), np.str_('Cue/Yes_No/Nonword/terib/CORRECT'), np.str_('Cue/Yes_No/Nonword/toric/CORRECT'), np.str_('Cue/Yes_No/Nonword/zarin/CORRECT'), np.str_('Cue/Yes_No/Word/civil/CORRECT'), np.str_('Cue/Yes_No/Word/comet/CORRECT'), np.str_('Cue/Yes_No/Word/demon/CORRECT'), np.str_('Cue/Yes_No/Word/focal/CORRECT'), np.str_('Cue/Yes_No/Word/libel/CORRECT'), np.str_('Cue/Yes_No/Word/manic/CORRECT'), np.str_('Cue/Yes_No/Word/nasal/CORRECT'), np.str_('Cue/Yes_No/Word/naval/CORRECT'), np.str_('Cue/Yes_No/Word/panel/CORRECT'), np.str_('Cue/Yes_No/Word/penal/CORRECT'), np.str_('Cue/Yes_No/Word/petal/CORRECT'), np.str_('Cue/Yes_No/Word/rabid/CORRECT'), np.str_('Cue/Yes_No/Word/roman/CORRECT'), np.str_('Cue/Yes_No/Word/solid/CORRECT'), np.str_('Cue/Yes_No/Word/sonic/CORRECT'), np.str_('Delay/Repeat/Nonword/banic/CORRECT'), np.str_('Delay/Repeat/Nonword/caris/EARLY_RESP'), np.str_('Delay/Repeat/Nonword/delin/CORRECT'), np.str_('Delay/Repeat/Nonword/galel/CORRECT'), np.str_('Delay/Repeat/Nonword/gapel/CORRECT'), np.str_('Delay/Repeat/Nonword/jokel/CORRECT'), np.str_('Delay/Repeat/Nonword/kelic/CORRECT'), np.str_('Delay/Repeat/Nonword/labin/CORRECT'), np.str_('Delay/Repeat/Nonword/likel/CORRECT'), np.str_('Delay/Repeat/Nonword/malim/CORRECT'), np.str_('Delay/Repeat/Nonword/menon/CORRECT'), np.str_('Delay/Repeat/Nonword/molec/CORRECT'), np.str_('Delay/Repeat/Nonword/norel/CORRECT'), np.str_('Delay/Repeat/Nonword/palil/CORRECT'), np.str_('Delay/Repeat/Nonword/sanis/CORRECT'), np.str_('Delay/Repeat/Nonword/torel/CORRECT'), np.str_('Delay/Repeat/Nonword/toric/CORRECT'), np.str_('Delay/Repeat/Nonword/valuk/CORRECT'), np.str_('Delay/Repeat/Nonword/verem/CORRECT'), np.str_('Delay/Repeat/Word/baron/CORRECT'), np.str_('Delay/Repeat/Word/bison/CORRECT'), np.str_('Delay/Repeat/Word/cabin/CORRECT'), np.str_('Delay/Repeat/Word/civic/CORRECT'), np.str_('Delay/Repeat/Word/libel/CORRECT'), np.str_('Delay/Repeat/Word/merit/CORRECT'), np.str_('Delay/Repeat/Word/modem/CORRECT'), np.str_('Delay/Repeat/Word/nasal/CORRECT'), np.str_('Delay/Repeat/Word/naval/CORRECT'), np.str_('Delay/Repeat/Word/panel/CORRECT'), np.str_('Delay/Repeat/Word/panic/CORRECT'), np.str_('Delay/Repeat/Word/penal/CORRECT'), np.str_('Delay/Repeat/Word/petal/CORRECT'), np.str_('Delay/Repeat/Word/satin/CORRECT'), np.str_('Delay/Repeat/Word/seven/CORRECT'), np.str_('Delay/Repeat/Word/solid/CORRECT'), np.str_('Delay/Repeat/Word/tenet/CORRECT'), np.str_('Delay/Repeat/Word/topic/CORRECT'), np.str_('Delay/Repeat/Word/vital/CORRECT'), np.str_('Delay/Yes_No/Nonword/berin/CORRECT'), np.str_('Delay/Yes_No/Nonword/delin/CORRECT'), np.str_('Delay/Yes_No/Nonword/devim/CORRECT'), np.str_('Delay/Yes_No/Nonword/gapel/CORRECT'), np.str_('Delay/Yes_No/Nonword/havel/CORRECT'), np.str_('Delay/Yes_No/Nonword/herib/CORRECT'), np.str_('Delay/Yes_No/Nonword/jokel/CORRECT'), np.str_('Delay/Yes_No/Nonword/kelic/CORRECT'), np.str_('Delay/Yes_No/Nonword/labin/CORRECT'), np.str_('Delay/Yes_No/Nonword/likel/CORRECT'), np.str_('Delay/Yes_No/Nonword/limid/CORRECT'), np.str_('Delay/Yes_No/Nonword/lomic/CORRECT'), np.str_('Delay/Yes_No/Nonword/mafil/CORRECT'), np.str_('Delay/Yes_No/Nonword/malim/CORRECT'), np.str_('Delay/Yes_No/Nonword/menon/CORRECT'), np.str_('Delay/Yes_No/Nonword/palil/CORRECT'), np.str_('Delay/Yes_No/Nonword/solip/CORRECT'), np.str_('Delay/Yes_No/Nonword/tanic/CORRECT'), np.str_('Delay/Yes_No/Nonword/telen/CORRECT'), np.str_('Delay/Yes_No/Nonword/terib/CORRECT'), np.str_('Delay/Yes_No/Nonword/toric/CORRECT'), np.str_('Delay/Yes_No/Nonword/zarin/CORRECT'), np.str_('Delay/Yes_No/Word/civil/CORRECT'), np.str_('Delay/Yes_No/Word/comet/CORRECT'), np.str_('Delay/Yes_No/Word/demon/CORRECT'), np.str_('Delay/Yes_No/Word/focal/CORRECT'), np.str_('Delay/Yes_No/Word/libel/CORRECT'), np.str_('Delay/Yes_No/Word/manic/CORRECT'), np.str_('Delay/Yes_No/Word/nasal/CORRECT'), np.str_('Delay/Yes_No/Word/naval/CORRECT'), np.str_('Delay/Yes_No/Word/panel/CORRECT'), np.str_('Delay/Yes_No/Word/penal/CORRECT'), np.str_('Delay/Yes_No/Word/petal/CORRECT'), np.str_('Delay/Yes_No/Word/rabid/CORRECT'), np.str_('Delay/Yes_No/Word/roman/CORRECT'), np.str_('Delay/Yes_No/Word/solid/CORRECT'), np.str_('Delay/Yes_No/Word/sonic/CORRECT'), np.str_('EDGE boundary'), np.str_('Go/Repeat/Nonword/banic/CORRECT'), np.str_('Go/Repeat/Nonword/caris/EARLY_RESP'), np.str_('Go/Repeat/Nonword/delin/CORRECT'), np.str_('Go/Repeat/Nonword/galel/CORRECT'), np.str_('Go/Repeat/Nonword/gapel/CORRECT'), np.str_('Go/Repeat/Nonword/jokel/CORRECT'), np.str_('Go/Repeat/Nonword/kelic/CORRECT'), np.str_('Go/Repeat/Nonword/labin/CORRECT'), np.str_('Go/Repeat/Nonword/likel/CORRECT'), np.str_('Go/Repeat/Nonword/malim/CORRECT'), np.str_('Go/Repeat/Nonword/menon/CORRECT'), np.str_('Go/Repeat/Nonword/molec/CORRECT'), np.str_('Go/Repeat/Nonword/norel/CORRECT'), np.str_('Go/Repeat/Nonword/palil/CORRECT'), np.str_('Go/Repeat/Nonword/sanis/CORRECT'), np.str_('Go/Repeat/Nonword/torel/CORRECT'), np.str_('Go/Repeat/Nonword/toric/CORRECT'), np.str_('Go/Repeat/Nonword/valuk/CORRECT'), np.str_('Go/Repeat/Nonword/verem/CORRECT'), np.str_('Go/Repeat/Word/baron/CORRECT'), np.str_('Go/Repeat/Word/bison/CORRECT'), np.str_('Go/Repeat/Word/cabin/CORRECT'), np.str_('Go/Repeat/Word/civic/CORRECT'), np.str_('Go/Repeat/Word/libel/CORRECT'), np.str_('Go/Repeat/Word/merit/CORRECT'), np.str_('Go/Repeat/Word/modem/CORRECT'), np.str_('Go/Repeat/Word/nasal/CORRECT'), np.str_('Go/Repeat/Word/naval/CORRECT'), np.str_('Go/Repeat/Word/panel/CORRECT'), np.str_('Go/Repeat/Word/panic/CORRECT'), np.str_('Go/Repeat/Word/penal/CORRECT'), np.str_('Go/Repeat/Word/petal/CORRECT'), np.str_('Go/Repeat/Word/satin/CORRECT'), np.str_('Go/Repeat/Word/solid/CORRECT'), np.str_('Go/Repeat/Word/tenet/CORRECT'), np.str_('Go/Repeat/Word/topic/CORRECT'), np.str_('Go/Repeat/Word/vital/CORRECT'), np.str_('Go/Yes_No/Nonword/berin/CORRECT'), np.str_('Go/Yes_No/Nonword/delin/CORRECT'), np.str_('Go/Yes_No/Nonword/devim/CORRECT'), np.str_('Go/Yes_No/Nonword/gapel/CORRECT'), np.str_('Go/Yes_No/Nonword/havel/CORRECT'), np.str_('Go/Yes_No/Nonword/herib/CORRECT'), np.str_('Go/Yes_No/Nonword/jokel/CORRECT'), np.str_('Go/Yes_No/Nonword/kelic/CORRECT'), np.str_('Go/Yes_No/Nonword/labin/CORRECT'), np.str_('Go/Yes_No/Nonword/likel/CORRECT'), np.str_('Go/Yes_No/Nonword/limid/CORRECT'), np.str_('Go/Yes_No/Nonword/lomic/CORRECT'), np.str_('Go/Yes_No/Nonword/mafil/CORRECT'), np.str_('Go/Yes_No/Nonword/malim/CORRECT'), np.str_('Go/Yes_No/Nonword/menon/CORRECT'), np.str_('Go/Yes_No/Nonword/palil/CORRECT'), np.str_('Go/Yes_No/Nonword/solip/CORRECT'), np.str_('Go/Yes_No/Nonword/tanic/CORRECT'), np.str_('Go/Yes_No/Nonword/telen/CORRECT'), np.str_('Go/Yes_No/Nonword/terib/CORRECT'), np.str_('Go/Yes_No/Nonword/toric/CORRECT'), np.str_('Go/Yes_No/Nonword/zarin/CORRECT'), np.str_('Go/Yes_No/Word/civil/CORRECT'), np.str_('Go/Yes_No/Word/comet/CORRECT'), np.str_('Go/Yes_No/Word/demon/CORRECT'), np.str_('Go/Yes_No/Word/focal/CORRECT'), np.str_('Go/Yes_No/Word/libel/CORRECT'), np.str_('Go/Yes_No/Word/manic/CORRECT'), np.str_('Go/Yes_No/Word/nasal/CORRECT'), np.str_('Go/Yes_No/Word/naval/CORRECT'), np.str_('Go/Yes_No/Word/panel/CORRECT'), np.str_('Go/Yes_No/Word/penal/CORRECT'), np.str_('Go/Yes_No/Word/petal/CORRECT'), np.str_('Go/Yes_No/Word/rabid/CORRECT'), np.str_('Go/Yes_No/Word/roman/CORRECT'), np.str_('Go/Yes_No/Word/solid/CORRECT'), np.str_('Go/Yes_No/Word/sonic/CORRECT'), np.str_('Resp/Repeat/Nonword/banic/CORRECT'), np.str_('Resp/Repeat/Nonword/caris/EARLY_RESP'), np.str_('Resp/Repeat/Nonword/delin/CORRECT'), np.str_('Resp/Repeat/Nonword/galel/CORRECT'), np.str_('Resp/Repeat/Nonword/gapel/CORRECT'), np.str_('Resp/Repeat/Nonword/jokel/CORRECT'), np.str_('Resp/Repeat/Nonword/kelic/CORRECT'), np.str_('Resp/Repeat/Nonword/labin/CORRECT'), np.str_('Resp/Repeat/Nonword/likel/CORRECT'), np.str_('Resp/Repeat/Nonword/malim/CORRECT'), np.str_('Resp/Repeat/Nonword/menon/CORRECT'), np.str_('Resp/Repeat/Nonword/molec/CORRECT'), np.str_('Resp/Repeat/Nonword/norel/CORRECT'), np.str_('Resp/Repeat/Nonword/palil/CORRECT'), np.str_('Resp/Repeat/Nonword/sanis/CORRECT'), np.str_('Resp/Repeat/Nonword/torel/CORRECT'), np.str_('Resp/Repeat/Nonword/toric/CORRECT'), np.str_('Resp/Repeat/Nonword/valuk/CORRECT'), np.str_('Resp/Repeat/Nonword/verem/CORRECT'), np.str_('Resp/Repeat/Word/baron/CORRECT'), np.str_('Resp/Repeat/Word/bison/CORRECT'), np.str_('Resp/Repeat/Word/cabin/CORRECT'), np.str_('Resp/Repeat/Word/civic/CORRECT'), np.str_('Resp/Repeat/Word/libel/CORRECT'), np.str_('Resp/Repeat/Word/merit/CORRECT'), np.str_('Resp/Repeat/Word/modem/CORRECT'), np.str_('Resp/Repeat/Word/nasal/CORRECT'), np.str_('Resp/Repeat/Word/naval/CORRECT'), np.str_('Resp/Repeat/Word/panel/CORRECT'), np.str_('Resp/Repeat/Word/panic/CORRECT'), np.str_('Resp/Repeat/Word/penal/CORRECT'), np.str_('Resp/Repeat/Word/petal/CORRECT'), np.str_('Resp/Repeat/Word/satin/CORRECT'), np.str_('Resp/Repeat/Word/solid/CORRECT'), np.str_('Resp/Repeat/Word/tenet/CORRECT'), np.str_('Resp/Repeat/Word/topic/CORRECT'), np.str_('Resp/Repeat/Word/vital/CORRECT'), np.str_('Resp/Yes_No/Nonword/berin/CORRECT'), np.str_('Resp/Yes_No/Nonword/delin/CORRECT'), np.str_('Resp/Yes_No/Nonword/devim/CORRECT'), np.str_('Resp/Yes_No/Nonword/gapel/CORRECT'), np.str_('Resp/Yes_No/Nonword/havel/CORRECT'), np.str_('Resp/Yes_No/Nonword/herib/CORRECT'), np.str_('Resp/Yes_No/Nonword/jokel/CORRECT'), np.str_('Resp/Yes_No/Nonword/kelic/CORRECT'), np.str_('Resp/Yes_No/Nonword/labin/CORRECT'), np.str_('Resp/Yes_No/Nonword/likel/CORRECT'), np.str_('Resp/Yes_No/Nonword/limid/CORRECT'), np.str_('Resp/Yes_No/Nonword/lomic/CORRECT'), np.str_('Resp/Yes_No/Nonword/mafil/CORRECT'), np.str_('Resp/Yes_No/Nonword/malim/CORRECT'), np.str_('Resp/Yes_No/Nonword/menon/CORRECT'), np.str_('Resp/Yes_No/Nonword/palil/CORRECT'), np.str_('Resp/Yes_No/Nonword/solip/CORRECT'), np.str_('Resp/Yes_No/Nonword/tanic/CORRECT'), np.str_('Resp/Yes_No/Nonword/telen/CORRECT'), np.str_('Resp/Yes_No/Nonword/terib/CORRECT'), np.str_('Resp/Yes_No/Nonword/toric/CORRECT'), np.str_('Resp/Yes_No/Nonword/zarin/CORRECT'), np.str_('Resp/Yes_No/Word/civil/CORRECT'), np.str_('Resp/Yes_No/Word/comet/CORRECT'), np.str_('Resp/Yes_No/Word/demon/CORRECT'), np.str_('Resp/Yes_No/Word/focal/CORRECT'), np.str_('Resp/Yes_No/Word/libel/CORRECT'), np.str_('Resp/Yes_No/Word/manic/CORRECT'), np.str_('Resp/Yes_No/Word/nasal/CORRECT'), np.str_('Resp/Yes_No/Word/naval/CORRECT'), np.str_('Resp/Yes_No/Word/panel/CORRECT'), np.str_('Resp/Yes_No/Word/penal/CORRECT'), np.str_('Resp/Yes_No/Word/petal/CORRECT'), np.str_('Resp/Yes_No/Word/rabid/CORRECT'), np.str_('Resp/Yes_No/Word/roman/CORRECT'), np.str_('Resp/Yes_No/Word/solid/CORRECT'), np.str_('Resp/Yes_No/Word/sonic/CORRECT')]
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-04_desc-clean_events.tsv'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-04_desc-clean_events.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/dataset_description.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-04_desc-clean_ieeg.json'...
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-04_desc-clean_channels.tsv'...
+Copying data files to sub-D0102_task-LexicalDecRepDelay_acq-01_run-04_desc-clean_ieeg.edf
+Writing '/hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/sub-D0102_scans.tsv'...
+Wrote /hpc/home/bl314/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/clean/sub-D0102/sub-D0102_scans.tsv entry with ieeg/sub-D0102_task-LexicalDecRepDelay_acq-01_run-04_desc-clean_ieeg.edf.
