@@ -25,38 +25,55 @@ from ieeg.viz.parula import parula_map
 from bsliang_utils import get_unused_chs, update_tsv, detect_outlier, load_muscle_chs
 from matplotlib import pyplot as plt
 
-HOME = os.path.expanduser("~")
-LAB_root = os.path.join(HOME, "Box", "CoganLab")
-save_dir=os.path.join(HOME, "Box", "CoganLab", "D_Data","LexicalDecRepDelay","Baishen_Figs")
-
-# Log
-current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}.txt')
-
 # Subj list
-subject_processing_dict = {
+subject_processing_dict_org = {
     "D0081": "",
-    "D0063": "gamma",
-    "D0066": "linernoise/outlierchs/multitaper/gamma",
+    "D0063": "",
+    "D0066": "",
     "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0094": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0096": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0053": "/gamma",
-    "D0054": "/gamma",
-    "D0055": "multitaper/gamma",
-    "D0057": "/gamma",
-    "D0059": "/gamma",
-    "D0065": "multitaper/gamma",
-    "D0068": "/gamma",
-    "D0069": "/gamma",
-    "D0070": "/gamma",
+    "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0055": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0057": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0059": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0065": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0068": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0070": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0077": "/gamma",
+    "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0101": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0102": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0107": "linernoise/outlierchs/wavelet/multitaper/gamma",
 }
+
+# check if currently running a slurm job
+HOME = os.path.expanduser("~")
+if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
+    LAB_root = os.path.join(HOME, "workspace")
+    save_dir=os.path.join(HOME, "Baishen_Figs")
+    if not os.path.exists(os.path.join(save_dir)):
+        os.mkdir(os.path.join(save_dir))
+    subj_No = int(os.environ['SLURM_ARRAY_TASK_ID'])
+    subj = f"D{subj_No:04}"
+    if subj in subject_processing_dict_org:
+        subject_processing_dict = {subj: subject_processing_dict_org[subj]}
+    else:
+        raise KeyError(f"Subject '{subj}' not found in the original dictionary.")
+else:  # if not then set box directory
+    LAB_root = os.path.join(HOME, "Box", "CoganLab")
+    save_dir=os.path.join(HOME, "Box", "CoganLab", "D_Data","LexicalDecRepDelay","Baishen_Figs")
+    if not os.path.exists(os.path.join(save_dir)):
+        os.mkdir(os.path.join(save_dir))
+    subject_processing_dict = subject_processing_dict_org
+
+# Log
+current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}')
+os.mkdir(log_file_path)
 
 for subject, processing_type in subject_processing_dict.items():
 
@@ -67,7 +84,9 @@ for subject, processing_type in subject_processing_dict.items():
         print(f'Line Noise Filtering {subject}\n')
         print('=========================\n')
 
-        log_file = open(log_file_path, 'a')
+        # make a subject log file or load the existing file
+        log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
+
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing line noise filter\n")
 
@@ -96,15 +115,15 @@ for subject, processing_type in subject_processing_dict.items():
             bids_root = os.path.join(LAB_root,'BIDS-1.0_LexicalDecRepDelay','BIDS')
             if not os.path.exists(os.path.join(bids_root, "derivatives")):
                 os.mkdir(os.path.join(bids_root, "derivatives"))
-                os.mkdir(os.path.join(bids_root, "derivatives", "a"))
-            elif not os.path.exists(os.path.join(bids_root, "derivatives", "a")):
-                os.mkdir(os.path.join(bids_root, "derivatives", "a"))
-            save_derivative(raw, layout, "a", True)
+                os.mkdir(os.path.join(bids_root, "derivatives", "clean"))
+            elif not os.path.exists(os.path.join(bids_root, "derivatives", "clean")):
+                os.mkdir(os.path.join(bids_root, "derivatives", "clean"))
+            save_derivative(raw, layout, "clean", True)
             del raw
             del layout
 
             # remove "bad boundary" in events.tsv
-            tsv_loc = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'a', f'sub-{subject}',
+            tsv_loc = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
                                    'ieeg')
             update_tsv(subject, tsv_loc)
             log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter %%% completed %%% \n")
@@ -119,14 +138,14 @@ for subject, processing_type in subject_processing_dict.items():
         print(f'Outlier chs removal {subject}\n')
         print('=========================\n')
 
-        log_file = open(log_file_path, 'a')
+        log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing outlier chs removal\n")
             ## Mark outlier channels
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
-            raw = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
+            raw = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=True)
-            derivative_loc = os.path.join(LAB_root, "BIDS-1.0_LexicalDecRepDelay","BIDS","derivatives","a",f"sub-{subject}","ieeg")
+            derivative_loc = os.path.join(LAB_root, "BIDS-1.0_LexicalDecRepDelay","BIDS","derivatives","clean",f"sub-{subject}","ieeg")
             is_outlier = detect_outlier(subject,derivative_loc)
             if is_outlier == 1:
                 raise ValueError(
@@ -150,13 +169,13 @@ for subject, processing_type in subject_processing_dict.items():
         print('=========================\n')
 
         ## Wavelet
-        log_file = open(log_file_path, 'a')
+        log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing wavelet\n")
 
             # load data
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
-            raw1 = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
+            raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=False)
 
             # drop bad channels
@@ -233,13 +252,13 @@ for subject, processing_type in subject_processing_dict.items():
         print(f'Multitaper {subject}\n')
         print('=========================\n')
 
-        log_file = open(log_file_path, 'a')
+        log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing multitaper\n")    
             ## Multitaper
             # load data
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
-            raw1 = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
+            raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                     preload=False)
 
             # read muscle artifact channels and update
@@ -332,13 +351,13 @@ for subject, processing_type in subject_processing_dict.items():
         print('=========================\n')
     
         ## Wavelet
-        log_file = open(log_file_path, 'a')
+        log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing Gamma band-pass filter and permutation \n")
 
             # load data
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
-            raw1 = raw_from_layout(layout.derivatives['derivatives/a'], subject=subject, desc='a', extension='.edf',
+            raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=False)
 
             # read muscle artifact channels and update

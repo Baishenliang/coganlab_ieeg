@@ -35,10 +35,6 @@ def get_unused_chs(folder_path):
     if 'name' not in electrodes_df.columns or 'name' not in channels_df.columns:
         raise ValueError("Both TSV files must contain a 'name' column.")
 
-    # Remove the 'Trigger' electrode from the channels list
-    # channels_df = channels_df[channels_df['name'] != 'Trigger']
-    # channels_df = channels_df[channels_df['type'] != 'TRIG']
-
     # Create sets of electrode names from each file
     electrodes_set = set(electrodes_df['name'])
     channels_set = set(channels_df['name'])
@@ -70,7 +66,7 @@ def update_tsv(subj, search_dir='.'):
     - ValueError: If no files or more than one matching file are found for a `subj` and those files have issues.
     """
     # Construct the pattern to match the filenames based on `subj`
-    pattern = f"sub-{subj}_task-LexicalDecRepDelay_acq-.+?_run-.+?_desc-a_events.tsv"
+    pattern = f"sub-{subj}_task-LexicalDecRepDelay_acq-.+?_run-.+?_desc-clean_events.tsv"
 
     # Search for all files in the specified directory that match the pattern
     files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]
@@ -104,7 +100,7 @@ def detect_outlier(subj, search_dir='.'):
         int: 1 if any file contains 'outlier' in the 'status_description' column, 0 otherwise.
     """
     # Construct the pattern to match the filenames based on `subj`
-    pattern = f"sub-{subj}_task-LexicalDecRepDelay_acq-.+?_run-.+?_desc-a_channels.tsv"
+    pattern = f"sub-{subj}_task-LexicalDecRepDelay_acq-.+?_run-.+?_desc-clean_channels.tsv"
     
     # Search for all files in the specified directory that match the pattern
     files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]
