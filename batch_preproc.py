@@ -25,7 +25,7 @@ from matplotlib import pyplot as plt
 
 # Subj list
 subject_processing_dict_org = {
-    "D0081": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0081": "multitaper/gamma_pool",
     "D0063": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
     "D0066": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
     "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
@@ -68,9 +68,11 @@ else:  # if not then set box directory
     subject_processing_dict = subject_processing_dict_org
 
 # Log
-current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}')
-os.mkdir(log_file_path)
+current_time = datetime.datetime.now().strftime('%Y-%m-%d')
+if not os.path.exists('data', 'logs', f'batch_preproc_{current_time}'):
+    log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}')
+    os.mkdir(log_file_path)
+
 
 for subject, processing_type in subject_processing_dict.items():
 
