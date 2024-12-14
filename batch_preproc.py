@@ -195,9 +195,9 @@ for subject, processing_type in subject_processing_dict.items():
 
             # wavelet
             for epoch, t, tag in zip(
-                    ('Cue/CORRECT', 'Auditory_stim/CORRECT','Delay/CORRECT', 'Go/CORRECT','Resp/CORRECT'),
-                    ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
-                    ('Cue', 'Auditory','Delay','Go','Resp')):
+                    ('Cue/CORRECT', 'Auditory_stim/CORRECT','Go/CORRECT','Resp/CORRECT'),
+                    ((-0.5, 1.5), (-0.5, 3),  (-0.5, 1), (-0.5, 1)),
+                    ('Cue', 'Auditory','Go','Resp')):
 
                 # Get the spectras
                 t1 = t[0] - 0.5
@@ -288,10 +288,10 @@ for subject, processing_type in subject_processing_dict.items():
             for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
                 for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
                     for epoch, t, tag in zip(
-                            ('Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT', 'Delay/' + task + '/' + word + '/CORRECT', 'Go/' + task + '/' + word + '/CORRECT',
+                            ('Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT', 'Go/' + task + '/' + word + '/CORRECT',
                             'Resp/' + task + '/' + word + '/CORRECT'),
-                            ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
-                            ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
+                            ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                            ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
                     ):
 
                         # Get the spectras
@@ -380,17 +380,25 @@ for subject, processing_type in subject_processing_dict.items():
             # make direction
             if not os.path.exists(os.path.join(save_dir, subject)):
                 os.mkdir(os.path.join(save_dir, subject))
-            if not os.path.exists(os.path.join(save_dir, subject, 'stats')):
-                os.mkdir(os.path.join(save_dir, subject, 'stats'))
+            if not os.path.exists(os.path.join(save_dir, subject, 'gamma_pool')):
+                os.mkdir(os.path.join(save_dir, subject, 'gamma_pool'))
             
-            subj_gamma_dir=os.path.join(save_dir, subject, 'stats')
+            subj_gamma_dir=os.path.join(save_dir, subject, 'gamma_pool')
+
+            if not os.path.exists(os.path.join(bids_root, "derivatives", "stats")):
+                os.mkdir(os.path.join(bids_root, "derivatives", "stats"))
+                os.mkdir(os.path.join(bids_root, "derivatives", "stats",subject))
+            elif not os.path.exists(os.path.join(bids_root, "derivatives", "stats", subject)):
+                os.mkdir(os.path.join(bids_root, "derivatives", "stats",subject))
+
+            subj_gamma_stats_dir=os.path.join(bids_root, "derivatives", "stats", subject)
 
             # extract gamma
             out = []
             for epoch, t, tag in zip(
-                    ('Cue/CORRECT', 'Cue/CORRECT', 'Auditory_stim/CORRECT','Delay/CORRECT', 'Go/CORRECT','Resp/CORRECT'),
-                    ((-0.5, 0), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
-                    ('Baseline', 'Cue', 'Auditory','Delay','Go','Resp')):
+                    ('Cue/CORRECT', 'Cue/CORRECT', 'Auditory_stim/CORRECT', 'Go/CORRECT','Resp/CORRECT'),
+                    ((-0.5, 0), (-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                    ('Baseline', 'Cue', 'Auditory','Go','Resp')):
 
                 # Get the spectras
                 t1 = t[0] - 0.5
@@ -415,62 +423,66 @@ for subject, processing_type in subject_processing_dict.items():
             sig2 = base.get_data(copy=True)
 
             # run permutation
-            for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
-                for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
-                    for epoch, t, tag in zip(
-                            (out[0]['Cue/' + task + '/' + word + '/CORRECT'], out[1]['Auditory_stim/' + task + '/' + word + '/CORRECT'], 
-                            out[2]['Delay/' + task + '/' + word + '/CORRECT'], out[3]['Go/' + task + '/' + word + '/CORRECT'],
-                            out[4]['Resp/' + task + '/' + word + '/CORRECT']),
-                            # (out[0][e] for e in ['Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT', 'Delay/' + task + '/' + word + '/CORRECT', 'Go/' + task + '/' + word + '/CORRECT',
-                            # 'Resp/' + task + '/' + word + '/CORRECT']),
-                            ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
-                            ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
-                    ):
 
-                        sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
+            # EXTRACT THE HG SIGNAL POOLING ALL TRIALS TOGETHER FOR NOW, DON'T SEPARATE HERE NOW
+            # for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
+            #     for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
+            #         for epoch, t, tag in zip(
+            #                 (out[0]['Cue/' + task + '/' + word + '/CORRECT'], out[1]['Auditory_stim/' + task + '/' + word + '/CORRECT'], 
+            #                 out[2]['Delay/' + task + '/' + word + '/CORRECT'], out[3]['Go/' + task + '/' + word + '/CORRECT'],
+            #                 out[4]['Resp/' + task + '/' + word + '/CORRECT']),
+            #                 ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
+            #                 ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
+            #         ):
 
-                        # time-perm
-                        mask[tag], p_act = stats.time_perm_cluster(
-                            sig1, sig2, p_thresh=0.05, axis=0, n_perm=nperm, n_jobs=-3,
-                            ignore_adjacency=1)
-                        epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
-                                                    tmin=t[0])
+            for epoch, t, tag in zip(
+                    (out[0], out[1], out[2],out[3]),
+                    ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                    ('Cue', 'Auditory','Go','Resp')):
+                sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
 
-                        # plot mask
-                        fig, ax = plt.subplots()
-                        ax.imshow(mask[tag], cmap='Reds')
-                        channel_names=epoch_mask.ch_names[::5]
-                        ax.set_yticks(range(0,len(channel_names)*5,5))
-                        ax.set_yticklabels(channel_names)
-                        time_stamps=epoch_mask.times[::20]
-                        ax.set_xticks(range(0,len(time_stamps)*20,20))
-                        ax.set_xticklabels(time_stamps)
-                        try:
-                            zero_time_index = np.where(epoch_mask.times == 0)[0][0]
-                            ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
-                        except Exception as e:
-                            print('no zero time found')
-                        fig.savefig(os.path.join(subj_gamma_dir,f'{tag}.jpg'), dpi=300)
-                        plt.close(fig)
+                # time-perm
+                mask[tag], p_act = stats.time_perm_cluster(
+                    sig1, sig2, p_thresh=0.05, axis=0, n_perm=nperm, n_jobs=-3,
+                    ignore_adjacency=1)
+                epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
+                                            tmin=t[0])
 
-                        # baseline correction
-                        power = scaling.rescale(epoch, base, 'mean', copy=True)
-                        z_score = scaling.rescale(epoch, base, 'zscore', copy=True)
+                # plot mask
+                fig, ax = plt.subplots()
+                ax.imshow(mask[tag], cmap='Reds')
+                channel_names=epoch_mask.ch_names[::5]
+                ax.set_yticks(range(0,len(channel_names)*5,5))
+                ax.set_yticklabels(channel_names)
+                time_stamps=epoch_mask.times[::20]
+                ax.set_xticks(range(0,len(time_stamps)*20,20))
+                ax.set_xticklabels(time_stamps)
+                try:
+                    zero_time_index = np.where(epoch_mask.times == 0)[0][0]
+                    ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
+                except Exception as e:
+                    print('no zero time found')
+                fig.savefig(os.path.join(subj_gamma_dir,f'{tag}.jpg'), dpi=300)
+                plt.close(fig)
 
-                        # Calculate the p-value
-                        p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
+                # baseline correction
+                power = scaling.rescale(epoch, base, 'mean', copy=True)
+                z_score = scaling.rescale(epoch, base, 'zscore', copy=True)
 
-                        # p_vals = epoch_mask.copy()
-                        data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
+                # Calculate the p-value
+                p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
+
+                # p_vals = epoch_mask.copy()
+                data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
 
             for tag, epoch_mask, power, z_score, p_vals in data:
 
-                power.save(subj_gamma_dir + f"/{subject}_{tag}_power-epo.fif", overwrite=True,fmt='double')
-                z_score.save(subj_gamma_dir + f"/{subject}_{tag}_zscore-epo.fif", overwrite=True,fmt='double')
-                epoch_mask.save(subj_gamma_dir + f"/{subject}_{tag}_mask-ave.fif", overwrite=True)
-                p_vals.save(subj_gamma_dir + f"/{subject}_{tag}_pval-ave.fif", overwrite=True)
+                power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
+                z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
+                epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave.fif", overwrite=True)
+                p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
             
-            base.save(subj_gamma_dir + f"/{subject}_base-epo.fif", overwrite=True)
+            base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
             del data
 
             log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation  %%% completed %%% \n")
