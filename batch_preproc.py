@@ -27,27 +27,26 @@ from matplotlib import pyplot as plt
 
 # Subj list
 subject_processing_dict_org = {
-    "D0081": "",
-    "D0063": "",
-    "D0066": "",
-    "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0094": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0096": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0055": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0057": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0059": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0065": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0068": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0070": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0101": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0102": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0107": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0081": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0063": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0066": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0094": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0096": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0055": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0057": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0059": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0065": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0068": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0070": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0101": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
+    "D0102": "linernoise/outlierchs/wavelet/multitaper/gamma_pool"
 }
 
 # check if currently running a slurm job
@@ -344,16 +343,16 @@ for subject, processing_type in subject_processing_dict.items():
 
         log_file.close()
 
-    if "gamma" in processing_type:
+    if "gamma_pool" in processing_type:
 
         print('=========================\n')
-        print(f'Gamma band-pass filter and permutation {subject}\n')
+        print(f'(Pool) Gamma band-pass filter and permutation {subject}\n')
         print('=========================\n')
     
         ## Wavelet
         log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Executing Gamma band-pass filter and permutation \n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Executing (Pool) Gamma band-pass filter and permutation \n")
 
             # load data
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
@@ -423,18 +422,6 @@ for subject, processing_type in subject_processing_dict.items():
             sig2 = base.get_data(copy=True)
 
             # run permutation
-
-            # EXTRACT THE HG SIGNAL POOLING ALL TRIALS TOGETHER FOR NOW, DON'T SEPARATE HERE NOW
-            # for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
-            #     for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
-            #         for epoch, t, tag in zip(
-            #                 (out[0]['Cue/' + task + '/' + word + '/CORRECT'], out[1]['Auditory_stim/' + task + '/' + word + '/CORRECT'], 
-            #                 out[2]['Delay/' + task + '/' + word + '/CORRECT'], out[3]['Go/' + task + '/' + word + '/CORRECT'],
-            #                 out[4]['Resp/' + task + '/' + word + '/CORRECT']),
-            #                 ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
-            #                 ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
-            #         ):
-
             for epoch, t, tag in zip(
                     (out[0], out[1], out[2],out[3]),
                     ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
@@ -485,9 +472,23 @@ for subject, processing_type in subject_processing_dict.items():
             base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
             del data
 
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation  %%% completed %%% \n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, (Pool) Gamma band-pass and permutation  %%% completed %%% \n")
 
         except Exception as e:
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation !!! failed with error !!! : {str(e)}\n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, (Pool) Gamma band-pass and permutation !!! failed with error !!! : {str(e)}\n")
 
         log_file.close()
+
+    if "gamma_ttest" in processing_type:
+
+            # EXTRACT THE HG SIGNAL POOLING ALL TRIALS TOGETHER FOR NOW, DON'T SEPARATE HERE NOW
+            # for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
+            #     for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
+            #         for epoch, t, tag in zip(
+            #                 (out[0]['Cue/' + task + '/' + word + '/CORRECT'], out[1]['Auditory_stim/' + task + '/' + word + '/CORRECT'], 
+            #                 out[2]['Delay/' + task + '/' + word + '/CORRECT'], out[3]['Go/' + task + '/' + word + '/CORRECT'],
+            #                 out[4]['Resp/' + task + '/' + word + '/CORRECT']),
+            #                 ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
+            #                 ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
+            #         ):
+            print('Wait for future updating')
