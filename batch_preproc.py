@@ -8,12 +8,10 @@
 # Preparation:
 
 import os
-import os.path as op
 import mne
 import datetime
 import numpy as np
-from itertools import product
-from ieeg.navigate import crop_empty_data, channel_outlier_marker, trial_ieeg, outliers_to_nan
+from ieeg.navigate import channel_outlier_marker, trial_ieeg, outliers_to_nan
 from ieeg.mt_filter import line_filter
 from ieeg.io import get_data, raw_from_layout, save_derivative, update
 from ieeg.calc import stats, scaling
@@ -100,17 +98,13 @@ for subject, processing_type in subject_processing_dict.items():
                 raw.drop_channels(unused_chs)
 
             # line noise filtering
-            line_filter(raw, mt_bandwidth=10., n_jobs=-10, copy=False, verbose=10,
+            line_filter(raw, mt_bandwidth=10., n_jobs=-1, copy=False, verbose=10,
                         filter_length='700ms', freqs=[60], notch_widths=20)
-            line_filter(raw, mt_bandwidth=10., n_jobs=-10, copy=False, verbose=10,
+            line_filter(raw, mt_bandwidth=10., n_jobs=-1, copy=False, verbose=10,
                         filter_length='20s', freqs=[60, 120, 180, 240],
                         notch_widths=20)
 
             # crop and save data
-            if subject=="D0079":
-                raw1 = crop_empty_data(raw)
-                del raw
-                raw = raw1
             bids_root = os.path.join(LAB_root,'BIDS-1.0_LexicalDecRepDelay','BIDS')
             if not os.path.exists(os.path.join(bids_root, "derivatives")):
                 os.mkdir(os.path.join(bids_root, "derivatives"))
@@ -205,7 +199,7 @@ for subject, processing_type in subject_processing_dict.items():
                 trials = trial_ieeg(raw, epoch, times, preload=True)
                 outliers_to_nan(trials, outliers=10)
 
-                spectra_wavelet = wavelet_scaleogram(trials, n_jobs=-3, decim=int(
+                spectra_wavelet = wavelet_scaleogram(trials, n_jobs=-1, decim=int(
                     raw.info['sfreq'] / 200))  # 1/10 of the timepionts, don't take too long
                 crop_pad(spectra_wavelet, "0.5s")  # cut the first and final 0.5s, change to zero
 
@@ -301,7 +295,7 @@ for subject, processing_type in subject_processing_dict.items():
                         outliers_to_nan(trials, outliers=10)
 
                         freq = np.linspace(0.5, 200, num=80)
-                        kwargs = dict(average=False, n_jobs=-3, freqs=freq, return_itc=False,
+                        kwargs = dict(average=False, n_jobs=-1, freqs=freq, return_itc=False,
                                     n_cycles=freq / 2, time_bandwidth=4,
                                     # n_fft=int(trials.info['sfreq'] * 2.75),
                                     decim=20, )
@@ -406,7 +400,7 @@ for subject, processing_type in subject_processing_dict.items():
                 trials = trial_ieeg(raw, epoch, times, preload=True, reject_by_annotation=False)
                 outliers_to_nan(trials, outliers=10)
 
-                gamma.extract(trials, copy=False, n_jobs=-10)
+                gamma.extract(trials, copy=False, n_jobs=-1)
                 utils.crop_pad(trials, "0.5s")
                 trials.resample(100)
                 trials.filenames = raw.filenames
@@ -430,7 +424,7 @@ for subject, processing_type in subject_processing_dict.items():
 
                 # time-perm
                 mask[tag], p_act = stats.time_perm_cluster(
-                    sig1, sig2, p_thresh=0.05, axis=0, n_perm=nperm, n_jobs=-3,
+                    sig1, sig2, p_thresh=0.05, axis=0, n_perm=nperm, n_jobs=-1,
                     ignore_adjacency=1)
                 epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
                                             tmin=t[0])
