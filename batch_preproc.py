@@ -51,7 +51,7 @@ subject_processing_dict_org = {
 HOME = os.path.expanduser("~")
 if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
     LAB_root = os.path.join(HOME, "workspace")
-    save_dir=os.path.join(HOME, "Baishen_Figs")
+    save_dir=os.path.join(HOME,"workspace", "Baishen_Figs")
     if not os.path.exists(os.path.join(save_dir)):
         os.mkdir(os.path.join(save_dir))
     subj_No = int(os.environ['SLURM_ARRAY_TASK_ID'])
