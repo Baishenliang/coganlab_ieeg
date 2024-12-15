@@ -2,6 +2,8 @@ import pandas as pd
 import re
 import os
 import glob
+import numpy as np
+from matplotlib import pyplot as plt
 
 def get_unused_chs(folder_path):
     """
@@ -179,3 +181,20 @@ def update_muscle_chs(subj, search_dir='.'):
         data.to_csv(file_path, sep='\t', index=False)
 
     print(f"Updated files for subject {subj}: {files}")
+
+def plot_save_gammamask(mask,epoch_mask,subj_gamma_dir,fname):
+    fig, ax = plt.subplots()
+    ax.imshow(mask, cmap='Reds')
+    channel_names=epoch_mask.ch_names[::5]
+    ax.set_yticks(range(0,len(channel_names)*5,5))
+    ax.set_yticklabels(channel_names)
+    time_stamps=epoch_mask.times[::20]
+    ax.set_xticks(range(0,len(time_stamps)*20,20))
+    ax.set_xticklabels(time_stamps)
+    try:
+        zero_time_index = np.where(epoch_mask.times == 0)[0][0]
+        ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
+    except Exception as e:
+        print('no zero time found')
+    fig.savefig(os.path.join(subj_gamma_dir,fname), dpi=300)
+    plt.close(fig)

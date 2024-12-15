@@ -5,7 +5,7 @@
     https://github.com/coganlab/SentenceRep_analysis
     From Baishen Liang.
 """
-# Preparation:
+# %% Preparation:
 
 import os
 import mne
@@ -20,11 +20,12 @@ from ieeg.viz.ensemble import chan_grid
 from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.timefreq import gamma, utils
 from ieeg.viz.parula import parula_map
-from bsliang_utils import get_unused_chs, update_tsv, detect_outlier, load_muscle_chs, update_muscle_chs
+from bsliang_utils import get_unused_chs, update_tsv, detect_outlier, load_muscle_chs, update_muscle_chs, plot_save_gammamask
 from matplotlib import pyplot as plt
 
-# Subj list
+# %% Subj list
 subject_processing_dict_org = {
+    "D0070": "gamma",
     "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0055": "linernoise/outlierchs/wavelet/multitaper/gamma",
@@ -35,7 +36,7 @@ subject_processing_dict_org = {
     "D0066": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0068": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0070": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    #"D0070": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma",
@@ -47,7 +48,7 @@ subject_processing_dict_org = {
     "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma"
 }
 
-# check if currently running a slurm job
+# %% check if currently running a slurm job
 HOME = os.path.expanduser("~")
 if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
     LAB_root = os.path.join(HOME, "workspace")
@@ -70,17 +71,18 @@ else:  # if not then set box directory
 
 bids_root = os.path.join(LAB_root,'BIDS-1.0_LexicalDecRepDelay','BIDS')
 
-# Log
+# %% Log
 current_time = datetime.datetime.now().strftime('%Y-%m-%d')
 log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}')
 if not os.path.exists(log_file_path):
     os.mkdir(log_file_path)
 
 
+# %% Loop
 for subject, processing_type in subject_processing_dict.items():
 
+    ## %% Line Noise Filtering
     if "linernoise" in processing_type:
-        ## Line Noise Filtering
 
         print('=========================\n')
         print(f'Line Noise Filtering {subject}\n')
@@ -233,7 +235,7 @@ for subject, processing_type in subject_processing_dict.items():
                     fig_count += 1
 
                 # Clean memory
-                del spectra_wavelet, filename, chan_grids
+                del spectra_wavelet, filename, chan_grids, trials
 
             del base_wavelet, raw, layout
             log_file.write(f"{datetime.datetime.now()}, {subject}, Wavelet  %%% completed %%% \n")
@@ -331,7 +333,7 @@ for subject, processing_type in subject_processing_dict.items():
 
                         del trials, spectra_multitaper, filename, chan_grids
                     del base_multitaper
-
+            del raw, layout
             log_file.write(f"{datetime.datetime.now()}, {subject}, Multitaper  %%% completed %%% \n")
 
         except Exception as e:
@@ -385,67 +387,61 @@ for subject, processing_type in subject_processing_dict.items():
 
             subj_gamma_stats_dir=os.path.join(bids_root, "derivatives", "stats", subject)
 
-            # extract gamma
-            out = []
-            for epoch, t, tag in zip(
-                    ('Cue/CORRECT', 'Cue/CORRECT', 'Auditory_stim/CORRECT', 'Go/CORRECT','Resp/CORRECT'),
-                    ((-0.5, 0), (-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                    ('Baseline', 'Cue', 'Auditory','Go','Resp')):
+            # gamma and permutation
+            for epoch_phase, t_phase, tag_phase in zip(
+                ('Cue/CORRECT', 'Auditory_stim/CORRECT', 'Go/CORRECT','Resp/CORRECT'),
+                ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                ('Cue', 'Auditory','Go','Resp')
+            ):
+                out = []
+                
+                # extract gamma
+                for epoch, t, tag in zip(
+                        ('Cue/CORRECT', epoch_phase),
+                        ((-0.5, 0), t_phase),
+                        ('Baseline',tag_phase)):
 
-                # Get the spectras
-                t1 = t[0] - 0.5
-                t2 = t[1] + 0.5
-                times = (t1, t2)
-                trials = trial_ieeg(raw, epoch, times, preload=True, reject_by_annotation=False)
-                outliers_to_nan(trials, outliers=10)
+                    # Get the spectras
+                    t1 = t[0] - 0.5
+                    t2 = t[1] + 0.5
+                    times = (t1, t2)
+                    trials = trial_ieeg(raw, epoch, times, preload=True, reject_by_annotation=False)
+                    outliers_to_nan(trials, outliers=10)
 
-                gamma.extract(trials, copy=False, n_jobs=-1)
-                utils.crop_pad(trials, "0.5s")
-                trials.resample(100)
-                trials.filenames = raw.filenames
-                out.append(trials)
+                    gamma.extract(trials, copy=False, n_jobs=-1)
+                    utils.crop_pad(trials, "0.5s")
+                    trials.resample(100)
+                    trials.filenames = raw.filenames
+                    out.append(trials)
+                    del trials
 
-            # Get and cut baseline
-            base = out.pop(0)
+                # Get and cut baseline
+                base = out.pop(0)
 
-            # Permutation parameters
-            nperm = 100000
+                # Permutation parameters
+                nperm = 100000
 
-            # run permutation: pool gamma
+                # run permutation: pool gamma
 
-            mask = dict()
-            data = []
-            sig2 = base.get_data(copy=True)
+                mask = dict()
+                data = []
+                sig2 = base.get_data(copy=True)
 
-            for epoch, t, tag in zip(
-                    (out[0], out[1], out[2],out[3]),
-                    ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                    ('Cue', 'Auditory','Go','Resp')):
+                epoch = out[0]
+                t = t_phase
+                tag = tag_phase
+
                 sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
 
-                # time-perm
+                # time-perm  (test whether signal is greater than baseline, p=0.05 as it is a one-tailed test)
                 mask[tag], p_act = stats.time_perm_cluster(
-                    sig1, sig2, p_thresh=0.05, axis=0, n_perm=nperm, n_jobs=-1,
+                    sig1, sig2, p_thresh=0.05, axis=0, tails=1, n_perm=nperm, n_jobs=-1,
                     ignore_adjacency=1)
                 epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
                                             tmin=t[0])
 
                 # plot mask
-                fig, ax = plt.subplots()
-                ax.imshow(mask[tag], cmap='Reds')
-                channel_names=epoch_mask.ch_names[::5]
-                ax.set_yticks(range(0,len(channel_names)*5,5))
-                ax.set_yticklabels(channel_names)
-                time_stamps=epoch_mask.times[::20]
-                ax.set_xticks(range(0,len(time_stamps)*20,20))
-                ax.set_xticklabels(time_stamps)
-                try:
-                    zero_time_index = np.where(epoch_mask.times == 0)[0][0]
-                    ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
-                except Exception as e:
-                    print('no zero time found')
-                fig.savefig(os.path.join(subj_gamma_dir,f'{tag}.jpg'), dpi=300)
-                plt.close(fig)
+                plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}.jpg')
 
                 # baseline correction
                 power = scaling.rescale(epoch, base, 'mean', copy=True)
@@ -454,76 +450,62 @@ for subject, processing_type in subject_processing_dict.items():
                 # Calculate the p-value
                 p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
 
-                # p_vals = epoch_mask.copy()
                 data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
 
-            for tag, epoch_mask, power, z_score, p_vals in data:
+                for tag, epoch_mask, power, z_score, p_vals in data:
 
-                power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
-                z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
-                epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave.fif", overwrite=True)
-                p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
-            
-            base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
-            del data, sig1, sig2, base
-
-            # run permutation: contrast gamma (YesNo vs. Repeat)
-
-            mask = dict()
-            data = []
-
-            for epoch, t, tag in zip(
-                    (out[0], out[1], out[2],out[3]),
-                    ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                    ('Cue', 'Auditory','Go','Resp')):
+                    power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
+                    z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
+                    epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave.fif", overwrite=True)
+                    p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
                 
-                sig1 = epoch['Yes_No'].get_data(tmin=t[0], tmax=t[1], copy=True) # Yes_No data as signal
-                sig2 = epoch['Repeat'].get_data(tmin=t[0], tmax=t[1], copy=True) # Repeat task as baseline
+                base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
+                del data, sig1, sig2, base, mask
 
-                # time-perm
-                mask[tag], p_act = stats.time_perm_cluster(
-                    sig1, sig2, p_thresh=0.05, axis=0, n_perm=nperm, n_jobs=-1,
-                    ignore_adjacency=1)
-                epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
-                                            tmin=t[0])
+                # run permutation: contrast gamma (YesNo vs. Repeat, )
 
-                # plot mask
-                fig, ax = plt.subplots()
-                ax.imshow(mask[tag], cmap='Reds')
-                channel_names=epoch_mask.ch_names[::5]
-                ax.set_yticks(range(0,len(channel_names)*5,5))
-                ax.set_yticklabels(channel_names)
-                time_stamps=epoch_mask.times[::20]
-                ax.set_xticks(range(0,len(time_stamps)*20,20))
-                ax.set_xticklabels(time_stamps)
-                try:
-                    zero_time_index = np.where(epoch_mask.times == 0)[0][0]
-                    ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
-                except Exception as e:
-                    print('no zero time found')
-                fig.savefig(os.path.join(subj_gamma_dir,f'{tag}_contrast.jpg'), dpi=300)
-                plt.close(fig)
+                for sig1_tag, sig2_tag, contrast_Tag in zip(
+                    ('Yes_No','Repeat'),
+                    ('Repeat','Yes_No'),
+                    ('YN_Rep','Rep_YN')):
 
-                # baseline correction
-                # not knowing if this one is correct but just made it (!!!! waiting for Aaron to solve !!!!)
-                # sig2_rshape = make_data_same(sig2, sig1.shape, 0)
-                power = scaling.rescale(epoch['Yes_No'], epoch['Repeat'], 'mean', copy=True)
-                z_score = scaling.rescale(epoch['Yes_No'], epoch['Repeat'], 'zscore', copy=True)
+                    mask = dict()
+                    data = []
+                        
+                    sig1 = epoch[sig1_tag].get_data(tmin=t[0], tmax=t[1], copy=True) # as signal
+                    sig2 = epoch[sig2_tag].get_data(tmin=t[0], tmax=t[1], copy=True) # as baseline
 
-                # Calculate the p-value
-                p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
+                    # time-perm (test whether signal is greater than baseline, p=0.025 as it is a two-tailed test)
+                    mask[tag], p_act = stats.time_perm_cluster(
+                        sig1, sig2, p_thresh=0.025, axis=0, tails=1, n_perm=nperm, n_jobs=-1,
+                        ignore_adjacency=1)
+                    epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
+                                                tmin=t[0])
 
-                # p_vals = epoch_mask.copy()
-                data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
+                    # plot mask
+                    plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}_{contrast_Tag}.jpg')
 
-            for tag, epoch_mask, power, z_score, p_vals in data:
+                    # baseline correction
+                    # not knowing if this one is correct but just made it (!!!! waiting for Aaron to solve !!!!)
+                    # sig2_rshape = make_data_same(sig2, sig1.shape, 0)
+                    power = scaling.rescale(epoch[sig1_tag], epoch[sig2_tag], 'mean', copy=True)
+                    z_score = scaling.rescale(epoch[sig1_tag], epoch[sig2_tag], 'zscore', copy=True)
 
-                power.save(subj_gamma_stats_dir + f"/{tag}_power-epo_contrast.fif", overwrite=True,fmt='double')
-                z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo_contrast.fif", overwrite=True,fmt='double')
-                epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave_contrast.fif", overwrite=True)
-                p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave_contrast.fif", overwrite=True)
-            
-            del data, sig1, sig2
+                    # Calculate the p-value
+                    p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
+
+                    data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
+
+                    for tag, epoch_mask, power, z_score, p_vals in data:
+
+                        power.save(subj_gamma_stats_dir + f"/{tag}_power-epo_{contrast_Tag}.fif", overwrite=True,fmt='double')
+                        z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo_{contrast_Tag}.fif", overwrite=True,fmt='double')
+                        epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave_{contrast_Tag}.fif", overwrite=True)
+                        p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave_{contrast_Tag}.fif", overwrite=True)
+                    
+                    del data, sig1, sig2, mask
+
+                del out
 
             log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation  %%% completed %%% \n")
 
