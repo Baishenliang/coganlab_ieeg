@@ -121,8 +121,61 @@ def detect_outlier(subj, search_dir='.'):
     return 0
 
 def load_muscle_chs(subject):
-        muscle_chs_loc=os.path.join('data','muscle_chans',f'{subject}_muscle_chans.csv')
-        df = pd.read_csv(muscle_chs_loc, header=None)
-        df.columns = ['muscle_chs']
-        muscle_chs = df['muscle_chs'].tolist()
-        return muscle_chs
+        
+    """
+    Load the muscle channels for a specific subject.
+
+    Args:
+        subject (str): Subject identifier.
+
+    Returns:
+        list: List of muscle channel names.
+    """
+    muscle_chs_loc=os.path.join('data','muscle_chans',f'{subject}_muscle_chans.csv')
+    df = pd.read_csv(muscle_chs_loc, header=None)
+    df.columns = ['muscle_chs']
+    muscle_chs = df['muscle_chs'].tolist()
+    return muscle_chs
+
+def update_muscle_chs(subj, search_dir='.'):
+    """
+    Update the status and status_description of specified electrodes in the subject's channel files
+    based on the muscle channels loaded for the subject.
+
+    Args:
+        subj (str): Subject identifier.
+        search_dir (str): Directory to search for the files. Defaults to the current directory.
+
+    Returns:
+        None
+    """
+
+    # Load muscle channels for the subject
+    electrode_list = load_muscle_chs(subj)
+
+    # Construct the pattern to match the filenames based on `subj`
+    pattern = f"sub-{subj}_task-LexicalDecRepDelay_acq-.+?_run-.+?_desc-clean_channels.tsv"
+
+    # Search for all files in the specified directory that match the pattern
+    files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]
+
+    if not files:
+        raise ValueError(f"No files matching the pattern found for subj {subj}.")
+
+    for file in files:
+        file_path = os.path.join(search_dir, file)
+        # Read the file assuming it's a tab-separated values (TSV) file
+        data = pd.read_csv(file_path, sep='\t')
+
+        # Check and update the status and status_description for the electrodes
+        for electrode in electrode_list:
+            if electrode in data['name'].values:
+                idx = data[data['name'] == electrode].index[0]
+                if data.at[idx, 'status'] != 'bad' or data.at[idx, 'status_description'] != 'muscle':
+                    data.at[idx, 'status'] = 'bad'
+                    data.at[idx, 'status_description'] = 'muscle'
+
+        # Save the updated file back to disk
+        data.to_csv(file_path, sep='\t', index=False)
+
+    print(f"Updated files for subject {subj}: {files}")

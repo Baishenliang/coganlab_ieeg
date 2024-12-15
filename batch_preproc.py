@@ -20,31 +20,31 @@ from ieeg.viz.ensemble import chan_grid
 from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.timefreq import gamma, utils
 from ieeg.viz.parula import parula_map
-from bsliang_utils import get_unused_chs, update_tsv, detect_outlier, load_muscle_chs
+from bsliang_utils import get_unused_chs, update_tsv, detect_outlier, load_muscle_chs, update_muscle_chs
 from matplotlib import pyplot as plt
 
 # Subj list
 subject_processing_dict_org = {
-    "D0081": "multitaper/gamma_pool",
-    "D0063": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0066": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0094": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0096": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0055": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0057": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0059": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0065": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0068": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0070": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0101": "linernoise/outlierchs/wavelet/multitaper/gamma_pool",
-    "D0102": "linernoise/outlierchs/wavelet/multitaper/gamma_pool"
+    "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0055": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0057": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0059": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0063": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0065": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0066": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0068": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0070": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0081": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0094": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0096": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0101": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0102": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma"
 }
 
 # check if currently running a slurm job
@@ -67,10 +67,13 @@ else:  # if not then set box directory
         os.mkdir(os.path.join(save_dir))
     subject_processing_dict = subject_processing_dict_org
 
+
+bids_root = os.path.join(LAB_root,'BIDS-1.0_LexicalDecRepDelay','BIDS')
+
 # Log
 current_time = datetime.datetime.now().strftime('%Y-%m-%d')
-if not os.path.exists('data', 'logs', f'batch_preproc_{current_time}'):
-    log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}')
+log_file_path = os.path.join('data', 'logs', f'batch_preproc_{current_time}')
+if not os.path.exists(log_file_path):
     os.mkdir(log_file_path)
 
 
@@ -107,7 +110,6 @@ for subject, processing_type in subject_processing_dict.items():
                         notch_widths=20)
 
             # crop and save data
-            bids_root = os.path.join(LAB_root,'BIDS-1.0_LexicalDecRepDelay','BIDS')
             if not os.path.exists(os.path.join(bids_root, "derivatives")):
                 os.mkdir(os.path.join(bids_root, "derivatives"))
                 os.mkdir(os.path.join(bids_root, "derivatives", "clean"))
@@ -251,18 +253,16 @@ for subject, processing_type in subject_processing_dict.items():
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing multitaper\n")    
             ## Multitaper
+
+            # read muscle artifact channels and update
+            tsv_loc = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
+                        'ieeg')
+            update_muscle_chs(subject, tsv_loc)
+            
             # load data
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
             raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                     preload=False)
-
-            # read muscle artifact channels and update
-            raw1_org_bads=raw1.info['bads']
-            muscle_chs=load_muscle_chs(subject)
-            muscle_chs_bads=[b for b in muscle_chs if b in raw1.ch_names]
-            bads_new=list(set(raw1_org_bads+muscle_chs_bads))
-            raw1.info.update(bads=bads_new)
-            update(raw1, layout, "muscle")
 
             # drop bad channels
             raw = raw1.copy().drop_channels(raw1.info['bads'])
@@ -339,29 +339,26 @@ for subject, processing_type in subject_processing_dict.items():
 
         log_file.close()
 
-    if "gamma_pool" in processing_type:
+    if "gamma" in processing_type:
 
         print('=========================\n')
-        print(f'(Pool) Gamma band-pass filter and permutation {subject}\n')
+        print(f'Gamma band-pass filter and permutation {subject}\n')
         print('=========================\n')
     
-        ## Wavelet
+        ## Gamma_pool
         log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
-            log_file.write(f"{datetime.datetime.now()}, {subject}, Executing (Pool) Gamma band-pass filter and permutation \n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Executing Gamma band-pass filter and permutation \n")
+
+            # read muscle artifact channels and update
+            tsv_loc = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
+                        'ieeg')
+            update_muscle_chs(subject, tsv_loc)
 
             # load data
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
             raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=False)
-
-            # read muscle artifact channels and update
-            raw1_org_bads=raw1.info['bads']
-            muscle_chs=load_muscle_chs(subject)
-            muscle_chs_bads=[b for b in muscle_chs if b in raw1.ch_names]
-            bads_new=list(set(raw1_org_bads+muscle_chs_bads))
-            raw1.info.update(bads=bads_new)
-            update(raw1, layout, "muscle")
 
             # drop bad channels
             raw = raw1.copy().drop_channels(raw1.info['bads'])
@@ -375,10 +372,10 @@ for subject, processing_type in subject_processing_dict.items():
             # make direction
             if not os.path.exists(os.path.join(save_dir, subject)):
                 os.mkdir(os.path.join(save_dir, subject))
-            if not os.path.exists(os.path.join(save_dir, subject, 'gamma_pool')):
-                os.mkdir(os.path.join(save_dir, subject, 'gamma_pool'))
+            if not os.path.exists(os.path.join(save_dir, subject, 'gamma')):
+                os.mkdir(os.path.join(save_dir, subject, 'gamma'))
             
-            subj_gamma_dir=os.path.join(save_dir, subject, 'gamma_pool')
+            subj_gamma_dir=os.path.join(save_dir, subject, 'gamma')
 
             if not os.path.exists(os.path.join(bids_root, "derivatives", "stats")):
                 os.mkdir(os.path.join(bids_root, "derivatives", "stats"))
@@ -411,13 +408,15 @@ for subject, processing_type in subject_processing_dict.items():
             # Get and cut baseline
             base = out.pop(0)
 
-            # Prepare for permutation
+            # Permutation parameters
+            nperm = 100000
+
+            # run permutation: pool gamma
+
             mask = dict()
             data = []
-            nperm = 100000
             sig2 = base.get_data(copy=True)
 
-            # run permutation
             for epoch, t, tag in zip(
                     (out[0], out[1], out[2],out[3]),
                     ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
@@ -466,25 +465,69 @@ for subject, processing_type in subject_processing_dict.items():
                 p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
             
             base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
-            del data
+            del data, sig1, sig2, base
 
-            log_file.write(f"{datetime.datetime.now()}, {subject}, (Pool) Gamma band-pass and permutation  %%% completed %%% \n")
+            # run permutation: contrast gamma (YesNo vs. Repeat)
+
+            mask = dict()
+            data = []
+
+            for epoch, t, tag in zip(
+                    (out[0], out[1], out[2],out[3]),
+                    ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                    ('Cue', 'Auditory','Go','Resp')):
+                
+                sig1 = epoch['Yes_No'].get_data(tmin=t[0], tmax=t[1], copy=True) # Yes_No data as signal
+                sig2 = epoch['Repeat'].get_data(tmin=t[0], tmax=t[1], copy=True) # Repeat task as baseline
+
+                # time-perm
+                mask[tag], p_act = stats.time_perm_cluster(
+                    sig1, sig2, p_thresh=0.05, axis=0, n_perm=nperm, n_jobs=-1,
+                    ignore_adjacency=1)
+                epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
+                                            tmin=t[0])
+
+                # plot mask
+                fig, ax = plt.subplots()
+                ax.imshow(mask[tag], cmap='Reds')
+                channel_names=epoch_mask.ch_names[::5]
+                ax.set_yticks(range(0,len(channel_names)*5,5))
+                ax.set_yticklabels(channel_names)
+                time_stamps=epoch_mask.times[::20]
+                ax.set_xticks(range(0,len(time_stamps)*20,20))
+                ax.set_xticklabels(time_stamps)
+                try:
+                    zero_time_index = np.where(epoch_mask.times == 0)[0][0]
+                    ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
+                except Exception as e:
+                    print('no zero time found')
+                fig.savefig(os.path.join(subj_gamma_dir,f'{tag}_contrast.jpg'), dpi=300)
+                plt.close(fig)
+
+                # baseline correction
+                # not knowing if this one is correct but just made it (!!!! waiting for Aaron to solve !!!!)
+                # sig2_rshape = make_data_same(sig2, sig1.shape, 0)
+                power = scaling.rescale(epoch['Yes_No'], epoch['Repeat'], 'mean', copy=True)
+                z_score = scaling.rescale(epoch['Yes_No'], epoch['Repeat'], 'zscore', copy=True)
+
+                # Calculate the p-value
+                p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
+
+                # p_vals = epoch_mask.copy()
+                data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
+
+            for tag, epoch_mask, power, z_score, p_vals in data:
+
+                power.save(subj_gamma_stats_dir + f"/{tag}_power-epo_contrast.fif", overwrite=True,fmt='double')
+                z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo_contrast.fif", overwrite=True,fmt='double')
+                epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave_contrast.fif", overwrite=True)
+                p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave_contrast.fif", overwrite=True)
+            
+            del data, sig1, sig2
+
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation  %%% completed %%% \n")
 
         except Exception as e:
-            log_file.write(f"{datetime.datetime.now()}, {subject}, (Pool) Gamma band-pass and permutation !!! failed with error !!! : {str(e)}\n")
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation !!! failed with error !!! : {str(e)}\n")
 
         log_file.close()
-
-    if "gamma_ttest" in processing_type:
-
-            # EXTRACT THE HG SIGNAL POOLING ALL TRIALS TOGETHER FOR NOW, DON'T SEPARATE HERE NOW
-            # for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
-            #     for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
-            #         for epoch, t, tag in zip(
-            #                 (out[0]['Cue/' + task + '/' + word + '/CORRECT'], out[1]['Auditory_stim/' + task + '/' + word + '/CORRECT'], 
-            #                 out[2]['Delay/' + task + '/' + word + '/CORRECT'], out[3]['Go/' + task + '/' + word + '/CORRECT'],
-            #                 out[4]['Resp/' + task + '/' + word + '/CORRECT']),
-            #                 ((-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1.5), (-0.5, 1)),
-            #                 ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Delay-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
-            #         ):
-            print('Wait for future updating')
