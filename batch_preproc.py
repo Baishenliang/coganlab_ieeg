@@ -25,7 +25,6 @@ from matplotlib import pyplot as plt
 
 # %% Subj list
 subject_processing_dict_org = {
-    "D0070": "gamma",
     "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0055": "linernoise/outlierchs/wavelet/multitaper/gamma",
@@ -36,7 +35,7 @@ subject_processing_dict_org = {
     "D0066": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0068": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    #"D0070": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0070": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma",
