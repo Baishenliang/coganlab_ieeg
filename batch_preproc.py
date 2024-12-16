@@ -53,7 +53,10 @@ if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
     LAB_root = os.path.join(HOME, "workspace")
     save_dir=os.path.join(HOME,"workspace", "Baishen_Figs")
     if not os.path.exists(os.path.join(save_dir)):
-        os.mkdir(os.path.join(save_dir))
+        try:
+            os.mkdir(os.path.join(save_dir))
+        except Exception as e:
+            print('skip') 
     subj_No = int(os.environ['SLURM_ARRAY_TASK_ID'])
     subj = f"D{subj_No:04}"
     if subj in subject_processing_dict_org:
@@ -141,8 +144,11 @@ for subject, processing_type in subject_processing_dict.items():
 
             # drop eeg and marker channels
             eeg_electrode_list = load_eeg_chs(subject)
+            if eeg_electrode_list == ['nan']:
+                eeg_electrode_list == []
             eeg_electrode_list.append('Trigger')
             raw.drop(eeg_electrode_list)
+            # drop the EEG type channels
 
             # mark outlier
             derivative_loc = os.path.join(LAB_root, "BIDS-1.0_LexicalDecRepDelay","BIDS","derivatives","clean",f"sub-{subject}","ieeg")
