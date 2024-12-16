@@ -24,27 +24,29 @@ from bsliang_utils import update_tsv, detect_outlier, load_eeg_chs, update_muscl
 from matplotlib import pyplot as plt
 
 # %% Subj list
+
 subject_processing_dict_org = {
-    "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0053": "",
+    "D0054": "gamma",
     "D0055": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0057": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0059": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0063": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0065": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0066": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0068": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0070": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0057": "gamma",
+    "D0059": "gamma",
+    "D0063": "",
+    "D0065": "",
+    "D0066": "",
+    "D0068": "gamma",
+    "D0069": "gamma",
+    "D0070": "",
+    "D0071": "",
     "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0081": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0094": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0081": "",
+    "D0094": "",
     "D0096": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0101": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0102": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma"
+    "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0107": "linernoise/outlierchs/wavelet/multitaper/gamma"
 }
 
 # %% check if currently running a slurm job
@@ -100,10 +102,17 @@ for subject, processing_type in subject_processing_dict.items():
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
             raw = raw_from_layout(layout, subject=subject, preload=True, extension='.edf')
 
+            # drop eeg and marker channels
+            eeg_electrode_list = load_eeg_chs(subject)
+            eeg_electrode_list = [item for item in eeg_electrode_list if isinstance(item, str)]
+            if subject!='D0103':
+                eeg_electrode_list.append('Trigger')
+            raw.drop_channels(eeg_electrode_list)
+
             # line noise filtering
-            line_filter(raw, mt_bandwidth=10., n_jobs=-10, copy=False, verbose=10,
+            line_filter(raw, mt_bandwidth=10., n_jobs=-1, copy=False, verbose=10,
                         filter_length='700ms', freqs=[60], notch_widths=20)
-            line_filter(raw, mt_bandwidth=10., n_jobs=-10, copy=False, verbose=10,
+            line_filter(raw, mt_bandwidth=10., n_jobs=-1, copy=False, verbose=10,
                         filter_length='20s', freqs=[60, 120, 180, 240],
                         notch_widths=20)
 
@@ -141,14 +150,6 @@ for subject, processing_type in subject_processing_dict.items():
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
             raw = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=True)
-
-            # drop eeg and marker channels
-            eeg_electrode_list = load_eeg_chs(subject)
-            if eeg_electrode_list == ['nan']:
-                eeg_electrode_list == []
-            eeg_electrode_list.append('Trigger')
-            raw.drop(eeg_electrode_list)
-            # drop the EEG type channels
 
             # mark outlier
             derivative_loc = os.path.join(LAB_root, "BIDS-1.0_LexicalDecRepDelay","BIDS","derivatives","clean",f"sub-{subject}","ieeg")
@@ -213,7 +214,7 @@ for subject, processing_type in subject_processing_dict.items():
                 trials = trial_ieeg(raw, epoch, times, preload=True)
                 outliers_to_nan(trials, outliers=10)
 
-                spectra_wavelet = wavelet_scaleogram(trials, n_jobs=-10, decim=int(
+                spectra_wavelet = wavelet_scaleogram(trials, n_jobs=-1, decim=int(
                     raw.info['sfreq'] / 200))  # 1/10 of the timepionts, don't take too long
                 crop_pad(spectra_wavelet, "0.5s")  # cut the first and final 0.5s, change to zero
 
@@ -307,7 +308,7 @@ for subject, processing_type in subject_processing_dict.items():
                         outliers_to_nan(trials, outliers=10)
 
                         freq = np.linspace(0.5, 200, num=80)
-                        kwargs = dict(average=False, n_jobs=-10, freqs=freq, return_itc=False,
+                        kwargs = dict(average=False, n_jobs=-1, freqs=freq, return_itc=False,
                                     n_cycles=freq / 2, time_bandwidth=4,
                                     # n_fft=int(trials.info['sfreq'] * 2.75),
                                     decim=20, )
@@ -416,7 +417,7 @@ for subject, processing_type in subject_processing_dict.items():
                     trials = trial_ieeg(raw, epoch, times, preload=True, reject_by_annotation=False)
                     outliers_to_nan(trials, outliers=10)
 
-                    gamma.extract(trials, copy=False, n_jobs=-10)
+                    gamma.extract(trials, copy=False, n_jobs=-1)
                     utils.crop_pad(trials, "0.5s")
                     trials.resample(100)
                     trials.filenames = raw.filenames

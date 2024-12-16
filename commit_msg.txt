@@ -1,0 +1,4 @@
+Updated processing pipeline
+1. Fixed the memory bug for sbatch
+2. Selected patients undone
+3. Fixed the EEG channel removal bug
