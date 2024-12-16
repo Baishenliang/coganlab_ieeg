@@ -5,51 +5,6 @@ import glob
 import numpy as np
 from matplotlib import pyplot as plt
 
-def get_unused_chs(folder_path):
-    """
-    Compare electrode names in `*_channels.tsv` and `*electrodes.tsv` within a folder.
-    Return the electrode names that are in `_channels.tsv` but not in `*electrodes.tsv`.
-
-    Parameters:
-    - folder_path (str): Path to the folder containing the TSV files.
-
-    Returns:
-    - list: Electrode names present in `_channels.tsv` but missing in `*electrodes.tsv`.
-    """
-    # Find the electrodes.tsv and channels.tsv files in the folder
-    electrodes_files = glob.glob(os.path.join(folder_path, "*electrodes.tsv"))
-    channels_files = glob.glob(os.path.join(folder_path, "*channels.tsv"))
-
-    # Ensure only one of each file type exists
-    if len(electrodes_files) != 1:
-        raise FileNotFoundError(f"Expected exactly one *electrodes.tsv file, but found {len(electrodes_files)}.")
-    if len(channels_files) != 1:
-        raise FileNotFoundError(f"Expected exactly one *channels.tsv file, but found {len(channels_files)}.")
-
-    electrodes_file = electrodes_files[0]
-    channels_file = channels_files[0]
-
-    # Load the TSV files into DataFrames
-    electrodes_df = pd.read_csv(electrodes_file, sep="\t")
-    channels_df = pd.read_csv(channels_file, sep="\t")
-
-    # Ensure the necessary 'name' column exists in both files
-    if 'name' not in electrodes_df.columns or 'name' not in channels_df.columns:
-        raise ValueError("Both TSV files must contain a 'name' column.")
-
-    # Create sets of electrode names from each file
-    electrodes_set = set(electrodes_df['name'])
-    channels_set = set(channels_df['name'])
-
-    # Identify names present in channels.tsv but not in electrodes.tsv
-    missing_electrodes = list(channels_set - electrodes_set)
-
-    if pd.isna(missing_electrodes).any():
-        return []
-    else:
-        return missing_electrodes
-
-
 
 def update_tsv(subj, search_dir='.'):
     """
@@ -121,6 +76,23 @@ def detect_outlier(subj, search_dir='.'):
             return 1
     
     return 0
+
+def load_eeg_chs(subject):
+        
+    """
+    Load the eeg channels for a specific subject.
+
+    Args:
+        subject (str): Subject identifier.
+
+    Returns:
+        list: List of eeg channel names.
+    """
+    eeg_chs_loc=os.path.join('data','eeg_chans',f'{subject}_eeg_chans.csv')
+    df = pd.read_csv(eeg_chs_loc, header=None)
+    df.columns = ['eeg_chs']
+    eeg_chs = df['eeg_chs'].tolist()
+    return eeg_chs
 
 def load_muscle_chs(subject):
         

@@ -20,7 +20,7 @@ from ieeg.viz.ensemble import chan_grid
 from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.timefreq import gamma, utils
 from ieeg.viz.parula import parula_map
-from bsliang_utils import get_unused_chs, update_tsv, detect_outlier, load_muscle_chs, update_muscle_chs, plot_save_gammamask
+from bsliang_utils import update_tsv, detect_outlier, load_eeg_chs, update_muscle_chs, plot_save_gammamask
 from matplotlib import pyplot as plt
 
 # %% Subj list
@@ -97,16 +97,10 @@ for subject, processing_type in subject_processing_dict.items():
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
             raw = raw_from_layout(layout, subject=subject, preload=True, extension='.edf')
 
-            # get and remove eeg or other unused channels (if it has)
-            BIDS_loc = os.path.join(LAB_root, "BIDS-1.0_LexicalDecRepDelay", "BIDS", f"sub-{subject}", "ieeg")
-            unused_chs = get_unused_chs(BIDS_loc)
-            if unused_chs:
-                raw.drop_channels(unused_chs)
-
             # line noise filtering
-            line_filter(raw, mt_bandwidth=10., n_jobs=-1, copy=False, verbose=10,
+            line_filter(raw, mt_bandwidth=10., n_jobs=-10, copy=False, verbose=10,
                         filter_length='700ms', freqs=[60], notch_widths=20)
-            line_filter(raw, mt_bandwidth=10., n_jobs=-1, copy=False, verbose=10,
+            line_filter(raw, mt_bandwidth=10., n_jobs=-10, copy=False, verbose=10,
                         filter_length='20s', freqs=[60, 120, 180, 240],
                         notch_widths=20)
 
@@ -139,10 +133,18 @@ for subject, processing_type in subject_processing_dict.items():
         log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing outlier chs removal\n")
+
             ## Mark outlier channels
             layout = get_data("LexicalDecRepDelay", root=LAB_root)
             raw = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=True)
+
+            # drop eeg and marker channels
+            eeg_electrode_list = load_eeg_chs(subject)
+            eeg_electrode_list.append('Trigger')
+            raw.drop(eeg_electrode_list)
+
+            # mark outlier
             derivative_loc = os.path.join(LAB_root, "BIDS-1.0_LexicalDecRepDelay","BIDS","derivatives","clean",f"sub-{subject}","ieeg")
             is_outlier = detect_outlier(subject,derivative_loc)
             if is_outlier == 1:
@@ -153,6 +155,7 @@ for subject, processing_type in subject_processing_dict.items():
                 raw.info['bads'] = channel_outlier_marker(raw, 3, 2)
                 update(raw, layout, "outlier")
                 log_file.write(f"{datetime.datetime.now()}, {subject}, Outlier chs removal %%% completed %%% \n")
+           
             del raw
             del layout
 
@@ -204,7 +207,7 @@ for subject, processing_type in subject_processing_dict.items():
                 trials = trial_ieeg(raw, epoch, times, preload=True)
                 outliers_to_nan(trials, outliers=10)
 
-                spectra_wavelet = wavelet_scaleogram(trials, n_jobs=-1, decim=int(
+                spectra_wavelet = wavelet_scaleogram(trials, n_jobs=-10, decim=int(
                     raw.info['sfreq'] / 200))  # 1/10 of the timepionts, don't take too long
                 crop_pad(spectra_wavelet, "0.5s")  # cut the first and final 0.5s, change to zero
 
@@ -298,7 +301,7 @@ for subject, processing_type in subject_processing_dict.items():
                         outliers_to_nan(trials, outliers=10)
 
                         freq = np.linspace(0.5, 200, num=80)
-                        kwargs = dict(average=False, n_jobs=-1, freqs=freq, return_itc=False,
+                        kwargs = dict(average=False, n_jobs=-10, freqs=freq, return_itc=False,
                                     n_cycles=freq / 2, time_bandwidth=4,
                                     # n_fft=int(trials.info['sfreq'] * 2.75),
                                     decim=20, )
@@ -407,7 +410,7 @@ for subject, processing_type in subject_processing_dict.items():
                     trials = trial_ieeg(raw, epoch, times, preload=True, reject_by_annotation=False)
                     outliers_to_nan(trials, outliers=10)
 
-                    gamma.extract(trials, copy=False, n_jobs=-1)
+                    gamma.extract(trials, copy=False, n_jobs=-10)
                     utils.crop_pad(trials, "0.5s")
                     trials.resample(100)
                     trials.filenames = raw.filenames
@@ -434,7 +437,7 @@ for subject, processing_type in subject_processing_dict.items():
 
                 # time-perm  (test whether signal is greater than baseline, p=0.05 as it is a one-tailed test)
                 mask[tag], p_act = stats.time_perm_cluster(
-                    sig1, sig2, p_thresh=0.05, axis=0, tails=1, n_perm=nperm, n_jobs=-1,
+                    sig1, sig2, p_thresh=0.05, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
                     ignore_adjacency=1)
                 epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
                                             tmin=t[0])
@@ -476,7 +479,7 @@ for subject, processing_type in subject_processing_dict.items():
 
                     # time-perm (test whether signal is greater than baseline, p=0.025 as it is a two-tailed test)
                     mask[tag], p_act = stats.time_perm_cluster(
-                        sig1, sig2, p_thresh=0.025, axis=0, tails=1, n_perm=nperm, n_jobs=-1,
+                        sig1, sig2, p_thresh=0.025, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
                         ignore_adjacency=1)
                     epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
                                                 tmin=t[0])
