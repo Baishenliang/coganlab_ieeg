@@ -20,7 +20,7 @@ from ieeg.viz.ensemble import chan_grid
 from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.timefreq import gamma, utils
 from ieeg.viz.parula import parula_map
-from bsliang_utils import update_tsv, detect_outlier, load_eeg_chs, update_muscle_chs, plot_save_gammamask
+from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_chs, plot_save_gammamask
 from matplotlib import pyplot as plt
 
 # %% Subj list
