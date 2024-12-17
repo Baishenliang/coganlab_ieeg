@@ -44,9 +44,9 @@ subject_processing_dict_org = {
     "D0094": "",
     "D0096": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0101": "",
-    "D0102": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0107": "linernoise/outlierchs/wavelet/multitaper/gamma"
+    "D0102": "",
+    "D0103": "",
+    "D0107": ""
 }
 
 # %% check if currently running a slurm job
