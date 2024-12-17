@@ -11,7 +11,7 @@ import os
 import mne
 import datetime
 import numpy as np
-from ieeg.navigate import channel_outlier_marker, trial_ieeg, outliers_to_nan
+from ieeg.navigate import crop_empty_data, channel_outlier_marker, trial_ieeg, outliers_to_nan
 from ieeg.mt_filter import line_filter
 from ieeg.io import get_data, raw_from_layout, save_derivative, update
 from ieeg.calc import stats, scaling
@@ -27,15 +27,15 @@ from matplotlib import pyplot as plt
 
 subject_processing_dict_org = {
     "D0053": "",
-    "D0054": "gamma",
-    "D0055": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0057": "gamma",
-    "D0059": "gamma",
+    "D0054": "",
+    "D0055": "",
+    "D0057": "",
+    "D0059": "",
     "D0063": "",
     "D0065": "",
     "D0066": "",
-    "D0068": "gamma",
-    "D0069": "gamma",
+    "D0068": "",
+    "D0069": "",
     "D0070": "",
     "D0071": "",
     "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma",
@@ -43,7 +43,7 @@ subject_processing_dict_org = {
     "D0081": "",
     "D0094": "",
     "D0096": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0101": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0101": "",
     "D0102": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0103": "linernoise/outlierchs/wavelet/multitaper/gamma",
     "D0107": "linernoise/outlierchs/wavelet/multitaper/gamma"
@@ -117,6 +117,10 @@ for subject, processing_type in subject_processing_dict.items():
                         notch_widths=20)
 
             # crop and save data
+            if subject=="D0079":
+                raw1 = crop_empty_data(raw)
+                del raw
+                raw = raw1
             if not os.path.exists(os.path.join(bids_root, "derivatives")):
                 os.mkdir(os.path.join(bids_root, "derivatives"))
                 os.mkdir(os.path.join(bids_root, "derivatives", "clean"))

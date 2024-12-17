@@ -1,4 +1,4 @@
-Re do batch
+Re do batch and updated pipeline to solve the D0079 bug
 
 **patients still having problems**
 D0077: still no gamma
@@ -7,6 +7,7 @@ D0096: no anything
 
 **patients that are newly done**
 D0054
+D0055
 D0057
 D0059
 D0068
