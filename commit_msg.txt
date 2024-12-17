@@ -1,4 +1,26 @@
-Updated processing pipeline
-1. Fixed the memory bug for sbatch
-2. Selected patients undone
-3. Fixed the EEG channel removal bug
+Re do batch
+
+**patients still having problems**
+D0077: still no gamma
+D0079: no anything
+D0096: no anything
+
+**patients that are newly done**
+D0054
+D0057
+D0059
+D0068
+D0069
+D0101
+D0102
+D0103
+D0107
+
+**Issues with D0077**
+Did not remove the old D0077 clean derivative, and so line noise filter failed on loading files.
+
+**Issues with D0079**
+Same old problem. Memory issues when doing data saving.
+
+**Issues with D0096**
+Same to D0077. Did not remove the old D0096 clean derivative.
