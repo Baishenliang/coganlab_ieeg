@@ -98,7 +98,8 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
     # %% select channels with significant activation clusters
     data_s = []
     chs_s = []
-    chs_s_idx = []
+    chs_s_idx = [] # significant channels selected
+    chs_s_all_idx = [0]*len(chs) # channel index with significant channels marked in 1
     onsets_s = []
 
     for ch_idx, ch_name in enumerate(chs):
@@ -107,6 +108,7 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
             chs_s.append(ch_name)  # Add the channel name to the selected channel names list
             chs_s_idx.append(ch_idx)
             onsets_s.append(onsets[ch_name])
+            chs_s_all_idx[ch_idx] = 1
 
     # Convert the selected data list to a numpy array
     data_s = np.array(data_s)
@@ -121,7 +123,7 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
     labels = [chs_s_sorted, times]
     data_out=LabeledArray(data_s_sorted, labels)
     # onset_out=LabeledArray(np.array(onsets_s_sorted), chs_s_sorted)
-    return data_out,sorted_indices
+    return data_out,sorted_indices,chs_s_all_idx
 
 def plot_chs(data_in,fig_save_dir_f):
     """
@@ -156,8 +158,10 @@ def plot_chs(data_in,fig_save_dir_f):
         print('no zero time found')
     fig.savefig(fig_save_dir_f, dpi=300)
 
-def plot_brain(subjs,chs_cols):
+def plot_brain(subjs,chs_cols,chs_sizes):
     from ieeg.viz.mri import plot_on_average
     # subjs = subjs[0:len(subjs) - 1]
     # subjs.append('D0107B')
-    plot_on_average(subjs, hemi='both', color=chs_cols)
+    import matplotlib.pyplot as plt
+    # still don't know how to control the size
+    plot_on_average(subjs, hemi='lh', color=chs_cols, size=0.2)
