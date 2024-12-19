@@ -1,85 +1,87 @@
-# %% step up
+# %% prerparation
 import os
-import mne
 import numpy as np
-import matplotlib.pyplot as plt
-from ieeg.viz.mri import plot_on_average
-from utils.group import load_stats
+from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain
 
-# %% define condition
+HOME = os.path.expanduser("~")
+LAB_root = os.path.join(HOME, "Box", "CoganLab")
+stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
+
+fig_save_dir = os.path.join(LAB_root, 'D_Data','LexicalDecRepDelay','Baishen_Figs','group')
+if not os.path.exists(os.path.join(fig_save_dir)):
+    os.mkdir(os.path.join(fig_save_dir))
+
+stats_save_root = os.path.join(stats_root,'group')
+if not os.path.exists(os.path.join(stats_save_root)):
+    os.mkdir(os.path.join(stats_save_root))
+
+# Parameters from the lexical delay task
+mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
+delay_len=1 # from task script
+go_len=0.5 # from task script
+cluster_twin=0.2 # length of sig cluster
+
+# define condition and load data
 stat_type='mask'
-con='Auditory'
 contrast='ave'
-data=load_stats(stat_type,con,contrast)
 
-# %% get the onsets of the activation (an effective cluster is defined as 0.2s)
-spf = 1 / (times[1] - times[0])  # Calculate the sampling frequency
-win_len = 0.2  # in second
-win = int(win_len * spf)  # Number of samples in 0.1 seconds
+# %% get auditory and delay electrodes
+con='Auditory'
+data,subjs=load_stats(stat_type,con,contrast,stats_root)
 
-onsets = {}
+# sort the data according to the onset within a time range (Full)
+data_sorted,all_sig_idx=sort_chs_by_actonset(data,cluster_twin,[-10,10])
+# plot the data
+plot_chs(data_sorted,os.path.join(fig_save_dir,f'{stat_type}-{contrast}.jpg'))
 
-for ch_idx, ch_name in enumerate(chs):
-    ch_data = data[ch_idx]
-    found = False
+# (Auditory)
+data_sorted_aud,aud_sig_idx=sort_chs_by_actonset(data,cluster_twin,[-0.1,mean_word_len+0.1])
+plot_chs(data_sorted_aud,os.path.join(fig_save_dir,f'{con}_{stat_type}-{contrast}.jpg'))
 
-    for start_idx in range(len(ch_data) - win + 1):
-        win_data = ch_data[start_idx:start_idx + win]
+# (Delay)
+data_sorted_del,del_sig_idx=sort_chs_by_actonset(data,cluster_twin,[mean_word_len-0.1,mean_word_len+delay_len+0.1])
+plot_chs(data_sorted_del,os.path.join(fig_save_dir,f'Delay_{stat_type}-{contrast}.jpg'))
 
-        if np.all(win_data == 1):
-            starting_time = times[start_idx]
-            onsets[ch_name] = starting_time
-            found = True
-            break
+del data_sorted, data_sorted_aud, data_sorted_del
 
-    if not found:
-        onsets[ch_name] = None  # No significant window found
+# %% get Go and Response electrodes
+go_sig_idx=[]
+resp_sig_idx=[]
 
-# %% select channels with significant activation clusters
-data_s = []
-chs_s = []
-chs_s_idx = []
-onsets_s = []
+for con,trange in zip (('Go','Resp'),([-0.1,go_len+0.1],[-10, 10])):
 
-for ch_idx, ch_name in enumerate(chs):
-    if onsets[ch_name] is not None:  # Check if the channel has a valid onset
-        data_s.append(data[ch_idx])  # Add the channel data to the selected data list
-        chs_s.append(ch_name)        # Add the channel name to the selected channel names list
-        chs_s_idx.append(ch_idx)
-        onsets_s.append(onsets[ch_name])
+    data,_=load_stats(stat_type,con,contrast,stats_root)
 
-# Convert the selected data list to a numpy array
-data_s = np.array(data_s)
+    data_sorted,sig_idx,=sort_chs_by_actonset(data,cluster_twin,trange)
+    plot_chs(data_sorted,os.path.join(fig_save_dir,f'{con}_{stat_type}-{contrast}.jpg'))
 
-# %% do the ranking
-sorted_indices = np.argsort(np.array(onsets_s))  # Get the indices that would sort the array
-# %% rearrange the data according to sorted_indices
-data_s_sorted = data_s[sorted_indices]
-chs_s_sorted = [chs_s[i] for i in sorted_indices]
-onsets_s_sorted = [onsets_s[i] for i in sorted_indices]
+    if con=='Go':
+        go_sig_idx=sig_idx
+    elif con=='Resp':
+        resp_sig_idx=sig_idx
 
-# %% plot the data
+del data_sorted
+# %% reassign electrode indices by conditions
+chs_col_idx=[0]*len(data.labels[0])
+chs_cols=[[1,1,1]]*len(data.labels[0])
+for i in range(len(data.labels[0])):
 
-plt.figure(figsize=(2^15, 2^15))
-fig, ax = plt.subplots()
-ax.imshow(data_s_sorted, cmap='Reds')
+    if np.any(resp_sig_idx==i):
+        chs_col_idx[i]=4#chs_col_idx[i]+1000 # Resp electrode
+        chs_cols[i]=[1,0.65,0]# Orange
+    if np.any(go_sig_idx==i):
+        chs_col_idx[i]=3#chs_col_idx[i]+100 # Go electrode
+        chs_cols[i]=[0,0,1]# Blue
+    if np.any(aud_sig_idx==i):
+        chs_col_idx[i]=1#chs_col_idx[i]+1 # Auditory electrode
+        chs_cols[i]=[1,0,0]# Red
+    if np.any(del_sig_idx==i):
+        chs_col_idx[i]=2#chs_col_idx[i]+10 # Delay electrode
+        chs_cols[i]=[0,1,0]# Green
 
-ch_gap=20
-time_gap=50
-channel_names=chs_s_sorted[::ch_gap]
-ax.set_yticks(range(0,len(channel_names)*ch_gap,ch_gap))
-ax.set_yticklabels(channel_names)
-time_stamps=times[::time_gap]
-ax.set_xticks(range(0,len(time_stamps)*time_gap,time_gap))
-ax.set_xticklabels(time_stamps)
-try:
-    zero_time_index = np.where(times == 0)[0][0]
-    ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
-except Exception as e:
-    print('no zero time found')
-fig.savefig('try.jpg', dpi=300)
-
-# %% plot the significance electrodes on the average brain
-elecols = [[1 - i/(len(chs_s_idx) - 1), 0, i/(len(chs_s_idx) - 1)] for i in range(len(chs_s_idx))]
-elecols_s = [elecols[i] for i in sorted_indices]
-fig = plot_on_average(subjs,picks=chs_s_idx,hemi='split',color=elecols_s)#, label_every=8)
+# plot the significance electrodes on the average brain
+# elecols = [[1 - i / (len(chs_s_idx) - 1), 0, i / (len(chs_s_idx) - 1)] for i in range(len(chs_s_idx))]
+# elecols_s = [elecols[i] for i in sorted_indices]
+# fig = plot_on_average(subjs, picks=chs_s_idx, hemi='split', color=elecols_s)  # , label_every=8)
+ # , label_every=8)
+plot_brain(subjs, chs_cols)
