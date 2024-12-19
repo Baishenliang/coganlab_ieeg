@@ -158,6 +158,6 @@ def plot_chs(data_in,fig_save_dir_f):
         print('no zero time found')
     fig.savefig(fig_save_dir_f, dpi=300)
 
-def plot_brain(subjs,picks_delay,chs_cols):
+def plot_brain(subjs,picks,chs_cols):
     from ieeg.viz.mri import plot_on_average
-    plot_on_average(subjs, picks=picks_delay,color=chs_cols,hemi='lh',  size=0.35)
+    plot_on_average(subjs, picks=picks,color=chs_cols,hemi='lh',  size=0.35)

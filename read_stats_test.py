@@ -23,7 +23,7 @@ cluster_twin=0.2 # length of sig cluster
 
 # define condition and load data
 stat_type='mask'
-contrast='ave_YN_Rep'
+contrast='ave_Rep_YN'
 
 # %% get auditory and delay electrodes
 con='Auditory'
@@ -63,6 +63,29 @@ for con,trange in zip (('Go','Resp'),([-0.1,go_len+0.1],[-10, 10])):
 del data_sorted
 # %% reassign electrode indices by conditions
 
+# In the future the follow will become a loop
+# Auditory
+# chs_ov=[1000,0,0,0]
+# pick_sig_idx=aud_sig_idx
+
+# # Delay
+# chs_ov=[0,100,0,0]
+# pick_sig_idx=del_sig_idx
+#
+# # Delay_overlapped
+# chs_ov=[1000,100,10,1]
+# pick_sig_idx=del_sig_idx
+#
+# # Go
+# chs_ov=[0,0,10,0]
+# pick_sig_idx=go_sig_idx
+#
+# # Resp
+chs_ov=[0,0,0,1]
+pick_sig_idx=resp_sig_idx
+
+# Elecorde selection and color assigning
+
 color_map = {
     1000: [1, 0, 0],  # Auditory (Red)
      100: [0, 1, 0],  # Delay (Green)
@@ -76,29 +99,11 @@ color_map = {
     1111: [1, 1, 1] # Auditory-Delay-Go-Resp (White)
 }
 
-
-# Auditory
-# picks=[i for i in range(len(data.labels[0])) if aud_sig_idx[i] == 1]
-# chs_cols=[color_map.get(1)]*len(picks)
-
-# Delay
-# picks=[i for i in range(len(data.labels[0])) if del_sig_idx[i] == 1]
-# chs_cols=[color_map.get(10)]*len(picks)
-
-# Go
-# picks=[i for i in range(len(data.labels[0])) if go_sig_idx[i] == 1]
-# chs_cols=[color_map.get(100)]*len(picks)
-
-# Resp
-# picks=[i for i in range(len(data.labels[0])) if resp_sig_idx[i] == 1]
-# chs_cols=[color_map.get(1000)]*len(picks)
-
-# For future overlapped electrodes
-# Get colors and picks
-chs_col_idx=[1000*aud_sig_idx[i]+100*del_sig_idx[i]+10*go_sig_idx[i]+1*resp_sig_idx[i] for i in range(len(data.labels[0]))]
-picks=[i for i in range(len(data.labels[0])) if del_sig_idx[i] == 1]
-
+chs_col_idx=[chs_ov[0]*aud_sig_idx[i]+chs_ov[1]*del_sig_idx[i]+chs_ov[2]*go_sig_idx[i]+chs_ov[3]*resp_sig_idx[i] for i in range(len(data.labels[0]))]
+picks=[i for i in range(len(data.labels[0])) if pick_sig_idx[i] == 1]
+# picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 1000] # Use this to pick auditory only electrodes
 chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data.labels[0]))]
 chs_cols_picked=[chs_cols[i] for i in picks]
 
+# Plot
 plot_brain(subjs, picks,chs_cols_picked)
