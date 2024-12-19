@@ -23,7 +23,7 @@ cluster_twin=0.2 # length of sig cluster
 
 # define condition and load data
 stat_type='mask'
-contrast='ave'
+contrast='ave_YN_Rep'
 
 # %% get auditory and delay electrodes
 con='Auditory'
@@ -62,31 +62,30 @@ for con,trange in zip (('Go','Resp'),([-0.1,go_len+0.1],[-10, 10])):
 
 del data_sorted
 # %% reassign electrode indices by conditions
-chs_col_idx=[0]*len(data.labels[0])
 chs_cols=[[0.5,0.5,0.5]]*len(data.labels[0])
 chs_sizes=[0]*len(data.labels[0])
-for i in range(len(data.labels[0])):
 
-    if resp_sig_idx[i]==1:
-        chs_col_idx[i]=4#chs_col_idx[i]+1000 # Resp electrode
-        chs_cols[i]=[1,0.65,0]# Orange
-        chs_sizes[i]=0.2
-    if go_sig_idx[i]==1:
-        chs_col_idx[i]=3#chs_col_idx[i]+100 # Go electrode
-        chs_cols[i]=[0,0,1]# Blue
-        chs_sizes[i] = 0.2
-    if aud_sig_idx[i]==1:
-        chs_col_idx[i]=1#chs_col_idx[i]+1 # Auditory electrode
-        chs_cols[i]=[1,0,0]# Red
-        chs_sizes[i] = 0.2
-    if del_sig_idx[i]==1:
-        chs_col_idx[i]=2#chs_col_idx[i]+10 # Delay electrode
-        chs_cols[i]=[0,1,0]# Green
-        chs_sizes[i] = 0.2
+# Define colors for each category in [0, 1] scale
 
-# plot the significance electrodes on the average brain
-# elecols = [[1 - i / (len(chs_s_idx) - 1), 0, i / (len(chs_s_idx) - 1)] for i in range(len(chs_s_idx))]
-# elecols_s = [elecols[i] for i in sorted_indices]
-# fig = plot_on_average(subjs, picks=chs_s_idx, hemi='split', color=elecols_s)  # , label_every=8)
- # , label_every=8)
+color_map = {
+    1: [0, 0.5, 1],  # Auditory only (Blue)
+    10: [0.5, 0, 1],  # Delay only (Purple)
+    100: [0, 1, 0],  # Go only or Delay Go (Green)
+    110: [0, 1, 0],  # Go only or Delay Go (Green)
+    1000: [1, 0.5, 0],  # Motor only (Orange)
+    1001: [1, 0, 0],  # Auditory + Motor (Red)
+    1101: [1, 0, 0],  # Auditory + Go + Motor (Red)
+    11: [0, 1, 1],  # Auditory + Delay (Cyan)
+    1100: [1, 1, 0],  # Go + Motor (Yellow)
+    1110: [1, 1, 0],  # Delay Go + Motor (Yellow)
+    1010: [0.5, 0.5, 0],  # Delay + Motor (Olive Green)
+    111: [1, 1, 1],  # Mixed (White)
+    1011: [1, 1, 1],  # Mixed (White)
+    1110: [1, 1, 1],  # Mixed (White)
+    1111: [1, 1, 1],  # Mixed (White)
+}
+
+chs_col_idx=[1*aud_sig_idx[i]+10*del_sig_idx[i]+100*go_sig_idx[i]+1000*resp_sig_idx[i] for i in range(len(data.labels[0]))]
+chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data.labels[0]))]  # Default grey if not mapped
+
 plot_brain(subjs, chs_cols,chs_sizes)
