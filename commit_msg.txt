@@ -1,27 +1,7 @@
-Re do batch and updated pipeline to solve the D0079 bug
+Pooled electrodes plot
 
-**patients still having problems**
-D0077: still no gamma
-D0079: no anything
-D0096: no anything
-
-**patients that are newly done**
-D0054
-D0055
-D0057
-D0059
-D0068
-D0069
-D0101
-D0102
-D0103
-D0107
-
-**Issues with D0077**
-Did not remove the old D0077 clean derivative, and so line noise filter failed on loading files.
-
-**Issues with D0079**
-Same old problem. Memory issues when doing data saving.
-
-**Issues with D0096**
-Same to D0077. Did not remove the old D0096 clean derivative.
+Things to ask Aaron:
+1. Why plot average brain usually be busy and stops
+2. How to handle D107
+3. If I drop electrodes (eeg and trigger) in line noise filter, will that affect electrode indexing when plotting?
+4. If I plot all the electrodes will they overlap together? Or the algorithm will selectively merge the nearest electrodes?

@@ -158,10 +158,6 @@ def plot_chs(data_in,fig_save_dir_f):
         print('no zero time found')
     fig.savefig(fig_save_dir_f, dpi=300)
 
-def plot_brain(subjs,chs_cols,chs_sizes):
+def plot_brain(subjs,picks_delay,chs_cols):
     from ieeg.viz.mri import plot_on_average
-    # subjs = subjs[0:len(subjs) - 1]
-    # subjs.append('D0107B')
-    import matplotlib.pyplot as plt
-    # still don't know how to control the size
-    plot_on_average(subjs, hemi='lh', color=chs_cols, size=0.2)
+    plot_on_average(subjs, picks=picks_delay,color=chs_cols,hemi='lh',  size=0.35)

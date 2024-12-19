@@ -62,30 +62,43 @@ for con,trange in zip (('Go','Resp'),([-0.1,go_len+0.1],[-10, 10])):
 
 del data_sorted
 # %% reassign electrode indices by conditions
-chs_cols=[[0.5,0.5,0.5]]*len(data.labels[0])
-chs_sizes=[0]*len(data.labels[0])
-
-# Define colors for each category in [0, 1] scale
 
 color_map = {
-    1: [0, 0.5, 1],  # Auditory only (Blue)
-    10: [0.5, 0, 1],  # Delay only (Purple)
-    100: [0, 1, 0],  # Go only or Delay Go (Green)
-    110: [0, 1, 0],  # Go only or Delay Go (Green)
-    1000: [1, 0.5, 0],  # Motor only (Orange)
-    1001: [1, 0, 0],  # Auditory + Motor (Red)
-    1101: [1, 0, 0],  # Auditory + Go + Motor (Red)
-    11: [0, 1, 1],  # Auditory + Delay (Cyan)
-    1100: [1, 1, 0],  # Go + Motor (Yellow)
-    1110: [1, 1, 0],  # Delay Go + Motor (Yellow)
-    1010: [0.5, 0.5, 0],  # Delay + Motor (Olive Green)
-    111: [1, 1, 1],  # Mixed (White)
-    1011: [1, 1, 1],  # Mixed (White)
-    1110: [1, 1, 1],  # Mixed (White)
-    1111: [1, 1, 1],  # Mixed (White)
+    1000: [1, 0, 0],  # Auditory (Red)
+     100: [0, 1, 0],  # Delay (Green)
+      10: [0, 0, 1],  # Go (Blue)
+       1: [1, 0, 1],  # Resp (Purple)
+    1100: [1, 0.65, 0], # Auditory-delay (Orange)
+     110: [0, 1, 1], # Delay-Go (Greenblue)
+     101: [1, 1, 0],  # Delay-Resp (Yellow)
+     111: [1, 1, 0], # Delay-Go-Resp (Yellow)
+    1101: [1, 1, 1], # Auditory-Delay-Resp (White)
+    1111: [1, 1, 1] # Auditory-Delay-Go-Resp (White)
 }
 
-chs_col_idx=[1*aud_sig_idx[i]+10*del_sig_idx[i]+100*go_sig_idx[i]+1000*resp_sig_idx[i] for i in range(len(data.labels[0]))]
-chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data.labels[0]))]  # Default grey if not mapped
 
-plot_brain(subjs, chs_cols,chs_sizes)
+# Auditory
+# picks=[i for i in range(len(data.labels[0])) if aud_sig_idx[i] == 1]
+# chs_cols=[color_map.get(1)]*len(picks)
+
+# Delay
+# picks=[i for i in range(len(data.labels[0])) if del_sig_idx[i] == 1]
+# chs_cols=[color_map.get(10)]*len(picks)
+
+# Go
+# picks=[i for i in range(len(data.labels[0])) if go_sig_idx[i] == 1]
+# chs_cols=[color_map.get(100)]*len(picks)
+
+# Resp
+# picks=[i for i in range(len(data.labels[0])) if resp_sig_idx[i] == 1]
+# chs_cols=[color_map.get(1000)]*len(picks)
+
+# For future overlapped electrodes
+# Get colors and picks
+chs_col_idx=[1000*aud_sig_idx[i]+100*del_sig_idx[i]+10*go_sig_idx[i]+1*resp_sig_idx[i] for i in range(len(data.labels[0]))]
+picks=[i for i in range(len(data.labels[0])) if del_sig_idx[i] == 1]
+
+chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data.labels[0]))]
+chs_cols_picked=[chs_cols[i] for i in picks]
+
+plot_brain(subjs, picks,chs_cols_picked)
