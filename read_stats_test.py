@@ -23,7 +23,7 @@ cluster_twin=0.2 # length of sig cluster
 
 # define condition and load data
 stat_type='mask'
-contrast='ave_Rep_YN'
+contrast='ave'
 
 # %% get auditory and delay electrodes
 con='Auditory'

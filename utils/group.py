@@ -25,9 +25,9 @@ def load_stats(stat_type,con,contrast,stats_root):
         case "mask":
             fif_read = mne.read_evokeds
 
-    #subjs = [name for name in os.listdir(stats_root) if os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
-    subjs = ["D0053", "D0054", "D0055", "D0057", "D0059", "D0063", "D0065", "D0066", "D0068", "D0069", "D0070", "D0071",
-             "D0077", "D0079", "D0081", "D0094", "D0096", "D0101", "D0102", "D0103"]
+    subjs = [name for name in os.listdir(stats_root) if os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
+    #subjs = ["D0053", "D0054", "D0055", "D0057", "D0059", "D0063", "D0065", "D0066", "D0068", "D0069", "D0070", "D0071",
+    #         "D0077", "D0079", "D0081", "D0094", "D0096", "D0101", "D0102", "D0103"]
     chs = []
     data_lst = []
 
