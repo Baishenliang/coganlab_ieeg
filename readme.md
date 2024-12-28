@@ -1,19 +1,32 @@
-# IEEG scripts by Baishen Liang
+# IEEG processing scripts by Baishen Liang
 
 Please clone the Cogan Lab ieeg repository (https://github.com/coganlab/IEEG_Pipelines) first, install ieeg, and use the ieeg environment as the interpreter.  
 
-## Processing steps
-1. Load and plot the packages  
-2. Perform line noise filtering  
-3. Delect and remove bad channels  
-4. Remove muscle artifact bad channels  
-5. Delect and remove bad trials  
-6. Make the spectrograms for Auditory, Delay, and Response  
+![IEEG analyses pipeline](materials/analyze_pipeline.png)   
 
-## 4. Remove muscle artifact bad channels
-- Do the wavelet and get log spectrum (https://ieeg-pipelines.readthedocs.io/en/latest/auto_examples/plot_spectrograms_wavelet.html#calculate-spectra)  
-- Should be on the end of a shank (usually higher end, but lower is possible if sticks out other side); activity that is suddenly higher than the rest of the shank; if no signal outside of brain saves electrode（在一串seeg电极的末端或者开始端，没有与脑组织接触的部分，如果出现非常强的反应，则判定为muscle artifacts）  
-- Anterior temporal production signal should also have auditory response (在颞叶前端如果记录到强的production signal，那应该在encoding的时候也有比较强的auditory response，不然则判定为muscle artifacts)
-- If see activity from 60 to 600 Hz mo matter if it is from anterior temporal or other places, should be muscle artifacts (remove it if no auditory responses for the stimuli)
-- Remove the same electrodes for all events (i.g., Auditory, Delay, and Response)  
+## Step0：response coding and BIDS convert  
+See: [Gitlab response coding instructions](https://coganlab.pages.oit.duke.edu/wiki/docs/ECoG_In_Unit/Response_Coding/)  
+(Duke NetID required)  
+  
+## Step1: files transfer and upload
+**1.** Copy the BIDS coded EEG files:  
+![file transfer 1](materials/files_transfer_1.png)  
+to Coganlab's box:  
+![file transfer 2](materials/files_transfer_2.png)   
+  
+**2.** Use **Globus** to synchronize the files:  
+(Duke NetID required)  
+![Upload DCC 1](materials/upload_DCC_1.png)  
+and 
+![Upload DCC 2](materials/upload_DCC_2.png)  
+  
+## Step2: update preprocessing batch codes for patients.  
+**1.** Check whether the patient had eeg channels by inspecting these two files:  
+![Check eeg 1](materials/check_eeg_chs_1.png)  
+Then write the report to this location:  
+![Check eeg 2](materials/check_eeg_chs_2.png)  
+If there are eeg channels, add the `specific eeg channels` to the csv file.  
+If there are no eeg channels, simply add a `nan`.  
 
+**2.** Updated the `batch_preproc.py`.  
+![Updated preproce batch](materials\update_preproc_batch.png) 

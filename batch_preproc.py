@@ -26,27 +26,8 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0053": "",
-    "D0054": "",
-    "D0055": "",
-    "D0057": "",
-    "D0059": "",
-    "D0063": "",
-    "D0065": "",
-    "D0066": "",
-    "D0068": "",
-    "D0069": "",
-    "D0070": "",
-    "D0071": "",
-    "D0077": "",
-    "D0079": "multitaper/gamma",
-    "D0081": "",
-    "D0094": "",
-    "D0096": "",
-    "D0101": "",
-    "D0102": "",
-    "D0103": "",
-    "D0107": ""
+    "D0084": "linernoise/outlierchs/wavelet",
+    "D0086": "linernoise/outlierchs/wavelet"
 }
 
 # %% check if currently running a slurm job
