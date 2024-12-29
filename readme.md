@@ -12,12 +12,22 @@ See: [Gitlab response coding instructions](https://coganlab.pages.oit.duke.edu/w
 **1.** Copy the BIDS coded EEG files:  
 ![file transfer 1](materials/files_transfer_1.png)  
 to Coganlab's box:  
-![file transfer 2](materials/files_transfer_2.png)   
+![file transfer 2](materials/files_transfer_2.png)  
+
+**2.** Updated participants.tsv in:  
+`~\Box\CoganLab\BIDS-1.0_LexicalDecRepDelay\BIDS`  
+`~\Box\CoganLab\BIDS-1.0_LexicalDecRepDelay\BIDS\derivatives\clean`  
+````text
+# Add the new participants lines:  
+sub-D0084	n/a	n/a	n/a	n/a	n/a
+sub-D0086	n/a	n/a	n/a	n/a	n/a
+````
   
 **2.** Use **Globus** to synchronize the files to the Duke Computing Cluster (DCC):  
 (Duke NetID required)  
 ![Upload DCC 1](materials/upload_DCC_1.png)  
-and 
+and also the **participants.tsv**!!  
+and  
 ![Upload DCC 2](materials/upload_DCC_2.png)  
   
 ## Step 2: update preprocessing batch codes for patients.  
@@ -29,7 +39,7 @@ If there are eeg channels, add the `specific eeg channels` to the csv file.
 If there are no eeg channels, simply add a `nan`.  
 
 **2.** Updated the `batch_preproc.py`.  
-![Updated preproce batch](materials\update_preproc_batch.png) 
+![Updated preproce batch](materials/update_preproc_batch.png) 
 
 **3.** Commit and push. 
 ````bash
@@ -41,19 +51,39 @@ git push origin main
 ````
 
 **4.** connect to the DCC.  
-```` bash
+````bash
 # use a new windows powershell window
 ssh bl314@dcc-login.oit.duke.edu
 # Input password and 2FA code
 ````
 
 **5.** pull the repository.
-```` bash
+````bash
 # use the same powershell window as the DCC login
 cd ~/bsliang_ieeg
 # this is the soft link to:
 # /hpc/group/coganlab/bl314/codes/bsliang_ieeg, where the github repository is cloned
 git status
 git pull
+````
+## Step 3: Run the batch script.
+````bash
+# still the powershell window as the DCC login
+# see whether the patients' BIDS data have been uploaded
+cd ~/workspace/BIDS-1.0_LexicalDecRepDelay/BIDS
+ls
+````
+![Check eeg 2](materials/check_dcc_workspace.png)  
+** Run the batch script for line noise filtering, outlier channels removal, and wavelet.  
+````bash
+cd ~/bsliang_ieeg/
+sbatch sbatch_preproc.sh
+````
+You can `squeue -u bl314` to get the current status.  
+![Check eeg 2](materials/DCC_squeue.png)  
+ 
+Or you can check the script logs for python outputs or errors.  
+````bash
+
 ````
 
