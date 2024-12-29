@@ -92,4 +92,64 @@ cat test84.out
 cd cd ~/bsliang_ieeg/data/logs/batch_preproc_YYYY_MM_DD #change to the processing day
 cat D0084.txt
 ````
+## Tricks
+Instead of using powershell, you can also use vscode or Duke's webpage to connect to the DCC.  
+[DCC ondemand](https://dcc-ondemand-01.oit.duke.edu/pun/sys/dashboard/)  
 
+## Step 4: Transfer files back to local desktop (Box).
+**1.** Use Globus again to save files.  
+  
+Save **derivative** files to  
+`~\Box\CoganLab\BIDS-1.0_LexicalDecRepDelay\BIDS\derivatives\clean`  
+
+![save files to box 1](materials/save_files_to_box_1.png)  
+  
+Save **figures** to  
+`~\Box\CoganLab\D_Data\LexicalDecRepDelay\Baishen_Figs` 
+
+![save files to box 2](materials/save_files_to_box_2.png)  
+
+## Step 5: Muscle artifact electrodes removal.  
+**1.** Open the wavelet figure files in Box.    
+````bash
+# windows powershell
+cd ~\Box\CoganLab\D_Data\LexicalDecRepDelay\Baishen_Figs\D0084\wavelet
+explorer .
+````
+**2.** Also use this to plot patient's brain.  
+````python
+import mne
+from ieeg.viz.mri import plot_subj
+fig1 = plot_subj('D84')
+mne.viz.set_3d_view(fig1, azimuth=150, elevation=70, focalpoint="auto",
+                    distance="auto")
+````
+<div style="border: 2px solid #555; padding: 10px; background-color: #f9f9f9;">
+  <strong>Electrodes may be considered as muscle electrodes if</strong><br>
+  <em>(The combination of the following features should be chosen based on the actual situation.)</em>
+  <ol>
+    <li>Have very high frequency (e.g., &gt; 300 Hz) activations in oral response phase.</li>
+    <li>Located in anterior temporal (shank crossing the jaw).</li>
+    <li>For temporal electrodes, have strong motor activities but no auditory activities.</li>
+    <li>At the beginnings or the endings of a shank (maybe outside the cortex).</li>
+    <li>Sudden and strong activities (real neural activities are usually persistent).</li>
+    <li>Very large low frequency activities that extend to high gamma band.</li>
+  </ol>
+</div>
+
+**3.** Save manual artifact electrodes removal results  
+![save muscle electrodes](materials/sav_muscle_electrodes.png) 
+Save it as a csv file with one electrode one row.  
+
+## Step 5: Multitaper  
+**1.** Update `batch_preproc.py`  
+![Update batch_preproc.py](materials/update_preproc_batch_multitaper.png) 
+
+**2.** Commit, push, connect to DCC, and pull the repository to DCC as in `Step 1`.   
+
+**3.**  Run the batch script again
+````bash
+# DCC
+cd ~/bsliang_ieeg/
+sbatch sbatch_preproc.sh
+````
