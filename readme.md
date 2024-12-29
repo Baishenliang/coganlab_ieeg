@@ -16,7 +16,6 @@ to Coganlab's box:
 
 **2.** Updated participants.tsv in:  
 `~\Box\CoganLab\BIDS-1.0_LexicalDecRepDelay\BIDS`  
-`~\Box\CoganLab\BIDS-1.0_LexicalDecRepDelay\BIDS\derivatives\clean`  
 ````text
 # Add the new participants lines:  
 sub-D0084	n/a	n/a	n/a	n/a	n/a
@@ -84,6 +83,13 @@ You can `squeue -u bl314` to get the current status.
  
 Or you can check the script logs for python outputs or errors.  
 ````bash
+# Check the sbatch output
+cd ~/bsliang_ieeg/data/DCCbatchout/
+cat slurm_84.err #errors
+cat test84.out
 
+# Check the python script output
+cd cd ~/bsliang_ieeg/data/logs/batch_preproc_YYYY_MM_DD #change to the processing day
+cat D0084.txt
 ````
 
