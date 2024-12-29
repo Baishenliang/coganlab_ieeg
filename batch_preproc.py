@@ -26,7 +26,8 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0084": "multitaper",
+    "D0084": "gamma",
+    "D0086": "gamma"
 }
 
 # %% check if currently running a slurm job

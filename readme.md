@@ -4,6 +4,9 @@ Please clone the Cogan Lab ieeg repository (https://github.com/coganlab/IEEG_Pip
 
 ![IEEG analyses pipeline](materials/analyze_pipeline.png)   
 
+Also **remember to update the completion status in**:  
+`~\Box\CoganLab\IndividualMeetings\Baishen\Lexical_task_processing_landmark.xlsx`  
+
 ## Step 0：response coding and BIDS convert  
 See: [Gitlab response coding instructions](https://coganlab.pages.oit.duke.edu/wiki/docs/ECoG_In_Unit/Response_Coding/)  
 (Duke NetID required)  
@@ -160,5 +163,15 @@ sbatch sbatch_preproc.sh
 
 **5.**  Visually scan the multitaper results in `Baishen_Figs` (e.g., `Baishen_Figs\D0086\multitaper_4cons`). Re-do muscle artifact electrodes removal if needed.  
 
+## Step 6: Gamma extraction
+**1.** Update `batch_preproc.py`  
+![Update batch_preproc.py](materials/update_preproc_batch_gamma.png) 
 
+**2.** Commit, push, connect to DCC, and pull the repository to DCC as in `Step 1`.   
 
+**3.**  Run the batch script again
+````bash
+# DCC
+cd ~/bsliang_ieeg/
+sbatch sbatch_preproc.sh
+````
