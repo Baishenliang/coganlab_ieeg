@@ -4,23 +4,23 @@ Please clone the Cogan Lab ieeg repository (https://github.com/coganlab/IEEG_Pip
 
 ![IEEG analyses pipeline](materials/analyze_pipeline.png)   
 
-## Step0：response coding and BIDS convert  
+## Step 0：response coding and BIDS convert  
 See: [Gitlab response coding instructions](https://coganlab.pages.oit.duke.edu/wiki/docs/ECoG_In_Unit/Response_Coding/)  
 (Duke NetID required)  
   
-## Step1: files transfer and upload
+## Step 1: files transfer and upload
 **1.** Copy the BIDS coded EEG files:  
 ![file transfer 1](materials/files_transfer_1.png)  
 to Coganlab's box:  
 ![file transfer 2](materials/files_transfer_2.png)   
   
-**2.** Use **Globus** to synchronize the files:  
+**2.** Use **Globus** to synchronize the files to the Duke Computing Cluster (DCC):  
 (Duke NetID required)  
 ![Upload DCC 1](materials/upload_DCC_1.png)  
 and 
 ![Upload DCC 2](materials/upload_DCC_2.png)  
   
-## Step2: update preprocessing batch codes for patients.  
+## Step 2: update preprocessing batch codes for patients.  
 **1.** Check whether the patient had eeg channels by inspecting these two files:  
 ![Check eeg 1](materials/check_eeg_chs_1.png)  
 Then write the report to this location:  
@@ -30,3 +30,30 @@ If there are no eeg channels, simply add a `nan`.
 
 **2.** Updated the `batch_preproc.py`.  
 ![Updated preproce batch](materials\update_preproc_batch.png) 
+
+**3.** Commit and push. 
+````bash
+# cd to the local repository
+git status
+git add .
+git commit -m "Patient D84 D86 added"
+git push origin main
+````
+
+**4.** connect to the DCC.  
+```` bash
+# use a new windows powershell window
+ssh bl314@dcc-login.oit.duke.edu
+# Input password and 2FA code
+````
+
+**5.** pull the repository.
+```` bash
+# use the same powershell window as the DCC login
+cd ~/bsliang_ieeg
+# this is the soft link to:
+# /hpc/group/coganlab/bl314/codes/bsliang_ieeg, where the github repository is cloned
+git status
+git pull
+````
+
