@@ -40,7 +40,10 @@ If there are no eeg channels, simply add a `nan`.
 **2.** Updated the `batch_preproc.py`.  
 ![Updated preproce batch](materials/update_preproc_batch.png) 
 
-**3.** Commit and push. 
+**3.** Adjust the sbatch parameters (e.g., to cover the range of patients).  
+![Sbatch](materials/sbatch.png) 
+
+**4.** Commit and push. 
 ````bash
 # cd to the local repository
 git status
@@ -49,14 +52,14 @@ git commit -m "Patient D84 D86 added"
 git push origin main
 ````
 
-**4.** connect to the DCC.  
+**5.** connect to the DCC.  
 ````bash
 # use a new windows powershell window
 ssh bl314@dcc-login.oit.duke.edu
 # Input password and 2FA code
 ````
 
-**5.** pull the repository.
+**6.** pull the repository.
 ````bash
 # use the same powershell window as the DCC login
 cd ~/bsliang_ieeg
@@ -153,3 +156,9 @@ Save it as a csv file with one electrode one row.
 cd ~/bsliang_ieeg/
 sbatch sbatch_preproc.sh
 ````
+**4.**  Use Globus to synchronize the `~\Box\CoganLab\D_Data\LexicalDecRepDelay\Baishen_Fig` again to local `~\Box\CoganLab\D_Data\LexicalDecRepDelay\Baishen_Figs`.  
+
+**5.**  Visually scan the multitaper results in `Baishen_Figs` (e.g., `Baishen_Figs\D0086\multitaper_4cons`). Re-do muscle artifact electrodes removal if needed.  
+
+
+

@@ -27,7 +27,6 @@ from matplotlib import pyplot as plt
 
 subject_processing_dict_org = {
     "D0084": "multitaper",
-    "D0086": "multitaper"
 }
 
 # %% check if currently running a slurm job
