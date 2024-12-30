@@ -28,8 +28,8 @@ from matplotlib import pyplot as plt
 subject_processing_dict_org = {
     #"D0090": "linernoise/outlierchs/wavelet",
     #"D0092": "linernoise/outlierchs/wavelet"
-    "D0090": "multitaper",
-    "D0092": "multitaper"
+    "D0090": "gamma",
+    "D0092": "gamma"
 }
 
 # %% check if currently running a slurm job
