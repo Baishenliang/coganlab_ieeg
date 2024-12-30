@@ -26,8 +26,8 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0084": "gamma",
-    "D0086": "gamma"
+    "D0090": "linernoise/outlierchs/wavelet",
+    "D0092": "linernoise/outlierchs/wavelet"
 }
 
 # %% check if currently running a slurm job

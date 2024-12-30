@@ -169,9 +169,18 @@ sbatch sbatch_preproc.sh
 
 **2.** Commit, push, connect to DCC, and pull the repository to DCC as in `Step 1`.   
 
-**3.**  Run the batch script again
+**3.** Run the batch script again
 ````bash
 # DCC
 cd ~/bsliang_ieeg/
 sbatch sbatch_preproc.sh
 ````
+
+**4.** Once completed, check whether figures had been made.  
+![Check gamma figs](materials/check_gamma_figs.png)   
+
+**5.** Synchronize the figures back to Box.  
+![save files to box 2](materials/save_files_to_box_2.png)   
+
+**6.** Synchronze the derivatives back to Box.  
+![save files to box 3](materials/sync_derivatives_stats.png)  
