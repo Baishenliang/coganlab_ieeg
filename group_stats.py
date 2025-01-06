@@ -23,7 +23,9 @@ cluster_twin=0.2 # length of sig cluster
 
 # define condition and load data
 stat_type='mask'
-contrast='ave'
+#contrast='ave'
+contrast='ave_YN_Rep'
+#contrast='ave_Rep_YN'
 
 # %% get auditory and delay electrodes
 con='Auditory'
@@ -65,8 +67,8 @@ del data_sorted
 
 # In the future the follow will become a loop
 # Auditory
-# chs_ov=[1000,0,0,0]
-# pick_sig_idx=aud_sig_idx
+chs_ov=[1000,0,0,0]
+pick_sig_idx=aud_sig_idx
 
 # # Delay
 # chs_ov=[0,100,0,0]
@@ -81,8 +83,8 @@ del data_sorted
 # pick_sig_idx=go_sig_idx
 #
 # # Resp
-chs_ov=[0,0,0,1]
-pick_sig_idx=resp_sig_idx
+# chs_ov=[0,0,0,1]
+# pick_sig_idx=resp_sig_idx
 
 # Elecorde selection and color assigning
 
@@ -105,5 +107,5 @@ picks=[i for i in range(len(data.labels[0])) if pick_sig_idx[i] == 1]
 chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data.labels[0]))]
 chs_cols_picked=[chs_cols[i] for i in picks]
 
-# Plot
+# Plot (cannot plot D107,D23,D92)
 plot_brain(subjs, picks,chs_cols_picked)
