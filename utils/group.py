@@ -28,7 +28,9 @@ def load_stats(stat_type,con,contrast,stats_root):
     subjs = [name for name in os.listdir(stats_root) if os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
     #subjs = ["D0053", "D0054", "D0055", "D0057", "D0059", "D0063", "D0065", "D0066", "D0068", "D0069", "D0070", "D0071",
     #         "D0077", "D0079", "D0081", "D0094", "D0096", "D0101", "D0102", "D0103"]
-    #subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0023' ]
+    import warnings
+    subjs = [subj for subj in subjs if subj != 'D0107']
+    warnings.warn(f"The following subjects are not included: D0107")
     chs = []
     data_lst = []
 
@@ -143,7 +145,7 @@ def plot_chs(data_in,fig_save_dir_f):
     fig, ax = plt.subplots()
     ax.imshow(data, cmap='Reds')
 
-    ch_gap = 60
+    ch_gap = 120
     time_gap = 100
 
     channel_names = chs[::ch_gap]
@@ -159,6 +161,8 @@ def plot_chs(data_in,fig_save_dir_f):
         print('no zero time found')
     fig.savefig(fig_save_dir_f, dpi=300)
 
-def plot_brain(subjs,picks,chs_cols):
+def plot_brain(subjs,picks,chs_cols,fig_save_dir_f):
+    subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
-    plot_on_average(subjs, picks=picks,color=chs_cols,hemi='lh',  size=0.35)
+    fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',  size=0.35)
+    # fig3d.save_image(fig_save_dir_f)
