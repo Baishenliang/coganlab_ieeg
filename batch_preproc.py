@@ -26,11 +26,13 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0117": "gamma"#"multitaper"#"linernoise/outlierchs/wavelet"
-    # "D0035": "gamma",#"multitaper",#"linernoise/outlierchs/wavelet",
-    # "D0038": "gamma"#"multitaper"#"linernoise/outlierchs/wavelet"
-    # "D0029": "gamma",# "multitaper",#"linernoise/outlierchs/wavelet",
-    # "D0080": "gamma"# "multitaper",#"linernoise/outlierchs/wavelet"
+    "D0026": "linernoise/outlierchs/wavelet",
+    "D0028": "linernoise/outlierchs/wavelet",
+    "D0042": "linernoise/outlierchs/wavelet",
+    "D0044": "linernoise/outlierchs/wavelet",
+    "D0047": "linernoise/outlierchs/wavelet",
+    "D0100": "linernoise/outlierchs/wavelet"
+# "D0080": "linernoise/outlierchs/wavelet"
 }
 
 # %% check if currently running a slurm job
