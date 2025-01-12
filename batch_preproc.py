@@ -30,7 +30,7 @@ subject_processing_dict_org = {
     "D0042": "gamma",# "multitaper",  # ""linernoise/outlierchs/wavelet",
     "D0044": "gamma",# "multitaper",#""linernoise/outlierchs/wavelet",
     "D0047": "gamma",# "multitaper",#""linernoise/outlierchs/wavelet"
-    "D0100": "gamma",# "multitaper"#"linernoise/outlierchs/wavelet"
+    "D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
 # %% check if currently running a slurm job
