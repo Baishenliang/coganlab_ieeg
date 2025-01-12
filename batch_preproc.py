@@ -26,11 +26,11 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0026": "linernoise/outlierchs/wavelet",
-    "D0028": "linernoise/outlierchs/wavelet",
-    "D0042": "linernoise/outlierchs/wavelet",
-    "D0044": "linernoise/outlierchs/wavelet",
-    "D0047": "linernoise/outlierchs/wavelet",
+    # "D0026": "linernoise/outlierchs/wavelet",
+    # # "D0028": "linernoise/outlierchs/wavelet",
+    # "D0042": "linernoise/outlierchs/wavelet",
+    # "D0044": "linernoise/outlierchs/wavelet",
+    # "D0047": "linernoise/outlierchs/wavelet",
     "D0100": "linernoise/outlierchs/wavelet"
 # "D0080": "linernoise/outlierchs/wavelet"
 }
