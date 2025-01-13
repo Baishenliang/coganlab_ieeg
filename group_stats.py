@@ -25,7 +25,7 @@ if not os.path.exists(os.path.join(stats_save_root)):
 mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0.4 # a short period of time that we may assume auditory decay takes
 delay_len=0.5 # from task script
-go_len=0.5 # from task script
+motor_win=[-0.5,0] # get windows for motor responses (from Motor onset,not including motor onset (or else it should be [0.25, 0.75]))
 cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 
 # %% get auditory and delay electrodes
@@ -51,7 +51,7 @@ del data_sorted, data_sorted_aud, data_sorted_del
 go_sig_idx=[]
 resp_sig_idx=[]
 
-for con,trange in zip (('Go','Resp'),([-0.1,go_len+0.1],[-10, 10])):
+for con,trange in zip (('Go','Resp'),([-0.5,1],motor_win)):
 
     data,_=load_stats(stat_type,con,contrast,stats_root)
 
@@ -63,36 +63,38 @@ for con,trange in zip (('Go','Resp'),([-0.1,go_len+0.1],[-10, 10])):
     elif con=='Resp':
         resp_sig_idx=sig_idx
 
+# Motor electrodes are the Go electrodes subtracted by Auditory electrodes
+# i.e.,
+# Auditory electrodes:  **Activated** in auditory window; whether or not activated after Go does not matter.
+# Motor electrodes:  **Not** activated in auditory window; **Activated** after Go
+motor_sig_idx = [0 if aud_sig_idx[i] == 1 else resp_sig_idx[i] for i in range(len(resp_sig_idx))]
+# Currently not using resp_sig_idx
+
 del data_sorted
 # %% reassign electrode indices by conditions
 
 for TypeLabel,chs_ov,pick_sig_idx in zip(
-        ('Auditory','Delay','Delay_overlapped','Go','Resp'),
-        ([1000,0,0,0],[0,100,0,0],[1000,100,10,1],[0,0,10,0],[0,0,0,1]),
-        (aud_sig_idx,del_sig_idx,del_sig_idx,go_sig_idx,resp_sig_idx)
+        ('Auditory','Delay','Delay_overlapped','Motor'),
+        ([100,0,0],[0,10,0],[100,10,1],[0,0,1]),
+        (aud_sig_idx,del_sig_idx,del_sig_idx,motor_sig_idx)
 ):
 
     # Elecorde selection and color assigning
 
     color_map = {
-        1000: [1, 0, 0],  # Auditory (Red)
-         100: [0, 1, 0],  # Delay (Green)
-          10: [0, 0, 1],  # Go (Blue)
-           1: [1, 0, 1],  # Resp (Purple)
-        1100: [1, 0.65, 0], # Auditory-delay (Orange)
-         110: [0, 1, 1], # Delay-Go (Greenblue)
-         101: [1, 1, 0],  # Delay-Resp (Yellow)
-         111: [1, 1, 0], # Delay-Go-Resp (Yellow)
-        1101: [1, 1, 1], # Auditory-Delay-Resp (White)
-        1110: [1, 1, 1],  # Auditory-Delay-Go (White)
-        1111: [1, 1, 1] # Auditory-Delay-Go-Resp (White)
+        100: [1, 0, 0],  # Auditory (Red)
+         10: [0, 1, 0],  # Delay (Green)
+          1: [0, 0, 1],  # Motor (Blue)
+        110: [1, 1, 0], # Auditory-Delay (Yellow)
+         11: [0, 1, 1], # Delay-Motor (Greenblue)
+        111: [1, 1, 1]  # Auditory-Delay-Motor (White)
     }
 
-    chs_col_idx=[chs_ov[0]*aud_sig_idx[i]+chs_ov[1]*del_sig_idx[i]+chs_ov[2]*go_sig_idx[i]+chs_ov[3]*resp_sig_idx[i] for i in range(len(data.labels[0]))]
+    chs_col_idx=[chs_ov[0]*aud_sig_idx[i]+chs_ov[1]*del_sig_idx[i]+chs_ov[2]*motor_sig_idx[i] for i in range(len(data.labels[0]))]
     picks=[i for i in range(len(data.labels[0])) if pick_sig_idx[i] == 1]
-    # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 1000] # Use this to pick auditory only electrodes
+    # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
     chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data.labels[0]))]
     chs_cols_picked=[chs_cols[i] for i in picks]
 
-    # Plot (cannot plot D107,D23,D92)
+    # Plot (cannot plot D107,D042)
     plot_brain(subjs, picks,chs_cols_picked,os.path.join(fig_save_dir,f'{TypeLabel}_{stat_type}-{contrast}_Tclusthres_{cluster_twin}_3d.jpg'))

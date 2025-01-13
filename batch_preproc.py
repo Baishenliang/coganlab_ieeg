@@ -26,11 +26,46 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0026": "gamma",#"multitaper",#"linernoise/outlierchs/wavelet",
-    "D0042": "gamma",# "multitaper",  # ""linernoise/outlierchs/wavelet",
-    "D0044": "gamma",# "multitaper",#""linernoise/outlierchs/wavelet",
-    "D0047": "gamma",# "multitaper",#""linernoise/outlierchs/wavelet"
-    "D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
+    "D0023": "gamma",
+    "D0024": "gamma",
+    "D0026": "gamma",
+    "D0027": "gamma",
+    "D0029": "gamma",
+    "D0032": "gamma",
+    "D0035": "gamma",
+    "D0038": "gamma",
+    "D0042": "gamma",
+    "D0044": "gamma",
+    "D0047": "gamma",
+    "D0053": "gamma",
+    "D0054": "gamma",
+    "D0055": "gamma",
+    "D0057": "gamma",
+    "D0059": "gamma",
+    "D0063": "gamma",
+    "D0065": "gamma",
+    "D0066": "gamma",
+    "D0068": "gamma",
+    "D0069": "gamma",
+    "D0070": "gamma",
+    "D0071": "gamma",
+    "D0077": "gamma",
+    "D0079": "gamma",
+    "D0080": "gamma",
+    "D0081": "gamma",
+    "D0084": "gamma",
+    "D0086": "gamma",
+    "D0090": "gamma",
+    "D0092": "gamma",
+    "D0094": "gamma",
+    "D0096": "gamma",
+    "D0100": "gamma",
+    "D0101": "gamma",
+    "D0102": "gamma",
+    "D0103": "gamma",
+    "D0107": "gamma",
+    "D0117": "gamma"
+    #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
 # %% check if currently running a slurm job
@@ -462,9 +497,9 @@ for subject, processing_type in subject_processing_dict.items():
                 # run permutation: contrast gamma (YesNo vs. Repeat, )
 
                 for sig1_tag, sig2_tag, contrast_Tag in zip(
-                    ('Yes_No','Repeat'),
-                    ('Repeat','Yes_No'),
-                    ('YN_Rep','Rep_YN')):
+                    ('Yes_No','Repeat','Repeat/Word','Repeat/Nonword'),
+                    ('Repeat','Yes_No','Repeat/Nonword','Repeat/Word'),
+                    ('YN_Rep','Rep_YN','W_NW_inRep','NW_W_inRep')):
 
                     mask = dict()
                     data = []
