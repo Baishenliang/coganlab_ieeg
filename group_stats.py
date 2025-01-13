@@ -51,7 +51,7 @@ del data_sorted, data_sorted_aud, data_sorted_del
 go_sig_idx=[]
 resp_sig_idx=[]
 
-for con,trange in zip (('Go','Resp'),([-0.5,1],motor_win)):
+for con,trange in zip (('Go','Resp'),([0.25,0.75],motor_win)):
 
     data,_=load_stats(stat_type,con,contrast,stats_root)
 
