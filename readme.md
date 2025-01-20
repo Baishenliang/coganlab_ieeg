@@ -4,6 +4,8 @@ Please clone the Cogan Lab ieeg repository (https://github.com/coganlab/IEEG_Pip
 
 ![IEEG analyses pipeline](materials/analyze_pipeline.png)   
 
+**A completed version for only processing Lexical Decision Repeat task: `75814e6`**
+
 Also **remember to update the completion status in**:  
 `~\Box\CoganLab\IndividualMeetings\Baishen\Lexical_task_processing_landmark.xlsx`  
 
