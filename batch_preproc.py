@@ -1,5 +1,5 @@
 """
-    Batch preprocessing scripts for lexical delay task.
+    Batch preprocessing scripts for lexical delay task, Lexical nodelay task, and Retro_Cue task.
     Including: line noise filtering, outlier channels removal, and wavelet.
     Parameters are equal to Sentence Rep processing code unless a change is necessary (NEEDED TO BE RE-CHECKED!):
     https://github.com/coganlab/SentenceRep_analysis
@@ -26,53 +26,21 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    # "D0023": "gamma",
-    # "D0024": "gamma",
-    # "D0026": "gamma",
-    # "D0027": "gamma",
-    # "D0029": "gamma",
-    # "D0032": "gamma",
-    # "D0035": "gamma",
-    # "D0038": "gamma",
-    # "D0042": "gamma",
-    # "D0044": "gamma",
-    # "D0047": "gamma",
-    # "D0053": "gamma",
-    # "D0054": "gamma",
-    # "D0055": "gamma",
-    # "D0057": "gamma",
-    # "D0059": "gamma",
-    # "D0063": "gamma",
-    # "D0065": "gamma",
-    # "D0066": "gamma",
-    # "D0068": "gamma",
-    # "D0069": "gamma",
-    # "D0070": "gamma",
-    # "D0071": "gamma",
-    # "D0077": "gamma",
-    # "D0079": "gamma",
-    # "D0080": "gamma",
-    # "D0081": "gamma",
-    "D0084": "gamma",
-    "D0086": "gamma",
-    "D0090": "gamma",
-    "D0092": "gamma",
-    "D0094": "gamma",
-    "D0096": "gamma",
-    "D0100": "gamma",
-    "D0101": "gamma",
-    "D0102": "gamma",
-    "D0103": "gamma",
-    "D0107": "gamma",
-    "D0117": "gamma"
+    "D0057": "linernoise"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
+
+# %% define task
+# Task_Tag="LexicalDecRepDelay"
+Task_Tag="LexicalDecRepNoDelay"
+# Task_Tag="Retro_Cue"
+BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
 # %% check if currently running a slurm job
 HOME = os.path.expanduser("~")
 if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
     LAB_root = os.path.join(HOME, "workspace")
-    save_dir=os.path.join(HOME,"workspace", "Baishen_Figs")
+    save_dir=os.path.join(HOME,"workspace", "Baishen_Figs",Task_Tag)
     if not os.path.exists(os.path.join(save_dir)):
         try:
             os.mkdir(os.path.join(save_dir))
@@ -86,13 +54,13 @@ if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
         raise KeyError(f"Subject '{subj}' not found in the original dictionary.")
 else:  # if not then set box directory
     LAB_root = os.path.join(HOME, "Box", "CoganLab")
-    save_dir=os.path.join(HOME, "Box", "CoganLab", "D_Data","LexicalDecRepDelay","Baishen_Figs")
+    save_dir=os.path.join(HOME, "Box", "CoganLab", "D_Data",Task_Tag,"Baishen_Figs")
     if not os.path.exists(os.path.join(save_dir)):
         os.mkdir(os.path.join(save_dir))
     subject_processing_dict = subject_processing_dict_org
 
 
-bids_root = os.path.join(LAB_root,'BIDS-1.0_LexicalDecRepDelay','BIDS')
+bids_root = os.path.join(LAB_root,BIDS_Tag,'BIDS')
 
 # %% Log
 current_time = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -118,7 +86,7 @@ for subject, processing_type in subject_processing_dict.items():
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing line noise filter\n")
 
             # load BIDS raw data
-            layout = get_data("LexicalDecRepDelay", root=LAB_root)
+            layout = get_data(Task_Tag, root=LAB_root)
             raw = raw_from_layout(layout, subject=subject, preload=True, extension='.edf')
 
             # drop eeg and marker channels
@@ -150,7 +118,7 @@ for subject, processing_type in subject_processing_dict.items():
             del layout
 
             # remove "bad boundary" in events.tsv
-            tsv_loc = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
+            tsv_loc = os.path.join(LAB_root, BIDS_Tag, 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
                                    'ieeg')
             update_tsv(subject, tsv_loc)
             log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter %%% completed %%% \n")
@@ -170,12 +138,12 @@ for subject, processing_type in subject_processing_dict.items():
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing outlier chs removal\n")
 
             ## Mark outlier channels
-            layout = get_data("LexicalDecRepDelay", root=LAB_root)
+            layout = get_data(Task_Tag, root=LAB_root)
             raw = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=True)
 
             # mark outlier
-            derivative_loc = os.path.join(LAB_root, "BIDS-1.0_LexicalDecRepDelay","BIDS","derivatives","clean",f"sub-{subject}","ieeg")
+            derivative_loc = os.path.join(LAB_root, BIDS_Tag,"BIDS","derivatives","clean",f"sub-{subject}","ieeg")
             is_outlier = detect_outlier(subject,derivative_loc)
             if is_outlier == 1:
                 raise ValueError(
@@ -205,7 +173,7 @@ for subject, processing_type in subject_processing_dict.items():
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing wavelet\n")
 
             # load data
-            layout = get_data("LexicalDecRepDelay", root=LAB_root)
+            layout = get_data(Task_Tag, root=LAB_root)
             raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=False)
 
@@ -289,12 +257,12 @@ for subject, processing_type in subject_processing_dict.items():
             ## Multitaper
 
             # read muscle artifact channels and update
-            tsv_loc = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
+            tsv_loc = os.path.join(LAB_root, BIDS_Tag, 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
                         'ieeg')
             update_muscle_chs(subject, tsv_loc)
             
             # load data
-            layout = get_data("LexicalDecRepDelay", root=LAB_root)
+            layout = get_data(Task_Tag, root=LAB_root)
             raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                     preload=False)
 
@@ -385,12 +353,12 @@ for subject, processing_type in subject_processing_dict.items():
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing Gamma band-pass filter and permutation \n")
 
             # read muscle artifact channels and update
-            tsv_loc = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
+            tsv_loc = os.path.join(LAB_root, BIDS_Tag, 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
                         'ieeg')
             update_muscle_chs(subject, tsv_loc)
 
             # load data
-            layout = get_data("LexicalDecRepDelay", root=LAB_root)
+            layout = get_data(Task_Tag, root=LAB_root)
             raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=False)
 
