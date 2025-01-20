@@ -31,12 +31,20 @@ def load_stats(stat_type,con,contrast,stats_root):
     warnings.warn(f"The following subjects are not included: D0107 D0042")
     chs = []
     data_lst = []
+    valid_subjs = []
+
 
     for i, subject in enumerate(subjs):
 
         subj_gamma_stats_dir = os.path.join(stats_root, subject)
 
         file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}-{contrast}.fif')
+
+        if not os.path.exists(file_dir):
+            continue
+        else:
+            valid_subjs.append(subject)
+
         subj_dataset = fif_read(file_dir)
 
         subj_data = subj_dataset[0].data
@@ -51,7 +59,7 @@ def load_stats(stat_type,con,contrast,stats_root):
     data_raw = np.concatenate(data_lst, axis=0)
     labels = [chs, times]
     data=LabeledArray(data_raw, labels)
-    return data,subjs
+    return data,valid_subjs
 
 def sort_chs_by_actonset(data_in,win_len,time_range):
     """

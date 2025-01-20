@@ -2,7 +2,9 @@
 stat_type='mask'
 #contrast='ave' # average, not contrasting different conditions
 #contrast='ave_YN_Rep' # contrasting yesno to repetition
-contrast='ave_Rep_YN' # contrasting repetition to yesno
+#contrast='ave_Rep_YN' # contrasting repetition to yesno
+#contrast='ave_W_NW_inRep' # contrasting word to nonword trials only in repetition
+contrast='ave_NW_W_inRep' # contrasting nonword to word trials only in repetition
 
 # %% prerparation
 import os
