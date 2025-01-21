@@ -26,7 +26,7 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0057": "wavelet"
+    "D0057": "multitaper"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
@@ -205,7 +205,6 @@ for subject, processing_type in subject_processing_dict.items():
                     ('Cue', 'Auditory', 'Resp')
                 )
 
-
             for epoch, t, tag in wavelet_eventzip:
 
                 # Get the spectras
@@ -292,14 +291,24 @@ for subject, processing_type in subject_processing_dict.items():
                 os.mkdir(os.path.join(save_dir, subject, 'multitaper_4cons'))
 
             # run multitaper
-            for task, task_Tag in zip(('Repeat', 'Yes_No'), ('Rep', 'YN')):
-                for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
-                    for epoch, t, tag in zip(
+            if Task_Tag=="LexicalDecRepDelay":
+                multitap_task_zip=zip(('Repeat', 'Yes_No'), ('Rep', 'YN'))
+                multitap_evnt_zip=zip(
                             ('Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT', 'Go/' + task + '/' + word + '/CORRECT',
                             'Resp/' + task + '/' + word + '/CORRECT'),
                             ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
                             ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
-                    ):
+                    )
+            elif Task_Tag=="LexicalDecRepNoDelay":
+                multitap_task_zip=zip(('Repeat', ':=:'), ('Rep', 'Mine'))
+                multitap_evnt_zip=zip(
+                            ('Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT','Resp/' + task + '/' + word + '/CORRECT'),
+                            ((-0.5, 1.5), (-0.5, 2), (-0.5, 1)),
+                            ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
+                    )
+            for task, task_Tag in multitap_task_zip:
+                for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
+                    for epoch, t, tag in multitap_evnt_zip:
 
                         # Get the spectras
                         t1 = t[0] - 0.5
@@ -318,7 +327,7 @@ for subject, processing_type in subject_processing_dict.items():
                         crop_pad(spectra_multitaper, "0.5s")  # cut the first and final 0.5s, change to zero
 
                         # Get the baseline
-                        if epoch == 'Cue/' + task + '/' + word + '/CORRECT':
+                        if 'Cue' in epoch:
                             base_multitaper = spectra_multitaper.copy().crop(-0.5, 0)
                             base_multitaper = base_multitaper.average(lambda x: np.nanmean(x, axis=0), copy=True)
 
