@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def update_tsv(subj, search_dir='.'):
+def update_tsv(subj, search_dir,task_tag):
     """
     Searches for all TSV files matching the given `subj` identifier, processes each one by removing specific rows,
     and saves the updated file, overwriting the original.
@@ -23,7 +23,7 @@ def update_tsv(subj, search_dir='.'):
     - ValueError: If no files or more than one matching file are found for a `subj` and those files have issues.
     """
     # Construct the pattern to match the filenames based on `subj`
-    pattern = f"sub-{subj}_task-LexicalDecRepDelay_acq-.+?_run-.+?_desc-clean_events.tsv"
+    pattern = f"sub-{subj}_task-{task_tag}_acq-.+?_run-.+?_desc-clean_events.tsv"
 
     # Search for all files in the specified directory that match the pattern
     files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]
@@ -45,7 +45,7 @@ def update_tsv(subj, search_dir='.'):
         df_filtered.to_csv(input_file, sep="\t", index=False)
         print(f"Processed and replaced the original file: {input_file}")
 
-def detect_outlier(subj, search_dir='.', task_tag='LexicalDecRepNoDelay'):
+def detect_outlier(subj, search_dir, task_tag):
     """
     Detect outliers in files matching a specific pattern for a given subject.
     
@@ -112,7 +112,7 @@ def load_muscle_chs(subject):
     muscle_chs = df['muscle_chs'].tolist()
     return muscle_chs
 
-def update_muscle_chs(subj, search_dir='.'):
+def update_muscle_chs(subj, search_dir,task_tag):
     """
     Update the status and status_description of specified electrodes in the subject's channel files
     based on the muscle channels loaded for the subject.
@@ -129,7 +129,7 @@ def update_muscle_chs(subj, search_dir='.'):
     electrode_list = load_muscle_chs(subj)
 
     # Construct the pattern to match the filenames based on `subj`
-    pattern = f"sub-{subj}_task-LexicalDecRepDelay_acq-.+?_run-.+?_desc-clean_channels.tsv"
+    pattern = f"sub-{subj}_{task_tag}_acq-.+?_run-.+?_desc-clean_channels.tsv"
 
     # Search for all files in the specified directory that match the pattern
     files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]
