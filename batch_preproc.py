@@ -395,7 +395,7 @@ for subject, processing_type in subject_processing_dict.items():
             # read muscle artifact channels and update
             tsv_loc = os.path.join(LAB_root, BIDS_Tag, 'BIDS', 'derivatives', 'clean', f'sub-{subject}',
                         'ieeg')
-            update_muscle_chs(subject, tsv_loc)
+            update_muscle_chs(subject, tsv_loc,Task_Tag)
 
             # load data
             layout = get_data(Task_Tag, root=LAB_root)
