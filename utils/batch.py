@@ -45,11 +45,12 @@ def update_tsv(subj, search_dir='.'):
         df_filtered.to_csv(input_file, sep="\t", index=False)
         print(f"Processed and replaced the original file: {input_file}")
 
-def detect_outlier(subj, search_dir='.'):
+def detect_outlier(subj, search_dir='.', task_tag='LexicalDecRepNoDelay'):
     """
     Detect outliers in files matching a specific pattern for a given subject.
     
     Args:
+        task_tag: tag for task
         subj (str): Subject identifier.
         search_dir (str): Directory to search for the files. Defaults to the current directory.
     
@@ -57,7 +58,7 @@ def detect_outlier(subj, search_dir='.'):
         int: 1 if any file contains 'outlier' in the 'status_description' column, 0 otherwise.
     """
     # Construct the pattern to match the filenames based on `subj`
-    pattern = f"sub-{subj}_task-LexicalDecRepDelay_acq-.+?_run-.+?_desc-clean_channels.tsv"
+    pattern = f"sub-{subj}_task-{task_tag}_acq-.+?_run-.+?_desc-clean_channels.tsv"
     
     # Search for all files in the specified directory that match the pattern
     files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]

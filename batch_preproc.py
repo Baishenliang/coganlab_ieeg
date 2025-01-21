@@ -144,7 +144,7 @@ for subject, processing_type in subject_processing_dict.items():
 
             # mark outlier
             derivative_loc = os.path.join(LAB_root, BIDS_Tag,"BIDS","derivatives","clean",f"sub-{subject}","ieeg")
-            is_outlier = detect_outlier(subject,derivative_loc)
+            is_outlier = detect_outlier(subject,derivative_loc,Task_Tag)
             if is_outlier == 1:
                 raise ValueError(
                     f"Outlier channels for the {subject} have been removed. Skip outlier channels removal now. If you want to re-do it, mark all the channels in the derivative as good and n/a for status first."
