@@ -129,7 +129,7 @@ def update_muscle_chs(subj, search_dir,task_tag):
     electrode_list = load_muscle_chs(subj)
 
     # Construct the pattern to match the filenames based on `subj`
-    pattern = f"sub-{subj}_{task_tag}_acq-.+?_run-.+?_desc-clean_channels.tsv"
+    pattern = f"sub-{subj}_task-{task_tag}_acq-.+?_run-.+?_desc-clean_channels.tsv"
 
     # Search for all files in the specified directory that match the pattern
     files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]
