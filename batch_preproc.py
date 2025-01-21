@@ -26,7 +26,7 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0057": "outlierchs"
+    "D0057": "wavelet"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
@@ -193,10 +193,20 @@ for subject, processing_type in subject_processing_dict.items():
                 os.mkdir(os.path.join(save_dir, subject, 'wavelet'))
 
             # wavelet
-            for epoch, t, tag in zip(
+            if Task_Tag=="LexicalDecRepDelay":
+                wavelet_eventzip=zip(
                     ('Cue/CORRECT', 'Auditory_stim/CORRECT','Go/CORRECT','Resp/CORRECT'),
                     ((-0.5, 1.5), (-0.5, 3),  (-0.5, 1), (-0.5, 1)),
-                    ('Cue', 'Auditory','Go','Resp')):
+                    ('Cue', 'Auditory','Go','Resp'))
+            elif Task_Tag=="LexicalDecRepNoDelay":
+                wavelet_eventzip=zip(
+                    ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                    ((-0.5, 1.5), (-0.5, 1), (-0.5, 1)),
+                    ('Cue', 'Auditory', 'Resp')
+                )
+
+
+            for epoch, t, tag in wavelet_eventzip:
 
                 # Get the spectras
                 t1 = t[0] - 0.5
@@ -210,7 +220,7 @@ for subject, processing_type in subject_processing_dict.items():
                 crop_pad(spectra_wavelet, "0.5s")  # cut the first and final 0.5s, change to zero
 
                 # Get the baseline
-                if epoch == 'Cue/CORRECT':
+                if 'Cue' in epoch:
                     base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
                     base_wavelet = base_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
 
