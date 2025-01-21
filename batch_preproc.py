@@ -26,7 +26,7 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0057": "multitaper"
+    "D0057": "gamma"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
@@ -428,16 +428,27 @@ for subject, processing_type in subject_processing_dict.items():
             subj_gamma_stats_dir=os.path.join(bids_root, "derivatives", "stats", subject)
 
             # gamma and permutation
-            for epoch_phase, t_phase, tag_phase in zip(
-                ('Cue/CORRECT', 'Auditory_stim/CORRECT', 'Go/CORRECT','Resp/CORRECT'),
-                ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                ('Cue', 'Auditory','Go','Resp')
-            ):
+            if Task_Tag == "LexicalDecRepDelay":
+                gamma_epoc_zip=zip(
+                    ('Cue/CORRECT', 'Auditory_stim/CORRECT', 'Go/CORRECT','Resp/CORRECT'),
+                    ('Cue/CORRECT','Cue/CORRECT','Cue/CORRECT','Cue/CORRECT'),
+                    ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                    ('Cue', 'Auditory','Go','Resp')
+                 )
+            elif Task_Tag == "LexicalDecRepNoDelay":
+                gamma_epoc_zip=zip(
+                    ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT'),
+                    ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/:=:/CORRECT','Cue/:=:/CORRECT'),
+                    ((-0.5, 1.5), (-0.5, 2), (-0.5, 1),(-0.5, 1.5), (-0.5, 2)),
+                    ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inMine','Auditory_inMine')
+                 )
+
+            for epoch_phase, baseline_tag, t_phase, tag_phase in gamma_epoc_zip:
                 out = []
                 
                 # extract gamma
                 for epoch, t, tag in zip(
-                        ('Cue/CORRECT', epoch_phase),
+                        (baseline_tag, epoch_phase),
                         ((-0.5, 0), t_phase),
                         ('Baseline',tag_phase)):
 
@@ -502,12 +513,21 @@ for subject, processing_type in subject_processing_dict.items():
                 base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
                 del data, sig1, sig2, base, mask
 
-                # run permutation: contrast gamma (YesNo vs. Repeat, )
+                # run permutation: contrast gamma (e.g., YesNo vs. Repeat, Word vs. Nonword)
+                if Task_Tag == "LexicalDecRepDelay":
+                    gamma_contrast_zip=zip(
+                        ('Yes_No','Repeat','Repeat/Word','Repeat/Nonword'),
+                        ('Repeat','Yes_No','Repeat/Nonword','Repeat/Word'),
+                        ('YN_Rep','Rep_YN','W_NW_inRep','NW_W_inRep')
+                    )
+                elif Task_Tag == "LexicalDecRepNoDelay":
+                    gamma_contrast_zip=zip(
+                        ('Word','Nonword'),
+                        ('Nonword','Word'),
+                        ('W_NW','NW_W')
+                    )
 
-                for sig1_tag, sig2_tag, contrast_Tag in zip(
-                    ('Yes_No','Repeat','Repeat/Word','Repeat/Nonword'),
-                    ('Repeat','Yes_No','Repeat/Nonword','Repeat/Word'),
-                    ('YN_Rep','Rep_YN','W_NW_inRep','NW_W_inRep')):
+                for sig1_tag, sig2_tag, contrast_Tag in gamma_contrast_zip:
 
                     mask = dict()
                     data = []
