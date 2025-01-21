@@ -293,21 +293,42 @@ for subject, processing_type in subject_processing_dict.items():
             # run multitaper
             if Task_Tag=="LexicalDecRepDelay":
                 multitap_task_zip=zip(('Repeat', 'Yes_No'), ('Rep', 'YN'))
-                multitap_evnt_zip=zip(
-                            ('Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT', 'Go/' + task + '/' + word + '/CORRECT',
-                            'Resp/' + task + '/' + word + '/CORRECT'),
-                            ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                            ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Go-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
-                    )
             elif Task_Tag=="LexicalDecRepNoDelay":
                 multitap_task_zip=zip(('Repeat', ':=:'), ('Rep', 'Mine'))
-                multitap_evnt_zip=zip(
-                            ('Cue/' + task + '/' + word + '/CORRECT','Auditory_stim/' + task + '/' + word + '/CORRECT','Resp/' + task + '/' + word + '/CORRECT'),
-                            ((-0.5, 1.5), (-0.5, 2), (-0.5, 1)),
-                            ('Cue-' + task_Tag + '-' + word_Tag, 'Auditory-' + task_Tag + '-' + word_Tag, 'Resp-' + task_Tag + '-' + word_Tag)
-                    )
+
             for task, task_Tag in multitap_task_zip:
                 for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
+                    if Task_Tag == "LexicalDecRepDelay":
+                        multitap_evnt_zip = zip(
+                            ('Cue/' + task + '/' + word + '/CORRECT',
+                             'Auditory_stim/' + task + '/' + word + '/CORRECT',
+                             'Go/' + task + '/' + word + '/CORRECT',
+                             'Resp/' + task + '/' + word + '/CORRECT'),
+                            ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                            ('Cue-' + task_Tag + '-' + word_Tag,
+                             'Auditory-' + task_Tag + '-' + word_Tag,
+                             'Go-' + task_Tag + '-' + word_Tag,
+                             'Resp-' + task_Tag + '-' + word_Tag)
+                        )
+                    elif Task_Tag == "LexicalDecRepNoDelay":
+                        if task == 'Repeat':
+                            multitap_evnt_zip = zip(
+                                ('Cue/' + task + '/' + word + '/CORRECT',
+                                 'Auditory_stim/' + task + '/' + word + '/CORRECT',
+                                 'Resp/' + task + '/' + word + '/CORRECT'),
+                                ((-0.5, 1.5), (-0.5, 2), (-0.5, 1)),
+                                ('Cue-' + task_Tag + '-' + word_Tag,
+                                 'Auditory-' + task_Tag + '-' + word_Tag,
+                                 'Resp-' + task_Tag + '-' + word_Tag)
+                            )
+                        elif task == ':=:':
+                            multitap_evnt_zip = zip(
+                                ('Cue/' + task + '/' + word + '/CORRECT',
+                                 'Auditory_stim/' + task + '/' + word + '/CORRECT'),
+                                ((-0.5, 1.5), (-0.5, 2)),
+                                ('Cue-' + task_Tag + '-' + word_Tag,
+                                 'Auditory-' + task_Tag + '-' + word_Tag))
+
                     for epoch, t, tag in multitap_evnt_zip:
 
                         # Get the spectras
