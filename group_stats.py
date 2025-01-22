@@ -15,7 +15,7 @@ HOME = os.path.expanduser("~")
 LAB_root = os.path.join(HOME, "Box", "CoganLab")
 stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
 
-fig_save_dir = os.path.join(LAB_root, 'D_Data','LexicalDecRepDelay','Baishen_Figs','group')
+fig_save_dir = os.path.join(LAB_root, 'D_Data','LexicalDecRepDelay','Baishen_Figs','LexicalDecRepDelay','group')
 if not os.path.exists(os.path.join(fig_save_dir)):
     os.mkdir(os.path.join(fig_save_dir))
 
@@ -76,9 +76,9 @@ del data_sorted
 # %% reassign electrode indices by conditions
 
 for TypeLabel,chs_ov,pick_sig_idx in zip(
-        ('Auditory','Delay','Delay_overlapped','Motor'),
-        ([100,0,0],[0,10,0],[100,10,1],[0,0,1]),
-        (aud_sig_idx,del_sig_idx,del_sig_idx,motor_sig_idx)
+        ('Auditory','Delay','Delay_overlapped','Delay_only','Motor'),
+        ([100,0,0],[0,10,0],[100,10,1],[100,10,1],[0,0,1]),
+        (aud_sig_idx,del_sig_idx,del_sig_idx,del_sig_idx,motor_sig_idx)
 ):
 
     # Elecorde selection and color assigning
@@ -93,7 +93,10 @@ for TypeLabel,chs_ov,pick_sig_idx in zip(
     }
 
     chs_col_idx=[chs_ov[0]*aud_sig_idx[i]+chs_ov[1]*del_sig_idx[i]+chs_ov[2]*motor_sig_idx[i] for i in range(len(data.labels[0]))]
-    picks=[i for i in range(len(data.labels[0])) if pick_sig_idx[i] == 1]
+    if TypeLabel!='Delay_only':
+        picks=[i for i in range(len(data.labels[0])) if pick_sig_idx[i] == 1]
+    else:
+        picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 10] # Use this to pick delay only electrodes (i.e., no auditory or motor)
     # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
     chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data.labels[0]))]
     chs_cols_picked=[chs_cols[i] for i in picks]
