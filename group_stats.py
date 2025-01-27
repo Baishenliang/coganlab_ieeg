@@ -1,10 +1,10 @@
 # %% define condition and load data
 stat_type='mask'
-#contrast='ave' # average, not contrasting different conditions
+contrast='ave' # average, not contrasting different conditions
 #contrast='ave_YN_Rep' # contrasting yesno to repetition
 #contrast='ave_Rep_YN' # contrasting repetition to yesno
-#contrast='ave_W_NW_inRep' # contrasting word to nonword trials only in repetition
-contrast='ave_NW_W_inRep' # contrasting nonword to word trials only in repetition
+#contrast='ave_W_NW' # contrasting word to nonword trials only in repetition
+#contrast='ave_NW_W' # contrasting nonword to word trials only in repetition
 
 # %% prerparation
 import os
@@ -31,7 +31,8 @@ motor_win=[-0.5,0] # get windows for motor responses (from Motor onset,not inclu
 cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 
 # %% get auditory and delay electrodes
-con='Auditory'
+selected='_inRep' # select trials
+con='Auditory'+selected
 data,subjs=load_stats(stat_type,con,contrast,stats_root)
 
 # sort the data according to the onset within a time range (Full)
@@ -53,16 +54,16 @@ del data_sorted, data_sorted_aud, data_sorted_del
 go_sig_idx=[]
 resp_sig_idx=[]
 
-for con,trange in zip (('Go','Resp'),([0.25,0.75],motor_win)):
+for con,trange in zip (('Go'+selected,'Resp'+selected),([0.25,0.75],motor_win)):
 
     data,_=load_stats(stat_type,con,contrast,stats_root)
 
     data_sorted,_,sig_idx=sort_chs_by_actonset(data,cluster_twin,trange)
     plot_chs(data_sorted,os.path.join(fig_save_dir,f'{con}_{stat_type}-{contrast}_Tclusthres_{cluster_twin}.jpg'))
 
-    if con=='Go':
+    if con=='Go'+selected:
         go_sig_idx=sig_idx
-    elif con=='Resp':
+    elif con=='Resp'+selected:
         resp_sig_idx=sig_idx
 
 # Motor electrodes are the Go electrodes subtracted by Auditory electrodes
