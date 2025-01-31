@@ -238,7 +238,7 @@ for subject, processing_type in subject_processing_dict.items():
                     if 'Cue' in epoch:
                         base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
                 elif Task_Tag=="Retro_Cue":
-                    if 'Audio1' in epoch:
+                    if 'Audio1' in epoch[0]:
                         base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
                 base_wavelet = base_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
 
