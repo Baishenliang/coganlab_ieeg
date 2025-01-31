@@ -237,10 +237,11 @@ for subject, processing_type in subject_processing_dict.items():
                 if Task_Tag == "LexicalDecRepDelay" or Task_Tag == "LexicalDecRepNoDelay":
                     if 'Cue' in epoch:
                         base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
+                        base_wavelet = base_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
                 elif Task_Tag=="Retro_Cue":
                     if 'Audio1' in epoch[0]:
                         base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
-                base_wavelet = base_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
+                        base_wavelet = base_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
 
                 # Baseline correction
                 spectra_wavelet = spectra_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
