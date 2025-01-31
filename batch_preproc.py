@@ -1,5 +1,5 @@
 """
-    Batch preprocessing scripts for lexical delay task, Lexical nodelay task, and Retro_Cue task.
+    Batch preprocessing scripts for lexical delay task, Lexical nodelay task, and RetroCue task.
     Including: line noise filtering, outlier channels removal, and wavelet.
     Parameters are equal to Sentence Rep processing code unless a change is necessary (NEEDED TO BE RE-CHECKED!):
     https://github.com/coganlab/SentenceRep_analysis
@@ -33,7 +33,7 @@ subject_processing_dict_org = {
 # %% define task
 # Task_Tag="LexicalDecRepDelay"
 #Task_Tag="LexicalDecRepNoDelay"
-Task_Tag="Retro_Cue"
+Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
 # %% fir HG processing, select trials or not
@@ -210,7 +210,7 @@ for subject, processing_type in subject_processing_dict.items():
                     ((-0.5, 1.5), (-0.5, 1), (-0.5, 1)),
                     ('Cue', 'Auditory', 'Resp')
                 )
-            elif Task_Tag=="Retro_Cue":
+            elif Task_Tag=="RetroCue":
                 wavelet_eventzip=zip(
                     (['Audio1/REP_BTH/CORRECT','Audio1/REP_1ST/CORRECT','Audio1/REP_2ND/CORRECT','Audio1/REV_BTH/CORRECT'],
                      ['Audio2/REP_BTH/CORRECT', 'Audio2/REP_1ST/CORRECT', 'Audio2/REP_2ND/CORRECT','Audio2/REV_BTH/CORRECT'],
@@ -238,7 +238,7 @@ for subject, processing_type in subject_processing_dict.items():
                     if 'Cue' in epoch:
                         base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
                         base_wavelet = base_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
-                elif Task_Tag=="Retro_Cue":
+                elif Task_Tag=="RetroCue":
                     if 'Audio1' in epoch[0]:
                         base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
                         base_wavelet = base_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
@@ -315,6 +315,9 @@ for subject, processing_type in subject_processing_dict.items():
                 multitap_task_zip=zip(('Repeat', 'Yes_No'), ('Rep', 'YN'))
             elif Task_Tag=="LexicalDecRepNoDelay":
                 multitap_task_zip=zip(('Repeat', ':=:'), ('Rep', 'Mine'))
+            elif Task_Tag == "RetroCue":
+                multitap_task_zip=zip(('DRP_BTH', 'REP_1ST', 'REP_2ND', 'REP_BTH', 'REV_BTH'),
+                                      ('DRP_BTH', 'REP_1ST', 'REP_2ND', 'REP_BTH', 'REV_BTH'))
 
             for task, task_Tag_multitap in multitap_task_zip:
                 for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
