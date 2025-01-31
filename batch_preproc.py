@@ -212,7 +212,11 @@ for subject, processing_type in subject_processing_dict.items():
                 )
             elif Task_Tag=="Retro_Cue":
                 wavelet_eventzip=zip(
-                    ('Audio1/CORRECT','Audio2/CORRECT','Retro_Cue/CORRECT','Go/CORRECT','Resp/CORRECT'),
+                    (['Audio1/REP_BTH/CORRECT','Audio1/REP_1ST/CORRECT','Audio1/REP_2ND/CORRECT','Audio1/REV_BTH/CORRECT'],
+                     ['Audio2/REP_BTH/CORRECT', 'Audio2/REP_1ST/CORRECT', 'Audio2/REP_2ND/CORRECT','Audio2/REV_BTH/CORRECT'],
+                     ['Retro_Cue/REP_BTH/CORRECT', 'Retro_Cue/REP_1ST/CORRECT', 'Retro_Cue/REP_2ND/CORRECT','Retro_Cue/REV_BTH/CORRECT'],
+                     ['Go/REP_BTH/CORRECT', 'Go/REP_1ST/CORRECT', 'Go/REP_2ND/CORRECT','Go/REV_BTH/CORRECT'],
+                     ['Resp/REP_BTH/CORRECT', 'Resp/REP_1ST/CORRECT', 'Resp/REP_2ND/CORRECT', 'Resp/REV_BTH/CORRECT']),
                     ((-0.5, 1.2),(-0.3, 1.2), (-0.5, 1), (-0.5, 1), (-0.5, 1)),
                     ('Auditory1','Auditory2','Cue', 'Go','Resp'))
 
