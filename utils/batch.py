@@ -23,7 +23,8 @@ def update_tsv(subj, search_dir,task_tag):
     - ValueError: If no files or more than one matching file are found for a `subj` and those files have issues.
     """
     # Construct the pattern to match the filenames based on `subj`
-    pattern = f"sub-{subj}_task-{task_tag}_acq-.+?_run-.+?_desc-clean_events.tsv"
+    task_tag_clean = task_tag.replace('_', '')
+    pattern = f"sub-{subj}_task-{task_tag_clean}_acq-.+?_run-.+?_desc-clean_events.tsv"
 
     # Search for all files in the specified directory that match the pattern
     files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]
@@ -58,7 +59,8 @@ def detect_outlier(subj, search_dir, task_tag):
         int: 1 if any file contains 'outlier' in the 'status_description' column, 0 otherwise.
     """
     # Construct the pattern to match the filenames based on `subj`
-    pattern = f"sub-{subj}_task-{task_tag}_acq-.+?_run-.+?_desc-clean_channels.tsv"
+    task_tag_clean = task_tag.replace('_', '')
+    pattern = f"sub-{subj}_task-{task_tag_clean}_acq-.+?_run-.+?_desc-clean_channels.tsv"
     
     # Search for all files in the specified directory that match the pattern
     files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]
@@ -129,6 +131,7 @@ def update_muscle_chs(subj, search_dir,task_tag):
     electrode_list = load_muscle_chs(subj)
 
     # Construct the pattern to match the filenames based on `subj`
+    task_tag_clean = task_tag.replace('_', '')
     pattern = f"sub-{subj}_task-{task_tag}_acq-.+?_run-.+?_desc-clean_channels.tsv"
 
     # Search for all files in the specified directory that match the pattern

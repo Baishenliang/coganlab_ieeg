@@ -110,7 +110,7 @@ for subject, processing_type in subject_processing_dict.items():
                         notch_widths=20)
 
             # crop and save data
-            if subject=="D0079":
+            if task_Tag=="LexicalDecRepDelay" and subject=="D0079":
                 raw1 = crop_empty_data(raw)
                 del raw
                 raw = raw1
