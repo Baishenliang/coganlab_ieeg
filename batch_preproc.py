@@ -217,7 +217,7 @@ for subject, processing_type in subject_processing_dict.items():
                      ['Retro_Cue/REP_BTH/CORRECT', 'Retro_Cue/REP_1ST/CORRECT', 'Retro_Cue/REP_2ND/CORRECT','Retro_Cue/REV_BTH/CORRECT'],
                      ['Go/REP_BTH/CORRECT', 'Go/REP_1ST/CORRECT', 'Go/REP_2ND/CORRECT','Go/REV_BTH/CORRECT'],
                      ['Resp/REP_BTH/CORRECT', 'Resp/REP_1ST/CORRECT', 'Resp/REP_2ND/CORRECT', 'Resp/REV_BTH/CORRECT']),
-                    ((-0.5, 1.2),(-0.3, 1.2), (-0.5, 1), (-0.5, 1), (-0.5, 1)),
+                    ((-0.5, 1.2),(-0.3, 0.7+1.5), (-0.5, 0.7+1.5), (-0.5, 1), (-0.5, 1)), # Audio1, Audio2 + Delay1, RetroCue + Delay1, Go, Resp
                     ('Auditory1','Auditory2','Cue', 'Go','Resp'))
 
             for epoch, t, tag in wavelet_eventzip:
