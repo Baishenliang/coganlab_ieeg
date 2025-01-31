@@ -210,6 +210,11 @@ for subject, processing_type in subject_processing_dict.items():
                     ((-0.5, 1.5), (-0.5, 1), (-0.5, 1)),
                     ('Cue', 'Auditory', 'Resp')
                 )
+            elif Task_Tag=="Retro_Cue":
+                wavelet_eventzip=zip(
+                    ('Audio1/CORRECT','Audio2/CORRECT','Retro_Cue/CORRECT','Go/CORRECT','Resp/CORRECT'),
+                    ((-0.5, 1.2),(-0.3, 1.2), (-0.5, 1), (-0.5, 1), (-0.5, 1)),
+                    ('Auditory1','Auditory2','Cue', 'Go','Resp'))
 
             for epoch, t, tag in wavelet_eventzip:
 
@@ -225,9 +230,13 @@ for subject, processing_type in subject_processing_dict.items():
                 crop_pad(spectra_wavelet, "0.5s")  # cut the first and final 0.5s, change to zero
 
                 # Get the baseline
-                if 'Cue' in epoch:
-                    base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
-                    base_wavelet = base_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
+                if Task_Tag == "LexicalDecRepDelay" or Task_Tag == "LexicalDecRepNoDelay":
+                    if 'Cue' in epoch:
+                        base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
+                elif Task_Tag=="Retro_Cue":
+                    if 'Audio1' in epoch:
+                        base_wavelet = spectra_wavelet.copy().crop(-0.5, 0)
+                base_wavelet = base_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
 
                 # Baseline correction
                 spectra_wavelet = spectra_wavelet.average(lambda x: np.nanmean(x, axis=0), copy=True)
