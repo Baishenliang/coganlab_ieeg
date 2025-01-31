@@ -132,7 +132,7 @@ def update_muscle_chs(subj, search_dir,task_tag):
 
     # Construct the pattern to match the filenames based on `subj`
     task_tag_clean = task_tag.replace('_', '')
-    pattern = f"sub-{subj}_task-{task_tag}_acq-.+?_run-.+?_desc-clean_channels.tsv"
+    pattern = f"sub-{subj}_task-{task_tag_clean}_acq-.+?_run-.+?_desc-clean_channels.tsv"
 
     # Search for all files in the specified directory that match the pattern
     files = [f for f in os.listdir(search_dir) if re.match(pattern, f)]
