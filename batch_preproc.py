@@ -111,7 +111,7 @@ for subject, processing_type in subject_processing_dict.items():
                         notch_widths=20)
 
             # crop and save data
-            if task_Tag=="LexicalDecRepDelay" and subject=="D0079":
+            if Task_Tag=="LexicalDecRepDelay" and subject=="D0079":
                 raw1 = crop_empty_data(raw)
                 del raw
                 raw = raw1
@@ -303,7 +303,7 @@ for subject, processing_type in subject_processing_dict.items():
             elif Task_Tag=="LexicalDecRepNoDelay":
                 multitap_task_zip=zip(('Repeat', ':=:'), ('Rep', 'Mine'))
 
-            for task, task_Tag in multitap_task_zip:
+            for task, task_Tag_multitap in multitap_task_zip:
                 for word, word_Tag in zip(('Word', 'Nonword'), ('wrd', 'nwrd')):
                     if Task_Tag == "LexicalDecRepDelay":
                         multitap_evnt_zip = zip(
@@ -312,10 +312,10 @@ for subject, processing_type in subject_processing_dict.items():
                              'Go/' + task + '/' + word + '/CORRECT',
                              'Resp/' + task + '/' + word + '/CORRECT'),
                             ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                            ('Cue-' + task_Tag + '-' + word_Tag,
-                             'Auditory-' + task_Tag + '-' + word_Tag,
-                             'Go-' + task_Tag + '-' + word_Tag,
-                             'Resp-' + task_Tag + '-' + word_Tag)
+                            ('Cue-' + task_Tag_multitap + '-' + word_Tag,
+                             'Auditory-' + task_Tag_multitap + '-' + word_Tag,
+                             'Go-' + task_Tag_multitap + '-' + word_Tag,
+                             'Resp-' + task_Tag_multitap + '-' + word_Tag)
                         )
                     elif Task_Tag == "LexicalDecRepNoDelay":
                         if task == 'Repeat':
@@ -324,17 +324,17 @@ for subject, processing_type in subject_processing_dict.items():
                                  'Auditory_stim/' + task + '/' + word + '/CORRECT',
                                  'Resp/' + task + '/' + word + '/CORRECT'),
                                 ((-0.5, 1.5), (-0.5, 2), (-0.5, 1)),
-                                ('Cue-' + task_Tag + '-' + word_Tag,
-                                 'Auditory-' + task_Tag + '-' + word_Tag,
-                                 'Resp-' + task_Tag + '-' + word_Tag)
+                                ('Cue-' + task_Tag_multitap + '-' + word_Tag,
+                                 'Auditory-' + task_Tag_multitap + '-' + word_Tag,
+                                 'Resp-' + task_Tag_multitap + '-' + word_Tag)
                             )
                         elif task == ':=:':
                             multitap_evnt_zip = zip(
                                 ('Cue/' + task + '/' + word + '/CORRECT',
                                  'Auditory_stim/' + task + '/' + word + '/CORRECT'),
                                 ((-0.5, 1.5), (-0.5, 2)),
-                                ('Cue-' + task_Tag + '-' + word_Tag,
-                                 'Auditory-' + task_Tag + '-' + word_Tag))
+                                ('Cue-' + task_Tag_multitap + '-' + word_Tag,
+                                 'Auditory-' + task_Tag_multitap + '-' + word_Tag))
 
                     for epoch, t, tag in multitap_evnt_zip:
 
