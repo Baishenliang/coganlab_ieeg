@@ -498,6 +498,28 @@ for subject, processing_type in subject_processing_dict.items():
                     ((-0.5, 1.5), (-0.5, 2), (-0.5, 1),(-0.5, 1.5), (-0.5, 2)),
                     ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inMine','Auditory_inMine')
                  )
+            elif Task_Tag == "RetroCue":
+                gamma_epoc_zip = zip(
+                    ('Audio1/DRP_BTH/CORRECT','Audio2/DRP_BTH/CORRECT','Retro_Cue/DRP_BTH/CORRECT',
+                     'Audio1/REP_1ST/CORRECT','Audio2/REP_1ST/CORRECT','Retro_Cue/REP_1ST/CORRECT','Go/REP_1ST/CORRECT','Resp/REP_1ST/CORRECT',
+                     'Audio1/REP_2ND/CORRECT','Audio2/REP_2ND/CORRECT','Retro_Cue/REP_2ND/CORRECT','Go/REP_2ND/CORRECT','Resp/REP_2ND/CORRECT',
+                     'Audio1/REP_BTH/CORRECT','Audio2/REP_BTH/CORRECT','Retro_Cue/REP_BTH/CORRECT','Go/REP_BTH/CORRECT','Resp/REP_BTH/CORRECT',
+                     'Audio1/REV_BTH/CORRECT','Audio2/REV_BTH/CORRECT','Retro_Cue/REV_BTH/CORRECT','Go/REV_BTH/CORRECT','Resp/REV_BTH/CORRECT'),
+                    (['Audio1/DRP_BTH/CORRECT'] * 3 +
+                     ['Audio1/REP_1ST/CORRECT'] * 5 +
+                     ['Audio1/REP_2ND/CORRECT'] * 5 +
+                     ['Audio1/REP_BTH/CORRECT'] * 5 +
+                     ['Audio1/REV_BTH/CORRECT'] * 5),
+                    ((-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5),
+                     (-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1),
+                     (-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1),
+                     (-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1),
+                     (-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1)),
+                    ('Auditory1_in_DRP_BTH', 'Auditory2_in_DRP_BTH', 'Cue_in_DRP_BTH',
+                     'Auditory1_in_REP_1ST', 'Auditory2_in_REP_1ST', 'Cue_in_REP_1ST', 'Go_in_REP_1ST', 'Resp_in_REP_1ST',
+                     'Auditory1_in_REP_2ND', 'Auditory2_in_REP_2ND', 'Cue_in_REP_2ND', 'Go_in_REP_2ND', 'Resp_in_REP_2ND',
+                     'Auditory1_in_REP_BTH', 'Auditory2_in_REP_BTH', 'Cue_in_REP_BTH', 'Go_in_REP_BTH', 'Resp_in_REP_BTH',
+                     'Auditory1_in_REV_BTH', 'Auditory2_in_REV_BTH', 'Cue_in_REV_BTH', 'Go_in_REV_BTH', 'Resp_in_REV_BTH'))
 
             for epoch_phase, baseline_tag, t_phase, tag_phase in gamma_epoc_zip:
                 out = []
@@ -589,8 +611,16 @@ for subject, processing_type in subject_processing_dict.items():
                         ('Nonword','Word'),
                         ('W_NW','NW_W')
                     )
-
+                elif Task_Tag == "RetroCue": # wait for future setting
+                    gamma_contrast_zip=zip(
+                        ('ree','ga'),
+                        ('ga','ree'),
+                        ('ree_ga','ga_ree')
+                    )
                 for sig1_tag, sig2_tag, contrast_Tag in gamma_contrast_zip:
+
+                    if Task_Tag == "RetroCue":
+                        break  # wait for future setting
 
                     mask = dict()
                     data = []
