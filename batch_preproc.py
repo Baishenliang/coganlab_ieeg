@@ -26,7 +26,7 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0117": "linernoise"
+    "D0117": "/outlierchs/wavelet/multitaper"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
@@ -351,6 +351,26 @@ for subject, processing_type in subject_processing_dict.items():
                                 ((-0.5, 1.5), (-0.5, 2)),
                                 ('Cue-' + task_Tag_multitap + '-' + word_Tag,
                                  'Auditory-' + task_Tag_multitap + '-' + word_Tag))
+                    elif Task_Tag == "RetroCue" and word_Tag == 'nwrd':
+                            break #avoid repeat execution
+                    elif Task_Tag == "RetroCue":
+                        if task == 'DRP_BTH':
+                            multitap_evnt_zip = zip(
+                                ('Audio1/' + task + '/CORRECT',
+                                 'Audio2/' + task + '/CORRECT',
+                                 'Retro_Cue/' + task + '/CORRECT'),
+                                ((-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5)),# Audio1, Audio2 + Delay1, RetroCue + Delay1
+                                ('Auditory1', 'Auditory2', 'Cue'))
+                        else:
+                            multitap_evnt_zip = zip(
+                                ('Audio1/' + task + '/CORRECT',
+                                 'Audio2/' + task + '/CORRECT',
+                                 'Retro_Cue/' + task + '/CORRECT',
+                                 'Go/' + task + '/CORRECT',
+                                 'Resp/' + task + '/CORRECT'),
+                                ((-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1)),
+                                # Audio1, Audio2 + Delay1, RetroCue + Delay1, Go, Resp
+                                ('Auditory1', 'Auditory2', 'Cue', 'Go', 'Resp'))
 
                     for epoch, t, tag in multitap_evnt_zip:
 
@@ -371,9 +391,14 @@ for subject, processing_type in subject_processing_dict.items():
                         crop_pad(spectra_multitaper, "0.5s")  # cut the first and final 0.5s, change to zero
 
                         # Get the baseline
-                        if 'Cue' in epoch:
-                            base_multitaper = spectra_multitaper.copy().crop(-0.5, 0)
-                            base_multitaper = base_multitaper.average(lambda x: np.nanmean(x, axis=0), copy=True)
+                        if Task_Tag == "LexicalDecRepDelay" or Task_Tag == "LexicalDecRepNoDelay":
+                            if 'Cue' in epoch:
+                                base_multitaper = spectra_multitaper.copy().crop(-0.5, 0)
+                                base_multitaper = base_multitaper.average(lambda x: np.nanmean(x, axis=0), copy=True)
+                        elif Task_Tag == "RetroCue":
+                            if 'Audio1' in epoch:
+                                base_multitaper = spectra_multitaper.copy().crop(-0.5, 0)
+                                base_multitaper = base_multitaper.average(lambda x: np.nanmean(x, axis=0), copy=True)
 
                         # Baseline correction
                         spectra_multitaper = spectra_multitaper.average(lambda x: np.nanmean(x, axis=0), copy=True)
