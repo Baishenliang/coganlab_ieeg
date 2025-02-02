@@ -1,7 +1,4 @@
-Pooled electrodes plot
+Updated analyses pipelines for RetroCue
 
-Things to ask Aaron:
-1. Why plot average brain usually be busy and stops
-2. How to handle D107
-3. If I drop electrodes (eeg and trigger) in line noise filter, will that affect electrode indexing when plotting?
-4. If I plot all the electrodes will they overlap together? Or the algorithm will selectively merge the nearest electrodes?
+1. Preprocessing: change the task to `Task_Tag="RetroCue"` to run RetroCue.
+2. Group stats: a new py script named `retro_group_stats.py` has been created and the old script was named as `lexical_group_stats.py`. Need to change the `selected` variable each time to see the group stats separately for each of the five conditions in the retrocue tasks. 

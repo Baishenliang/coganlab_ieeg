@@ -151,20 +151,21 @@ def plot_chs(data_in,fig_save_dir_f):
     fig, ax = plt.subplots()
     ax.imshow(data, cmap='Reds')
 
-    ch_gap = 120
-    time_gap = 100
+    ch_gap = 5
+    time_gap = 20
 
     channel_names = chs[::ch_gap]
     ax.set_yticks(range(0, len(channel_names) * ch_gap, ch_gap))
     ax.set_yticklabels(channel_names)
-    time_stamps = times[::time_gap]
+    time_stamps = [round(t, 3) for t in times[::time_gap]]
     ax.set_xticks(range(0, len(time_stamps) * time_gap, time_gap))
     ax.set_xticklabels(time_stamps)
     try:
         zero_time_index = np.where(np.array(times) == 0)[0][0]
-        ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
     except Exception as e:
-        print('no zero time found')
+        times_array = np.array(times)
+        zero_time_index = np.abs(times_array).argmin()
+    ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
     fig.savefig(fig_save_dir_f, dpi=300)
 
 def plot_brain(subjs,picks,chs_cols,fig_save_dir_f):
