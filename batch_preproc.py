@@ -26,7 +26,7 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0117": "gamma"
+    "D0117": "multitaper/gamma"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
@@ -217,7 +217,7 @@ for subject, processing_type in subject_processing_dict.items():
                      ['Retro_Cue/REP_BTH/CORRECT', 'Retro_Cue/REP_1ST/CORRECT', 'Retro_Cue/REP_2ND/CORRECT','Retro_Cue/REV_BTH/CORRECT'],
                      ['Go/REP_BTH/CORRECT', 'Go/REP_1ST/CORRECT', 'Go/REP_2ND/CORRECT','Go/REV_BTH/CORRECT'],
                      ['Resp/REP_BTH/CORRECT', 'Resp/REP_1ST/CORRECT', 'Resp/REP_2ND/CORRECT', 'Resp/REV_BTH/CORRECT']),
-                    ((-0.5, 1.2),(-0.3, 0.7+1.5), (-0.5, 0.7+1.5), (-0.5, 1), (-0.5, 1)), # Audio1, Audio2 + Delay1, RetroCue + Delay1, Go, Resp
+                    ((-0.5, 0.7+0.4),(-0.3, 0.7+0.4+1.5), (-0.5, 0.7+1.5), (-0.5, 1), (-0.5, 1)), # Audio1 + Delay, Audio2 + Delay + Delay1, RetroCue + Delay1, Go, Resp
                     ('Auditory1','Auditory2','Cue', 'Go','Resp'))
 
             for epoch, t, tag in wavelet_eventzip:
@@ -368,8 +368,7 @@ for subject, processing_type in subject_processing_dict.items():
                                  'Retro_Cue/' + task + '/CORRECT',
                                  'Go/' + task + '/CORRECT',
                                  'Resp/' + task + '/CORRECT'),
-                                ((-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1)),
-                                # Audio1, Audio2 + Delay1, RetroCue + Delay1, Go, Resp
+                                ((-0.5, 0.7+0.4),(-0.3, 0.7+0.4+1.5), (-0.5, 0.7+1.5), (-0.5, 1), (-0.5, 1)),
                                 ('Auditory1', 'Auditory2', 'Cue', 'Go', 'Resp'))
 
                     for epoch, t, tag in multitap_evnt_zip:
@@ -510,11 +509,11 @@ for subject, processing_type in subject_processing_dict.items():
                      ['Audio1/REP_2ND/CORRECT'] * 5 +
                      ['Audio1/REP_BTH/CORRECT'] * 5 +
                      ['Audio1/REV_BTH/CORRECT'] * 5),
-                    ((-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5),
-                     (-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1),
-                     (-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1),
-                     (-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1),
-                     (-0.5, 1.2), (-0.3, 0.7 + 1.5), (-0.5, 0.7 + 1.5), (-0.5, 1), (-0.5, 1)),
+                    ((-0.5, 0.7+0.4),(-0.3, 0.7+0.4+1.5), (-0.5, 0.7+1.5),
+                     (-0.5, 0.7+0.4),(-0.3, 0.7+0.4+1.5), (-0.5, 0.7+1.5), (-0.5, 1), (-0.5, 1),
+                     (-0.5, 0.7+0.4),(-0.3, 0.7+0.4+1.5), (-0.5, 0.7+1.5), (-0.5, 1), (-0.5, 1),
+                     (-0.5, 0.7+0.4),(-0.3, 0.7+0.4+1.5), (-0.5, 0.7+1.5), (-0.5, 1), (-0.5, 1),
+                     (-0.5, 0.7+0.4),(-0.3, 0.7+0.4+1.5), (-0.5, 0.7+1.5), (-0.5, 1), (-0.5, 1)),
                     ('Auditory1_in_DRP_BTH', 'Auditory2_in_DRP_BTH', 'Cue_in_DRP_BTH',
                      'Auditory1_in_REP_1ST', 'Auditory2_in_REP_1ST', 'Cue_in_REP_1ST', 'Go_in_REP_1ST', 'Resp_in_REP_1ST',
                      'Auditory1_in_REP_2ND', 'Auditory2_in_REP_2ND', 'Cue_in_REP_2ND', 'Go_in_REP_2ND', 'Resp_in_REP_2ND',
