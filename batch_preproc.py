@@ -60,7 +60,10 @@ if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
         raise KeyError(f"Subject '{subj}' not found in the original dictionary.")
 else:  # if not then set box directory
     LAB_root = os.path.join(HOME, "Box", "CoganLab")
-    save_dir=os.path.join(HOME, "Box", "CoganLab", "D_Data",Task_Tag,"Baishen_Figs")
+    if Task_Tag != "RetroCue":
+        save_dir=os.path.join(HOME, "Box", "CoganLab", "D_Data",Task_Tag,"Baishen_Figs")
+    else:
+        save_dir=os.path.join(HOME, "Box", "CoganLab", "D_Data","Retro_Cue","Baishen_Figs")
     if not os.path.exists(os.path.join(save_dir)):
         os.mkdir(os.path.join(save_dir))
     subject_processing_dict = subject_processing_dict_org
