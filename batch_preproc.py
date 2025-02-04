@@ -26,14 +26,17 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0117": "wavelet/multitaper/gamma"
+    "D0024": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0027": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0029": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
 # %% define task
 # Task_Tag="LexicalDecRepDelay"
-#Task_Tag="LexicalDecRepNoDelay"
-Task_Tag="RetroCue"
+Task_Tag="LexicalDecRepNoDelay"
+# Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
 # %% fir HG processing, select trials or not
