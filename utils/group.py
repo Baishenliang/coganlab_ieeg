@@ -1,4 +1,4 @@
-def load_stats(stat_type,con,contrast,stats_root):
+def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
     """
     Load patient level stats files (e.g., *.fif) for further group level analysis
     output is an ieeg LabeledArray
@@ -25,7 +25,7 @@ def load_stats(stat_type,con,contrast,stats_root):
         case "mask":
             fif_read = mne.read_evokeds
 
-    subjs = [name for name in os.listdir(stats_root) if os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
+    subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
     import warnings
     subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042']
     warnings.warn(f"The following subjects are not included: D0107 D0042")
@@ -36,7 +36,7 @@ def load_stats(stat_type,con,contrast,stats_root):
 
     for i, subject in enumerate(subjs):
 
-        subj_gamma_stats_dir = os.path.join(stats_root, subject)
+        subj_gamma_stats_dir = os.path.join(stats_root_readdata, subject)
 
         file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}-{contrast}.fif')
 
@@ -173,3 +173,33 @@ def plot_brain(subjs,picks,chs_cols,fig_save_dir_f):
     from ieeg.viz.mri import plot_on_average
     fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',  size=0.35)
     # fig3d.save_image(fig_save_dir_f)
+
+def find_com_sig_chs(data1_labels, data1_sig_idx, data2_labels, data2_sig_idx):
+    """
+    Find common significant channels between two datasets.
+
+    Args:
+        data1_labels: Channel labels from first dataset
+        data1_sig_idx: Significance indices from first dataset
+        data2_labels: Channel labels from second dataset
+        data2_sig_idx: Significance indices from second dataset
+
+    Returns:
+        common_sig_idx: Binary array marking common significant channels
+        common_sig_labels: Labels of common significant channels
+    """
+    # Get significant channel labels from both datasets
+    import numpy as np
+
+    sig_channels1 = set([label for label, idx in zip(data1_labels, data1_sig_idx) if idx == 1])
+    sig_channels2 = set([label for label, idx in zip(data2_labels, data2_sig_idx) if idx == 1])
+    # Find common significant channels
+    common_sig_channels = sig_channels1.intersection(sig_channels2)
+
+    # Create binary index array for common significant channels
+    common_sig_idx = np.zeros(len(data1_labels), dtype=int)
+    for i, channel in enumerate(data1_labels):
+        if channel in common_sig_channels:
+            common_sig_idx[i] = 1
+
+    return common_sig_idx
