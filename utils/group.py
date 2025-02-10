@@ -11,6 +11,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
     import os
     import numpy as np
     import mne
+    import glob
     from ieeg.calc.mat import LabeledArray
 
     match stat_type:
@@ -27,32 +28,60 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
 
     subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
     import warnings
-    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042']
+    subjs = [subj for subj in subjs if subj != 'D0102' and subj != 'D0103' and subj != 'D0107' and subj != 'D0042'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     warnings.warn(f"The following subjects are not included: D0107 D0042")
     chs = []
     data_lst = []
     valid_subjs = []
 
+    clean_root_readdata = stats_root_readdata.replace('stats', 'clean')
 
     for i, subject in enumerate(subjs):
 
         subj_gamma_stats_dir = os.path.join(stats_root_readdata, subject)
+        subj_gamma_clean_dir = os.path.join(clean_root_readdata, f"sub-{subject}","ieeg")
 
         file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}-{contrast}.fif')
+
+        subj_chs_org_pattern = os.path.join(subj_gamma_clean_dir, f"*_acq-01_run-01_desc-clean_channels.tsv")
 
         if not os.path.exists(file_dir):
             continue
         else:
             valid_subjs.append(subject)
 
+        # read patient data
         subj_dataset = fif_read(file_dir)
+
+        # read original channel labels (before outlier and muscle channel removals)
+        subj_chs_org_file_list = glob.glob(subj_chs_org_pattern)
+
+        org_labeled_chs = []
+
+        if subj_chs_org_file_list:
+            subj_chs_org_file_path = subj_chs_org_file_list[0]
+            with open(subj_chs_org_file_path, 'r') as file:
+                lines = file.readlines()
+                for line in lines[1:]:
+                    columns = line.strip().split('\t')
+                    org_labeled_chs.append(columns[0])
 
         subj_data = subj_dataset[0].data
         subj_chs = subj_dataset[0].ch_names
-        labeled_chs = [f"{subject} {ch}" for ch in subj_chs]
+        good_labeled_chs = [f"{subject} {ch}" for ch in subj_chs]
 
-        data_lst.append(subj_data)
-        chs.extend(labeled_chs)
+        aligned_data,aligned_chs = align_channel_data(subj_data, good_labeled_chs, org_labeled_chs)
+
+        data_lst.append(aligned_data)
+        chs.extend(aligned_chs)
+
+        # The following codes just do not take the outlier or muscle electrodes for considerations
+        # This may (but most likely may not) affect comparing lexical delay and lexical no delay as they can have different bad electrodes.
+        # subject = 'D' + subject[1:].lstrip('0')
+        # good_labeled_chs_reformat = [f"{subject}-{ch}" for ch in subj_chs]
+        # data_lst.append(subj_data)
+        # chs.extend(good_labeled_chs_reformat)
+
         if i == 0:
             times = subj_dataset[0].times
 
@@ -168,10 +197,10 @@ def plot_chs(data_in,fig_save_dir_f):
     ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
     fig.savefig(fig_save_dir_f, dpi=300)
 
-def plot_brain(subjs,picks,chs_cols,fig_save_dir_f):
+def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
-    fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',  size=0.35)
+    fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split', label_every=label_every, size=0.35)
     # fig3d.save_image(fig_save_dir_f)
 
 def find_com_sig_chs(data1_labels, data1_sig_idx, data2_labels, data2_sig_idx):
@@ -203,3 +232,52 @@ def find_com_sig_chs(data1_labels, data1_sig_idx, data2_labels, data2_sig_idx):
             common_sig_idx[i] = 1
 
     return common_sig_idx
+
+def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
+    """
+    Aligns channel data by adding missing channels with NaN values.
+
+    Parameters:
+    -----------
+    subj_data : numpy.ndarray
+        Original subject data array with shape (n_channels, n_timepoints)
+    good_labeled_chs : list
+        List of current channel labels in the data
+    org_labeled_chs : list
+        List of all original channel labels
+
+    Returns:
+    --------
+    numpy.ndarray
+        Aligned data array with all original channels
+    list
+        Updated channel labels
+    """
+    import numpy as np
+
+    if len(subj_data.shape) != 2:
+        raise ValueError("Subject data must be 2-dimensional (channels x timepoints)")
+
+    # Extract just the channel names from good_labeled_chs (removing subject prefix)
+    current_chs = [ch.split()[-1] for ch in good_labeled_chs]
+
+    # Get the number of timepoints from the original data
+    n_timepoints = subj_data.shape[1]
+
+    # Initialize the new data array with NaNs
+    aligned_data = np.full((len(org_labeled_chs), n_timepoints), np.nan)
+
+    # Create a mapping of current channels to their indices
+    current_ch_indices = {ch: idx for idx, ch in enumerate(current_chs)}
+
+    # Fill in the data for existing channels
+    for new_idx, org_ch in enumerate(org_labeled_chs):
+        if org_ch in current_ch_indices:
+            aligned_data[new_idx] = subj_data[current_ch_indices[org_ch]]
+
+    # Create new channel labels with subject prefix
+    subject = good_labeled_chs[0].split()[0]  # Extract subject from first channel
+    subject = 'D' + subject[1:].lstrip('0')
+    aligned_chs = [f"{subject}-{ch}" for ch in org_labeled_chs]
+
+    return aligned_data, aligned_chs

@@ -89,7 +89,7 @@ if "LexDelay" in groupsTag:
     # Motor electrodes:  **Not** activated in auditory window; **Activated** after Go
     LexDelay_Motor_sig_idx = [0 if LexDelay_Aud_sig_idx[i] == 1 else LexDelay_Resp_sig_idx[i] for i in range(len(LexDelay_Resp_sig_idx))]
     # Delay only electrodes
-    LexDelay_DelayOnly_sig_idx = [0 if LexDelay_Aud_sig_idx[i] == 1 or LexDelay_Resp_sig_idx[i] == 1 else LexDelay_Delay_sig_idx[i] for i in range(len(LexDelay_Delay_sig_idx))]
+    LexDelay_DelayOnly_sig_idx = [LexDelay_Delay_sig_idx[i] if (LexDelay_Aud_sig_idx[i] != 1 and LexDelay_Motor_sig_idx[i] != 1 and LexDelay_Delay_sig_idx[i]==1) else 0 for i in range(len(LexDelay_Delay_sig_idx))]
 
     del data_LexDelay_sorted, data_LexDelay_Aud_sorted, data_LexDelay_Delay_sorted, data_LexDelay_Resp_sorted
 
@@ -154,13 +154,19 @@ if groupsTag == "LexDelay":
         }
 
         chs_col_idx=[chs_ov[0]*LexDelay_Aud_sig_idx[i]+chs_ov[1]*LexDelay_Delay_sig_idx[i]+chs_ov[2]*LexDelay_Motor_sig_idx[i] for i in range(len(data_LexDelay_Aud.labels[0]))]
-        picks=[i for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
-        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
+        picks = [i for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
+        pick_labels = [data_LexDelay_Aud.labels[0][i] for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
         chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data_LexDelay_Aud.labels[0]))]
         chs_cols_picked=[chs_cols[i] for i in picks]
 
         # Plot (cannot plot D107,D042)
-        plot_brain(subjs, picks,chs_cols_picked,os.path.join(fig_save_dir,f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
+        if TypeLabel=='Delay_only':
+            label_every=1
+        else:
+            label_every=None
+
+        # TRY also to plot valid (white?) vs. invalid electrodes (dark grey)
+        plot_brain(subjs, pick_labels,chs_cols_picked,label_every,os.path.join(fig_save_dir,f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
 
 elif groupsTag == "LexNoDelay":
     for TypeLabel, chs_ov, pick_sig_idx in zip(
@@ -177,11 +183,12 @@ elif groupsTag == "LexNoDelay":
 
         chs_col_idx = [chs_ov[0] * LexNoDelay_Aud_sig_idx[i] + chs_ov[2] * LexNoDelay_Motor_sig_idx[i] for i in range(len(data_LexNoDelay_Aud.labels[0]))]
         picks = [i for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
+        pick_labels = [data_LexNoDelay_Aud.labels[0][i] for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
         chs_cols = [color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data_LexNoDelay_Aud.labels[0]))]
         chs_cols_picked = [chs_cols[i] for i in picks]
 
         # Plot (cannot plot D107,D042)
-        plot_brain(subjs, picks, chs_cols_picked,
+        plot_brain(subjs, pick_labels, chs_cols_picked,None,
                    os.path.join(fig_save_dir, f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
 
 elif groupsTag=="LexDelay&LexNoDelay":
@@ -197,9 +204,11 @@ elif groupsTag=="LexDelay&LexNoDelay":
 
     chs_col_idx = [chs_ov[0] * LexNoDelay_Aud_sig_idx[i] + chs_ov[1] * LexDelay_DelayOnly_sig_idx[i] + chs_ov[2] * LexNoDelay_Motor_sig_idx[i] for i in range(len(data_LexNoDelay_Aud.labels[0]))]
     picks = [i for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
+    pick_labels = [data_LexNoDelay_Aud.labels[0][i] for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[
+        i] == 1]  # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
     chs_cols = [color_map.get(chs_col_idx[i], [1, 1, 1]) for i in range(len(data_LexNoDelay_Aud.labels[0]))]
     chs_cols_picked = [chs_cols[i] for i in picks]
 
     # Plot (cannot plot D107,D042)
-    plot_brain(subjs, picks, chs_cols_picked,
+    plot_brain(subjs, pick_labels, chs_cols_picked,None,
                os.path.join(fig_save_dir, f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
