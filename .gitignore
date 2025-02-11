@@ -4,4 +4,5 @@ data/DCCbatchout
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
+*.pyd.codiumai
+.codiumai
