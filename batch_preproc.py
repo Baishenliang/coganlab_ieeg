@@ -499,7 +499,7 @@ for subject, processing_type in subject_processing_dict.items():
                     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT'),
                     ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/:=:/CORRECT','Cue/:=:/CORRECT'),
                     ((-0.5, 1.5), (-0.5, 2), (-0.5, 1),(-0.5, 1.5), (-0.5, 2)),
-                    ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inMine','Auditory_inMine')
+                    ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inSilence','Auditory_inSilence')
                  )
             elif Task_Tag == "RetroCue":
                 gamma_epoc_zip = zip(
