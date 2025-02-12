@@ -1,13 +1,13 @@
 # %% groups of patients
-#groupsTag="LexDelay"
+groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
 
-contrast='ave' # average, not contrasting different conditions
-#contrast='ave_YN_Rep' # contrasting yesno to repetition
+#contrast='ave' # average, not contrasting different conditions
+contrast='ave_YN_Rep' # contrasting yesno to repetition
 #contrast='ave_Rep_YN' # contrasting repetition to yesno
 #contrast='ave_W_NW' # contrasting word to nonword trials only in repetition
 #contrast='ave_NW_W' # contrasting nonword to word trials only in repetition
@@ -46,14 +46,14 @@ if groupsTag=="LexDelay":
 
 elif groupsTag=="LexNoDelay":
 
-    data_LexNoDelay_Aud,subjs=load_stats(stat_type,'Auditory_inMine',contrast,stats_root_nodelay,stats_root_nodelay)
+    data_LexNoDelay_Aud,subjs=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay)
     data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
 
 elif groupsTag=="LexDelay&LexNoDelay":
 
     # first get the patient inform from no delay tasks and then extract the corresponding
     data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_delay)
-    data_LexNoDelay_Aud,_=load_stats(stat_type,'Auditory_inMine',contrast,stats_root_nodelay,stats_root_nodelay)
+    data_LexNoDelay_Aud,_=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay)
 
     data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_delay)
     data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
