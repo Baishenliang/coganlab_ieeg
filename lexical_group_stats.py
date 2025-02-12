@@ -6,11 +6,15 @@ groupsTag="LexDelay"
 # %% define condition and load data
 stat_type='mask'
 
-#contrast='ave' # average, not contrasting different conditions
+contrast='ave' # average, not contrasting different conditions
 #contrast='ave_YN_Rep' # contrasting yesno to repetition
 #contrast='ave_Rep_YN' # contrasting repetition to yesno
 #contrast='ave_W_NW' # contrasting word to nonword trials only in repetition
-contrast='ave_NW_W' # contrasting nonword to word trials only in repetition
+#contrast='ave_NW_W' # contrasting nonword to word trials only in repetition
+
+# For lexical delay task, whether run the data only with repeat tasks
+# Delayseleted=''
+# Delayseleted = '_inRep'
 
 # Parameters from the lexical delay task
 mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
@@ -37,11 +41,6 @@ if not os.path.exists(os.path.join(fig_save_dir)):
 stats_save_root = os.path.join(stats_root_delay,'group')
 if not os.path.exists(os.path.join(stats_save_root)):
     os.mkdir(os.path.join(stats_save_root))
-
-if 'Rep' in contrast:
-    Delayseleted=''
-else:
-    Delayseleted='_inRep'
 
 if groupsTag=="LexDelay":
 
