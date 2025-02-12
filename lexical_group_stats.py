@@ -1,6 +1,6 @@
 # %% groups of patients
-groupsTag="LexDelay"
-#groupsTag="LexNoDelay"
+#groupsTag="LexDelay"
+groupsTag="LexNoDelay"
 #groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
