@@ -38,11 +38,16 @@ stats_save_root = os.path.join(stats_root_delay,'group')
 if not os.path.exists(os.path.join(stats_save_root)):
     os.mkdir(os.path.join(stats_save_root))
 
+if 'Rep' in contrast:
+    Delayseleted=''
+else:
+    Delayseleted='_inRep'
+
 if groupsTag=="LexDelay":
 
-    data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_delay,stats_root_delay)
-    data_LexDelay_Go, _ = load_stats(stat_type, 'Go_inRep', contrast, stats_root_delay, stats_root_delay)
-    data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_delay, stats_root_delay)
+    data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
+    data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
+    data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
 elif groupsTag=="LexNoDelay":
 
@@ -52,10 +57,10 @@ elif groupsTag=="LexNoDelay":
 elif groupsTag=="LexDelay&LexNoDelay":
 
     # first get the patient inform from no delay tasks and then extract the corresponding
-    data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_delay)
+    data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_nodelay,stats_root_delay)
     data_LexNoDelay_Aud,_=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay)
 
-    data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_delay)
+    data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_nodelay, stats_root_delay)
     data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
 
 # Get sorted electrodes
@@ -68,7 +73,7 @@ if "LexDelay" in groupsTag:
 
     # (Auditory)
     data_LexDelay_Aud_sorted,_,LexDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[-0.1,mean_word_len+auditory_decay])
-    plot_chs(data_LexDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{'Auditory_inRep'}_{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{'Auditory'+Delayseleted}_{stat_type}-{contrast}.jpg'))
 
     # (Delay)
     data_LexDelay_Delay_sorted,_,LexDelay_Delay_sig_idx=sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
@@ -80,7 +85,7 @@ if "LexDelay" in groupsTag:
 
     # (Resp)
     data_LexDelay_Resp_sorted, _, LexDelay_Resp_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_win)
-    plot_chs(data_LexDelay_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Resp_inRep'}_{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexDelay_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'))
 
     # (Motor)
     # Motor electrodes are the Go electrodes subtracted by Auditory electrodes
