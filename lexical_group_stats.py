@@ -7,10 +7,10 @@ groupsTag="LexDelay"
 stat_type='mask'
 
 #contrast='ave' # average, not contrasting different conditions
-contrast='ave_YN_Rep' # contrasting yesno to repetition
+#contrast='ave_YN_Rep' # contrasting yesno to repetition
 #contrast='ave_Rep_YN' # contrasting repetition to yesno
 #contrast='ave_W_NW' # contrasting word to nonword trials only in repetition
-#contrast='ave_NW_W' # contrasting nonword to word trials only in repetition
+contrast='ave_NW_W' # contrasting nonword to word trials only in repetition
 
 # Parameters from the lexical delay task
 mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
