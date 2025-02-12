@@ -13,8 +13,8 @@ contrast='ave' # average, not contrasting different conditions
 #contrast='ave_NW_W' # contrasting nonword to word trials only in repetition
 
 # For lexical delay task, whether run the data only with repeat tasks
-# Delayseleted=''
-# Delayseleted = '_inRep'
+Delayseleted=''
+#Delayseleted = '_inRep'
 
 # Parameters from the lexical delay task
 mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
