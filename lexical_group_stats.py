@@ -1,7 +1,7 @@
 # %% groups of patients
 #groupsTag="LexDelay"
-groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -197,16 +197,19 @@ elif groupsTag == "LexNoDelay":
 
 elif groupsTag=="LexDelay&LexNoDelay":
 
-    TypeLabel = 'LexDelay_Delay_only'
+    TypeLabel = 'LexDelay_Delay'
     chs_ov = [100, 10, 1]
-    pick_sig_idx = LexDelay_DelayOnly_sig_idx
+    pick_sig_idx = LexDelay_Delay_sig_idx
 
     color_map = {
-        100: [1, 0, 0],  # Auditory & Delay (Red)
-        1: [0, 0, 1]  # Motor & Delay (Blue)
+        100: [1, 0, 0],  # Auditory Electrodes only in LexNoDelay (Red)
+        10: [0, 1, 0], # Delay electrodes only in LexDelay (Green)
+        1: [0, 0, 1],  # Motor Electrodes only in LexNoDelay (Blue)
+        110: [1, 1, 0],  # Delay electrodes in LexDelay & Auditory Electrodes only in LexNoDelay (Yellow)
+        11: [0, 1, 1],  # Delay electrodes in LexDelay & Motor Electrodes only in LexNoDelay
     }
 
-    chs_col_idx = [chs_ov[0] * LexNoDelay_Aud_sig_idx[i] + chs_ov[1] * LexDelay_DelayOnly_sig_idx[i] + chs_ov[2] * LexNoDelay_Motor_sig_idx[i] for i in range(len(data_LexNoDelay_Aud.labels[0]))]
+    chs_col_idx = [chs_ov[0] * LexNoDelay_Aud_sig_idx[i] + chs_ov[1] * LexDelay_Delay_sig_idx[i] + chs_ov[2] * LexNoDelay_Motor_sig_idx[i] for i in range(len(data_LexNoDelay_Aud.labels[0]))]
     picks = [i for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
     pick_labels = [data_LexNoDelay_Aud.labels[0][i] for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[
         i] == 1]  # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
