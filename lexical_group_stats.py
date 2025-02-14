@@ -1,7 +1,7 @@
 # %% groups of patients
-#groupsTag="LexDelay"
+groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -154,9 +154,9 @@ if "&" in groupsTag:
 # %% reassign electrode indices by conditions
 if groupsTag == "LexDelay":
     for TypeLabel,chs_ov,pick_sig_idx in zip(
-            ('Sensorimotor','Auditory','Delay','Delay_overlapped','Delay_only','Motor'),
-            ([1000,0,0,0],[0,100,0,0],[0,0,10,0],[1000,100,10,1],[1000,100,10,1],[0,0,0,1]),
-            (LexDelay_Sensorimotor_sig_idx,LexDelay_Aud_NoMotor_sig_idx,LexDelay_Delay_sig_idx,LexDelay_Delay_sig_idx,LexDelay_DelayOnly_sig_idx,LexDelay_Motor_sig_idx)
+            ('Sensorimotor','Auditory','Delay','Delay_overlapped','Delay_only','Motor','Mixed'),
+            ([1000,0,0,0],[0,100,0,0],[0,0,10,0],[1000,100,10,1],[1000,100,10,1],[0,0,0,1],[1000,100,10,1]),
+            (LexDelay_Sensorimotor_sig_idx,LexDelay_Aud_NoMotor_sig_idx,LexDelay_Delay_sig_idx,LexDelay_Delay_sig_idx,LexDelay_DelayOnly_sig_idx,LexDelay_Motor_sig_idx,LexDelay_Sensorimotor_sig_idx)
     ):
 
         # Elecorde selection and color assigning
@@ -172,8 +172,12 @@ if groupsTag == "LexDelay":
         }
 
         chs_col_idx=[chs_ov[0]*LexDelay_Sensorimotor_sig_idx[i]+chs_ov[1]*LexDelay_Aud_NoMotor_sig_idx[i]+chs_ov[2]*LexDelay_Delay_sig_idx[i]+chs_ov[3]*LexDelay_Motor_sig_idx[i] for i in range(len(data_LexDelay_Aud.labels[0]))]
-        picks = [i for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
-        pick_labels = [data_LexDelay_Aud.labels[0][i] for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
+        if TypeLabel=='Mixed':
+            picks = [i for i in range(len(data_LexDelay_Aud.labels[0])) if chs_col_idx[i] > 0]
+            pick_labels = [data_LexDelay_Aud.labels[0][i] for i in range(len(data_LexDelay_Aud.labels[0])) if chs_col_idx[i] > 0]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
+        else:
+            picks = [i for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
+            pick_labels = [data_LexDelay_Aud.labels[0][i] for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
         chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data_LexDelay_Aud.labels[0]))]
         chs_cols_picked=[chs_cols[i] for i in picks]
 
