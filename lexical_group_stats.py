@@ -20,7 +20,7 @@ Delayseleted=''
 mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0.4 # a short period of time that we may assume auditory decay takes
 delay_len=0.5 # from task script
-motor_win=[-0.5,0] # get windows for motor responses (from Motor onset,not including motor onset (or else it should be [0.25, 0.75]))
+motor_win=[-0.5,0.25] # get windows for motor responses (from Motor onset,not including motor onset (or else it should be [0.25, 0.75]))
 cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 
 # %% Sort data and get significant electrode lists
