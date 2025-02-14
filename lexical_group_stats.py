@@ -20,7 +20,8 @@ Delayseleted=''
 mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0.4 # a short period of time that we may assume auditory decay takes
 delay_len=0.5 # from task script
-motor_win=[-0.5,0] # get windows for motor responses (from Motor onset,not including motor onset (or else it should be [0.25, 0.75]))
+motor_prep_win=[-0.5,-0.1] # get windows for motor preparation
+motor_resp_win=[0.25,0.75] # get windows for motor response
 cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 
 # %% Sort data and get significant electrode lists
@@ -83,7 +84,7 @@ if "LexDelay" in groupsTag:
     # plot_chs(data_LexDelay_Go_sorted, os.path.join(fig_save_dir, f'{'Go_inRep'}_{stat_type}-{contrast}.jpg'))
 
     # (Resp)
-    data_LexDelay_Resp_sorted, _, LexDelay_Resp_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_win)
+    data_LexDelay_Resp_sorted, _, LexDelay_Resp_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_prep_win)
     plot_chs(data_LexDelay_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'))
 
     # (Motor)
@@ -91,6 +92,7 @@ if "LexDelay" in groupsTag:
     # i.e.,
     # Auditory electrodes:  **Activated** in auditory window; whether or not activated after Go does not matter.
     # Motor electrodes:  **Not** activated in auditory window; **Activated** after Go
+
     LexDelay_Motor_sig_idx = [0 if LexDelay_Aud_sig_idx[i] == 1 else LexDelay_Resp_sig_idx[i] for i in range(len(LexDelay_Resp_sig_idx))]
     # Delay only electrodes
     LexDelay_DelayOnly_sig_idx = [LexDelay_Delay_sig_idx[i] if (LexDelay_Aud_sig_idx[i] != 1 and LexDelay_Motor_sig_idx[i] != 1 and LexDelay_Delay_sig_idx[i]==1) else 0 for i in range(len(LexDelay_Delay_sig_idx))]
@@ -104,7 +106,7 @@ if "LexNoDelay" in groupsTag:
     plot_chs(data_LexNoDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexNoDelay-{'Auditory_inRep'}_{stat_type}-{contrast}.jpg'))
 
     # (Resp)
-    data_LexNoDelay_Resp_sorted, _, LexNoDelay_Resp_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, cluster_twin, motor_win)
+    data_LexNoDelay_Resp_sorted, _, LexNoDelay_Resp_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, cluster_twin, motor_prep_win)
     plot_chs(data_LexNoDelay_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexNoDelay-{'Resp_inRep'}_{stat_type}-{contrast}.jpg'))
 
     # (Motor)
