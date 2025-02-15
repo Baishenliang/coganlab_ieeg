@@ -197,10 +197,11 @@ def plot_chs(data_in,fig_save_dir_f):
     ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
     fig.savefig(fig_save_dir_f, dpi=300)
 
-def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f):
+def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, **kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
-    fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split', label_every=label_every, size=0.35)
+    fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',
+                            label_every=label_every, size=0.2, **kwargs)
     # fig3d.save_image(fig_save_dir_f)
 
 def find_com_sig_chs(data1_labels, data1_sig_idx, data2_labels, data2_sig_idx):
