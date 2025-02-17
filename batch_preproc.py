@@ -26,9 +26,8 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0026": "linernoise/outlierchs/wavelet",
-    "D0028": "linernoise/outlierchs/wavelet",
-    "D0115": "linernoise/outlierchs/wavelet"
+    "D0026": "multitaper/gamma",
+    "D0115": "multitaper/gamma"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
@@ -42,7 +41,7 @@ BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 # This only works for LEXICAL DELAY TASK currently
 # - All: don't select trials
 # -Rep_only: select "Repeat" trials only
-Select_trials='Rep_only'
+Select_trials='All'
 
 # %% check if currently running a slurm job
 HOME = os.path.expanduser("~")
@@ -526,6 +525,10 @@ for subject, processing_type in subject_processing_dict.items():
                      'Auditory1_in_REV_BTH', 'Auditory2_in_REV_BTH', 'Cue_in_REV_BTH', 'Go_in_REV_BTH', 'Resp_in_REV_BTH'))
 
             for epoch_phase, baseline_tag, t_phase, tag_phase in gamma_epoc_zip:
+
+                if Task_Tag == "LexicalDecRepDelay" and Select_trials == 'All' and subject=="D0115":
+                    break # Patient D0115 has no wrong YesNo task responses, so skip it
+
                 out = []
                 
                 # extract gamma
