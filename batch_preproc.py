@@ -41,7 +41,7 @@ BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 # This only works for LEXICAL DELAY TASK currently
 # - All: don't select trials
 # -Rep_only: select "Repeat" trials only
-Select_trials='ALL'
+Select_trials='All'
 
 # %% check if currently running a slurm job
 HOME = os.path.expanduser("~")
