@@ -27,7 +27,7 @@ from matplotlib import pyplot as plt
 
 subject_processing_dict_org = {
     "D0026": "gamma",
-    "D0115": "multitaper/gamma"
+    "D0115": "gamma"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
@@ -41,7 +41,7 @@ BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 # This only works for LEXICAL DELAY TASK currently
 # - All: don't select trials
 # -Rep_only: select "Repeat" trials only
-Select_trials='All'
+Select_trials='Rep_only'
 
 # %% check if currently running a slurm job
 HOME = os.path.expanduser("~")
