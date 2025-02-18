@@ -26,14 +26,14 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0026": "gamma",
-    "D0115": "gamma"
+    "D0026": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0028": "linernoise/outlierchs/wavelet"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
 # %% define task
-Task_Tag="LexicalDecRepDelay"
-#Task_Tag="LexicalDecRepNoDelay"
+#Task_Tag="LexicalDecRepDelay"
+Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
