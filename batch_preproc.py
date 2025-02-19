@@ -26,7 +26,7 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0026": "multitaper/gamma"
+    "D0028": "gamma"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
@@ -598,6 +598,7 @@ for subject, processing_type in subject_processing_dict.items():
                 del data, sig1, sig2, base, mask
 
                 # run permutation: contrast gamma (e.g., YesNo vs. Repeat, Word vs. Nonword)
+                #####!!!!!!!!!!!!!!!!!!!!! Don't need this in the future. Just merge the contrast to the upper baseline correction lines and set one signal as baseline
                 if Task_Tag == "LexicalDecRepDelay":
                     if Select_trials == 'Rep_only':
                         gamma_contrast_zip=zip(
