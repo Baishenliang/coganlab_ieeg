@@ -31,8 +31,8 @@ subject_processing_dict_org = {
 }
 
 # %% define task
-#Task_Tag="LexicalDecRepDelay"
-Task_Tag="LexicalDecRepNoDelay"
+Task_Tag="LexicalDecRepDelay"
+#Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
