@@ -13,8 +13,8 @@ contrast='ave' # average, not contrasting different conditions
 #contrast='ave_NW_W' # contrasting nonword to word trials only in repetition
 
 # For lexical delay task, whether run the data only with repeat tasks
-Delayseleted=''
-#Delayseleted = '_inRep'
+#Delayseleted=''
+Delayseleted = '_inRep'
 
 # Parameters from the lexical delay task
 mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
@@ -151,9 +151,9 @@ if "LexNoDelay" in groupsTag:
     del data_LexNoDelay_Aud_sorted, data_LexNoDelay_Motor_Prep_sorted, data_LexNoDelay_Motor_Resp_sorted
 
 if "&" in groupsTag:
-    # Select the Delay_only electrodes in the lexical delay tasks, \
+    # Select the Delay electrodes (all electrodes with significant delay activations)
+    # in the lexical delay tasks,
     # then select the electrodes among them that had auditory responses in the no delay tasks.
-    # The LexDelay_Delay_LexNoDelay_Aud_sig_idx will be aligned to the data_LexDelay_Aud
     LexDelay_Delay_LexNoDelay_Aud_sig_idx = find_com_sig_chs(
         data_LexDelay_Aud.labels[0],LexDelay_Delay_sig_idx,
         data_LexNoDelay_Aud.labels[0],LexNoDelay_Aud_sig_idx)
@@ -162,19 +162,11 @@ if "&" in groupsTag:
         data_LexDelay_Aud.labels[0],LexDelay_Delay_sig_idx,
         data_LexNoDelay_Aud.labels[0],LexNoDelay_Motor_sig_idx)
 
-    # Get lexical no delay auditory channels and motor channels in the delay_only channels
+    # Get lexical no delay auditory channels and motor channels in the delay channels
     No_LexDelay_Delay_LexNoDelay_Aud_chs = np.sum(LexDelay_Delay_LexNoDelay_Aud_sig_idx)
     No_LexDelay_Delay_LexNoDelay_Motor_chs = np.sum(LexDelay_Delay_LexNoDelay_Motor_sig_idx)
 
-    # May do mine electrodes later
-    # Count number of 0s
-    LexDelay_Delay_LexNoDelay_AudMotr_sig_idx = LexDelay_Delay_LexNoDelay_Aud_sig_idx + LexDelay_Delay_LexNoDelay_Motor_sig_idx
-    No_LexDelay_Delay_LexNoDelay_Other_chs = np.sum(LexDelay_Delay_LexNoDelay_AudMotr_sig_idx == 0)
-
-    print(f"In the Delay Only channels in the LexDelayAuditory channels: "
-          f"{No_LexDelay_Delay_LexNoDelay_Aud_chs} are LexNoDelay Auditory channels, "
-          f"{No_LexDelay_Delay_LexNoDelay_Motor_chs} are LexNoDelay Motor channels, "
-          f"And {No_LexDelay_Delay_LexNoDelay_Other_chs} are other channels (including sensorimotor)")
+    # May do in_Silence electrodes later
 
 # %% reassign electrode indices by conditions
 if groupsTag == "LexDelay":
@@ -213,26 +205,32 @@ if groupsTag == "LexDelay":
 
 elif groupsTag == "LexNoDelay":
     for TypeLabel, chs_ov, pick_sig_idx in zip(
-            ('Auditory', 'Motor'),
-            ([100, 0, 0], [0, 0, 1]),
-            (LexNoDelay_Aud_sig_idx,LexNoDelay_Motor_sig_idx)
+            ('Sensorimotor', 'Auditory', 'Motor', 'Sensory_OR_Motor'),
+            ([1000, 0, 0, 0], [0, 100, 0, 0], [0, 0, 0, 1],[1000, 100, 0, 1]),
+            (LexNoDelay_Sensorimotor_sig_idx, LexNoDelay_Aud_NoMotor_sig_idx, LexNoDelay_Motor_sig_idx,LexNoDelay_Sensory_OR_Motor_sig_idx)
     ):
 
         # Elecorde selection and color assigning
+
         color_map = {
+            1000: [1, 0.65, 0],  # Sensorimotor (Orange)
             100: [1, 0, 0],  # Auditory (Red)
             1: [0, 0, 1]  # Motor (Blue)
         }
 
-        chs_col_idx = [chs_ov[0] * LexNoDelay_Aud_sig_idx[i] + chs_ov[2] * LexNoDelay_Motor_sig_idx[i] for i in range(len(data_LexNoDelay_Aud.labels[0]))]
+        chs_col_idx = [
+            chs_ov[0] * LexNoDelay_Sensorimotor_sig_idx[i] + chs_ov[1] * LexNoDelay_Aud_NoMotor_sig_idx[i] + chs_ov[3] * LexNoDelay_Motor_sig_idx[i] for i in
+            range(len(data_LexNoDelay_Aud.labels[0]))]
         picks = [i for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
-        pick_labels = [data_LexNoDelay_Aud.labels[0][i] for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
+        pick_labels = [data_LexNoDelay_Aud.labels[0][i] for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[
+            i] == 1]  # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
         chs_cols = [color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data_LexNoDelay_Aud.labels[0]))]
         chs_cols_picked = [chs_cols[i] for i in picks]
 
-        # Plot (cannot plot D107,D042)
-        plot_brain(subjs, pick_labels, chs_cols_picked,None,
+        # TRY also to plot valid (white?) vs. invalid electrodes (dark grey)
+        plot_brain(subjs, pick_labels, chs_cols_picked, None,
                    os.path.join(fig_save_dir, f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
+
 
 elif groupsTag=="LexDelay&LexNoDelay":
 

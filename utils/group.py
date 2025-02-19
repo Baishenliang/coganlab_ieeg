@@ -43,7 +43,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
 
         file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}-{contrast}.fif')
 
-        subj_chs_org_pattern = os.path.join(subj_gamma_clean_dir, f"*_acq-01_run-01_desc-clean_channels.tsv")
+        subj_chs_org_pattern = os.path.join(subj_gamma_clean_dir, f"*_acq-*_run-*_desc-clean_channels.tsv")
 
         if not os.path.exists(file_dir):
             continue
