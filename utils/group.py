@@ -28,7 +28,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
 
     subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
     import warnings
-    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     warnings.warn(f"The following subjects are not included: D0107 D0042")
     chs = []
     data_lst = []
@@ -43,8 +43,6 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
 
         file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}-{contrast}.fif')
 
-        subj_chs_org_pattern = os.path.join(subj_gamma_clean_dir, f"*_acq-*_run-*_desc-clean_channels.tsv")
-
         if not os.path.exists(file_dir):
             continue
         else:
@@ -53,7 +51,40 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
         # read patient data
         subj_dataset = fif_read(file_dir)
 
+        match stat_type:
+            case "zscore":
+                subj_data_epo = subj_dataset._data
+                subj_data = np.mean(subj_data_epo, axis=0)
+                subj_chs = subj_dataset.ch_names
+                if i == 0:
+                    times = subj_dataset.times
+            case "power":
+                subj_data_epo = subj_dataset._data
+                subj_data = np.mean(subj_data_epo, axis=0)
+                subj_chs = subj_dataset.ch_names
+                if i == 0:
+                    times = subj_dataset.times
+            case "significance":
+                # Not yet tested, maybe wrong
+                subj_data = subj_dataset[0].data
+                subj_chs = subj_dataset[0].ch_names
+                if i == 0:
+                    times = subj_dataset[0].times
+            case "pval":
+                # Not yet tested, maybe wrong
+                subj_data = subj_dataset[0].data
+                subj_chs = subj_dataset[0].ch_names
+                if i == 0:
+                    times = subj_dataset[0].times
+            case "mask":
+                subj_data = subj_dataset[0].data
+                subj_chs = subj_dataset[0].ch_names
+                if i == 0:
+                    times = subj_dataset[0].times
+        del subj_dataset # clear up memory
+
         # read original channel labels (before outlier and muscle channel removals)
+        subj_chs_org_pattern = os.path.join(subj_gamma_clean_dir, f"*_acq-*_run-*_desc-clean_channels.tsv")
         subj_chs_org_file_list = glob.glob(subj_chs_org_pattern)
 
         org_labeled_chs = []
@@ -66,8 +97,10 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
                     columns = line.strip().split('\t')
                     org_labeled_chs.append(columns[0])
 
-        subj_data = subj_dataset[0].data
-        subj_chs = subj_dataset[0].ch_names
+        if subject == 'D0026':
+            # Some awkard channels in D0026 lexical no delay
+            org_labeled_chs = [ch for ch in org_labeled_chs if 'RPF' not in ch]
+
         good_labeled_chs = [f"{subject} {ch}" for ch in subj_chs]
 
         aligned_data,aligned_chs = align_channel_data(subj_data, good_labeled_chs, org_labeled_chs)
@@ -82,8 +115,6 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
         # data_lst.append(subj_data)
         # chs.extend(good_labeled_chs_reformat)
 
-        if i == 0:
-            times = subj_dataset[0].times
 
     data_raw = np.concatenate(data_lst, axis=0)
     labels = [chs, times]
@@ -282,3 +313,41 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
     aligned_chs = [f"{subject}-{ch}" for ch in org_labeled_chs]
 
     return aligned_data, aligned_chs
+
+def plot_wave(data_in,sig_idx,con_label,col):
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    times=data_in.labels[1]
+    times = [float(i) for i in times]
+    chs=data_in.labels[0]
+    data=data_in.__array__()
+
+    data_selected = np.full(np.shape(data), np.nan)
+    for i in range(len(data_selected)):
+        if sig_idx[i]==1:
+            data_selected[i] = data[i]
+
+    # Select a few key time points for labeling
+    num_ticks = 6  # Adjust as needed
+    tick_positions = np.linspace(0, len(times) - 1, num_ticks).astype(int)  # Select indices
+    tick_labels = [times[a] for a in tick_positions]  # Get corresponding time labels
+
+    # Compute the mean and SEM across trials while ignoring NaNs
+    mean_waveform = np.nanmean(data_selected, axis=0)
+    sem_waveform = np.nanstd(data_selected, axis=0) / np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
+
+    # Plot the mean waveform
+    plt.plot(times, mean_waveform, label=con_label, color=col)
+
+    # Add shaded region for SEM
+    plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)
+
+    # Labels and title
+    plt.axhline(0, color='k', linestyle='--', linewidth=1)  # Zero-line
+    plt.xlabel('Time (s)')
+    plt.xticks(tick_labels)  # Set fewer time labels
+    plt.ylabel('Z-score')
+    plt.legend()
+    plt.show()
