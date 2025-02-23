@@ -6,3 +6,4 @@ __pycache__/
 *.pyo
 *.pyd.codiumai
 .codiumai
+/projects/compare_SMelec_SentenceRep/data.dat

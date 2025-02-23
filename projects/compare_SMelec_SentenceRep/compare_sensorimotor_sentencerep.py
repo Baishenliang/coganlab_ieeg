@@ -1,3 +1,8 @@
+# Use Baishen's approach to get Sensorimotor electrodes and compare the results in the sentence repetition
+# dataset with Aaron' approach
+# And adjust the threshold (time stamp from the onset of articulation)
+# See: Compare Baishen and Aaron approaches to get SM electrodes.png
+
 import os
 from ieeg.io import get_data, DataLoader
 import numpy as np
@@ -6,6 +11,7 @@ from ieeg.arrays.label import LabeledArray, combine
 # Sampling rate: 100hz
 # Go event: onset at 50 sample
 # Resp event: onset at 100 sample
+
 def set_confusion_matrix(set_A, set_B):
     import numpy as np
     shared = len(set_A & set_B)  # 交集
@@ -23,6 +29,7 @@ def set_confusion_matrix(set_A, set_B):
 
     return df
 
+# Aaron's function: select electrodes
 def group_elecs(all_sig: dict[str, np.ndarray] | LabeledArray, names: list[str],
                 conds: tuple[str], wide: bool = False, resp_onset_thres_sec: float = 0
                 ) -> (set[int], set[int], set[int], set[int],set[int]):
@@ -103,6 +110,8 @@ loader = DataLoader(layout, conds, 'zscore', False, 'stats',
 zscores = LabeledArray.from_dict(combine(loader.load_dict(
     dtype=float, n_jobs=-1), (0, 2)), dtype=float)
 
+# Loop the threshold to cut the pre-articulation window and the post-articulation window.
+# Then print the results (two what extent Aaron's and Baishen's Approaches are overlapped.
 ch_names = sigs.labels[1]
 for thres in range(-19,0,1):
     AUD, SM, PROD, sig_chans, SM_baishen = group_elecs(sigs, sigs.labels[1], sigs.labels[0],resp_onset_thres_sec=0.01*thres)
