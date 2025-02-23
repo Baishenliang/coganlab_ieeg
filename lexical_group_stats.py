@@ -1,7 +1,7 @@
 # %% groups of patients
-#groupsTag="LexDelay"
+groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -97,6 +97,8 @@ if "LexDelay" in groupsTag:
     # plot_chs(data_LexDelay_Go_sorted, os.path.join(fig_save_dir, f'{'Go_inRep'}_{stat_type}-{contrast}.jpg'))
 
     # (Motor prepare)
+    # !!!!!!!!!!In the future use **set** to replace the list indexing!!!!!!!!!!!!!!!!!
+
     data_LexDelay_Motor_Prep_sorted, _, LexDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_prep_win)
     plot_chs(data_LexDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'))
 

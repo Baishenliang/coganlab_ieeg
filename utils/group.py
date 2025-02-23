@@ -12,7 +12,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
     import numpy as np
     import mne
     import glob
-    from ieeg.calc.mat import LabeledArray
+    from ieeg.arrays.label import LabeledArray
 
     match stat_type:
         case "zscore":
@@ -28,7 +28,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
 
     subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
     import warnings
-    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     warnings.warn(f"The following subjects are not included: D0107 D0042")
     chs = []
     data_lst = []
