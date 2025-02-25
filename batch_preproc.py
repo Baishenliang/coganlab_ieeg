@@ -31,16 +31,19 @@ subject_processing_dict_org = {
 }
 
 # %% define task
-#Task_Tag="LexicalDecRepDelay"
+#Task_Tag="LexicalDecRepDelay" # ![RUN TWICE, one for Select_trials='Rep_only', another one for 'All']
 Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
-# %% fir HG processing, select trials or not
-# This only works for LEXICAL DELAY TASK currently
-# - All: don't select trials
-# -Rep_only: select "Repeat" trials only
-Select_trials='Rep_only'
+if Task_Tag=="LexicalDecRepDelay":
+    # %% fir HG processing, select trials or not
+    # This only works for LEXICAL DELAY TASK currently
+    # - All: don't select trials
+    # -Rep_only: select "Repeat" trials only
+    Select_trials='Rep_only'
+else:
+    Select_trials='All'
 
 # %% check if currently running a slurm job
 HOME = os.path.expanduser("~")
