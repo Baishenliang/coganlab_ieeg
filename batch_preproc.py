@@ -26,7 +26,7 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0086": "linernoise/outlierchs/wavelet/multitaper/gammma"
+    "D0086": "gamma"
     #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
 }
 
