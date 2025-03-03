@@ -131,9 +131,8 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
     win_len = 0.2 (in seconds, the shortest sig cluster that consider effective)
     time_range = [-0.2, 1]
     """
-    from ieeg.calc.mat import LabeledArray
     import numpy as np
-    from ieeg.calc.mat import LabeledArray
+    from ieeg.arrays.label import LabeledArray
 
     # %% get the onsets of the activation (an effective cluster is defined as 0.2s)
     times=data_in.labels[1]
