@@ -11,7 +11,9 @@ import matplotlib.pyplot as plt
 
 #%% Parameters
 event='Auditory'
-fif_name=f'{event}_zscore-epo.fif'
+stat='power' # or 'zscore'
+fif_name=f'{event}_{stat}-epo.fif'
+task_Tag='Yes_No'
 
 #%% Locations
 HOME = os.path.expanduser("~")
@@ -25,8 +27,13 @@ subjs = [name for name in os.listdir(stats_root) if
 import warnings
 subjs = [subj for subj in subjs if
          subj != 'D0107' and subj != 'D0042']  # and subj != 'D0028']
+if task_Tag=='Yes_No':
+    subjs = [subj for subj in subjs if subj != 'D0115']
 warnings.warn(f"The following subjects are not included: D0107 D0042")
 
+#D102 event number does not match trial number
+
+# %% start looping
 for _, subject in enumerate(subjs):
     print(f"Now do patent {subject}")
 
@@ -43,17 +50,24 @@ for _, subject in enumerate(subjs):
     files_sorted = sorted(files, key=lambda x: [int(i) for i in re.findall(r'acq-(\d+)_run-(\d+)', x)[0]])
     dfs = [pd.read_csv(f, sep='\t') for f in files_sorted]
     events_df = pd.concat(dfs, ignore_index=True)
-    filtered_events = events_df[events_df['trial_type'].str.contains('Auditory') & events_df['trial_type'].str.contains('CORRECT')].reset_index(drop=True)
+    filtered_events = events_df[events_df['trial_type'].str.contains(event)
+                                & events_df['trial_type'].str.contains('CORRECT')
+                                & events_df['trial_type'].str.contains(task_Tag)].reset_index(drop=True)
     trial_split = filtered_events['trial_type'].str.split('/', expand=True)
     trial_split.columns = ['Stage', 'RepYesNo', 'Wordness', 'Stim', 'Correctness']
     filtered_events = pd.concat([filtered_events, trial_split], axis=1)
     for col in ['Stage', 'RepYesNo', 'Wordness', 'Stim', 'Correctness']:
         filtered_events[col] = filtered_events[col].astype('category')
 
+    if subject == 'sub-D0102' and task_Tag=='Repeat':
+        filtered_events = filtered_events[:-1]
     #%% GLM
 
     # Get data
-    data = epochs.get_data()
+    if event=='Auditory':
+        data = epochs[f'Auditory_stim/{task_Tag}/CORRECT'].get_data()
+    elif event=='Resp':
+        data = epochs[f'Resp/{task_Tag}/CORRECT'].get_data()
     times = epochs.times
     chs = epochs.ch_names
     # Loop for each patient
@@ -76,9 +90,9 @@ for _, subject in enumerate(subjs):
         fdr_mask[ch_idx, :],_ = fdr_correction(pvalues_list[ch_idx, :])
 
     # Save GLM
-    np.save(os.path.join(subj_gamma_stats_dir, f"GLM_{event}_Wordness_Pvals.npy"), pvalues_list)
-    np.save(os.path.join(subj_gamma_stats_dir, f"GLM_{event}_Wordness_Betas.npy"), beta_list)
-    np.save(os.path.join(subj_gamma_stats_dir, f"GLM_{event}_Wordness_fdrmasks.npy"), fdr_mask)
+    np.save(os.path.join(subj_gamma_stats_dir, f"GLM_{event}_{task_Tag}_{stat}_Wordness_Pvals.npy"), pvalues_list)
+    np.save(os.path.join(subj_gamma_stats_dir, f"GLM_{event}_{task_Tag}_{stat}_Wordness_Betas.npy"), beta_list)
+    np.save(os.path.join(subj_gamma_stats_dir, f"GLM_{event}_{task_Tag}_{stat}_Wordness_fdrmasks.npy"), fdr_mask)
 
     # Plot GLM
     # plt.figure(figsize=(10, 5))

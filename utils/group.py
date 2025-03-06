@@ -25,6 +25,8 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
             fif_read = mne.read_evokeds
         case "mask":
             fif_read = mne.read_evokeds
+        case "glm":
+            fif_read = np.load
 
     subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
     import warnings
@@ -39,9 +41,15 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
     for i, subject in enumerate(subjs):
 
         subj_gamma_stats_dir = os.path.join(stats_root_readdata, subject)
-        subj_gamma_clean_dir = os.path.join(clean_root_readdata, f"sub-{subject}","ieeg")
 
-        file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}-{contrast}.fif')
+
+        subj_gamma_clean_dir = os.path.join(clean_root_readdata, f"sub-{subject}", "ieeg")
+
+        if stat_type == 'glm':
+            file_dir = os.path.join(subj_gamma_stats_dir, f'GLM_{con}_{contrast}.npy')
+        else:
+            file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}-{contrast}.fif')
+        # 对于GLM这里需要合并一下：电极还是要load fif的，但是mask/beta/p就是直接load的*.npy so
 
         if not os.path.exists(file_dir):
             continue
@@ -81,6 +89,14 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
                 subj_chs = subj_dataset[0].ch_names
                 if i == 0:
                     times = subj_dataset[0].times
+            case 'glm':
+                subj_data = subj_dataset
+                evoke_dir = os.path.join(subj_gamma_stats_dir, 'Auditory_inRep_mask-ave.fif')
+                chs_time_dataset_forglm = mne.read_evokeds(evoke_dir)
+                subj_chs = chs_time_dataset_forglm[0].ch_names
+                if i == 0:
+                    times = chs_time_dataset_forglm[0].times
+
         del subj_dataset # clear up memory
 
         # read original channel labels (before outlier and muscle channel removals)
@@ -210,8 +226,8 @@ def plot_chs(data_in,fig_save_dir_f):
     fig, ax = plt.subplots()
     ax.imshow(data, cmap='Reds')
 
-    ch_gap = 5
-    time_gap = 20
+    ch_gap = 20
+    time_gap = 40
 
     channel_names = chs[::ch_gap]
     ax.set_yticks(range(0, len(channel_names) * ch_gap, ch_gap))
@@ -337,11 +353,14 @@ def plot_wave(data_in,sig_idx,con_label,col):
     mean_waveform = np.nanmean(data_selected, axis=0)
     sem_waveform = np.nanstd(data_selected, axis=0) / np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
 
-    # Plot the mean waveform
-    plt.plot(times, mean_waveform, label=con_label, color=col)
+    # # Plot the mean waveform
+    # plt.plot(times, mean_waveform, label=con_label, color=col)
+    #
+    # # Add shaded region for SEM
+    # plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)
 
-    # Add shaded region for SEM
-    plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)
+    # Plot the mean waveform
+    plt.plot(times, data_selected.transpose(), label=con_label, color=col)
 
     # Labels and title
     plt.axhline(0, color='k', linestyle='--', linewidth=1)  # Zero-line

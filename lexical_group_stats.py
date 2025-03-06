@@ -53,6 +53,9 @@ if groupsTag=="LexDelay":
     epoc_LexDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay)
     epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay)
 
+    glm_word_LexDelay_Aud_mask,_=load_stats('glm','Auditory_inRep_Wordness','fdrmasks',stats_root_delay,stats_root_delay)
+    glm_word_LexDelay_Aud_beta,_=load_stats('glm','Auditory_inRep_Wordness','Betas',stats_root_delay,stats_root_delay)
+
 elif groupsTag=="LexNoDelay":
 
     data_LexNoDelay_Aud,subjs=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay)
@@ -105,6 +108,11 @@ if "LexDelay" in groupsTag:
     # (Motor response)
     data_LexDelay_Motor_Resp_sorted, _, LexDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_resp_win)
     plot_chs(data_LexDelay_Motor_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'))
+
+    # (GLM for Wordness)
+    glm_word_LexDelay_Aud_mask_sorted, _, LexDelay_GLM_Wordness_sig_idx = sort_chs_by_actonset(glm_word_LexDelay_Aud_mask, cluster_twin, [-0.1,mean_word_len+auditory_decay+delay_len+0.1])
+    # glm_word_LexDelay_Aud_mask_sorted, _, LexDelay_GLM_Wordness_sig_idx = sort_chs_by_actonset(glm_word_LexDelay_Aud_mask, cluster_twin, [-10,10])
+    plot_chs(glm_word_LexDelay_Aud_mask_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'GLM_Auditory'+Delayseleted}_{stat_type}-{contrast}.jpg'))
 
     # Channel selection: Auditory nomotor electrodes (auditory window:1, motor prep: 0)
     LexDelay_Aud_NoMotor_sig_idx = [1 if (LexDelay_Aud_sig_idx[i] == 1 and LexDelay_Motor_Prep_sig_idx[i] == 0)
@@ -211,6 +219,10 @@ Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
 
 if groupsTag == "LexDelay":
+
+    # %% Electrode selection
+    # Location plot for different types of electrodes
+
     for TypeLabel,chs_ov,pick_sig_idx in zip(
             ('Sensorimotor','Auditory','Delay','Delay_overlapped','Delay_only','Motor','Sensory_OR_Motor'),
             ([1000,0,0,0],[0,100,0,0],[0,0,10,0],[1000,100,10,1],[1000,100,10,1],[0,0,0,1],[1000,100,0,1]),
@@ -286,6 +298,31 @@ if groupsTag == "LexDelay":
               f'({np.round(100*np.sum(LexDelay_Motor_in_Delay_sig_idx)/num_delay_elec,3)}%)',Delay_Motor_col)
     plt.axvline(x=0, linestyle='--', color='k')
     plt.title('Lexical Delay (Auditory onset aligned)')
+    plt.show()
+
+    #%% GLM
+    # Location plot for GLM results
+    TypeLabel = 'Wordness'
+    chs_ov = [100]
+    pick_sig_idx = LexDelay_GLM_Wordness_sig_idx
+
+    color_map = {
+         100: Auditory_col,  # Wordness (Red)
+    }
+
+    chs_col_idx=[chs_ov[0]*LexDelay_GLM_Wordness_sig_idx[i] for i in range(len(data_LexDelay_Aud.labels[0]))]
+    picks = [i for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
+    pick_labels = [data_LexDelay_Aud.labels[0][i] for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
+    chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data_LexDelay_Aud.labels[0]))]
+    chs_cols_picked=[chs_cols[i] for i in picks]
+
+    plot_brain(subjs, pick_labels,chs_cols_picked,None,os.path.join(fig_save_dir,f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
+
+    # Plot wave
+    plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+    plot_wave(glm_word_LexDelay_Aud_beta, LexDelay_GLM_Wordness_sig_idx, f'WordGLM n={np.sum(LexDelay_GLM_Wordness_sig_idx)}', Auditory_col)
+    plt.axvline(x=0, linestyle='--', color='k')
+    plt.title('Lexical Delay Repeat only (Auditory onset aligned)')
     plt.show()
 
 elif groupsTag == "LexNoDelay":

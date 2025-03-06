@@ -583,7 +583,7 @@ for subject, processing_type in subject_processing_dict.items():
 
                 # baseline correction
                 power = scaling.rescale(epoch, base, 'mean', copy=True)
-                z_score = scaling.rescale(epoch, base, 'zscore', copy=True)
+                z_score = scaling.rescale(epoch, base, 'zscore', copy=True) # average of the baseline by trial and by time
 
                 # Calculate the p-value
                 p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
