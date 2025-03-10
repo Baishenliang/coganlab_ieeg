@@ -7,3 +7,4 @@ __pycache__/
 *.pyd.codiumai
 .codiumai
 /projects/compare_SMelec_SentenceRep/data.dat
+projects/GLM/english_us_lr.dict
