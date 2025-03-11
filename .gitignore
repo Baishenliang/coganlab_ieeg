@@ -8,3 +8,4 @@ __pycache__/
 .codiumai
 /projects/compare_SMelec_SentenceRep/data.dat
 projects/GLM/english_us_lr.dict
+projects/GLM/null_beta*
