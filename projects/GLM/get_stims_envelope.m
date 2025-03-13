@@ -1,3 +1,8 @@
+% Clone the IoSR-Surrey toolbox
+% https://github.com/IoSR-Surrey/MatlabToolbox.git:
+addpath(genpath('../../../MatlabToolbox'))
+% iosr.install % run it for the first time
+
 clc; clear; close all;
 
 % Set the data path
@@ -8,11 +13,23 @@ output_file = 'envelope_power_bins.txt';
 wav_files = dir(fullfile(data_path, '*.wav'));
 num_files = length(wav_files);
 
-% Optimized frequency bands for speech signals (in Hz)
-freq_bands = [50 400; 400 1000; 1000 3000; 3000 5000; 5000 8000];
+% Optimized frequency bands (using gamma tone) for speech signals (in Hz)
+MakeErbCFs=@iosr.auditory.makeErbCFs;
+gammatoneFast=@iosr.auditory.gammatoneFast;
+Fmin = 50;	% lower frequency of filterbank in Hz
+Fmax = 8e3;	% upper frequency of filterbank (.8 * Nyquist)
+bandnum =  16 ; % THE NUMBER OF BANDS
+cfs = MakeErbCFs(Fmin,Fmax,bandnum);
+
+% print freqBands
+freqBands = cell(1,bandnum);
+for k = 1:bandnum
+    freqBands{k} = sprintf('%.2f Hz', cfs(k));
+end
+disp(freqBands);
 
 % Initialize storage variables
-power_values = zeros(num_files, 5);
+power_values = zeros(num_files, bandnum);
 file_names = cell(num_files, 1);
 
 % Process each file
@@ -28,22 +45,10 @@ for i = 1:num_files
     end
 
     % Compute envelope power for each frequency band
-    for j = 1:size(freq_bands, 1)
-        % Design a bandpass filter for the current frequency band
-        bpFilt = designfilt('bandpassiir', 'FilterOrder', 4, ...
-            'HalfPowerFrequency1', freq_bands(j, 1), ...
-            'HalfPowerFrequency2', freq_bands(j, 2), ...
-            'SampleRate', fs);
-        
-        % Apply zero-phase filtering to avoid phase distortion
-        filtered_audio = filtfilt(bpFilt, audio);
-        
-        % Extract the temporal envelope using the Hilbert transform
-        envelope = abs(hilbert(filtered_audio));
-        
-        % Compute the mean envelope power
-        power_values(i, j) = mean(envelope .^ 2);
-    end
+    [~,env,~] = gammatoneFast(audio'/std(audio),cfs,fs);
+
+    % Compute the mean envelope power
+    power_values(i, :) = mean(env .^ 2,2);
 
     % Store the file name without the ".wav" extension
     file_names{i} = erase(file_name, '.wav');
@@ -64,16 +69,10 @@ normalized_power = (log_transformed_powers - min(log_transformed_powers)) ./ (ma
 output_data = [file_names, num2cell(normalized_power)];
 
 % Plot the distributions:
-figure;
-hist(normalized_power(:,1));
-figure;
-hist(normalized_power(:,2));
-figure;
-hist(normalized_power(:,3));
-figure;
-hist(normalized_power(:,4));
-figure;
-hist(normalized_power(:,5));
+for j=1:bandnum
+    figure;
+    hist(normalized_power(:,j));
+end
 
 % Write results to a text file
 fid = fopen(output_file, 'w');
