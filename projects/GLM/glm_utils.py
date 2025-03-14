@@ -49,7 +49,25 @@ def check_multicollinearity(X_i):
 
     return vif_data
 
-def glm_fifread(subjs,stats_root,fif_name):
+def fifread(event,stat,task_Tag):
+
+    fif_name=f'{event}_{stat}-epo.fif'
+
+    # Locations
+    HOME = os.path.expanduser("~")
+    LAB_root = os.path.join(HOME, "Box", "CoganLab")
+    clean_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "clean")
+    stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
+
+    # Read single patient stats
+    subjs = [name for name in os.listdir(stats_root) if
+            os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
+    import warnings
+    subjs = [subj for subj in subjs if
+            subj != 'D0107' and subj != 'D0042']  # and subj != 'D0028']
+    if task_Tag=='Yes_No':
+        subjs = [subj for subj in subjs if subj != 'D0115']
+    warnings.warn(f"The following subjects are not included: D0107 D0042")
     # %% start looping to load patients
     # Read dictionaries for acoustic, phonemic, and the other stimulus-based feature matrix
 
@@ -119,6 +137,8 @@ def glm_fifread(subjs,stats_root,fif_name):
         data_list.append(data_i)
         filtered_events_list.append(feature_mat_i)
         chs.append(chs_i)
+
+        return subjs, data_list, filtered_events_list, chs, times
 
 def compute_r2_ch(x, y):
     # Run linear regression to get beta and R^2
