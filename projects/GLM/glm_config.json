@@ -1,10 +1,10 @@
 {
     "alpha": 0.05,
     "alpha_clus": 0.05,
-    "n_perms": 10000,
+    "n_perms": 20000,
     "event": "Auditory",
     "stat": "zscore",
-    "task_Tag": "Yes_No",
+    "task_Tag": "Repeat",
     "glm_fea": "Acoustic",
     "feature_ranges": {
         "Lexical": [1],
