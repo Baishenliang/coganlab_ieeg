@@ -8,46 +8,12 @@ import mne
 import os
 import glob
 import re
-import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
+import glm_validate_plot as glm_plot
 from joblib import Parallel, delayed
-from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
 #%% Functions
-def check_multicollinearity(X_i):
-    """
-    Computes the Variance Inflation Factor (VIF) for each feature in the given matrix
-    to detect multicollinearity. Also, plots the correlation matrix as a heatmap.
-
-    Parameters:
-    X_i : numpy.ndarray
-        Feature matrix where each column represents a feature.
-
-    Returns:
-    pd.DataFrame
-        A DataFrame showing the VIF values for each feature.
-    """
-
-    # Ensure the input is a NumPy array
-    if not isinstance(X_i, np.ndarray):
-        raise ValueError("Input X_i must be a NumPy array")
-
-    # Compute VIF for each feature
-    vif_data = pd.DataFrame()
-    vif_data["Feature"] = [f"X{i}" for i in range(X_i.shape[1])]
-    vif_data["VIF"] = [variance_inflation_factor(X_i, i) for i in range(X_i.shape[1])]
-
-    # Plot correlation matrix as a heatmap
-    plt.figure(figsize=(10, 8))
-    correlation_matrix = np.corrcoef(X_i, rowvar=False)  # Compute correlation matrix
-    sns.heatmap(correlation_matrix, annot=True, fmt=".1f", cmap="coolwarm", xticklabels=vif_data["Feature"],
-                yticklabels=vif_data["Feature"], annot_kws={"size": 5})
-    plt.title("Feature Correlation Matrix")
-    plt.show()
-
-    return vif_data
 
 def fifread(event,stat,task_Tag):
 
@@ -68,7 +34,7 @@ def fifread(event,stat,task_Tag):
     if task_Tag=='Yes_No':
         subjs = [subj for subj in subjs if subj != 'D0115']
     warnings.warn(f"The following subjects are not included: D0107 D0042")
-    # %% start looping to load patients
+    # start looping to load patients
     # Read dictionaries for acoustic, phonemic, and the other stimulus-based feature matrix
 
     data_list = []
@@ -79,9 +45,9 @@ def fifread(event,stat,task_Tag):
     acoustic_codes = pd.read_pickle("envelope_feature_dict.pickle")
 
     for i, subject in enumerate(subjs):
-        print(f"Now do patent {subject}")
+        print(f"Now do patient {subject}")
 
-        # %% Load fif data
+        # Load fif data
         subject_label_chs = 'D' + subject[1:].lstrip('0')
         subject = "sub-" + subject
         subject_No = subject.replace("sub-", "")
@@ -89,7 +55,7 @@ def fifread(event,stat,task_Tag):
         file_dir = os.path.join(subj_gamma_stats_dir, fif_name)
         epochs = mne.read_epochs(file_dir, False, preload=True)
 
-        # %% Load events
+        # Load events
         subj_gamma_clean_dir = os.path.join(clean_root, subject, 'ieeg')
         files = glob.glob(os.path.join(subj_gamma_clean_dir, '*acq-*_run-*_desc-clean_events.tsv'))
         files_sorted = sorted(files, key=lambda x: [int(i) for i in re.findall(r'acq-(\d+)_run-(\d+)', x)[0]])
@@ -127,9 +93,9 @@ def fifread(event,stat,task_Tag):
         X_i = np.column_stack([np.ones(np.shape(data_i)[0]), wordness_dummy, phoneme_vectors, acoustic_vectors])
 
         # Test Multicollinearity
-        if i == 0:
-            vif_data = check_multicollinearity(X_i)
-            print(vif_data['VIF'])
+        # if i == 0:
+        #     vif_data = glm_plot.check_multicollinearity(X_i)
+        #     print(vif_data['VIF'])
 
         feature_mat_i = np.repeat(X_i[:, np.newaxis, :], np.shape(data_i)[1], axis=1)
 
@@ -138,7 +104,7 @@ def fifread(event,stat,task_Tag):
         filtered_events_list.append(feature_mat_i)
         chs.append(chs_i)
 
-        return subjs, data_list, filtered_events_list, chs, times
+    return subjs, data_list, filtered_events_list, chs, times
 
 def compute_r2_ch(x, y):
     # Run linear regression to get beta and R^2
@@ -166,29 +132,6 @@ def compute_r2_loop(feature_mat_i,data_i):
         y = data_i[:, ch, :]
         r2_i[ch,:] = compute_r2_ch(x,y)
     return r2_i
-
-
-# Plot GLM
-def plot_patient(data_in, title, colbar_lab,times):
-    plt.figure(figsize=(10, 5))
-    plt.imshow(data_in, aspect='auto', cmap='gray_r', interpolation='nearest')  # , vmin=-0.5e-5, vmax=0.5e-5)
-    plt.colorbar(label=colbar_lab)
-    plt.xlabel("Time points")
-    plt.ylabel("Channels")
-    plt.title(title)
-
-    xticks = np.arange(0, len(times), 20)
-    plt.xticks(ticks=xticks, labels=np.round(times[xticks], 2))
-    plt.xlabel("Time (s)")
-    #
-    # yticks = np.arange(0, len(chs), 5)
-    # plt.yticks(ticks=yticks, labels=[chs[i] for i in yticks])
-    plt.ylabel("Channels")
-
-    zero_time_index = np.argmin(np.abs(times - 0))
-    plt.axvline(x=zero_time_index, color='red', linestyle='--', linewidth=1.5, label="Time = 0")
-
-    plt.show()
 
 def permutation_baishen_parallel(feature_mat_i, data_i, n_perms):
     n_obs = feature_mat_i.shape[0]

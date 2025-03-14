@@ -1,0 +1,14 @@
+{
+    "alpha": 0.05,
+    "alpha_clus": 0.05,
+    "n_perms": 10000,
+    "event": "Auditory",
+    "stat": "zscore",
+    "task_Tag": "Yes_No",
+    "glm_fea": "Acoustic",
+    "feature_ranges": {
+        "Lexical": [1],
+        "Acoustic": [34, 50],
+        "Phonemic": [2, 34]
+    }
+}
