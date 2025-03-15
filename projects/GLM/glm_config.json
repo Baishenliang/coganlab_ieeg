@@ -5,7 +5,7 @@
     "event": "Auditory",
     "stat": "zscore",
     "task_Tag": "Repeat",
-    "glm_fea": "Acoustic",
+    "glm_fea": "Phonemic",
     "feature_ranges": {
         "Lexical": [1],
         "Acoustic": [34, 50],
