@@ -1,6 +1,7 @@
 # Module for glm processing
 
 #%% Import python modules
+import sys
 import pandas as pd
 import numpy as np
 import patsy
@@ -11,7 +12,6 @@ import re
 import pandas as pd
 import glm_validate_plot as glm_plot
 from joblib import Parallel, delayed
-
 
 #%% Functions
 
@@ -157,3 +157,19 @@ def aaron_perm_gt_1d(diff, axis=0):
     # Rearrange to match original order
     return proportions[sorted_indices.argsort(axis=axis)]
 
+
+def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times):
+
+    from ieeg.arrays.label import LabeledArray
+    data_lst = []
+
+    for i, subject in enumerate(subjs):
+        subj_dataset = np.load(os.path.join('data',f'{masktype} {subject} {event} {task_Tag} {glm_fea}.npy'))
+        data_lst.append(subj_dataset)
+
+    data_raw = np.concatenate(data_lst, axis=0)
+    chs = np.concatenate(chs, axis=0)
+    labels = [chs, times]
+    data=LabeledArray(data_raw, labels)
+
+    return data,subjs

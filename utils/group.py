@@ -182,17 +182,18 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
     # %% select channels with significant activation clusters
     data_s = []
     chs_s = []
-    chs_s_idx = [] # significant channels selected
-    chs_s_all_idx = [0]*len(chs) # channel index with significant channels marked in 1
+    chs_s_idx = []  # significant channels selected
+    chs_s_all_idx = set()  # Use a set to store selected channel indices
     onsets_s = []
 
     for ch_idx, ch_name in enumerate(chs):
-        if onsets[ch_name] is not None:  # Check if the channel has a valid onset
+        onset = onsets.get(ch_name)  # Get the onset, avoiding repeated dictionary lookups
+        if onset is not None:  # Check if the channel has a valid onset
             data_s.append(data[ch_idx])  # Add the channel data to the selected data list
             chs_s.append(ch_name)  # Add the channel name to the selected channel names list
             chs_s_idx.append(ch_idx)
-            onsets_s.append(onsets[ch_name])
-            chs_s_all_idx[ch_idx] = 1
+            onsets_s.append(onset)
+            chs_s_all_idx.add(ch_idx)  # Add index to the set
 
     # Convert the selected data list to a numpy array
     data_s = np.array(data_s)
@@ -209,7 +210,8 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
     # onset_out=LabeledArray(np.array(onsets_s_sorted), chs_s_sorted)
     return data_out,sorted_indices,chs_s_all_idx
 
-def plot_chs(data_in,fig_save_dir_f):
+
+def plot_chs(data_in, fig_save_dir_fm,title):
     """
     plot the significant channels in a sorted order
     """
@@ -217,31 +219,47 @@ def plot_chs(data_in,fig_save_dir_f):
     import numpy as np
     import matplotlib.pyplot as plt
 
-    times=data_in.labels[1]
+    times = data_in.labels[1]
     times = [float(i) for i in times]
-    chs=data_in.labels[0]
-    data=data_in.__array__()
+    chs = data_in.labels[0]
+    data = data_in.__array__()
 
-    plt.figure(figsize=(2 ^ 15, 1 ^ 15))
+    # Automatically calculate ch_gap and time_gap to avoid label overlap
+    num_channels = len(chs)
+    num_times = len(times)
+
+    # Automatically adjust channel gap and time gap based on the number of channels and time points
+    ch_gap = max(1, num_channels // 20)  # Adjust channel gap based on the total number of channels
+    time_gap = max(1, num_times // 10)  # Adjust time gap based on the total number of time points
+
+    # Create the plot
+    plt.figure(figsize=(15, 15))  # Make the figure size large enough for labeling
     fig, ax = plt.subplots()
     ax.imshow(data, cmap='Reds')
+    ax.set_title(title)
 
-    ch_gap = 20
-    time_gap = 40
-
+    # Set channel names with adjusted gap
     channel_names = chs[::ch_gap]
     ax.set_yticks(range(0, len(channel_names) * ch_gap, ch_gap))
     ax.set_yticklabels(channel_names)
+
+    # Set time stamps with adjusted gap
     time_stamps = [round(t, 3) for t in times[::time_gap]]
     ax.set_xticks(range(0, len(time_stamps) * time_gap, time_gap))
     ax.set_xticklabels(time_stamps)
+
+    # Find the zero time index and add a vertical line
     try:
         zero_time_index = np.where(np.array(times) == 0)[0][0]
     except Exception as e:
         times_array = np.array(times)
         zero_time_index = np.abs(times_array).argmin()
+
     ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
-    fig.savefig(fig_save_dir_f, dpi=300)
+
+    # Save the figure
+    fig.savefig(fig_save_dir_fm, dpi=300)
+
 
 def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, **kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]

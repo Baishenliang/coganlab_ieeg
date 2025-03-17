@@ -10,3 +10,4 @@ __pycache__/
 projects/GLM/english_us_lr.dict
 projects/GLM/*.npy
 projects/GLM/data
+projects/GLM/plot

@@ -60,3 +60,5 @@ for i, _ in enumerate(subjs):
     del mask_i_org, mask_null_i
     np.save(f"data\\cluster_mask {subjs[i]} {event} {task_Tag} {glm_fea}.npy", mask_time_clus)
     del mask_time_clus
+    os.remove(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {glm_fea}.npy")
+
