@@ -358,9 +358,8 @@ def plot_wave(data_in,sig_idx,con_label,col):
     data=data_in.__array__()
 
     data_selected = np.full(np.shape(data), np.nan)
-    for i in range(len(data_selected)):
-        if sig_idx[i]==1:
-            data_selected[i] = data[i]
+    for i in sig_idx:
+        data_selected[i] = data[i]
 
     # Select a few key time points for labeling
     num_ticks = 6  # Adjust as needed
@@ -369,21 +368,15 @@ def plot_wave(data_in,sig_idx,con_label,col):
 
     # Compute the mean and SEM across trials while ignoring NaNs
     mean_waveform = np.nanmean(data_selected, axis=0)
+    # Baseline correction (should remove this)
+    mean_waveform = mean_waveform - np.min(mean_waveform)
     sem_waveform = np.nanstd(data_selected, axis=0) / np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
 
-    # # Plot the mean waveform
-    # plt.plot(times, mean_waveform, label=con_label, color=col)
-    #
-    # # Add shaded region for SEM
-    # plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)
-
     # Plot the mean waveform
-    plt.plot(times, data_selected.transpose(), label=con_label, color=col)
+    plt.plot(times, mean_waveform, label=con_label, color=col)
 
-    # Labels and title
-    plt.axhline(0, color='k', linestyle='--', linewidth=1)  # Zero-line
+    # Add shaded region for SEM
+    plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)
+
     plt.xlabel('Time (s)')
-    plt.xticks(tick_labels)  # Set fewer time labels
-    plt.ylabel('Z-score')
-    plt.legend()
-    plt.show()
+    plt.xticks(tick_labels)

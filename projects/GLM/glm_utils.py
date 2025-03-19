@@ -78,6 +78,8 @@ def fifread(event,stat,task_Tag):
             data_i = epochs[f'Auditory_stim/{task_Tag}/CORRECT'].get_data()
         elif event == 'Resp':
             data_i = epochs[f'Resp/{task_Tag}/CORRECT'].get_data()
+        elif event == 'Go':
+            data_i = epochs[f'Go/{task_Tag}/CORRECT'].get_data()
         if i == 0:
             times = epochs.times
         chs_i = epochs.ch_names
@@ -161,15 +163,20 @@ def aaron_perm_gt_1d(diff, axis=0):
 def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times):
 
     from ieeg.arrays.label import LabeledArray
-    data_lst = []
+    mask_lst = []
+    stat_lst = []
 
     for i, subject in enumerate(subjs):
-        subj_dataset = np.load(os.path.join('data',f'{masktype} {subject} {event} {task_Tag} {glm_fea}.npy'))
-        data_lst.append(subj_dataset)
+        subj_mask = np.load(os.path.join('data',f'{masktype} {subject} {event} {task_Tag} {glm_fea}.npy'))
+        subj_stat = np.load(os.path.join('data',f'org_r2 {subject} {event} {task_Tag} {glm_fea}.npy'))
+        mask_lst.append(subj_mask)
+        stat_lst.append(subj_stat)
 
-    data_raw = np.concatenate(data_lst, axis=0)
+    mask_raw = np.concatenate(mask_lst, axis=0)
+    stat_raw = np.concatenate(stat_lst, axis=0)
     chs = np.concatenate(chs, axis=0)
     labels = [chs, times]
-    data=LabeledArray(data_raw, labels)
+    masks=LabeledArray(mask_raw, labels)
+    stats=LabeledArray(stat_raw, labels)
 
-    return data,subjs
+    return masks,stats,subjs

@@ -51,6 +51,7 @@ for i, data_i in enumerate(data_list):
     # combine original and permute r2
     feature_mat_i = filtered_events_list[i][:, :, feature_seleted]
     r2_i = glm.compute_r2_loop(feature_mat_i, data_i)
+    np.save(f'data\\org_r2 {subjs[i]} {event} {task_Tag} {glm_fea}.npy', r2_i)
     r2_i = np.expand_dims(r2_i, axis=0)
     null_r2_i = np.load(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {glm_fea}.npy")
     r2s_i = np.concatenate([r2_i, null_r2_i], axis=0)
