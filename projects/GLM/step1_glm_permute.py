@@ -36,8 +36,10 @@ for i, data_i in enumerate(data_list):
     # feature_mat_i: feature matrix, observations * channels * features
     # data_i: eeg data matrix, observations * channels * times
     print(f"Generate null distribution Patient {subjs[i]}")
-    feature_mat_i = filtered_events_list[i][:,:,feature_seleted]
-    null_r2 = glm.permutation_baishen_parallel(feature_mat_i, data_i, n_perms)
+    # Get the residuals of data and seleted features controlling out unseleted features
+    feature_mat_i_res,data_i_res = glm.par_regress(filtered_events_list[i],feature_seleted,data_i)
+    # Get null distribution
+    null_r2 = glm.permutation_baishen_parallel(feature_mat_i_res, data_i_res, n_perms)
     # save the null distribution
     np.save(os.path.join('data',f'null_r2 {subjs[i]} {event} {task_Tag} {glm_fea}.npy'), null_r2)
     del null_r2
@@ -49,8 +51,9 @@ for i, data_i in enumerate(data_list):
     # r2_i: r2 matrix, channels * features * times
     print(f"Getting uncorrected significance: Patient {subjs[i]}")
     # combine original and permute r2
-    feature_mat_i = filtered_events_list[i][:, :, feature_seleted]
-    r2_i = glm.compute_r2_loop(feature_mat_i, data_i)
+    # Get the residuals of data and seleted features controlling out unseleted features
+    feature_mat_i_res,data_i_res = glm.par_regress(filtered_events_list[i],feature_seleted,data_i)
+    r2_i,_ = glm.compute_r2_loop(feature_mat_i_res, data_i_res)
     np.save(f'data\\org_r2 {subjs[i]} {event} {task_Tag} {glm_fea}.npy', r2_i)
     r2_i = np.expand_dims(r2_i, axis=0)
     null_r2_i = np.load(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {glm_fea}.npy")
