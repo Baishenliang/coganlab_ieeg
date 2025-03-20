@@ -380,3 +380,19 @@ def plot_wave(data_in,sig_idx,con_label,col):
 
     plt.xlabel('Time (s)')
     plt.xticks(tick_labels)
+
+def set2arr(set,arr_len):
+    """
+    Change set to one-zero array
+    Args:
+        set: the set
+        arr_len: length of array
+
+    Returns:
+        arr: the one-zero array
+
+    """
+    import numpy as np
+    arr=np.zeros(arr_len,dtype=int)
+    arr[list(set)]=1
+    return arr

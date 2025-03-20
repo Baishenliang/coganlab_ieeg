@@ -10,6 +10,7 @@ if current_dir != script_dir:
 import sys
 import pandas as pd
 import glm_utils as glm
+import numpy as np
 import itertools
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
@@ -30,6 +31,9 @@ delay_len=0.5
 # motor_resp_win=[0.25,0.75]
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
+Acoustic_col = [255/255, 140/255, 0/255]    # (Dark Orange)
+Phonemic_col = [138/255, 43/255, 226/255]   # (Violet)
+Lexical_col = [50/255, 205/255, 50/255]     # (Lime Green)
 
 #%% Load masks, sort, getting sort index, and plot the ranks
 # sig_idx_arr=np.empty((len(events), len(task_Tags),len(glm_feas),4), dtype=object)
@@ -69,9 +73,9 @@ for event, task_Tag in itertools.product(events,task_Tags):
 #%% plot significant electrodes
 for md in ['all','aud','del']:
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
-    gp.plot_wave(stass['Auditory/Repeat/Acoustic'], sig_idx[f"Auditory/Repeat/Acoustic/{md}"], 'Acoustic','r')
-    gp.plot_wave(stass['Auditory/Repeat/Phonemic'], sig_idx[f"Auditory/Repeat/Phonemic/{md}"], 'Phonemic','g')
-    gp.plot_wave(stass['Auditory/Repeat/Lexical'], sig_idx[f"Auditory/Repeat/Lexical/{md}"], 'Lexical', 'b')
+    gp.plot_wave(stass['Auditory/Repeat/Acoustic'], sig_idx[f"Auditory/Repeat/Acoustic/{md}"], 'Acoustic',Acoustic_col)
+    gp.plot_wave(stass['Auditory/Repeat/Phonemic'], sig_idx[f"Auditory/Repeat/Phonemic/{md}"], 'Phonemic',Phonemic_col)
+    gp.plot_wave(stass['Auditory/Repeat/Lexical'], sig_idx[f"Auditory/Repeat/Lexical/{md}"], 'Lexical', Lexical_col)
     plt.axvline(x=0, linestyle='--', color='k')
     plt.title(f'Lexical Repeat Delay {md}')
     plt.ylabel('GLM R^2 bsl corrected (-min)')
@@ -79,9 +83,9 @@ for md in ['all','aud','del']:
     plt.savefig(os.path.join('plot',f'wave auditory onset {md}.jpg'))
 
 plt.figure(figsize=(Waveplot_wth * (150 / 350), Waveplot_hgt))
-gp.plot_wave(stass['Resp/Repeat/Acoustic'], sig_idx[f"Resp/Repeat/Acoustic/resp"], 'Acoustic', 'r')
-gp.plot_wave(stass['Resp/Repeat/Phonemic'], sig_idx[f"Resp/Repeat/Phonemic/resp"], 'Phonemic', 'g')
-gp.plot_wave(stass['Resp/Repeat/Lexical'], sig_idx[f"Resp/Repeat/Lexical/resp"], 'Lexical', 'b')
+gp.plot_wave(stass['Resp/Repeat/Acoustic'], sig_idx[f"Resp/Repeat/Acoustic/resp"], 'Acoustic', Acoustic_col)
+gp.plot_wave(stass['Resp/Repeat/Phonemic'], sig_idx[f"Resp/Repeat/Phonemic/resp"], 'Phonemic', Phonemic_col)
+gp.plot_wave(stass['Resp/Repeat/Lexical'], sig_idx[f"Resp/Repeat/Lexical/resp"], 'Lexical', Lexical_col)
 plt.axvline(x=0, linestyle='--', color='k')
 plt.title('Lexical Repeat Delay resp')
 plt.ylabel('GLM R^2 bsl corrected (-min)')
@@ -118,3 +122,34 @@ sns.heatmap(conf_matrix, annot=True, fmt=".2f",cmap="rocket_r", xticklabels=shor
 plt.title("Shared encoding electrodes across features and phase (%)")
 
 plt.savefig(os.path.join('plot', f'GLM electrode sharing.jpg'))
+
+#%% Plot brain
+chs_all = np.concatenate(chs, axis=0)
+
+for TypeLabel, chs_ov, base_sig, spec_sig in zip(
+        ('Auditory', 'Delay', 'Response'),
+        ([100, 10, 1], [100, 10, 1], [100, 10, 1]),
+        (np.ones(len(chs_all),dtype=int),np.ones(len(chs_all),dtype=int),np.ones(len(chs_all),dtype=int)),
+        ([sig_idx["Auditory/Repeat/Acoustic/aud"],sig_idx["Auditory/Repeat/Phonemic/aud"],sig_idx["Auditory/Repeat/Lexical/aud"]],
+         [sig_idx["Auditory/Repeat/Acoustic/del"],sig_idx["Auditory/Repeat/Phonemic/del"],sig_idx["Auditory/Repeat/Lexical/del"]],
+         [sig_idx["Resp/Repeat/Acoustic/resp"],sig_idx["Resp/Repeat/Phonemic/resp"],sig_idx["Resp/Repeat/Lexical/resp"]])
+):
+
+    color_map = {
+        100: Acoustic_col,
+        10: Phonemic_col,
+        1: Lexical_col
+    }
+
+    chs_col_idx = [
+        int(chs_ov[0] * gp.set2arr(spec_sig[0],len(chs_all))[i] + chs_ov[1] * gp.set2arr(spec_sig[1],len(chs_all))[i] + chs_ov[2] * gp.set2arr(spec_sig[2],len(chs_all))[i])
+        for i in range(len(chs_all))]
+    picks = [i for i in range(len(chs_all)) if base_sig[i] == 1]
+    pick_labels = [str(chs_all[i]) for i in range(len(chs_all)) if base_sig[i] == 1]
+    # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
+    chs_cols = [color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(chs_all))]
+    chs_cols_picked = [chs_cols[i] for i in picks]
+
+    # TRY also to plot valid (white?) vs. invalid electrodes (dark grey)
+    gp.plot_brain(subjs, pick_labels, chs_cols_picked, 0,
+               os.path.join('plot', f'GLM electrode loc {TypeLabel}.jpg'))
