@@ -25,6 +25,7 @@ n_perms = config['n_perms']
 event = config['event']
 stat = config['stat']
 task_Tag = config['task_Tag']
+wordness = config['wordness']
 glm_fea = config['glm_fea']
 f_ranges = config['feature_ranges'][glm_fea]
 
@@ -33,14 +34,14 @@ if len(f_ranges) == 1:
 else:
     feature_seleted = np.r_[0, f_ranges[0]:f_ranges[1]]
 
-subjs, _, _, chs, _ = glm.fifread(event,stat,task_Tag)
+subjs, _, _, chs, _ = glm.fifread(event,stat,task_Tag,wordness)
 
 for i, _ in enumerate(subjs):
     print(f"Time cluster: Patient {subjs[i]}")
 
     # %% Generate null significant matrix (nperms*channels*times) (GLM_one_perm_from_null vs. GLM_null)
     # shape: (n_perms, channels, times)
-    null_r2_i = np.load(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {glm_fea}.npy")
+    null_r2_i = np.load(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy")
     # Get the significancy for each permutation that is with **Larger** r2s than null distribution
     mask_null_i=(glm.aaron_perm_gt_1d(null_r2_i, axis=0)>(1-alpha)).astype(int)
     del null_r2_i
@@ -58,7 +59,7 @@ for i, _ in enumerate(subjs):
     for chs in range(mask_i_org.shape[0]):
         mask_time_clus[chs, :] = time_cluster(mask_i_org[chs, :], mask_null_i[:, chs, :], 1 - alpha_clus)
     del mask_i_org, mask_null_i
-    np.save(f"data\\cluster_mask {subjs[i]} {event} {task_Tag} {glm_fea}.npy", mask_time_clus)
+    np.save(f"data\\cluster_mask {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy", mask_time_clus)
     del mask_time_clus
-    os.remove(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {glm_fea}.npy")
+    os.remove(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy")
 

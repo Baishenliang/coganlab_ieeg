@@ -15,7 +15,7 @@ from joblib import Parallel, delayed
 
 #%% Functions
 
-def fifread(event,stat,task_Tag):
+def fifread(event,stat,task_Tag,wordness):
 
     fif_name=f'{event}_{stat}-epo.fif'
 
@@ -61,9 +61,16 @@ def fifread(event,stat,task_Tag):
         files_sorted = sorted(files, key=lambda x: [int(i) for i in re.findall(r'acq-(\d+)_run-(\d+)', x)[0]])
         dfs = [pd.read_csv(f, sep='\t') for f in files_sorted]
         events_df = pd.concat(dfs, ignore_index=True)
-        filtered_events_i = events_df[events_df['trial_type'].str.contains(event)
-                                      & events_df['trial_type'].str.contains('CORRECT')
-                                      & events_df['trial_type'].str.contains(task_Tag)].reset_index(drop=True)
+        if wordness=='ALL':
+            filtered_events_i = events_df[events_df['trial_type'].str.contains(event)
+                                          & events_df['trial_type'].str.contains('CORRECT')
+                                          & events_df['trial_type'].str.contains(task_Tag)].reset_index(drop=True)
+        else:
+            filtered_events_i = events_df[events_df['trial_type'].str.contains(event)
+                                          & events_df['trial_type'].str.contains('CORRECT')
+                                          & events_df['trial_type'].str.contains(task_Tag)
+                                          & events_df['trial_type'].str.contains(wordness)].reset_index(drop=True)
+
         trial_split = filtered_events_i['trial_type'].str.split('/', expand=True)
         trial_split.columns = ['Stage', 'RepYesNo', 'Wordness', 'Stim', 'Correctness']
         filtered_events_i = pd.concat([filtered_events_i, trial_split], axis=1)
@@ -75,11 +82,11 @@ def fifread(event,stat,task_Tag):
 
         # Get data
         if event == 'Auditory':
-            data_i = epochs[f'Auditory_stim/{task_Tag}/CORRECT'].get_data()
+            data_i = epochs[f'Auditory_stim/{task_Tag}/{wordness}/CORRECT'].get_data()
         elif event == 'Resp':
-            data_i = epochs[f'Resp/{task_Tag}/CORRECT'].get_data()
+            data_i = epochs[f'Resp/{task_Tag}/{wordness}/CORRECT'].get_data()
         elif event == 'Go':
-            data_i = epochs[f'Go/{task_Tag}/CORRECT'].get_data()
+            data_i = epochs[f'Go/{task_Tag}/{wordness}/CORRECT'].get_data()
         if i == 0:
             times = epochs.times
         chs_i = epochs.ch_names
