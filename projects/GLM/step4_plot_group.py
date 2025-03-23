@@ -51,7 +51,7 @@ stass=dict()
 for event, task_Tag in itertools.product(events,task_Tags):
     subjs, _, _, chs, times = glm.fifread(event, 'zscore', task_Tag)
     for glm_fea in glm_feas:
-        if task_Tag == "Yes_No" and (event != "Resp" or glm_fea != "Lexical"):
+        if task_Tag == "Yes_No" and glm_fea != "Lexical":# (event != "Resp" or glm_fea != "Lexical"):
             continue
         else:
             masks,stats,_=glm.load_stats(event,stat,task_Tag,'cluster_mask',glm_fea,subjs,chs,times)
@@ -83,6 +83,7 @@ for md in ['all','aud','del']:
     gp.plot_wave(stass['Auditory/Repeat/Acoustic'], sig_idx[f"Auditory/Repeat/Acoustic/{md}"], 'Acoustic',Acoustic_col)
     gp.plot_wave(stass['Auditory/Repeat/Phonemic'], sig_idx[f"Auditory/Repeat/Phonemic/{md}"], 'Phonemic',Phonemic_col)
     gp.plot_wave(stass['Auditory/Repeat/Lexical'], sig_idx[f"Auditory/Repeat/Lexical/{md}"], 'Lexical', Lexical_col)
+    gp.plot_wave(stass['Auditory/Yes_No/Lexical'], sig_idx[f"Auditory/Yes_No/Lexical/{md}"], 'Lexical_YesNo', 'b')
     plt.axvline(x=0, linestyle='--', color='k')
     plt.title(f'Lexical Repeat Delay {md}')
     plt.ylabel('GLM R^2 bsl corrected (-min)')
@@ -93,6 +94,8 @@ plt.figure(figsize=(Waveplot_wth * (150 / 350), Waveplot_hgt))
 gp.plot_wave(stass['Resp/Repeat/Acoustic'], sig_idx[f"Resp/Repeat/Acoustic/resp"], 'Acoustic', Acoustic_col)
 gp.plot_wave(stass['Resp/Repeat/Phonemic'], sig_idx[f"Resp/Repeat/Phonemic/resp"], 'Phonemic', Phonemic_col)
 gp.plot_wave(stass['Resp/Repeat/Lexical'], sig_idx[f"Resp/Repeat/Lexical/resp"], 'Lexical', Lexical_col)
+gp.plot_wave(stass['Resp/Yes_No/Lexical'], sig_idx[f"Resp/Yes_No/Lexical/resp"], 'Lexical_YesNo', 'b')
+
 plt.axvline(x=0, linestyle='--', color='k')
 plt.title('Lexical Repeat Delay resp')
 plt.ylabel('GLM R^2 bsl corrected (-min)')
