@@ -51,7 +51,7 @@ for i, _ in enumerate(subjs):
     # data_i: eeg data matrix, observations * channels * times
     # r2_i: r2 matrix, channels * features * times
     # load original masks and null masks
-    mask_i_org = np.load(f'data\\org_mask {subjs[i]} {event} {task_Tag} {glm_fea}.npy')
+    mask_i_org = np.load(f'data\\org_mask {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy')
     # run time cluster correction
     # The output p_time_clus tells how **LARGER** the clusters in the real mask are as compared with the clusters in the permuted masks
     # The larger the values, the higher the probabilities are
