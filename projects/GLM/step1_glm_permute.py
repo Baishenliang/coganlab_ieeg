@@ -18,10 +18,11 @@ with open('glm_config.json', 'r') as f:
 alpha = config['alpha']
 alpha_clus = config['alpha_clus']
 n_perms = config['n_perms']
-event = config['event']
-stat = config['stat']
-task_Tag = config['task_Tag']
-glm_fea = config['glm_fea']
+event = config['event'] # Auditory, Go, Resp
+stat = config['stat'] # zscore, power
+task_Tag = config['task_Tag'] # Reapeat, Yes_No
+wordness = config['wordness'] # ALL, Word, Nonword
+glm_fea = config['glm_fea'] # Acoustic, Phonemic, Lexical
 f_ranges = config['feature_ranges'][glm_fea]
 
 if len(f_ranges) == 1:
@@ -29,7 +30,7 @@ if len(f_ranges) == 1:
 else:
     feature_seleted = np.r_[0, f_ranges[0]:f_ranges[1]]
 
-subjs, data_list, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag)
+subjs, data_list, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
 
 #%% Generate null distributions for each patient
 for i, data_i in enumerate(data_list):
@@ -62,7 +63,7 @@ for i, data_i in enumerate(data_list):
     # get significance of the original r2 against the permutation distribution
     # return: mask_left_i_org channels*times
     org_p_i = glm.aaron_perm_gt_1d(r2s_i, axis=0)[0]
-    np.save(f'data\\org_p {subjs[i]} {event} {task_Tag} {glm_fea}.npy', org_p_i)
+    np.save(f'data\\org_p {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', org_p_i)
     mask_i_org = (org_p_i > (1 - alpha)).astype(int)
-    np.save(f'data\\org_mask {subjs[i]} {event} {task_Tag} {glm_fea}.npy', mask_i_org)
+    np.save(f'data\\org_mask {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', mask_i_org)
     del org_p_i, mask_i_org
