@@ -1,4 +1,5 @@
 {
+    "partial_regress": 0,
     "alpha": 0.001,
     "alpha_clus": 0.001,
     "n_perms": 5000,
