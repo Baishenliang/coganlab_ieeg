@@ -31,8 +31,8 @@ Lexical_col = config['Lexical_col']
 
 events = ["Auditory","Resp"]
 stat = "zscore"
-task_Tags = ["Repeat","Yes_No"]
-wordnesses = ["ALL", "Word", "Nonword"]
+task_Tags = ["Repeat"]#,"Yes_No"]
+wordnesses = ["ALL"]#["ALL", "Word", "Nonword"]
 glm_feas = ["Acoustic","Phonemic","Lexical"]
 cluster_twin=0.011
 mean_word_len=0.62
@@ -40,7 +40,7 @@ auditory_decay=0.4
 delay_len=0.5
 # motor_prep_win=[-0.5,-0.1]
 # motor_resp_win=[0.25,0.75]
-Waveplot_wth=10 # Width of wave plots
+Waveplot_wth=18 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
 
 #%% Load masks, sort, getting sort index, and plot the ranks
@@ -57,7 +57,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
         if wordness != "ALL" and glm_fea == "Lexical":
             continue
         else:
-            masks,stats,_=glm.load_stats(event,stat,task_Tag,'cluster_mask',glm_fea,subjs,chs,times)
+            masks,stats,_=glm.load_stats(event,stat,task_Tag,'cluster_mask',glm_fea,subjs,chs,times,wordness)
             stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats
             if event=='Auditory':
                 # whole trial
@@ -81,31 +81,62 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/resp"] = resp_masks_sig
 
 #%% plot significant electrodes
-for md in ['all','aud','del']:
-    plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+for md,md_Tag in zip(['all','aud','del'],['whole trial','auditory window','delay window']):
+    if md=='all':
+        wid_scale=1
+    elif md=='aud':
+        xlim_l=-0.1
+        xlim_r=mean_word_len + auditory_decay
+        wid_scale=(xlim_r-xlim_l)*100/350
+    elif md=='del':
+        xlim_l=0.5
+        xlim_r=1.5
+        wid_scale = (xlim_r - xlim_l)*100/350
+    plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
     gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Acoustic'], sig_idx[f"Auditory/Repeat/{wordness}/Acoustic/{md}"], 'Acoustic',Acoustic_col)
     gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Phonemic'], sig_idx[f"Auditory/Repeat/{wordness}/Phonemic/{md}"], 'Phonemic',Phonemic_col)
     if wordness == 'ALL':
-        gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Lexical'], sig_idx[f"Auditory/Repeat/{wordness}/Lexical/{md}"], 'Lexical', Lexical_col)
-        gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Lexical'], sig_idx[f"Auditory/Yes_No/{wordness}/Lexical/{md}"], 'Lexical_YesNo', 'b')
+        gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Lexical'], sig_idx[f"Auditory/Repeat/{wordness}/Lexical/{md}"], 'Lexical status', Lexical_col)
+        # gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Lexical'], sig_idx[f"Auditory/Yes_No/{wordness}/Lexical/{md}"], 'Lexical status in Decision', 'b')
     plt.axvline(x=0, linestyle='--', color='k')
-    plt.title(f'Lexical Repeat Delay {md}')
-    plt.ylabel('GLM R^2 bsl corrected (-min)')
-    plt.legend()
-    plt.savefig(os.path.join('plot',f'wave auditory onset {md}.jpg'))
+    plt.axhline(y=0, linestyle='--', color='k')
+    if wordness == 'ALL':
+        wordness_Tag = 'Word & Nonword'
+    else:
+        wordness_Tag = wordness
+    plt.title(f'GLM:  {wordness_Tag} in {md_Tag}')
+    plt.ylabel(r'R$^2$ bsl corrected')
+    plt.xlabel('Time from auditory onset (s)')
+    plt.gca().spines[['top', 'right']].set_visible(False)
+    if md == 'aud' or md=='del':
+        plt.xlim(xlim_l, xlim_r)
+    plt.tight_layout()
+    plt.savefig(os.path.join('plot',f'wave auditory onset {wordness} {md}.tif'),dpi=300)
 
-plt.figure(figsize=(Waveplot_wth * (150 / 350), Waveplot_hgt))
+xlim_l = -0.2
+xlim_r = mean_word_len
+wid_scale = (xlim_r - xlim_l)*100/350
+plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
 gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Acoustic'], sig_idx[f"Resp/Repeat/{wordness}/Acoustic/resp"], 'Acoustic', Acoustic_col)
 gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Phonemic'], sig_idx[f"Resp/Repeat/{wordness}/Phonemic/resp"], 'Phonemic', Phonemic_col)
 if wordness == 'ALL':
-    gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Lexical'], sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"], 'Lexical', Lexical_col)
-    gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"], 'Lexical_YesNo', 'b')
+    gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Lexical'], sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"], 'Lexical status', Lexical_col)
+    # gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"], 'Lexical status in Decision', 'b')
+if wordness == 'ALL':
+    wordness_Tag = 'Word & Nonword'
+else:
+    wordness_Tag = wordness
 
 plt.axvline(x=0, linestyle='--', color='k')
-plt.title('Lexical Repeat Delay resp')
+plt.axhline(y=0, linestyle='--', color='k')
+plt.title(f'GLM:  {wordness_Tag} in resp window')
 plt.ylabel('GLM R^2 bsl corrected (-min)')
+plt.gca().spines[['top', 'right']].set_visible(False)
 plt.legend()
-plt.savefig(os.path.join('plot', f'wave motor onset in {wordness}.jpg'))
+plt.xlim(xlim_l, xlim_r)
+plt.xlabel('Time from motor onset (s)')
+plt.tight_layout()
+plt.savefig(os.path.join('plot', f'wave motor onset in {wordness}.tif'),dpi=300)
 
 with open(os.path.join('data', 'sig_idx.npy'), "wb") as f:
     pickle.dump(sig_idx, f)
@@ -132,11 +163,11 @@ for wordness in wordnesses:
             f"Auditory/Repeat/{wordness}/Acoustic/del",
             f"Auditory/Repeat/{wordness}/Phonemic/del",
             f"Resp/Repeat/{wordness}/Acoustic/resp",
-            f"Resp/Repeat/{wordness}/Phonemic/resp",
+            f"Resp/Repeat/{wordness}/Phonemic/resp"
          ]
 
     filtered_sets = {key: sig_idx[key] for key in keys_of_interest}
-    short_names = {key: "/".join(key.split("/")[-2:]) for key in keys_of_interest}
+    short_names = {key: "\n".join(key.split("/")[-2:]).replace('del', 'Delay').replace('aud', 'Auditory').replace('resp', 'Response') for key in keys_of_interest}
     conf_matrix = pd.DataFrame(index=short_names.values(), columns=short_names.values())
 
     for key1 in keys_of_interest:
@@ -145,10 +176,12 @@ for wordness in wordnesses:
 
     conf_matrix = conf_matrix.astype(float)
 
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(10, 10))
     sns.heatmap(conf_matrix, annot=True, fmt=".2f",cmap="rocket_r", xticklabels=short_names.values(),
-                    yticklabels=short_names.values(), annot_kws={"size": 12},vmin=0, vmax=100)
+                    yticklabels=short_names.values(), annot_kws={"size": 14},vmin=0, vmax=100,cbar=False)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
 
-    plt.title("Shared encoding electrodes across features and phase (%)")
-
-    plt.savefig(os.path.join('plot', f'GLM electrode sharing in {wordness}.jpg'))
+    plt.title("Shared encoding electrodes across features and phase (%)",fontsize=18)
+    plt.tight_layout()
+    plt.savefig(os.path.join('plot', f'GLM electrode sharing in {wordness}.tif'),dpi=300)

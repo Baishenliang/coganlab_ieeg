@@ -1,13 +1,13 @@
 {
-    "partial_regress": 1,
+    "partial_regress": 0,
     "alpha": 0.05,
     "alpha_clus": 0.05,
-    "n_perms": 20000,
-    "event": "Auditory",
+    "n_perms": 10000,
+    "event": "Resp",
     "stat": "zscore",
     "task_Tag": "Repeat",
     "glm_fea": "Phonemic",
-    "wordness": "Word",
+    "wordness": "Nonword",
     "feature_ranges": {
         "Lexical": [1],
         "Acoustic": [34, 50],

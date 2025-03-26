@@ -81,14 +81,24 @@ def fifread(event,stat,task_Tag,wordness):
             filtered_events_i = filtered_events_i[:-1]
 
         # Get data
-        if event == 'Auditory':
-            data_i = epochs[f'Auditory_stim/{task_Tag}/{wordness}/CORRECT'].get_data()
-        elif event == 'Resp':
-            data_i = epochs[f'Resp/{task_Tag}/{wordness}/CORRECT'].get_data()
-        elif event == 'Go':
-            data_i = epochs[f'Go/{task_Tag}/{wordness}/CORRECT'].get_data()
-        if i == 0:
-            times = epochs.times
+        if wordness == 'ALL':
+            if event == 'Auditory':
+                data_i = epochs[f'Auditory_stim/{task_Tag}/CORRECT'].get_data()
+            elif event == 'Resp':
+                data_i = epochs[f'Resp/{task_Tag}/CORRECT'].get_data()
+            elif event == 'Go':
+                data_i = epochs[f'Go/{task_Tag}/CORRECT'].get_data()
+            if i == 0:
+                times = epochs.times
+        else:
+            if event == 'Auditory':
+                data_i = epochs[f'Auditory_stim/{task_Tag}/{wordness}/CORRECT'].get_data()
+            elif event == 'Resp':
+                data_i = epochs[f'Resp/{task_Tag}/{wordness}/CORRECT'].get_data()
+            elif event == 'Go':
+                data_i = epochs[f'Go/{task_Tag}/{wordness}/CORRECT'].get_data()
+            if i == 0:
+                times = epochs.times
         chs_i = epochs.ch_names
         chs_i = [f"{subject_label_chs}-{ch}" for ch in chs_i]
 
@@ -195,15 +205,15 @@ def aaron_perm_gt_1d(diff, axis=0):
     return proportions[sorted_indices.argsort(axis=axis)]
 
 
-def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times):
+def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness):
 
     from ieeg.arrays.label import LabeledArray
     mask_lst = []
     stat_lst = []
 
     for i, subject in enumerate(subjs):
-        subj_mask = np.load(os.path.join('data',f'{masktype} {subject} {event} {task_Tag} {glm_fea}.npy'))
-        subj_stat = np.load(os.path.join('data',f'org_r2 {subject} {event} {task_Tag} {glm_fea}.npy'))
+        subj_mask = np.load(os.path.join('data',f'{masktype} {subject} {event} {task_Tag} {wordness} {glm_fea}.npy'))
+        subj_stat = np.load(os.path.join('data',f'org_r2 {subject} {event} {task_Tag} {wordness} {glm_fea}.npy'))
         mask_lst.append(subj_mask)
         stat_lst.append(subj_stat)
 

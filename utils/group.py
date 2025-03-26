@@ -362,14 +362,12 @@ def plot_wave(data_in,sig_idx,con_label,col):
         data_selected[i] = data[i]
 
     # Select a few key time points for labeling
-    num_ticks = 6  # Adjust as needed
-    tick_positions = np.linspace(0, len(times) - 1, num_ticks).astype(int)  # Select indices
-    tick_labels = [times[a] for a in tick_positions]  # Get corresponding time labels
+    tick_labels = [t for t in times if t % 0.25 == 0]  # Keep only multiples of 0.5
 
     # Compute the mean and SEM across trials while ignoring NaNs
     mean_waveform = np.nanmean(data_selected, axis=0)
     # Baseline correction (should remove this)
-    mean_waveform = mean_waveform - np.min(mean_waveform)
+    mean_waveform = mean_waveform - np.mean(mean_waveform[:51])
     sem_waveform = np.nanstd(data_selected, axis=0) / np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
 
     # Plot the mean waveform
