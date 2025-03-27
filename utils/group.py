@@ -1,3 +1,6 @@
+from pyqtgraph.util.cprint import color
+
+
 def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
     """
     Load patient level stats files (e.g., *.fif) for further group level analysis
@@ -259,14 +262,38 @@ def plot_chs(data_in, fig_save_dir_fm,title):
 
     # Save the figure
     fig.savefig(fig_save_dir_fm, dpi=300)
+    plt.close()
 
 
 def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, **kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
     fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',
-                            label_every=label_every, size=0.2, **kwargs)
-    # fig3d.save_image(fig_save_dir_f)
+                            label_every=label_every, size=0.5, **kwargs)
+    #fig3d.save_image(fig_save_dir_f)
+
+def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
+    label2atlas={ch_sel: label2atlas_raw[ch_sel] for ch_sel in chs_sel}
+    import matplotlib.pyplot as plt
+    # Count the number of keys for each value
+    value_counts = {}
+    for key, value in label2atlas.items():
+        if value in value_counts:
+            value_counts[value] += 1
+        else:
+            value_counts[value] = 1
+
+    # Create the bar plot
+    plt.figure(figsize=(15, 10))  # Make the figure size large enough for labeling
+    # Sort the values by their count in descending order
+    sorted_values = sorted(value_counts.items(), key=lambda x: x[1], reverse=True)
+    # Create the bar plot
+    plt.bar([item[0] for item in sorted_values], [item[1] for item in sorted_values],color=col)
+    plt.xlabel('Atlas')
+    plt.ylabel('Number of Electrodes')
+    plt.show()
+    plt.savefig(fig_save_dir_fm, dpi=300)
+    plt.close()
 
 def find_com_sig_chs(data1_labels, data1_sig_idx, data2_labels, data2_sig_idx):
     """
@@ -347,7 +374,7 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
 
     return aligned_data, aligned_chs
 
-def plot_wave(data_in,sig_idx,con_label,col):
+def plot_wave(data_in,sig_idx,con_label,col,Lstyle):
 
     import numpy as np
     import matplotlib.pyplot as plt
@@ -371,7 +398,7 @@ def plot_wave(data_in,sig_idx,con_label,col):
     sem_waveform = np.nanstd(data_selected, axis=0) / np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
 
     # Plot the mean waveform
-    plt.plot(times, mean_waveform, label=con_label, color=col)
+    plt.plot(times, mean_waveform, label=con_label, color=col,linestyle=Lstyle)
 
     # Add shaded region for SEM
     plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)

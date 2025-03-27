@@ -1,5 +1,8 @@
 #%% Import everything
 import os
+
+from sqlalchemy import false
+
 # Relocate the working directory if needed
 # Only need it if run it in an editor. If run in terminal, use cd.
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM\\step1_glm_permute.py')
@@ -41,8 +44,83 @@ delay_len=0.5
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
 
+subjs, _, _, chs, times = glm.fifread("Auditory", 'zscore', 'Repeat', wordnesses[0])
+
+#%% Make Atlas histograms
+from ieeg.viz.mri import subject_to_info,gen_labels
+subjs_s = ['D' + subj[1:].lstrip('0') for subj in subjs]
+ch_labels = dict()
+for subj in subjs_s:
+    info_i = subject_to_info(subj)
+    ch_labels_k = gen_labels(info_i, subj, atlas='.BN_atlas')
+    for key, value in ch_labels_k.items():
+        ch_labels[f'{subj}-{key}'] = value
+
+# Extract relevant columns and create a mapping dictionary
+# Load the CSV file
+df = pd.read_csv('atlas.csv')
+# Create the dictionary
+mapping_dict = {}
+for index, row in df.iterrows():
+    key = str(row['Anatomical and modified Cyto-architectonic descriptions']).split(',')[0]
+    value = str(row['Left and Right Hemisphere']).split('_')[0]
+    mapping_dict[key] = value
+mapping_dict['TE1.0/TE1.2']='STG'
+ch_labels_roi=dict()
+for key,value in ch_labels.items():
+    try:
+        ch_labels_roi[key] = mapping_dict[value.split("_")[0]]
+    except KeyError as e:
+        ch_labels_roi[key] = 'unknown'
+
 #%% Plot brain
+with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
+    sig_idx = pickle.load(f)
+
 for wordness in wordnesses:
+    chs_all = np.concatenate(chs, axis=0)
+    if wordness == 'ALL':
+        keys_of_interest = [
+            "Auditory/Repeat/ALL/Acoustic/aud",
+            "Auditory/Repeat/ALL/Phonemic/aud",
+            "Auditory/Repeat/ALL/Lexical/aud",
+            "Auditory/Repeat/ALL/Acoustic/del",
+            "Auditory/Repeat/ALL/Phonemic/del",
+            "Auditory/Repeat/ALL/Lexical/del",
+            "Resp/Repeat/ALL/Acoustic/resp",
+            "Resp/Repeat/ALL/Phonemic/resp",
+            "Resp/Repeat/ALL/Lexical/resp"
+        ]
+    else:
+        keys_of_interest = [
+            f"Auditory/Repeat/{wordness}/Acoustic/aud",
+            f"Auditory/Repeat/{wordness}/Phonemic/aud",
+            f"Auditory/Repeat/{wordness}/Acoustic/del",
+            f"Auditory/Repeat/{wordness}/Phonemic/del",
+            f"Resp/Repeat/{wordness}/Acoustic/resp",
+            f"Resp/Repeat/{wordness}/Phonemic/resp"
+         ]
+
+    for TypeLabel in keys_of_interest:
+        chs_ov=[100,10,1]
+        sig=sig_idx[TypeLabel]
+        if 'Acoustic' in TypeLabel:
+            col = Acoustic_col
+        elif 'Phonemic' in TypeLabel:
+            col = Phonemic_col
+        elif 'Lexical' in TypeLabel:
+            col = Lexical_col
+        chs_sel=chs_all[list(sig)].tolist()
+        cols=[col]*len(chs_sel)
+        gp.plot_brain(subjs, chs_sel, cols, None,
+                   os.path.join('plot', f'GLM electrode loc {TypeLabel}.jpg'))
+        gp.atlas_hist(ch_labels_roi,chs_sel,col,os.path.join('plot',f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'))
+
+#%% ovelapped plot
+overlap_Plot=False
+for wordness in wordnesses:
+    if not overlap_Plot:
+        continue
     subjs, _, _, chs, times = glm.fifread("Auditory", 'zscore', 'Repeat',wordness)
     with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
         sig_idx = pickle.load(f)

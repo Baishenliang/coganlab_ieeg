@@ -32,7 +32,7 @@ Lexical_col = config['Lexical_col']
 events = ["Auditory","Resp"]
 stat = "zscore"
 task_Tags = ["Repeat"]#,"Yes_No"]
-wordnesses = ["ALL"]#["ALL", "Word", "Nonword"]
+wordnesses = ["ALL", "Word", "Nonword"]
 glm_feas = ["Acoustic","Phonemic","Lexical"]
 cluster_twin=0.011
 mean_word_len=0.62
@@ -81,65 +81,92 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/resp"] = resp_masks_sig
 
 #%% plot significant electrodes
-for md,md_Tag in zip(['all','aud','del'],['whole trial','auditory window','delay window']):
-    if md=='all':
-        wid_scale=1
-    elif md=='aud':
-        xlim_l=-0.1
-        xlim_r=mean_word_len + auditory_decay
-        wid_scale=(xlim_r-xlim_l)*100/350
-    elif md=='del':
-        xlim_l=0.5
-        xlim_r=1.5
-        wid_scale = (xlim_r - xlim_l)*100/350
+for wordness in wordnesses[:2]:
+    for md,md_Tag in zip(['all','aud','del'],['whole trial','auditory window','delay window']):
+        if md=='all':
+            wid_scale=1
+        elif md=='aud':
+            xlim_l=-0.1
+            xlim_r=mean_word_len + auditory_decay
+            wid_scale=(xlim_r-xlim_l)*100/350
+        elif md=='del':
+            xlim_l=0.5
+            xlim_r=1.5
+            wid_scale = (xlim_r - xlim_l)*100/350
+        plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
+        if wordness == 'ALL':
+            gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Acoustic'], sig_idx[f"Auditory/Repeat/{wordness}/Acoustic/{md}"],
+                         'Acoustic', Acoustic_col, '-')
+            gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Phonemic'], sig_idx[f"Auditory/Repeat/{wordness}/Phonemic/{md}"],
+                         'Phonemic', Phonemic_col, '-')
+            gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Lexical'], sig_idx[f"Auditory/Repeat/{wordness}/Lexical/{md}"],
+                         'Lexical status', Lexical_col, '-')
+            # gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Lexical'], sig_idx[f"Auditory/Yes_No/{wordness}/Lexical/{md}"], 'Lexical status in Decision', 'b')
+        elif wordness == 'Word':
+            gp.plot_wave(stass[f'Auditory/Repeat/Word/Acoustic'], sig_idx[f"Auditory/Repeat/Word/Acoustic/{md}"],
+                         'Acoustic_Word', Acoustic_col, '-')
+            gp.plot_wave(stass[f'Auditory/Repeat/Word/Phonemic'], sig_idx[f"Auditory/Repeat/Word/Phonemic/{md}"],
+                         'Phonemic_Word', Phonemic_col, '-')
+            gp.plot_wave(stass[f'Auditory/Repeat/Nonword/Acoustic'], sig_idx[f"Auditory/Repeat/Nonword/Acoustic/{md}"],
+                         'Acoustic_Nonword', Acoustic_col, '--')
+            gp.plot_wave(stass[f'Auditory/Repeat/Nonword/Phonemic'], sig_idx[f"Auditory/Repeat/Nonword/Phonemic/{md}"],
+                         'Phonemic_Nonword', Phonemic_col, '--')
+        plt.axvline(x=0, linestyle='--', color='k')
+        plt.axhline(y=0, linestyle='--', color='k')
+        if wordness == 'ALL':
+            wordness_Tag = 'Word & Nonword'
+        else:
+            wordness_Tag = 'Word or Nonword'
+        plt.title(f'GLM:  {wordness_Tag} in {md_Tag}')
+        plt.ylabel(r'R$^2$ bsl corrected')
+        plt.xlabel('Time from auditory onset (s)')
+        plt.gca().spines[['top', 'right']].set_visible(False)
+        if md == 'aud' or md=='del':
+            plt.xlim(xlim_l, xlim_r)
+        plt.tight_layout()
+        plt.savefig(os.path.join('plot',f'wave auditory onset {wordness} {md}.tif'),dpi=300)
+        plt.close()
+
+    xlim_l = -0.2
+    xlim_r = mean_word_len
+    wid_scale = (xlim_r - xlim_l)*100/350
     plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
-    gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Acoustic'], sig_idx[f"Auditory/Repeat/{wordness}/Acoustic/{md}"], 'Acoustic',Acoustic_col)
-    gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Phonemic'], sig_idx[f"Auditory/Repeat/{wordness}/Phonemic/{md}"], 'Phonemic',Phonemic_col)
     if wordness == 'ALL':
-        gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Lexical'], sig_idx[f"Auditory/Repeat/{wordness}/Lexical/{md}"], 'Lexical status', Lexical_col)
-        # gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Lexical'], sig_idx[f"Auditory/Yes_No/{wordness}/Lexical/{md}"], 'Lexical status in Decision', 'b')
-    plt.axvline(x=0, linestyle='--', color='k')
-    plt.axhline(y=0, linestyle='--', color='k')
+        gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Acoustic'], sig_idx[f"Resp/Repeat/{wordness}/Acoustic/resp"],
+                     'Acoustic', Acoustic_col, '-')
+        gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Phonemic'], sig_idx[f"Resp/Repeat/{wordness}/Phonemic/resp"],
+                     'Phonemic', Phonemic_col, '-')
+        gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Lexical'], sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"], 'Lexical status', Lexical_col,'-')
+        # gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"], 'Lexical status in Decision', 'b')
+    elif wordness == 'Word':
+        gp.plot_wave(stass[f'Resp/Repeat/Word/Acoustic'], sig_idx[f"Resp/Repeat/Word/Acoustic/resp"],
+                     'Acoustic_Word', Acoustic_col, '-')
+        gp.plot_wave(stass[f'Resp/Repeat/Word/Phonemic'], sig_idx[f"Resp/Repeat/Word/Phonemic/resp"],
+                     'Phonemic_Word', Phonemic_col, '-')
+        gp.plot_wave(stass[f'Resp/Repeat/Nonword/Acoustic'], sig_idx[f"Resp/Repeat/Nonword/Acoustic/resp"],
+                     'Acoustic_Nonword', Acoustic_col, '--')
+        gp.plot_wave(stass[f'Resp/Repeat/Nonword/Phonemic'], sig_idx[f"Resp/Repeat/Nonword/Phonemic/resp"],
+                     'Phonemic_Nonword', Phonemic_col, '--')
+
     if wordness == 'ALL':
         wordness_Tag = 'Word & Nonword'
     else:
         wordness_Tag = wordness
-    plt.title(f'GLM:  {wordness_Tag} in {md_Tag}')
-    plt.ylabel(r'R$^2$ bsl corrected')
-    plt.xlabel('Time from auditory onset (s)')
+
+    plt.axvline(x=0, linestyle='--', color='k')
+    plt.axhline(y=0, linestyle='--', color='k')
+    plt.title(f'GLM:  {wordness_Tag} in resp window')
+    plt.ylabel('GLM R^2 bsl corrected (-min)')
     plt.gca().spines[['top', 'right']].set_visible(False)
-    if md == 'aud' or md=='del':
-        plt.xlim(xlim_l, xlim_r)
+    plt.legend()
+    plt.xlim(xlim_l, xlim_r)
+    plt.xlabel('Time from motor onset (s)')
     plt.tight_layout()
-    plt.savefig(os.path.join('plot',f'wave auditory onset {wordness} {md}.tif'),dpi=300)
+    plt.savefig(os.path.join('plot', f'wave motor onset in {wordness}.tif'),dpi=300)
+    plt.close()
 
-xlim_l = -0.2
-xlim_r = mean_word_len
-wid_scale = (xlim_r - xlim_l)*100/350
-plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
-gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Acoustic'], sig_idx[f"Resp/Repeat/{wordness}/Acoustic/resp"], 'Acoustic', Acoustic_col)
-gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Phonemic'], sig_idx[f"Resp/Repeat/{wordness}/Phonemic/resp"], 'Phonemic', Phonemic_col)
-if wordness == 'ALL':
-    gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Lexical'], sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"], 'Lexical status', Lexical_col)
-    # gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"], 'Lexical status in Decision', 'b')
-if wordness == 'ALL':
-    wordness_Tag = 'Word & Nonword'
-else:
-    wordness_Tag = wordness
-
-plt.axvline(x=0, linestyle='--', color='k')
-plt.axhline(y=0, linestyle='--', color='k')
-plt.title(f'GLM:  {wordness_Tag} in resp window')
-plt.ylabel('GLM R^2 bsl corrected (-min)')
-plt.gca().spines[['top', 'right']].set_visible(False)
-plt.legend()
-plt.xlim(xlim_l, xlim_r)
-plt.xlabel('Time from motor onset (s)')
-plt.tight_layout()
-plt.savefig(os.path.join('plot', f'wave motor onset in {wordness}.tif'),dpi=300)
-
-with open(os.path.join('data', 'sig_idx.npy'), "wb") as f:
-    pickle.dump(sig_idx, f)
+    with open(os.path.join('data', 'sig_idx.npy'), "wb") as f:
+        pickle.dump(sig_idx, f)
 
 #%% Get confusion matrix of glm sig electrode sets
 for wordness in wordnesses:
@@ -185,3 +212,5 @@ for wordness in wordnesses:
     plt.title("Shared encoding electrodes across features and phase (%)",fontsize=18)
     plt.tight_layout()
     plt.savefig(os.path.join('plot', f'GLM electrode sharing in {wordness}.tif'),dpi=300)
+    plt.close()
+
