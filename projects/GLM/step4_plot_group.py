@@ -29,10 +29,10 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Auditory","Resp"]
+events = ["Auditory"]#,"Resp"]
 stat = "zscore"
-task_Tags = ["Repeat"]#,"Yes_No"]
-wordnesses = ["ALL", "Word", "Nonword"]
+task_Tags = ["Repeat","Yes_No"]
+wordnesses = ["ALL"]#, "Word", "Nonword"]
 glm_feas = ["Acoustic","Phonemic","Lexical"]
 cluster_twin=0.011
 mean_word_len=0.62
@@ -52,7 +52,7 @@ stass=dict()
 for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
     subjs, _, _, chs, times = glm.fifread(event, 'zscore', task_Tag,wordness)
     for glm_fea in glm_feas:
-        if task_Tag == "Yes_No" and glm_fea != "Lexical":# (event != "Resp" or glm_fea != "Lexical"):
+        if task_Tag == "Yes_No" and (glm_fea != "Lexical" and glm_fea != "Acoustic" and glm_fea != "Phonemic"):# (event != "Resp" or glm_fea != "Lexical"):
             continue
         if wordness != "ALL" and glm_fea == "Lexical":
             continue
@@ -96,12 +96,17 @@ for wordness in wordnesses[:2]:
         plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
         if wordness == 'ALL':
             gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Acoustic'], sig_idx[f"Auditory/Repeat/{wordness}/Acoustic/{md}"],
-                         'Acoustic', Acoustic_col, '-')
+                         'Acoustic rep', Acoustic_col, '-')
             gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Phonemic'], sig_idx[f"Auditory/Repeat/{wordness}/Phonemic/{md}"],
-                         'Phonemic', Phonemic_col, '-')
+                         'Phonemic rep', Phonemic_col, '-')
             gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Lexical'], sig_idx[f"Auditory/Repeat/{wordness}/Lexical/{md}"],
-                         'Lexical status', Lexical_col, '-')
-            # gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Lexical'], sig_idx[f"Auditory/Yes_No/{wordness}/Lexical/{md}"], 'Lexical status in Decision', 'b')
+                         'Lexical status rep', Lexical_col, '-')
+            gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Acoustic'], sig_idx[f"Auditory/Yes_No/{wordness}/Acoustic/{md}"],
+                         'Acoustic rep', Acoustic_col, '--')
+            gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Phonemic'], sig_idx[f"Auditory/Yes_No/{wordness}/Phonemic/{md}"],
+                         'Phonemic rep', Phonemic_col, '--')
+            gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Lexical'], sig_idx[f"Auditory/Yes_No/{wordness}/Lexical/{md}"],
+                         'Lexical status rep', Lexical_col, '--')
         elif wordness == 'Word':
             gp.plot_wave(stass[f'Auditory/Repeat/Word/Acoustic'], sig_idx[f"Auditory/Repeat/Word/Acoustic/{md}"],
                          'Acoustic_Word', Acoustic_col, '-')
@@ -124,6 +129,8 @@ for wordness in wordnesses[:2]:
         if md == 'aud' or md=='del':
             plt.xlim(xlim_l, xlim_r)
         plt.tight_layout()
+        if md=='all':
+            plt.legend()
         plt.savefig(os.path.join('plot',f'wave auditory onset {wordness} {md}.tif'),dpi=300)
         plt.close()
 

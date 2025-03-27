@@ -3,10 +3,10 @@
     "alpha": 0.05,
     "alpha_clus": 0.05,
     "n_perms": 10000,
-    "event": "Auditory",
+    "event": "Resp",
     "stat": "zscore",
     "task_Tag": "Yes_No",
-    "glm_fea": "Phonemic",
+    "glm_fea": "Acoustic",
     "wordness": "ALL",
     "feature_ranges": {
         "Lexical": [1],
