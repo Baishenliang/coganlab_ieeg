@@ -269,7 +269,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, **kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
     fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',
-                            label_every=label_every, size=0.5, **kwargs)
+                            label_every=label_every, size=0.3, **kwargs)
     #fig3d.save_image(fig_save_dir_f)
 
 def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
@@ -312,16 +312,13 @@ def find_com_sig_chs(data1_labels, data1_sig_idx, data2_labels, data2_sig_idx):
     # Get significant channel labels from both datasets
     import numpy as np
 
-    sig_channels1 = set([label for label, idx in zip(data1_labels, data1_sig_idx) if idx == 1])
-    sig_channels2 = set([label for label, idx in zip(data2_labels, data2_sig_idx) if idx == 1])
+    sig_channels1 = set([label for label in data1_labels if label in data1_sig_idx])
+    sig_channels2 = set([label for label in data2_labels if label in data2_sig_idx])
     # Find common significant channels
     common_sig_channels = sig_channels1.intersection(sig_channels2)
 
-    # Create binary index array for common significant channels
-    common_sig_idx = np.zeros(len(data1_labels), dtype=int)
-    for i, channel in enumerate(data1_labels):
-        if channel in common_sig_channels:
-            common_sig_idx[i] = 1
+    # Create a set for common significant channels
+    common_sig_idx = {i for i, channel in enumerate(data1_labels) if channel in common_sig_channels}
 
     return common_sig_idx
 

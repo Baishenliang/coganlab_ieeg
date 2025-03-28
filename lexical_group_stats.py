@@ -5,7 +5,6 @@ groupsTag="LexDelay"
 
 # %% define condition and load data
 stat_type='mask'
-
 contrast='ave' # average, not contrasting different conditions
 #contrast='ave_YN_Rep' # contrasting yesno to repetition
 #contrast='ave_Rep_YN' # contrasting repetition to yesno
@@ -27,7 +26,7 @@ cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 # %% Sort data and get significant electrode lists
 import os
 import numpy as np
-from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, find_com_sig_chs, plot_wave
+from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, find_com_sig_chs, plot_wave,set2arr
 import matplotlib.pyplot as plt
 
 HOME = os.path.expanduser("~")
@@ -85,15 +84,15 @@ if "LexDelay" in groupsTag:
     # sort the data according to the onset within a time range (Full)
     data_LexDelay_sorted,_,LexDelay_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[-10,10])
     # plot the data
-    plot_chs(data_LexDelay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexDelay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_sig_idx)}")
 
     # (Auditory)
     data_LexDelay_Aud_sorted,_,LexDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[-0.1,mean_word_len+auditory_decay])
-    plot_chs(data_LexDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{'Auditory'+Delayseleted}_{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{'Auditory'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Aud_sig_idx)}")
 
     # (Delay)
     data_LexDelay_Delay_sorted,_,LexDelay_Delay_sig_idx=sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
-    plot_chs(data_LexDelay_Delay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-Delay_{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexDelay_Delay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-Delay_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Delay_sig_idx)}")
 
     # (Go)
     # data_LexDelay_Go_sorted, _, LexDelay_Go_sig_idx = sort_chs_by_actonset(data_LexDelay_Go, cluster_twin, [0.25, 0.75])
@@ -103,49 +102,40 @@ if "LexDelay" in groupsTag:
     # !!!!!!!!!!In the future use **set** to replace the list indexing!!!!!!!!!!!!!!!!!
 
     data_LexDelay_Motor_Prep_sorted, _, LexDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_prep_win)
-    plot_chs(data_LexDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Motor_Prep_sig_idx)}")
 
     # (Motor response)
     data_LexDelay_Motor_Resp_sorted, _, LexDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_resp_win)
-    plot_chs(data_LexDelay_Motor_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexDelay_Motor_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Motor_Resp_sig_idx)}")
 
     # (GLM for Wordness)
     glm_word_LexDelay_Aud_mask_sorted, _, LexDelay_GLM_Wordness_sig_idx = sort_chs_by_actonset(glm_word_LexDelay_Aud_mask, cluster_twin, [-0.1,mean_word_len+auditory_decay+delay_len+0.1])
     # glm_word_LexDelay_Aud_mask_sorted, _, LexDelay_GLM_Wordness_sig_idx = sort_chs_by_actonset(glm_word_LexDelay_Aud_mask, cluster_twin, [-10,10])
-    plot_chs(glm_word_LexDelay_Aud_mask_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'GLM_Auditory'+Delayseleted}_{stat_type}-{contrast}.jpg'))
+    plot_chs(glm_word_LexDelay_Aud_mask_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'GLM_Auditory'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_GLM_Wordness_sig_idx)}")
 
     # Channel selection: Auditory nomotor electrodes (auditory window:1, motor prep: 0)
-    LexDelay_Aud_NoMotor_sig_idx = [1 if (LexDelay_Aud_sig_idx[i] == 1 and LexDelay_Motor_Prep_sig_idx[i] == 0)
-                                    else 0 for i in range(len(LexDelay_Aud_sig_idx))]
+    LexDelay_Aud_NoMotor_sig_idx = LexDelay_Aud_sig_idx - LexDelay_Motor_Prep_sig_idx
 
     # Channel selection: Sensorimotor electrodes (auditory window:1, motor prep: 1)
-    LexDelay_Sensorimotor_sig_idx = [1 if (LexDelay_Aud_sig_idx[i] == 1 and LexDelay_Motor_Prep_sig_idx[i] == 1)
-                                     else 0 for i in range(len(LexDelay_Aud_sig_idx))]
+    LexDelay_Sensorimotor_sig_idx = LexDelay_Aud_sig_idx & LexDelay_Motor_Prep_sig_idx
 
     # Channel selection: Sensory OR motor electrodes (auditory window:1 or motor prep: 1 or motor resp: 1)
-    LexDelay_Sensory_OR_Motor_sig_idx = [1 if (LexDelay_Aud_sig_idx[i] == 1 or LexDelay_Motor_Prep_sig_idx[i] == 1 or LexDelay_Motor_Resp_sig_idx[i] == 1)
-                                     else 0 for i in range(len(LexDelay_Aud_sig_idx))]
+    LexDelay_Sensory_OR_Motor_sig_idx = LexDelay_Aud_sig_idx | LexDelay_Motor_Prep_sig_idx | LexDelay_Motor_Resp_sig_idx
 
     # Channel selection: Motor electrodes (auditory window:0, motor resp: 1)
-    LexDelay_Motor_sig_idx = [1 if (LexDelay_Aud_sig_idx[i] == 0 and LexDelay_Motor_Resp_sig_idx[i] == 1)
-                              else 0 for i in range(len(LexDelay_Aud_sig_idx))]
+    LexDelay_Motor_sig_idx = LexDelay_Motor_Resp_sig_idx - LexDelay_Aud_sig_idx
 
     # Channel selection: Delay only electrodes (delay electrodes ,with: auditory window:0, motor prep: 0, motor resp: 0)
-    LexDelay_DelayOnly_sig_idx = [LexDelay_Delay_sig_idx[i]
-                                  if (LexDelay_Aud_sig_idx[i] == 0 and LexDelay_Motor_Prep_sig_idx[i] == 0 and LexDelay_Motor_Resp_sig_idx[i] == 0)
-                                  else 0 for i in range(len(LexDelay_Delay_sig_idx))]
+    LexDelay_DelayOnly_sig_idx = LexDelay_Delay_sig_idx - (LexDelay_Aud_sig_idx | LexDelay_Motor_Prep_sig_idx | LexDelay_Motor_Resp_sig_idx)
 
     # Channel selection: Auditory electrodes in Delay electrodes
-    LexDelay_Auditory_in_Delay_sig_idx = [LexDelay_Delay_sig_idx[i]
-                                  if LexDelay_Aud_NoMotor_sig_idx[i] == 1 else 0 for i in range(len(LexDelay_Delay_sig_idx))]
+    LexDelay_Auditory_in_Delay_sig_idx = LexDelay_Delay_sig_idx & LexDelay_Aud_NoMotor_sig_idx
 
     # Channel selection: Sensorimotor electrodes in Delay electrodes
-    LexDelay_Sensorimotor_in_Delay_sig_idx = [LexDelay_Delay_sig_idx[i]
-                                  if LexDelay_Sensorimotor_sig_idx[i] == 1 else 0 for i in range(len(LexDelay_Delay_sig_idx))]
+    LexDelay_Sensorimotor_in_Delay_sig_idx = LexDelay_Delay_sig_idx & LexDelay_Sensorimotor_sig_idx
 
     # Channel selection: Motor electrodes in Delay electrodes
-    LexDelay_Motor_in_Delay_sig_idx = [LexDelay_Delay_sig_idx[i]
-                                  if LexDelay_Motor_sig_idx[i] == 1 else 0 for i in range(len(LexDelay_Delay_sig_idx))]
+    LexDelay_Motor_in_Delay_sig_idx = LexDelay_Delay_sig_idx & LexDelay_Motor_sig_idx
 
     del data_LexDelay_sorted, data_LexDelay_Aud_sorted, data_LexDelay_Delay_sorted, data_LexDelay_Motor_Prep_sorted, data_LexDelay_Motor_Resp_sorted
 
@@ -153,7 +143,7 @@ if "LexNoDelay" in groupsTag:
 
     # (Auditory)
     data_LexNoDelay_Aud_sorted,_,LexNoDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Aud,cluster_twin,[-0.1,mean_word_len+auditory_decay])
-    plot_chs(data_LexNoDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexNoDelay-{'Auditory_inRep'}_{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexNoDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexNoDelay-{'Auditory_inRep'}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexNoDelay_Aud_sig_idx)}")
 
     # (Go)
     # data_LexNoDelay_Go_sorted, _, LexNoDelay_Go_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Go, cluster_twin, [0.25, 0.75])
@@ -161,27 +151,23 @@ if "LexNoDelay" in groupsTag:
 
     # (Motor prepare)
     data_LexNoDelay_Motor_Prep_sorted, _, LexNoDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, cluster_twin, motor_prep_win)
-    plot_chs(data_LexNoDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexNoDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexNoDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexNoDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexNoDelay_Motor_Prep_sig_idx)}")
 
     # (Motor response)
     data_LexNoDelay_Motor_Resp_sorted, _, LexNoDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, cluster_twin, motor_resp_win)
-    plot_chs(data_LexNoDelay_Motor_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexNoDelay-{'Motor_Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'))
+    plot_chs(data_LexNoDelay_Motor_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexNoDelay-{'Motor_Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexNoDelay_Motor_Resp_sig_idx)}")
 
     # Channel selection: Auditory nomotor electrodes (auditory window:1, motor prep: 0)
-    LexNoDelay_Aud_NoMotor_sig_idx = [1 if (LexNoDelay_Aud_sig_idx[i] == 1 and LexNoDelay_Motor_Prep_sig_idx[i] == 0)
-                                    else 0 for i in range(len(LexNoDelay_Aud_sig_idx))]
+    LexNoDelay_Aud_NoMotor_sig_idx = LexNoDelay_Aud_sig_idx - LexNoDelay_Motor_Prep_sig_idx
 
     # Channel selection: Sensorimotor electrodes (auditory window:1, motor prep: 1)
-    LexNoDelay_Sensorimotor_sig_idx = [1 if (LexNoDelay_Aud_sig_idx[i] == 1 and LexNoDelay_Motor_Prep_sig_idx[i] == 1)
-                                     else 0 for i in range(len(LexNoDelay_Aud_sig_idx))]
+    LexNoDelay_Sensorimotor_sig_idx = LexNoDelay_Aud_sig_idx & LexNoDelay_Motor_Prep_sig_idx
 
     # Channel selection: Sensory OR motor electrodes (auditory window:1 or motor prep: 1 or motor resp: 1)
-    LexNoDelay_Sensory_OR_Motor_sig_idx = [1 if (LexNoDelay_Aud_sig_idx[i] == 1 or LexNoDelay_Motor_Prep_sig_idx[i] == 1 or LexNoDelay_Motor_Resp_sig_idx[i] == 1)
-                                     else 0 for i in range(len(LexNoDelay_Aud_sig_idx))]
+    LexNoDelay_Sensory_OR_Motor_sig_idx = LexNoDelay_Aud_sig_idx | LexNoDelay_Motor_Prep_sig_idx | LexNoDelay_Motor_Resp_sig_idx
 
     # Channel selection: Motor electrodes (auditory window:0, motor resp: 1)
-    LexNoDelay_Motor_sig_idx = [1 if (LexNoDelay_Aud_sig_idx[i] == 0 and LexNoDelay_Motor_Resp_sig_idx[i] == 1)
-                              else 0 for i in range(len(LexNoDelay_Aud_sig_idx))]
+    LexNoDelay_Motor_sig_idx = LexNoDelay_Motor_Resp_sig_idx - LexNoDelay_Aud_sig_idx
 
     del data_LexNoDelay_Aud_sorted, data_LexNoDelay_Motor_Prep_sorted, data_LexNoDelay_Motor_Resp_sorted
 
@@ -201,9 +187,8 @@ if "&" in groupsTag:
         data_LexDelay_Aud.labels[0],LexDelay_Delay_sig_idx,
         data_LexNoDelay_Aud.labels[0],LexNoDelay_Motor_sig_idx)
 
-    LexDelay_Delay_LexNoDelay_Silent_sig_idx = [LexDelay_Delay_sig_idx[i]
-                                  if (LexNoDelay_Aud_NoMotor_sig_idx[i] == 0 and LexNoDelay_Sensorimotor_sig_idx[i] == 0 and LexNoDelay_Motor_sig_idx[i] == 0)
-                                  else 0 for i in range(len(LexDelay_Delay_sig_idx))]
+    LexDelay_Delay_LexNoDelay_Silent_sig_idx = LexDelay_Delay_sig_idx - (
+                LexNoDelay_Aud_NoMotor_sig_idx | LexNoDelay_Sensorimotor_sig_idx | LexNoDelay_Motor_sig_idx)
 
     # May do in_Silence electrodes later
 
@@ -222,11 +207,17 @@ if groupsTag == "LexDelay":
 
     # %% Electrode selection
     # Location plot for different types of electrodes
-
+    len_d=len(data_LexDelay_Aud.labels[0])
     for TypeLabel,chs_ov,pick_sig_idx in zip(
             ('Sensorimotor','Auditory','Delay','Delay_overlapped','Delay_only','Motor','Sensory_OR_Motor'),
             ([1000,0,0,0],[0,100,0,0],[0,0,10,0],[1000,100,10,1],[1000,100,10,1],[0,0,0,1],[1000,100,0,1]),
-            (LexDelay_Sensorimotor_sig_idx,LexDelay_Aud_NoMotor_sig_idx,LexDelay_Delay_sig_idx,LexDelay_Delay_sig_idx,LexDelay_DelayOnly_sig_idx,LexDelay_Motor_sig_idx,LexDelay_Sensory_OR_Motor_sig_idx)
+            (set2arr(LexDelay_Sensorimotor_sig_idx,len_d),
+             set2arr(LexDelay_Aud_NoMotor_sig_idx,len_d),
+             set2arr(LexDelay_Delay_sig_idx,len_d),
+             set2arr(LexDelay_Delay_sig_idx,len_d),
+             set2arr(LexDelay_DelayOnly_sig_idx,len_d),
+             set2arr(LexDelay_Motor_sig_idx,len_d),
+             set2arr(LexDelay_Sensory_OR_Motor_sig_idx,len_d))
     ):
 
         # Elecorde selection and color assigning
@@ -241,14 +232,17 @@ if groupsTag == "LexDelay":
               11: Delay_Motor_col # Delay-Motor (Greenblue)
         }
 
-        chs_col_idx=[chs_ov[0]*LexDelay_Sensorimotor_sig_idx[i]+chs_ov[1]*LexDelay_Aud_NoMotor_sig_idx[i]+chs_ov[2]*LexDelay_Delay_sig_idx[i]+chs_ov[3]*LexDelay_Motor_sig_idx[i] for i in range(len(data_LexDelay_Aud.labels[0]))]
-        picks = [i for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
-        pick_labels = [data_LexDelay_Aud.labels[0][i] for i in range(len(data_LexDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
-        chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len(data_LexDelay_Aud.labels[0]))]
+        chs_col_idx=[chs_ov[0]*set2arr(LexDelay_Sensorimotor_sig_idx,len_d)[i]
+                     +chs_ov[1]*set2arr(LexDelay_Aud_NoMotor_sig_idx,len_d)[i]
+                     +chs_ov[2]*set2arr(LexDelay_Delay_sig_idx,len_d)[i]
+                     +chs_ov[3]*set2arr(LexDelay_Motor_sig_idx,len_d)[i] for i in range(len_d)]
+        picks = [i for i in range(len_d) if pick_sig_idx[i] == 1]
+        pick_labels = [data_LexDelay_Aud.labels[0][i] for i in range(len_d) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
+        chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len_d)]
         chs_cols_picked=[chs_cols[i] for i in picks]
 
         # Plot (cannot plot D107,D042)
-        if TypeLabel=='Delay_only':
+        if TypeLabel=='Motor':
             label_every=1
         else:
             label_every=None
