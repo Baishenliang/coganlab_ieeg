@@ -52,6 +52,8 @@ stass=dict()
 for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
     subjs, _, _, chs, times = glm.fifread(event, 'zscore', task_Tag,wordness)
     for glm_fea in glm_feas:
+        if task_Tag == "Yes_No" and (glm_fea != "Lexical" and glm_fea != "Acoustic" and glm_fea != "Phonemic"):# (event != "Resp" or glm_fea != "Lexical"):
+            continue
         if wordness != "ALL" and glm_fea == "Lexical":
             continue
         else:
@@ -138,18 +140,11 @@ for wordness in wordnesses[:2]:
     plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
     if wordness == 'ALL':
         gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Acoustic'], sig_idx[f"Resp/Repeat/{wordness}/Acoustic/resp"],
-                     'Acoustic rep', Acoustic_col, '-')
+                     'Acoustic', Acoustic_col, '-')
         gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Phonemic'], sig_idx[f"Resp/Repeat/{wordness}/Phonemic/resp"],
-                     'Phonemic rep', Phonemic_col, '-')
-        gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Lexical'], sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"],
-                     'Lexical status rep', Lexical_col,'-')
-        gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Acoustic'], sig_idx[f"Resp/Yes_No/{wordness}/Acoustic/resp"],
-                     'Acoustic YN', Acoustic_col, '--')
-        gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Phonemic'], sig_idx[f"Resp/Yes_No/{wordness}/Phonemic/resp"],
-                     'Phonemic YN', Phonemic_col, '--')
-        gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"],
-                     'Lexical status YN', Lexical_col,'--')
-
+                     'Phonemic', Phonemic_col, '-')
+        gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Lexical'], sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"], 'Lexical status', Lexical_col,'-')
+        # gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"], 'Lexical status in Decision', 'b')
     elif wordness == 'Word':
         gp.plot_wave(stass[f'Resp/Repeat/Word/Acoustic'], sig_idx[f"Resp/Repeat/Word/Acoustic/resp"],
                      'Acoustic_Word', Acoustic_col, '-')
