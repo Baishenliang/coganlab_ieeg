@@ -26,7 +26,7 @@ cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 # %% Sort data and get significant electrode lists
 import os
 import numpy as np
-from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, find_com_sig_chs, plot_wave,set2arr
+from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, find_com_sig_chs, plot_wave,set2arr,get_notmuscle_electrodes
 import matplotlib.pyplot as plt
 
 HOME = os.path.expanduser("~")
@@ -48,6 +48,8 @@ if groupsTag=="LexDelay":
     data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
     data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
     data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
+
+    LexDelay_clean_chs_idx = get_notmuscle_electrodes(data_LexDelay_Aud)
 
     epoc_LexDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay)
     epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay)
@@ -211,13 +213,13 @@ if groupsTag == "LexDelay":
     for TypeLabel,chs_ov,pick_sig_idx in zip(
             ('Sensorimotor','Auditory','Delay','Delay_overlapped','Delay_only','Motor','Sensory_OR_Motor'),
             ([1000,0,0,0],[0,100,0,0],[0,0,10,0],[1000,100,10,1],[1000,100,10,1],[0,0,0,1],[1000,100,0,1]),
-            (set2arr(LexDelay_Sensorimotor_sig_idx,len_d),
-             set2arr(LexDelay_Aud_NoMotor_sig_idx,len_d),
-             set2arr(LexDelay_Delay_sig_idx,len_d),
-             set2arr(LexDelay_Delay_sig_idx,len_d),
-             set2arr(LexDelay_DelayOnly_sig_idx,len_d),
-             set2arr(LexDelay_Motor_sig_idx,len_d),
-             set2arr(LexDelay_Sensory_OR_Motor_sig_idx,len_d))
+            (set2arr(LexDelay_Sensorimotor_sig_idx & LexDelay_clean_chs_idx,len_d),
+             set2arr(LexDelay_Aud_NoMotor_sig_idx & LexDelay_clean_chs_idx,len_d),
+             set2arr(LexDelay_Delay_sig_idx & LexDelay_clean_chs_idx,len_d),
+             set2arr(LexDelay_Delay_sig_idx & LexDelay_clean_chs_idx,len_d),
+             set2arr(LexDelay_DelayOnly_sig_idx & LexDelay_clean_chs_idx,len_d),
+             set2arr(LexDelay_Motor_sig_idx & LexDelay_clean_chs_idx,len_d),
+             set2arr(LexDelay_Sensory_OR_Motor_sig_idx & LexDelay_clean_chs_idx,len_d))
     ):
 
         # Elecorde selection and color assigning
@@ -242,7 +244,7 @@ if groupsTag == "LexDelay":
         chs_cols_picked=[chs_cols[i] for i in picks]
 
         # Plot (cannot plot D107,D042)
-        if TypeLabel=='Motor':
+        if TypeLabel=='Motor' or TypeLabel=='Auditory':
             label_every=1
         else:
             label_every=None

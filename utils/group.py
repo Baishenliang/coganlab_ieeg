@@ -213,6 +213,22 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
     # onset_out=LabeledArray(np.array(onsets_s_sorted), chs_s_sorted)
     return data_out,sorted_indices,chs_s_all_idx
 
+def get_notmuscle_electrodes(data_in):
+    # Remove electrodes named as LAT or RAT which are by default muscle channels
+    chs = data_in.labels[0]
+    clean_chs_idx = {i for i, name in enumerate(chs) if
+                     "LAT" not in name and
+                     "RAT" not in name and
+                     "LTP" not in name and
+                     "LTP" not in name and
+                     "RTP" not in name and
+                     "D66-RTAM" not in name and
+                     "D90-RTAI" not in name and
+                     "D84-RTAI" not in name and
+                     "D24-LTG" not in name and
+                     "D26-RAST" not in name and
+                     "D90-RFO" not in name}
+    return clean_chs_idx
 
 def plot_chs(data_in, fig_save_dir_fm,title):
     """
