@@ -214,13 +214,13 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
 
 def get_notmuscle_electrodes(data_in):
     # Remove electrodes named as LAT or RAT which are by default muscle channels
+    # These codes should be removed once another preprocessing is done
     chs = data_in.labels[0]
     clean_chs_idx = {i for i, name in enumerate(chs) if
                      "LAT" not in name and
                      "RAT" not in name and
-                     "LTP" not in name and
-                     "LTP" not in name and
-                     "RTP" not in name and
+                     ("LTP" not in name or any(x in name for x in ["LTPI", "LTPS", "LTPM"])) and
+                     ("RTP" not in name or any(x in name for x in ["RTPI", "RTPS", "RTPM"])) and
                      "D66-RTAM" not in name and
                      "D90-RTAI" not in name and
                      "D84-RTAI" not in name and

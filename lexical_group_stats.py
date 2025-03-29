@@ -49,7 +49,7 @@ if groupsTag=="LexDelay":
     data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
     data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
-    LexDelay_clean_chs_idx = get_notmuscle_electrodes(data_LexDelay_Aud)
+    clean_chs_idx = get_notmuscle_electrodes(data_LexDelay_Aud)
 
     epoc_LexDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay)
     epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay)
@@ -62,6 +62,8 @@ elif groupsTag=="LexNoDelay":
     data_LexNoDelay_Aud,subjs=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay)
     data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
 
+    clean_chs_idx = get_notmuscle_electrodes(data_LexNoDelay_Aud)
+
     epoc_LexNoDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_nodelay)
     epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay)
 
@@ -70,6 +72,8 @@ elif groupsTag=="LexDelay&LexNoDelay":
     # first get the patient inform from no delay tasks and then extract the corresponding
     data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_nodelay,stats_root_delay)
     data_LexNoDelay_Aud,_=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay)
+
+    clean_chs_idx = get_notmuscle_electrodes(data_LexDelay_Aud)
 
     data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_nodelay, stats_root_delay)
     data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
@@ -85,33 +89,40 @@ if "LexDelay" in groupsTag:
 
     # sort the data according to the onset within a time range (Full)
     data_LexDelay_sorted,_,LexDelay_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[-10,10])
+    LexDelay_sig_idx = LexDelay_sig_idx & clean_chs_idx
     # plot the data
     plot_chs(data_LexDelay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_sig_idx)}")
 
     # (Auditory)
     data_LexDelay_Aud_sorted,_,LexDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[-0.1,mean_word_len+auditory_decay])
+    LexDelay_sig_idx = LexDelay_sig_idx & clean_chs_idx
     plot_chs(data_LexDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{'Auditory'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Aud_sig_idx)}")
 
     # (Delay)
     data_LexDelay_Delay_sorted,_,LexDelay_Delay_sig_idx=sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
+    LexDelay_Delay_sig_idx = LexDelay_Delay_sig_idx & clean_chs_idx
     plot_chs(data_LexDelay_Delay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-Delay_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Delay_sig_idx)}")
 
     # (Go)
     # data_LexDelay_Go_sorted, _, LexDelay_Go_sig_idx = sort_chs_by_actonset(data_LexDelay_Go, cluster_twin, [0.25, 0.75])
+    # LexDelay_Go_sig_idx=LexDelay_Go_sig_idx & clean_chs_idx
     # plot_chs(data_LexDelay_Go_sorted, os.path.join(fig_save_dir, f'{'Go_inRep'}_{stat_type}-{contrast}.jpg'))
 
     # (Motor prepare)
     # !!!!!!!!!!In the future use **set** to replace the list indexing!!!!!!!!!!!!!!!!!
 
     data_LexDelay_Motor_Prep_sorted, _, LexDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_prep_win)
+    LexDelay_Motor_Prep_sig_idx = LexDelay_Motor_Prep_sig_idx & clean_chs_idx
     plot_chs(data_LexDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Motor_Prep_sig_idx)}")
 
     # (Motor response)
     data_LexDelay_Motor_Resp_sorted, _, LexDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_resp_win)
+    LexDelay_Motor_Resp_sig_idx = LexDelay_Motor_Resp_sig_idx & clean_chs_idx
     plot_chs(data_LexDelay_Motor_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Motor_Resp_sig_idx)}")
 
     # (GLM for Wordness)
     glm_word_LexDelay_Aud_mask_sorted, _, LexDelay_GLM_Wordness_sig_idx = sort_chs_by_actonset(glm_word_LexDelay_Aud_mask, cluster_twin, [-0.1,mean_word_len+auditory_decay+delay_len+0.1])
+    LexDelay_GLM_Wordness_sig_idx  = LexDelay_GLM_Wordness_sig_idx & clean_chs_idx
     # glm_word_LexDelay_Aud_mask_sorted, _, LexDelay_GLM_Wordness_sig_idx = sort_chs_by_actonset(glm_word_LexDelay_Aud_mask, cluster_twin, [-10,10])
     plot_chs(glm_word_LexDelay_Aud_mask_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'GLM_Auditory'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_GLM_Wordness_sig_idx)}")
 
@@ -145,18 +156,22 @@ if "LexNoDelay" in groupsTag:
 
     # (Auditory)
     data_LexNoDelay_Aud_sorted,_,LexNoDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Aud,cluster_twin,[-0.1,mean_word_len+auditory_decay])
+    LexNoDelay_Aud_sig_idx = LexNoDelay_Aud_sig_idx & clean_chs_idx
     plot_chs(data_LexNoDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexNoDelay-{'Auditory_inRep'}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexNoDelay_Aud_sig_idx)}")
 
     # (Go)
     # data_LexNoDelay_Go_sorted, _, LexNoDelay_Go_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Go, cluster_twin, [0.25, 0.75])
+    # LexNoDelay_Go_sig_idx = LexNoDelay_Go_sig_idx & clean_chs_idx
     # plot_chs(data_LexNoDelay_Go_sorted, os.path.join(fig_save_dir, f'{'Go_inRep'}_{stat_type}-{contrast}.jpg'))
 
     # (Motor prepare)
     data_LexNoDelay_Motor_Prep_sorted, _, LexNoDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, cluster_twin, motor_prep_win)
+    LexNoDelay_Motor_Prep_sig_idx = LexNoDelay_Motor_Prep_sig_idx & clean_chs_idx
     plot_chs(data_LexNoDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexNoDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexNoDelay_Motor_Prep_sig_idx)}")
 
     # (Motor response)
     data_LexNoDelay_Motor_Resp_sorted, _, LexNoDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, cluster_twin, motor_resp_win)
+    LexNoDelay_Motor_Resp_sig_idx = LexNoDelay_Motor_Resp_sig_idx & clean_chs_idx
     plot_chs(data_LexNoDelay_Motor_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexNoDelay-{'Motor_Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexNoDelay_Motor_Resp_sig_idx)}")
 
     # Channel selection: Auditory nomotor electrodes (auditory window:1, motor prep: 0)
@@ -213,13 +228,13 @@ if groupsTag == "LexDelay":
     for TypeLabel,chs_ov,pick_sig_idx in zip(
             ('Sensorimotor','Auditory','Delay','Delay_overlapped','Delay_only','Motor','Sensory_OR_Motor'),
             ([1000,0,0,0],[0,100,0,0],[0,0,10,0],[1000,100,10,1],[1000,100,10,1],[0,0,0,1],[1000,100,0,1]),
-            (set2arr(LexDelay_Sensorimotor_sig_idx & LexDelay_clean_chs_idx,len_d),
-             set2arr(LexDelay_Aud_NoMotor_sig_idx & LexDelay_clean_chs_idx,len_d),
-             set2arr(LexDelay_Delay_sig_idx & LexDelay_clean_chs_idx,len_d),
-             set2arr(LexDelay_Delay_sig_idx & LexDelay_clean_chs_idx,len_d),
-             set2arr(LexDelay_DelayOnly_sig_idx & LexDelay_clean_chs_idx,len_d),
-             set2arr(LexDelay_Motor_sig_idx & LexDelay_clean_chs_idx,len_d),
-             set2arr(LexDelay_Sensory_OR_Motor_sig_idx & LexDelay_clean_chs_idx,len_d))
+            (set2arr(LexDelay_Sensorimotor_sig_idx,len_d),
+             set2arr(LexDelay_Aud_NoMotor_sig_idx,len_d),
+             set2arr(LexDelay_Delay_sig_idx,len_d),
+             set2arr(LexDelay_Delay_sig_idx,len_d),
+             set2arr(LexDelay_DelayOnly_sig_idx,len_d),
+             set2arr(LexDelay_Motor_sig_idx,len_d),
+             set2arr(LexDelay_Sensory_OR_Motor_sig_idx,len_d))
     ):
 
         # Elecorde selection and color assigning
