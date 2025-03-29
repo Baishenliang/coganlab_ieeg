@@ -12,18 +12,19 @@ import re
 import pandas as pd
 import glm_validate_plot as glm_plot
 from joblib import Parallel, delayed
+import utils.group as gp
+
+# Locations
+HOME = os.path.expanduser("~")
+LAB_root = os.path.join(HOME, "Box", "CoganLab")
+clean_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "clean")
+stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
 
 #%% Functions
 
 def fifread(event,stat,task_Tag,wordness):
 
     fif_name=f'{event}_{stat}-epo.fif'
-
-    # Locations
-    HOME = os.path.expanduser("~")
-    LAB_root = os.path.join(HOME, "Box", "CoganLab")
-    clean_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "clean")
-    stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
 
     # Read single patient stats
     subjs = [name for name in os.listdir(stats_root) if
@@ -45,7 +46,7 @@ def fifread(event,stat,task_Tag,wordness):
     acoustic_codes = pd.read_pickle("envelope_feature_dict.pickle")
 
     for i, subject in enumerate(subjs):
-        print(f"Now do patient {subject}")
+        print(f"Now do patient eeee {subject}")
 
         # Load fif data
         subject_label_chs = 'D' + subject[1:].lstrip('0')
@@ -207,20 +208,52 @@ def aaron_perm_gt_1d(diff, axis=0):
 
 def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness):
 
+    print(subjs)
+
     from ieeg.arrays.label import LabeledArray
     mask_lst = []
     stat_lst = []
+    chs_lst = []
 
     for i, subject in enumerate(subjs):
+
         subj_mask = np.load(os.path.join('data',f'{masktype} {subject} {event} {task_Tag} {wordness} {glm_fea}.npy'))
         subj_stat = np.load(os.path.join('data',f'org_r2 {subject} {event} {task_Tag} {wordness} {glm_fea}.npy'))
+
+        # read original channel labels (before outlier and muscle channel removals)
+        subj_chs_org_pattern = os.path.join(clean_root, f"*sub-{subject}", 'ieeg', f"*_acq-*_run-*_desc-clean_channels.tsv")
+        subj_chs_org_file_list = glob.glob(subj_chs_org_pattern)
+
+        org_labeled_chs = []
+
+        if subj_chs_org_file_list:
+            subj_chs_org_file_path = subj_chs_org_file_list[0]
+            with open(subj_chs_org_file_path, 'r') as file:
+                lines = file.readlines()
+                for line in lines[1:]:
+                    columns = line.strip().split('\t')
+                    org_labeled_chs.append(columns[0])
+
+        if subject == 'D0026':
+            # Some awkard channels in D0026 lexical no delay
+            org_labeled_chs = [ch for ch in org_labeled_chs if 'RPF' not in ch]
+        chs_i=chs[i]
+        chs_i = [chs_i[i].replace("-", " ") for i in range(len(chs_i))]
+        aligned_subj_mask, aligned_chs = gp.align_channel_data(subj_mask, chs_i, org_labeled_chs)
+        aligned_subj_stat, _ = gp.align_channel_data(subj_stat, chs_i, org_labeled_chs)
+
+        # mask_lst.append(aligned_subj_mask)
+        # stat_lst.append(aligned_subj_stat)
+        # chs_lst.append(aligned_chs)
+
         mask_lst.append(subj_mask)
         stat_lst.append(subj_stat)
+        chs_lst.append(chs_i)
 
     mask_raw = np.concatenate(mask_lst, axis=0)
     stat_raw = np.concatenate(stat_lst, axis=0)
-    chs = np.concatenate(chs, axis=0)
-    labels = [chs, times]
+    chs_lst = np.concatenate(chs_lst, axis=0)
+    labels = [chs_lst, times]
     masks=LabeledArray(mask_raw, labels)
     stats=LabeledArray(stat_raw, labels)
 

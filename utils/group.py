@@ -1,6 +1,5 @@
 from pyqtgraph.util.cprint import color
 
-
 def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
     """
     Load patient level stats files (e.g., *.fif) for further group level analysis
@@ -385,6 +384,11 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
     subject = 'D' + subject[1:].lstrip('0')
     aligned_chs = [f"{subject}-{ch}" for ch in org_labeled_chs]
 
+    # print missing channels
+    for curr_chs in current_ch_indices.keys():
+        if curr_chs not in org_labeled_chs:
+            print(f"Lost channel: {subject}-{curr_chs}, found in stats but not found in channels.tsv")
+
     return aligned_data, aligned_chs
 
 def plot_wave(data_in,sig_idx,con_label,col,Lstyle):
@@ -407,7 +411,7 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle):
     # Compute the mean and SEM across trials while ignoring NaNs
     mean_waveform = np.nanmean(data_selected, axis=0)
     # Baseline correction (should remove this)
-    mean_waveform = mean_waveform - np.mean(mean_waveform[:51])
+    mean_waveform = mean_waveform - np.nanmean(mean_waveform[:51])
     sem_waveform = np.nanstd(data_selected, axis=0) / np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
 
     # Plot the mean waveform
