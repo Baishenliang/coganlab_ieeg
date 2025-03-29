@@ -242,13 +242,13 @@ def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness):
         aligned_subj_mask, aligned_chs = gp.align_channel_data(subj_mask, chs_i, org_labeled_chs)
         aligned_subj_stat, _ = gp.align_channel_data(subj_stat, chs_i, org_labeled_chs)
 
-        # mask_lst.append(aligned_subj_mask)
-        # stat_lst.append(aligned_subj_stat)
-        # chs_lst.append(aligned_chs)
+        mask_lst.append(aligned_subj_mask)
+        stat_lst.append(aligned_subj_stat)
+        chs_lst.append(aligned_chs)
 
-        mask_lst.append(subj_mask)
-        stat_lst.append(subj_stat)
-        chs_lst.append(chs_i)
+        # mask_lst.append(subj_mask)
+        # stat_lst.append(subj_stat)
+        # chs_lst.append(chs_i)
 
     mask_raw = np.concatenate(mask_lst, axis=0)
     stat_raw = np.concatenate(stat_lst, axis=0)
