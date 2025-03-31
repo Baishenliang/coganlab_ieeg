@@ -277,6 +277,7 @@ def plot_chs(data_in, fig_save_dir_fm,title):
 
     # Save the figure
     fig.savefig(fig_save_dir_fm, dpi=300)
+    del fig
     plt.close()
 
 
@@ -284,7 +285,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, **kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
     fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',
-                            label_every=label_every, size=0.3, **kwargs)
+                            label_every=label_every, size=0.5, **kwargs)
     #fig3d.save_image(fig_save_dir_f)
 
 def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
@@ -391,7 +392,7 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
 
     return aligned_data, aligned_chs
 
-def plot_wave(data_in,sig_idx,con_label,col,Lstyle):
+def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr):
 
     import numpy as np
     import matplotlib.pyplot as plt
@@ -411,7 +412,8 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle):
     # Compute the mean and SEM across trials while ignoring NaNs
     mean_waveform = np.nanmean(data_selected, axis=0)
     # Baseline correction (should remove this)
-    mean_waveform = mean_waveform - np.nanmean(mean_waveform[:51])
+    if bsl_crr:
+        mean_waveform = mean_waveform - np.nanmean(mean_waveform[:51])
     sem_waveform = np.nanstd(data_selected, axis=0) / np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
 
     # Plot the mean waveform

@@ -1,6 +1,7 @@
 #%% Import everything
 import os
 
+from array_api_compat.dask.array import astype
 from sqlalchemy import false
 
 # Relocate the working directory if needed
@@ -46,6 +47,49 @@ Waveplot_hgt=4 # Height of wave plots
 
 subjs, _, _, chs, times = glm.fifread("Auditory", 'zscore', 'Repeat', wordnesses[0])
 
+#%% Get confusion between time-windowed selected electrodes and glm electrods
+with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
+    LexDelay_glm_idxes = pickle.load(f)
+with open(os.path.join('data', 'LexDelay_twin_idxes.npy'), "rb") as f:
+    LexDelay_twin_idxes = pickle.load(f)
+
+win_aud=LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx']
+win_sm=LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']
+win_mtr=LexDelay_twin_idxes['LexDelay_Motor_sig_idx']
+win_delo=LexDelay_twin_idxes['LexDelay_DelayOnly_sig_idx']
+win_mtrprep=LexDelay_twin_idxes['LexDelay_Motorprep_Only_sig_idx']
+for ph,ph_Tag in zip(['aud','del','resp'],['Auditory',"Delay","Response"]):
+    if ph !='resp':
+        glm_aco=LexDelay_glm_idxes[f'Auditory/Repeat/ALL/Acoustic/{ph}']
+        glm_pho=LexDelay_glm_idxes[f'Auditory/Repeat/ALL/Phonemic/{ph}']
+        glm_lex=LexDelay_glm_idxes[f'Auditory/Repeat/ALL/Lexical/{ph}']
+    else:
+        glm_aco=LexDelay_glm_idxes[f'Resp/Repeat/ALL/Acoustic/{ph}']
+        glm_pho=LexDelay_glm_idxes[f'Resp/Repeat/ALL/Phonemic/{ph}']
+        glm_lex=LexDelay_glm_idxes[f'Resp/Repeat/ALL/Lexical/{ph}']
+
+    all_win_electrodes = win_aud | win_sm | win_mtr | win_mtrprep | win_delo
+
+    data = {
+        "Auditory": [len(glm_aco & win_aud)/len(glm_aco)*100, len(glm_pho & win_aud)/len(glm_pho)*100, len(glm_lex & win_aud)/len(glm_lex)*100],
+        "Sensorimotor": [len(glm_aco & win_sm)/len(glm_aco)*100, len(glm_pho & win_sm)/len(glm_pho)*100, len(glm_lex & win_sm)/len(glm_lex)*100],
+        "Motor": [len(glm_aco & win_mtr)/len(glm_aco)*100, len(glm_pho & win_mtr)/len(glm_pho)*100, len(glm_lex & win_mtr)/len(glm_lex)*100],
+        "Motor_prep":[len(glm_aco & win_mtrprep)/len(glm_aco)*100, len(glm_pho & win_mtrprep)/len(glm_pho)*100, len(glm_lex & win_mtrprep)/len(glm_lex)*100],
+        "Delay_only":[len(glm_aco & win_delo) / len(glm_aco) * 100,len(glm_pho & win_delo) / len(glm_pho) * 100,len(glm_lex & win_delo) / len(glm_lex) * 100],
+        "Others (not sig to bsl)":[len(glm_aco - all_win_electrodes)/len(glm_aco)*100,len(glm_pho - all_win_electrodes)/len(glm_pho)*100,len(glm_lex - all_win_electrodes)/len(glm_lex)*100]
+    }
+
+    df_cm = pd.DataFrame(data, index=["Acoustic", "Phonemic", "Lexical"])
+
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=100, cbar=False)
+    plt.title(f"EGL electrodes for {ph_Tag}")
+    plt.ylabel("Significant elec in GLM")
+    plt.xlabel("SIgnificant elec by time window")
+    plt.tight_layout()
+    plt.savefig(os.path.join('plot', f'Confusion Matrix for {ph.upper()}.tif'), dpi=300)
+    plt.close()
+
 #%% Make Atlas histograms
 from ieeg.viz.mri import subject_to_info,gen_labels
 subjs_s = ['D' + subj[1:].lstrip('0') for subj in subjs]
@@ -74,11 +118,10 @@ for key,value in ch_labels.items():
         ch_labels_roi[key] = 'unknown'
 
 #%% Plot brain
-with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
-    sig_idx = pickle.load(f)
-
 for wordness in wordnesses:
-    chs_all = np.concatenate(chs, axis=0)
+    # Just get the electrodes
+    masks, _, _ = glm.load_stats('Auditory', 'mask', 'Repeat', 'cluster_mask', 'Acoustic', subjs, chs, times, wordness)
+    chs_all = masks.labels[0]
     if wordness == 'ALL':
         keys_of_interest = [
             "Auditory/Repeat/ALL/Acoustic/aud",
@@ -103,7 +146,7 @@ for wordness in wordnesses:
 
     for TypeLabel in keys_of_interest:
         chs_ov=[100,10,1]
-        sig=sig_idx[TypeLabel]
+        sig=LexDelay_glm_idxes[TypeLabel]
         if 'Acoustic' in TypeLabel:
             col = Acoustic_col
         elif 'Phonemic' in TypeLabel:
@@ -114,28 +157,27 @@ for wordness in wordnesses:
         cols=[col]*len(chs_sel)
         gp.plot_brain(subjs, chs_sel, cols, None,
                    os.path.join('plot', f'GLM electrode loc {TypeLabel}.jpg'))
-        gp.atlas_hist(ch_labels_roi,chs_sel,col,os.path.join('plot',f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'))
+        gp.atlas2_hist(ch_labels_roi,chs_sel,col,os.path.join('plot',f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'))
 
 #%% ovelapped plot
 overlap_Plot=False
 for wordness in wordnesses:
     if not overlap_Plot:
         continue
-    subjs, _, _, chs, times = glm.fifread("Auditory", 'zscore', 'Repeat',wordness)
-    with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
-        sig_idx = pickle.load(f)
 
-    chs_all = np.concatenate(chs, axis=0)
+    # Just get the electrodes
+    masks,_,_=glm.load_stats('Auditory','mask','Repeat','cluster_mask','Acoustic',subjs,chs,times,wordness)
+    chs_all = masks.labels[0]
 
     for TypeLabel, chs_ov, base_sig, spec_sig in zip(
             ('Auditory', 'Delay', 'Response'),
             ([100, 10, 1], [100, 10, 1], [100, 10, 1]),
-            (gp.set2arr(sig_idx[f"Auditory/Repeat/{wordness}/Acoustic/aud"] | sig_idx[f"Auditory/Repeat/{wordness}/Phonemic/aud"] | sig_idx[f"Auditory/Repeat/{wordness}/Lexical/aud"],len(chs_all)),
-            gp.set2arr(sig_idx[f"Auditory/Repeat/{wordness}/Acoustic/del"] | sig_idx[f"Auditory/Repeat/{wordness}/Phonemic/del"] | sig_idx[f"Auditory/Repeat/{wordness}/Lexical/del"],len(chs_all)),
-            gp.set2arr(sig_idx[f"Resp/Repeat/{wordness}/Acoustic/resp"] | sig_idx[f"Resp/Repeat/{wordness}/Phonemic/resp"] | sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"],len(chs_all))),
-            ([sig_idx[f"Auditory/Repeat/{wordness}/Acoustic/aud"],sig_idx[f"Auditory/Repeat/{wordness}/Phonemic/aud"],sig_idx[f"Auditory/Repeat/{wordness}/Lexical/aud"]],
-             [sig_idx[f"Auditory/Repeat/{wordness}/Acoustic/del"],sig_idx[f"Auditory/Repeat/{wordness}/Phonemic/del"],sig_idx[f"Auditory/Repeat/{wordness}/Lexical/del"]],
-             [sig_idx[f"Resp/Repeat/{wordness}/Acoustic/resp"],sig_idx[f"Resp/Repeat/{wordness}/Phonemic/resp"],sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"]])
+            (gp.set2arr(LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Acoustic/aud"] | LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Phonemic/aud"] | LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Lexical/aud"],len(chs_all)),
+            gp.set2arr(LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Acoustic/del"] | LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Phonemic/del"] | LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Lexical/del"],len(chs_all)),
+            gp.set2arr(LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Acoustic/resp"] | LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Phonemic/resp"] | LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Lexical/resp"],len(chs_all))),
+            ([LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Acoustic/aud"],LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Phonemic/aud"],LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Lexical/aud"]],
+             [LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Acoustic/del"],LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Phonemic/del"],LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Lexical/del"]],
+             [LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Acoustic/resp"],LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Phonemic/resp"],LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Lexical/resp"]])
     ):
 
         color_map = {
