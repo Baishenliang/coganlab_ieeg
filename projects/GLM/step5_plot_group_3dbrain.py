@@ -1,6 +1,6 @@
 #%% Import everything
 import os
-
+from matplotlib_venn import venn3
 from array_api_compat.dask.array import astype
 from sqlalchemy import false
 
@@ -48,6 +48,7 @@ Waveplot_hgt=4 # Height of wave plots
 subjs, _, _, chs, times = glm.fifread("Auditory", 'zscore', 'Repeat', wordnesses[0])
 
 #%% Get confusion between time-windowed selected electrodes and glm electrods
+
 with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
 with open(os.path.join('data', 'LexDelay_twin_idxes.npy'), "rb") as f:
@@ -58,6 +59,7 @@ win_sm=LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']
 win_mtr=LexDelay_twin_idxes['LexDelay_Motor_sig_idx']
 win_delo=LexDelay_twin_idxes['LexDelay_DelayOnly_sig_idx']
 win_mtrprep=LexDelay_twin_idxes['LexDelay_Motorprep_Only_sig_idx']
+
 for ph,ph_Tag in zip(['aud','del','resp'],['Auditory',"Delay","Response"]):
     if ph !='resp':
         glm_aco=LexDelay_glm_idxes[f'Auditory/Repeat/ALL/Acoustic/{ph}']
@@ -70,6 +72,7 @@ for ph,ph_Tag in zip(['aud','del','resp'],['Auditory',"Delay","Response"]):
 
     all_win_electrodes = win_aud | win_sm | win_mtr | win_mtrprep | win_delo
 
+    # Confusion matrix in percentage
     data = {
         "Auditory": [len(glm_aco & win_aud)/len(glm_aco)*100, len(glm_pho & win_aud)/len(glm_pho)*100, len(glm_lex & win_aud)/len(glm_lex)*100],
         "Sensorimotor": [len(glm_aco & win_sm)/len(glm_aco)*100, len(glm_pho & win_sm)/len(glm_pho)*100, len(glm_lex & win_sm)/len(glm_lex)*100],
@@ -89,6 +92,20 @@ for ph,ph_Tag in zip(['aud','del','resp'],['Auditory',"Delay","Response"]):
     plt.tight_layout()
     plt.savefig(os.path.join('plot', f'Confusion Matrix for {ph.upper()}.tif'), dpi=300)
     plt.close()
+
+    # Venn diagrams
+    for ele_set,set_Tag in zip([win_aud, win_sm, win_mtr],['Auditory','Sensory-motor','Motor']):
+        aco = ele_set & glm_aco
+        pho = ele_set & glm_pho
+        lex = ele_set & glm_lex
+        plt.figure(figsize=(6, 6))
+        venn3([aco, pho, lex], ('Acoustic', 'Phonemic', 'Lexical'))
+        # Show the plot
+        plt.title(f"{set_Tag} electrodes in {ph_Tag} phase (GLM elec.: {np.round(100*len(aco | pho | lex)/len(ele_set),3)}%)")
+        plt.tight_layout()
+        plt.savefig(os.path.join('plot', f"{set_Tag}_{ph_Tag}_venn.tif"), dpi=300)
+        plt.close()
+
 
 #%% Make Atlas histograms
 from ieeg.viz.mri import subject_to_info,gen_labels
