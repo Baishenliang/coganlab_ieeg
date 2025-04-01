@@ -15,7 +15,6 @@ with open('glm_config.json', 'r') as f:
     config = json.load(f)
 
 # Extract parameters from config
-partial_regress = config['partial_regress']
 alpha = config['alpha']
 alpha_clus = config['alpha_clus']
 n_perms = config['n_perms']
@@ -25,6 +24,14 @@ task_Tag = config['task_Tag'] # Reapeat, Yes_No
 wordness = config['wordness'] # ALL, Word, Nonword
 glm_fea = config['glm_fea'] # Acoustic, Phonemic, Lexical
 f_ranges = config['feature_ranges'][glm_fea]
+f_ranges_ctr = config['control_feature_ranges'][glm_fea]
+
+if glm_fea=='Acoustic':
+    partial_regress = 0
+    feature_controlled=[]
+else:
+    partial_regress = 1
+    feature_controlled = np.r_[f_ranges_ctr[0]:f_ranges_ctr[1]]
 
 if len(f_ranges) == 1:
     feature_seleted = np.r_[0,f_ranges[0]]
@@ -40,7 +47,7 @@ for i, data_i in enumerate(data_list):
     print(f"Generate null distribution Patient {subjs[i]}")
     if partial_regress == 1:
         # Get the residuals of data and seleted features controlling out unseleted features
-        feature_mat_i_res,data_i_res = glm.par_regress(filtered_events_list[i],feature_seleted,data_i)
+        feature_mat_i_res,data_i_res = glm.par_regress(filtered_events_list[i],feature_seleted,feature_controlled,data_i)
         # Get null distribution
         null_r2 = glm.permutation_baishen_parallel(feature_mat_i_res, data_i_res, n_perms)
     else:
@@ -59,7 +66,7 @@ for i, data_i in enumerate(data_list):
     # combine original and permute r2
     if partial_regress == 1:
         # Get the residuals of data and seleted features controlling out unseleted features
-        feature_mat_i_res,data_i_res = glm.par_regress(filtered_events_list[i],feature_seleted,data_i)
+        feature_mat_i_res,data_i_res = glm.par_regress(filtered_events_list[i],feature_seleted,feature_controlled,data_i)
         r2_i,_ = glm.compute_r2_loop(feature_mat_i_res, data_i_res)
     else:
         feature_mat_i = filtered_events_list[i][:, :, feature_seleted]

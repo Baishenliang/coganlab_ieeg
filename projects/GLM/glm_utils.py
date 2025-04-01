@@ -12,6 +12,7 @@ import re
 import pandas as pd
 import glm_validate_plot as glm_plot
 from joblib import Parallel, delayed
+sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
 
 # Locations
@@ -31,7 +32,7 @@ def fifread(event,stat,task_Tag,wordness):
             os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
     import warnings
     subjs = [subj for subj in subjs if
-            subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117' and subj != 'D0102' and subj != 'D0103']  # always exclude D0115 now but not in ther future to keep the repeat
+            subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']  # always exclude D0115 now but not in ther future to keep the repeat
     if task_Tag=='Yes_No':
         subjs = [subj for subj in subjs if subj != 'D0115']
     warnings.warn(f"The following subjects are not included: D0107 D0042")
@@ -126,7 +127,7 @@ def fifread(event,stat,task_Tag,wordness):
 
     return subjs, data_list, filtered_events_list, chs, times
 
-def par_regress(filtered_events_list_i,feature_seleted,data_i):
+def par_regress(filtered_events_list_i,feature_seleted,feature_controlled,data_i):
     """
     Partial regression to control the contributions of unseleted features:
     X1 ~ X2@beta -> X1res
@@ -136,9 +137,7 @@ def par_regress(filtered_events_list_i,feature_seleted,data_i):
     # Get the selected features (X1)
     feature_mat_i = filtered_events_list_i[:, :, feature_seleted]
     # Get the control geatures (X2)
-    all_idx = np.arange(filtered_events_list_i.shape[2])
-    ctr_idx = np.setdiff1d(all_idx, feature_seleted)
-    feature_mat_i_ctr = filtered_events_list_i[:, :, ctr_idx]
+    feature_mat_i_ctr = filtered_events_list_i[:, :, feature_controlled]
     # X1 ~ X2@beta -> X1res
     _, feature_mat_i_res = compute_r2_loop(feature_mat_i_ctr, feature_mat_i)
     # Y ~ X2@beta -> Yres
