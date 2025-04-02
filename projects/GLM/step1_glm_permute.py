@@ -49,10 +49,9 @@ for i, data_i in enumerate(data_list):
         # Get the residuals of data and seleted features controlling out unseleted features
         feature_mat_i_res,data_i_res = glm.par_regress(filtered_events_list[i],feature_seleted,feature_controlled,data_i)
         # Get null distribution
-        null_r2 = glm.permutation_baishen_parallel(feature_mat_i_res, data_i_res, n_perms)
+        null_r2 = glm.permutation_baishen_parallel(feature_mat_i_res, data_i_res, n_perms,np.r_[0, np.shape(feature_mat_i_res)[2]+1])
     else:
-        feature_mat_i = filtered_events_list[i][:, :, feature_seleted]
-        null_r2 = glm.permutation_baishen_parallel(feature_mat_i, data_i, n_perms)
+        null_r2 = glm.permutation_baishen_parallel(filtered_events_list[i], data_i, n_perms,feature_seleted)
 # save the null distribution
     np.save(os.path.join('data',f'null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy'), null_r2)
     del null_r2

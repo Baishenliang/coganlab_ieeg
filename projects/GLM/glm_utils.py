@@ -180,13 +180,13 @@ def compute_r2_loop(feature_mat_i,data_i):
         r2_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch(x,y)
     return r2_i, y_res_i
 
-def permutation_baishen_parallel(feature_mat_i, data_i, n_perms):
+def permutation_baishen_parallel(feature_mat_i, data_i, n_perms,perm_feature_idx):
     n_obs = feature_mat_i.shape[0]
     # feature_mat_i: feature matrix, observations * channels * features
     # data_i: eeg data matrix, observations * channels * times
     def worker(_):
         perm_indices = np.random.permutation(n_obs)
-        perm_feature_mat = feature_mat_i[perm_indices, :, :]
+        perm_feature_mat = feature_mat_i[perm_indices, :, perm_feature_idx]
         r2_i,_ = compute_r2_loop(perm_feature_mat, data_i)
         return r2_i
 
