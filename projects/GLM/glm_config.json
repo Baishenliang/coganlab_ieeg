@@ -2,20 +2,11 @@
     "alpha": 0.05,
     "alpha_clus": 0.05,
     "n_perms": 10000,
-    "event": "Auditory",
     "stat": "zscore",
-    "task_Tag": "Yes_No",
-    "glm_fea": "Phonemic",
-    "wordness": "ALL",
     "feature_ranges": {
-        "Lexical": [2],
+        "Lexical": [1],
         "Phonemic": [2, 34],
         "Acoustic": [34, 50]
-    },
-    "control_feature_ranges": {
-        "Acoustic": [],
-        "Phonemic": [34, 50],
-        "Lexical": [2, 50]
     },
     "Acoustic_col": [1, 0.549, 0],
     "Phonemic_col": [0.541, 0.169, 0.886],

@@ -127,58 +127,32 @@ def fifread(event,stat,task_Tag,wordness):
 
     return subjs, data_list, filtered_events_list, chs, times
 
-def par_regress(filtered_events_list_i,feature_seleted,feature_controlled,data_i):
-    """
-    Partial regression to control the contributions of unseleted features:
-    X1 ~ X2@beta -> X1res
-    Y ~ X2@beta -> Yres
-    return Yres and X1res to run further Yres ~ X1s@beta
-    """
-    # Get the selected features (X1)
-    feature_mat_i = filtered_events_list_i[:, :, feature_seleted]
-    # Get the control geatures (X2)
-    feature_mat_i_ctr = filtered_events_list_i[:, :, feature_controlled]
-    # X1 ~ X2@beta -> X1res
-    _, feature_mat_i_res = compute_r2_loop(feature_mat_i_ctr, feature_mat_i)
-    # Y ~ X2@beta -> Yres
-    _, data_i_res = compute_r2_loop(feature_mat_i_ctr, data_i)
-    return feature_mat_i_res, data_i_res
-
-def compute_r2_ch(x, y):
+def compute_r2_ch(x, y,perm_feature_idx):
     # Run linear regression to get beta and R^2
     # x: observations * features
     # y: observations * times
-    # will get r2 for each time point of the y: Y(t)=betas(t)X(t)+e
-    # return:
-    # r2: times
-    # y_res: residuals (the portion of y unpredicted by x, used for control variables)
-    #        observations * times
+    # Will return the average of the absolute beta values of the perm_feature_idx features：
+    # beta_fea: times
     mask = ~np.isnan(y[:,0])
     y_clean = y[mask,:]
     x_clean = x[mask,:]
-    coef,resi = np.linalg.lstsq(x_clean, y_clean, rcond=None)[:2]
-    y_clean_res = y_clean - x_clean @ coef
-    y_res = np.full_like(y, np.nan)
-    y_res[mask,:]=y_clean_res
-    residual = resi if resi.size>0 else np.sum(y_res ** 2,axis=0)
-    r2 = 1-residual/(np.sum((y_clean - np.mean(y_clean, axis=0)) ** 2, axis=0))
-    return r2,y_res
+    coef,_ = np.linalg.lstsq(x_clean, y_clean, rcond=None)[:2]
+    beta = np.mean(np.abs(np.take(coef, perm_feature_idx[1:], axis=0)), axis=0) # removed the intercept
+    return beta
 
-def compute_r2_loop(feature_mat_i,data_i):
+def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i):
     # loop through all the electrodes and run GLM
     # feature_mat_i: feature matrix, observations * channels * features
     # data_i: eeg data matrix, observations * channels * times
     # return
-    #   r2_i: r2 matrix, channels * times
-    #   y_res_i: residual matrix, observations * channels * times
+    #   beta_i: r2 matrix, channels * times
     n_trials, n_channels_i, n_times = data_i.shape
-    r2_i = np.full((n_channels_i, n_times), np.nan)
-    y_res_i = np.full((n_trials, n_channels_i, n_times), np.nan)
+    beta_i = np.full((n_channels_i, n_times), np.nan)
     for ch in range(n_channels_i):
         x = feature_mat_i[:, ch, :]
         y = data_i[:, ch, :]
-        r2_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch(x,y)
-    return r2_i, y_res_i
+        beta_i[ch,:]= compute_r2_ch(x,y,perm_feature_idx)
+    return beta_i
 
 def permutation_baishen_parallel(feature_mat_i, data_i, n_perms,perm_feature_idx):
     n_obs = feature_mat_i.shape[0]
@@ -186,9 +160,12 @@ def permutation_baishen_parallel(feature_mat_i, data_i, n_perms,perm_feature_idx
     # data_i: eeg data matrix, observations * channels * times
     def worker(_):
         perm_indices = np.random.permutation(n_obs)
-        perm_feature_mat = feature_mat_i[perm_indices, :, perm_feature_idx]
-        r2_i,_ = compute_r2_loop(perm_feature_mat, data_i)
-        return r2_i
+        feature_mat_i_input=feature_mat_i.copy()
+        feature_mat_i_perm = np.take(feature_mat_i, perm_indices, axis=0)
+        feature_mat_i_input[:, :, perm_feature_idx] = np.take(feature_mat_i_perm, perm_feature_idx, axis=2)
+        beta_i = compute_r2_loop(feature_mat_i_input, perm_feature_idx,data_i)
+        del feature_mat_i_input,feature_mat_i_perm
+        return beta_i
 
     results = Parallel(n_jobs=-5)(delayed(worker)(k) for k in range(n_perms))
     null_r2 = np.stack(results, axis=0)  # shape: (n_perms, channels, times)

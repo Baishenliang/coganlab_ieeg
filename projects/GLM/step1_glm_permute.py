@@ -1,3 +1,5 @@
+import argparse
+
 import os
 # Relocate the working directory if needed
 # Only need it if run it in an editor. If run in terminal, use cd.
@@ -10,75 +12,61 @@ import numpy as np
 import json
 import glm_utils as glm
 
-#%% Read data
-with open('glm_config.json', 'r') as f:
-    config = json.load(f)
+def main(event, task_Tag, glm_fea, wordness):
 
-# Extract parameters from config
-alpha = config['alpha']
-alpha_clus = config['alpha_clus']
-n_perms = config['n_perms']
-event = config['event'] # Auditory, Go, Resp
-stat = config['stat'] # zscore, power
-task_Tag = config['task_Tag'] # Reapeat, Yes_No
-wordness = config['wordness'] # ALL, Word, Nonword
-glm_fea = config['glm_fea'] # Acoustic, Phonemic, Lexical
-f_ranges = config['feature_ranges'][glm_fea]
-f_ranges_ctr = config['control_feature_ranges'][glm_fea]
+    #%% Read data
+    with open('glm_config.json', 'r') as f:
+        config = json.load(f)
 
-if glm_fea=='Acoustic':
-    partial_regress = 0
-    feature_controlled=[]
-else:
-    partial_regress = 1
-    feature_controlled = np.r_[f_ranges_ctr[0]:f_ranges_ctr[1]]
+    # Extract parameters from config
+    alpha = config['alpha']
+    n_perms = config['n_perms']
+    stat = config['stat'] # zscore, power
+    f_ranges = config['feature_ranges'][glm_fea]
 
-if len(f_ranges) == 1:
-    feature_seleted = np.r_[0,f_ranges[0]]
-else:
-    feature_seleted = np.r_[0, f_ranges[0]:f_ranges[1]]
-
-subjs, data_list, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
-
-#%% Generate null distributions for each patient
-for i, data_i in enumerate(data_list):
-    # feature_mat_i: feature matrix, observations * channels * features
-    # data_i: eeg data matrix, observations * channels * times
-    print(f"Generate null distribution Patient {subjs[i]}")
-    if partial_regress == 1:
-        # Get the residuals of data and seleted features controlling out unseleted features
-        feature_mat_i_res,data_i_res = glm.par_regress(filtered_events_list[i],feature_seleted,feature_controlled,data_i)
-        # Get null distribution
-        null_r2 = glm.permutation_baishen_parallel(feature_mat_i_res, data_i_res, n_perms,np.r_[0, np.shape(feature_mat_i_res)[2]+1])
+    if len(f_ranges) == 1:
+        feature_seleted = np.r_[0,f_ranges[0]]
     else:
+        feature_seleted = np.r_[0,f_ranges[0]:f_ranges[1]]
+
+    subjs, data_list, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
+
+    #%% Generate null distributions for each patient
+    for i, data_i in enumerate(data_list):
+        # feature_mat_i: feature matrix, observations * channels * features
+        # data_i: eeg data matrix, observations * channels * times
+        print(f"Generate null distribution Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")
         null_r2 = glm.permutation_baishen_parallel(filtered_events_list[i], data_i, n_perms,feature_seleted)
-# save the null distribution
-    np.save(os.path.join('data',f'null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy'), null_r2)
-    del null_r2
+    # save the null distribution
+        np.save(os.path.join('data',f'null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy'), null_r2)
+        del null_r2
 
-#%% Generate an original significant matrix (channels*times) (GLM_original vs. GLM_null)
-for i, data_i in enumerate(data_list):
-    # feature_mat_i: feature matrix, observations * channels * features
-    # data_i: eeg data matrix, observations * channels * times
-    # r2_i: r2 matrix, channels * features * times
-    print(f"Getting uncorrected significance: Patient {subjs[i]}")
-    # combine original and permute r2
-    if partial_regress == 1:
-        # Get the residuals of data and seleted features controlling out unseleted features
-        feature_mat_i_res,data_i_res = glm.par_regress(filtered_events_list[i],feature_seleted,feature_controlled,data_i)
-        r2_i,_ = glm.compute_r2_loop(feature_mat_i_res, data_i_res)
-    else:
-        feature_mat_i = filtered_events_list[i][:, :, feature_seleted]
-        r2_i,_ = glm.compute_r2_loop(feature_mat_i, data_i)
-    np.save(f'data\\org_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', r2_i)
-    r2_i = np.expand_dims(r2_i, axis=0)
-    null_r2_i = np.load(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy")
-    r2s_i = np.concatenate([r2_i, null_r2_i], axis=0)
-    del r2_i, null_r2_i
-    # get significance of the original r2 against the permutation distribution
-    # return: mask_left_i_org channels*times
-    org_p_i = glm.aaron_perm_gt_1d(r2s_i, axis=0)[0]
-    np.save(f'data\\org_p {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', org_p_i)
-    mask_i_org = (org_p_i > (1 - alpha)).astype(int)
-    np.save(f'data\\org_mask {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', mask_i_org)
-    del org_p_i, mask_i_org
+    #%% Generate an original significant matrix (channels*times) (GLM_original vs. GLM_null)
+    for i, data_i in enumerate(data_list):
+        # feature_mat_i: feature matrix, observations * channels * features
+        # data_i: eeg data matrix, observations * channels * times
+        # r2_i: r2 matrix, channels * features * times
+        print(f"Getting uncorrected significance: Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")
+        r2_i = glm.compute_r2_loop(filtered_events_list[i], feature_seleted,data_i)
+        np.save(f'data\\org_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', r2_i)
+        r2_i = np.expand_dims(r2_i, axis=0)
+        null_r2_i = np.load(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy")
+        r2s_i = np.concatenate([r2_i, null_r2_i], axis=0)
+        del r2_i, null_r2_i
+        # get significance of the original r2 against the permutation distribution
+        # return: mask_left_i_org channels*times
+        org_p_i = glm.aaron_perm_gt_1d(r2s_i, axis=0)[0]
+        np.save(f'data\\org_p {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', org_p_i)
+        mask_i_org = (org_p_i > (1 - alpha)).astype(int)
+        np.save(f'data\\org_mask {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', mask_i_org)
+        del org_p_i, mask_i_org
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Process experiment parameters.")
+    parser.add_argument("--event", type=str, required=True, help="Event type")
+    parser.add_argument("--task_Tag", type=str, required=True, help="Task tag")
+    parser.add_argument("--glm_fea", type=str, required=True, help="GLM feature")
+    parser.add_argument("--wordness", type=str, required=True, help="Wordness category")
+
+    args = parser.parse_args()
+    main(args.event, args.task_Tag, args.glm_fea, args.wordness)
