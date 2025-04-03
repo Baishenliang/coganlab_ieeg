@@ -24,12 +24,6 @@ def main(event, task_Tag, glm_fea, wordness):
     alpha = config['alpha']
     alpha_clus = config['alpha_clus']
     stat = config['stat']
-    f_ranges = config['feature_ranges'][glm_fea]
-
-    if len(f_ranges) == 1:
-        feature_seleted = np.r_[0,f_ranges[0]]
-    else:
-        feature_seleted = np.r_[0, f_ranges[0]:f_ranges[1]]
 
     subjs, _, _, chs, _ = glm.fifread(event,stat,task_Tag,wordness)
 

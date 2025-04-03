@@ -19,6 +19,7 @@ def main(event, task_Tag, glm_fea, wordness):
         config = json.load(f)
 
     # Extract parameters from config
+    model = config['model']
     alpha = config['alpha']
     n_perms = config['n_perms']
     stat = config['stat'] # zscore, power
@@ -36,7 +37,11 @@ def main(event, task_Tag, glm_fea, wordness):
         # feature_mat_i: feature matrix, observations * channels * features
         # data_i: eeg data matrix, observations * channels * times
         print(f"Generate null distribution Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")
-        null_r2 = glm.permutation_baishen_parallel(filtered_events_list[i], data_i, n_perms,feature_seleted)
+        if model=='simple':
+            feature_mat_i=filtered_events_list[i][:,:,feature_seleted]
+            null_r2 = glm.permutation_baishen_parallel(feature_mat_i, data_i, n_perms,np.r_[0:np.shape(feature_mat_i)[2]+1])
+        elif model=='full':
+            null_r2 = glm.permutation_baishen_parallel(filtered_events_list[i], data_i, n_perms,feature_seleted)
     # save the null distribution
         np.save(os.path.join('data',f'null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy'), null_r2)
         del null_r2
@@ -47,7 +52,11 @@ def main(event, task_Tag, glm_fea, wordness):
         # data_i: eeg data matrix, observations * channels * times
         # r2_i: r2 matrix, channels * features * times
         print(f"Getting uncorrected significance: Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")
-        r2_i = glm.compute_r2_loop(filtered_events_list[i], feature_seleted,data_i)
+        if model=='simple':
+            feature_mat_i=filtered_events_list[i][:,:,feature_seleted]
+            r2_i = glm.compute_r2_loop(feature_mat_i, np.r_[0:np.shape(feature_mat_i)[2]+1],data_i)
+        elif model=='full':
+            r2_i = glm.compute_r2_loop(filtered_events_list[i], feature_seleted,data_i)
         np.save(f'data\\org_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', r2_i)
         r2_i = np.expand_dims(r2_i, axis=0)
         null_r2_i = np.load(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy")
