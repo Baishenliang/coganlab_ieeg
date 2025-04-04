@@ -392,10 +392,29 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
 
     return aligned_data, aligned_chs
 
+
+
+
 def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr):
 
     import numpy as np
     import matplotlib.pyplot as plt
+    from scipy import stats
+
+    def rowwise_normalize(data: np.ndarray, axis: int, eps: float = 1e-8) -> np.ndarray:
+
+        if axis == 1:
+            min_vals = np.nanmin(data, axis=axis)[:, np.newaxis]
+            max_vals = np.nanmax(data, axis=axis)[:, np.newaxis]
+            range_vals = max_vals - min_vals
+            range_vals[range_vals == 0] = eps
+        elif axis == 0:
+            min_vals = np.nanmin(data, axis=axis)
+            max_vals = np.nanmax(data, axis=axis)
+            range_vals = max_vals - min_vals
+
+        normalized = (data - min_vals) / range_vals
+        return normalized
 
     times=data_in.labels[1]
     times = [float(i) for i in times]
@@ -411,11 +430,13 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr):
 
     # Compute the mean and SEM across trials while ignoring NaNs
     mean_waveform = np.nanmean(data_selected, axis=0)
+    # Normalize
+    mean_waveform = rowwise_normalize(mean_waveform,0)
+
     # Baseline correction (should remove this)
     if bsl_crr:
         mean_waveform = mean_waveform - np.nanmean(mean_waveform[:51])
-    sem_waveform = np.nanstd(data_selected, axis=0) / np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
-
+    sem_waveform = np.nanstd(data_selected, axis=0) #/ np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
     # Plot the mean waveform
     plt.plot(times, mean_waveform, label=con_label, color=col,linestyle=Lstyle)
 

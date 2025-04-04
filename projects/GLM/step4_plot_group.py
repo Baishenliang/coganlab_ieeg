@@ -29,7 +29,7 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Auditory"]#,"Resp"]
+events = ["Auditory","Resp"]
 stat = "zscore"
 task_Tags = ["Repeat"]#,"Yes_No"]
 wordnesses = ["ALL"]#, "Word", "Nonword"]
@@ -129,7 +129,7 @@ for wordness in wordnesses[:2]:
         else:
             wordness_Tag = 'Word or Nonword'
         plt.title(f'GLM:  {wordness_Tag} in {md_Tag}')
-        plt.ylabel(r'GLM R^2 bsl corrected')
+        plt.ylabel(r'GLM R^2 bsl corrected (normalized)')
         plt.xlabel('Time from auditory onset (s)')
         plt.gca().spines[['top', 'right']].set_visible(False)
         if md == 'aud' or md=='del':
@@ -146,9 +146,9 @@ for wordness in wordnesses[:2]:
     plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
     if wordness == 'ALL':
         gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Acoustic'], sig_idx[f"Resp/Repeat/{wordness}/Acoustic/resp"],
-                     'Acoustic', Acoustic_col, '-',True)
+                     'Acoustic', Acoustic_col, '-',False)
         gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Phonemic'], sig_idx[f"Resp/Repeat/{wordness}/Phonemic/resp"],
-                     'Phonemic', Phonemic_col, '-',True)
+                     'Phonemic', Phonemic_col, '-',False)
         gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Lexical'], sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"], 'Lexical status', Lexical_col,'-',True)
         # gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Phonemic'], sig_idx[f"Resp/Yes_No/{wordness}/Phonemic/resp"], 'Phonemic in Decision', Phonemic_col,'--',False)
         # gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"], 'Lexical status in Decision', Lexical_col,'--',False)
