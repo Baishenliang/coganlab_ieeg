@@ -1,5 +1,5 @@
 {
-    "model": "simple",
+    "model": "partial",
     "alpha": 0.05,
     "alpha_clus": 0.05,
     "n_perms": 10000,
@@ -8,6 +8,11 @@
         "Lexical": [1],
         "Phonemic": [2, 34],
         "Acoustic": [34, 50]
+    },
+    "control_feature_ranges": {
+        "Acoustic": [],
+        "Phonemic": [34, 50],
+        "Lexical": [2, 50]
     },
     "Acoustic_col": [1, 0.549, 0],
     "Phonemic_col": [0.541, 0.169, 0.886],

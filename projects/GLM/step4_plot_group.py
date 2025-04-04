@@ -29,9 +29,9 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Auditory","Resp"]
+events = ["Auditory"]#,"Resp"]
 stat = "zscore"
-task_Tags = ["Repeat","Yes_No"]
+task_Tags = ["Repeat"]#,"Yes_No"]
 wordnesses = ["ALL"]#, "Word", "Nonword"]
 glm_feas = ["Acoustic","Phonemic","Lexical"]
 cluster_twin=0.011
@@ -92,7 +92,7 @@ for wordness in wordnesses[:2]:
             wid_scale=1
         elif md=='aud':
             xlim_l=-0.1
-            xlim_r=mean_word_len + auditory_decay
+            xlim_r=1.5#mean_word_len + auditory_decay
             wid_scale=(xlim_r-xlim_l)*100/350
         elif md=='del':
             xlim_l=0.5
@@ -129,13 +129,13 @@ for wordness in wordnesses[:2]:
         else:
             wordness_Tag = 'Word or Nonword'
         plt.title(f'GLM:  {wordness_Tag} in {md_Tag}')
-        plt.ylabel(r'mean absolute β bsl corrected')
+        plt.ylabel(r'GLM R^2 bsl corrected')
         plt.xlabel('Time from auditory onset (s)')
         plt.gca().spines[['top', 'right']].set_visible(False)
         if md == 'aud' or md=='del':
             plt.xlim(xlim_l, xlim_r)
         plt.tight_layout()
-        if md=='all':
+        if md=='all' or md == 'aud':
             plt.legend()
         plt.savefig(os.path.join('plot',f'wave auditory onset {wordness} {md}.tif'),dpi=300)
         plt.close()
