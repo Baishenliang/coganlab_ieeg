@@ -86,18 +86,18 @@ elif groupsTag=="LexDelay&LexNoDelay":
 if "LexDelay" in groupsTag:
 
     # sort the data according to the onset within a time range (Full)
-    data_LexDelay_sorted,_,LexDelay_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[-10,10])
+    data_LexDelay_sorted,_,_,LexDelay_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[-10,10])
     LexDelay_sig_idx = LexDelay_sig_idx & clean_chs_idx
     # plot the data
     plot_chs(data_LexDelay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_sig_idx)}")
 
     # (Auditory)
-    data_LexDelay_Aud_sorted,_,LexDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[-0.1,mean_word_len+auditory_decay])
+    data_LexDelay_Aud_sorted,_,_,LexDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[-0.1,mean_word_len+auditory_decay])
     LexDelay_Aud_sig_idx = LexDelay_Aud_sig_idx & clean_chs_idx
     plot_chs(data_LexDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{'Auditory'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Aud_sig_idx)}")
 
     # (Delay)
-    data_LexDelay_Delay_sorted,_,LexDelay_Delay_sig_idx=sort_chs_by_actonset(data_LexDelay_Aud,cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
+    data_LexDelay_Delay_sorted,_,_,LexDelay_Delay_sig_idx=sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
     LexDelay_Delay_sig_idx = LexDelay_Delay_sig_idx & clean_chs_idx
     plot_chs(data_LexDelay_Delay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-Delay_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Delay_sig_idx)}")
 
@@ -109,12 +109,12 @@ if "LexDelay" in groupsTag:
     # (Motor prepare)
     # !!!!!!!!!!In the future use **set** to replace the list indexing!!!!!!!!!!!!!!!!!
 
-    data_LexDelay_Motor_Prep_sorted, _, LexDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_prep_win)
+    data_LexDelay_Motor_Prep_sorted, _, _, LexDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp,epoc_LexDelay_Resp, cluster_twin, motor_prep_win)
     LexDelay_Motor_Prep_sig_idx = LexDelay_Motor_Prep_sig_idx & clean_chs_idx
     plot_chs(data_LexDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Motor_Prep_sig_idx)}")
 
     # (Motor response)
-    data_LexDelay_Motor_Resp_sorted, _, LexDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, cluster_twin, motor_resp_win)
+    data_LexDelay_Motor_Resp_sorted, _, _, LexDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, epoc_LexDelay_Resp, cluster_twin, motor_resp_win)
     LexDelay_Motor_Resp_sig_idx = LexDelay_Motor_Resp_sig_idx & clean_chs_idx
     plot_chs(data_LexDelay_Motor_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Motor_Resp_sig_idx)}")
 

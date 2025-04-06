@@ -32,7 +32,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
 
     subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
     import warnings
-    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117' and subj != 'D0102' and subj != 'D0103']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     warnings.warn(f"The following subjects are not included: D0107 D0042")
     chs = []
     data_lst = []
@@ -139,7 +139,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
     data=LabeledArray(data_raw, labels)
     return data,valid_subjs
 
-def sort_chs_by_actonset(data_in,win_len,time_range):
+def sort_chs_by_actonset(mask_in,data_in,win_len,time_range):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     Sort the significant channels according to the onset.
@@ -157,22 +157,25 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
     times = [float(i) for i in times]
     chs=data_in.labels[0]
     data=data_in.__array__()
+    mask=mask_in.__array__()
 
     spf = 1 / (times[1] - times[0])  # Calculate the sampling frequency
     win = int(win_len * spf)  # Number of samples in 0.1 seconds
 
     onsets = {}
 
+    search_start = np.argmin(np.abs(np.array(times) - time_range[0]))
+    search_stop = np.argmin(np.abs(np.array(times) - time_range[1]))
+
     for ch_idx, ch_name in enumerate(chs):
-        ch_data = data[ch_idx]
+        ch_mask = mask[ch_idx]
         found = False
 
-        search_start=np.argmin(np.abs(np.array(times) - time_range[0]))
-        search_stop=np.argmin(np.abs(np.array(times) - time_range[1]))
-        for start_idx in range(int(search_start),int(search_stop) - win + 1):
-            win_data = ch_data[start_idx:start_idx + win]
 
-            if np.all(win_data == 1):
+        for start_idx in range(int(search_start),int(search_stop) - win + 1):
+            win_mask = ch_mask[start_idx:start_idx + win]
+
+            if np.all(win_mask == 1):
                 starting_time = times[start_idx]
                 onsets[ch_name] = starting_time
                 found = True
@@ -182,7 +185,9 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
             onsets[ch_name] = None  # No significant window found
 
     # %% select channels with significant activation clusters
+    mask_s = []
     data_s = []
+    data_us = np.full([np.shape(data)[0],np.shape(data)[1]],np.nan)
     chs_s = []
     chs_s_idx = []  # significant channels selected
     chs_s_all_idx = set()  # Use a set to store selected channel indices
@@ -191,26 +196,38 @@ def sort_chs_by_actonset(data_in,win_len,time_range):
     for ch_idx, ch_name in enumerate(chs):
         onset = onsets.get(ch_name)  # Get the onset, avoiding repeated dictionary lookups
         if onset is not None:  # Check if the channel has a valid onset
+            mask_s.append(mask[ch_idx])
             data_s.append(data[ch_idx])  # Add the channel data to the selected data list
             chs_s.append(ch_name)  # Add the channel name to the selected channel names list
             chs_s_idx.append(ch_idx)
             onsets_s.append(onset)
             chs_s_all_idx.add(ch_idx)  # Add index to the set
+            data_us[ch_idx,:]=np.where(mask[ch_idx], data[ch_idx], np.nan) # the data_us contained all the channels and makred the inactive channels as nan
 
     # Convert the selected data list to a numpy array
+    mask_s = np.array(mask_s)
     data_s = np.array(data_s)
 
     # %% do the ranking
     sorted_indices = np.argsort(np.array(onsets_s))  # Get the indices that would sort the array
+    mask_s_sorted = mask_s[sorted_indices]
     data_s_sorted = data_s[sorted_indices]
+    data_s_sorted = np.where(mask_s_sorted == 1, data_s_sorted, np.nan)
     chs_s_sorted = [chs_s[i] for i in sorted_indices]
     onsets_s_sorted = [onsets_s[i] for i in sorted_indices]
 
+    # %% cut times:
+    tw_idx=np.r_[search_start:search_stop+1]
+    times = np.array(times)[tw_idx]
+    data_s_sorted = data_s_sorted[:,tw_idx]
+    data_us = data_us[:,tw_idx]
     # %% return the data
-    labels = [chs_s_sorted, times]
+    labels = [chs_s_sorted, times.tolist()]
     data_out=LabeledArray(data_s_sorted, labels)
+    labes_all = [chs, times.tolist()]
+    data_us_out=LabeledArray(data_us, labes_all)
     # onset_out=LabeledArray(np.array(onsets_s_sorted), chs_s_sorted)
-    return data_out,sorted_indices,chs_s_all_idx
+    return data_out,data_us_out,sorted_indices,chs_s_all_idx
 
 def get_notmuscle_electrodes(data_in):
     # Remove electrodes named as LAT or RAT which are by default muscle channels
@@ -253,7 +270,7 @@ def plot_chs(data_in, fig_save_dir_fm,title):
     # Create the plot
     plt.figure(figsize=(15, 15))  # Make the figure size large enough for labeling
     fig, ax = plt.subplots()
-    ax.imshow(data, cmap='Reds')
+    ax.imshow(data, cmap='Blues')
     ax.set_title(title)
 
     # Set channel names with adjusted gap
@@ -445,6 +462,24 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr):
 
     plt.xlabel('Time (s)')
     plt.xticks(tick_labels)
+
+def time_avg_select(data_in,sig_idx_lst):
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    chs=data_in.labels[0]
+    data=data_in.__array__()
+    data_avg=np.nanmean(data,axis=1)
+    data_avg_select_final=[]
+    chs_select_final=[]
+    for sig_idx in sig_idx_lst:
+        data_avg_select=data_avg[list(sig_idx)]
+        chs_select=chs[list(sig_idx)]
+        data_avg_select_final.append(data_avg_select)
+        chs_select_final.append(chs_select)
+    data_avg_select_final=np.concatenate(data_avg_select_final,axis=0)
+    chs_select_final=np.concatenate(chs_select_final,axis=0)
+    return data_avg, data_avg_select_final,chs_select_final
 
 def set2arr(set,arr_len):
     """
