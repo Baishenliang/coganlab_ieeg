@@ -4,7 +4,7 @@ import pickle
 from scipy import stats as st
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import pyreadstat
 
 # Relocate the working directory if needed
 # Only need it if run it in an editor. If run in terminal, use cd.
@@ -136,41 +136,49 @@ def glm_normalize(data,meth):
     elif meth=='mean':
         z_full[~np.isnan(data)] = np.nanmean(clean_data)
     return z_full
+def rm_out(data, threshold=3):
+    mean = np.nanmean(data)
+    std = np.nanstd(data)
+    z_scores = (data - mean) / std
+    data[np.abs(z_scores) > threshold] = np.nan
+    return data
+
 for task_Tag, wordness,ph in itertools.product(task_Tags,wordnesses,phs):
         w=dict()
         w['group']=twin_labels
         for glm_fea in glm_feas:
-            w[glm_fea]=glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/{ph}']
+            w[glm_fea]=rm_out(glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/{ph}'])
         fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(111, projection='3d')
         w=pd.DataFrame(w)
         for group, color in group_colors.items():
             subset = w[w['group'] == group]
-            ax.scatter(glm_normalize(subset[glm_feas[0]],'mean'),
-                       glm_normalize(subset[glm_feas[1]],'mean'),
-                       glm_normalize(subset[glm_feas[2]],'mean'),
-                c=color,label=group,alpha=0.2,s=5  # size of the point
+            ax.scatter(glm_normalize(subset[glm_feas[0]],'one'),
+                       glm_normalize(subset[glm_feas[1]],'one'),
+                       glm_normalize(subset[glm_feas[2]],'one'),
+                c=color,label=group,alpha=1,s=5  # size of the point
             )
         ax.set_xlabel(glm_feas[0])
         ax.set_ylabel(glm_feas[1])
         ax.set_zlabel(glm_feas[2])
-        ax.set_xlim([-0.2,0.5])
-        ax.set_ylim([-0.2,0.5])
-        ax.set_zlim([-0.2,0.5])
+        # ax.set_xlim([0,0.2])
+        # ax.set_ylim([0,0.2])
+        # ax.set_zlim([0,0.2])
         ax.set_title(f'{task_Tag}/{wordness}/{ph}')
         ax.legend()
         plt.tight_layout()
-        ax.view_init(elev=90, azim=-90)
+        # ax.view_init(elev=90, azim=-90)
         plt.savefig(os.path.join('plot',f'glm hg plot {task_Tag} {wordness} {ph}.tif'),dpi=300)
         plt.close()
+        pyreadstat.write_sav(w, os.path.join('data',f'glm hg {task_Tag} {wordness} {ph}.sav'))
 
-        A=w[w['group'] == 'Auditory']['Lexical']
-        S=w[w['group'] == 'Sensory-motor']['Lexical']
-        M=w[w['group'] == 'Motor']['Lexical']
-        print(f'A:S, {st.ttest_ind(A, S,nan_policy='omit')}')
-        print(f'S:M, {st.ttest_ind(S, M,nan_policy='omit')}')
-        print(f'A:M, {st.ttest_ind(A, M,nan_policy='omit')}')
+        A=w[w['group']=='Auditory']['Lexical']
+        SM=w[w['group']=='Sensory-motor']['Lexical']
+        M=w[w['group']=='Motor']['Lexical']
 
+        print(f'A-SM:{st.ttest_ind(A,SM,nan_policy='omit')}')
+        print(f'M-SM:{st.ttest_ind(M,SM,nan_policy='omit')}')
+        print(f'A-M:{st.ttest_ind(A,M,nan_policy='omit')}')
 
 #%% Get confusion between time-windowed selected electrodes and glm electrods
 if 1==0:
