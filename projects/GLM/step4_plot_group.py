@@ -21,6 +21,7 @@ import pickle
 
 
 #%% Set parameters
+mask_type='glm' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
 with open('glm_config.json', 'r') as f:
     config = json.load(f)
 
@@ -43,6 +44,27 @@ delay_len=0.5
 Waveplot_wth=18 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
 
+# %% get hg masks
+if mask_type == 'hg':
+
+    # % Set parameters: HG
+    groupsTag = "LexDelay"
+    stat_type = 'mask'
+    contrast = 'ave'  # average, not contrasting different conditions
+
+    # For lexical delay task, whether run the data only with repeat tasks
+    # Delayseleted=''
+    Delayseleted = '_inRep'
+    HOME = os.path.expanduser("~")
+    LAB_root = os.path.join(HOME, "Box", "CoganLab")
+
+    stats_root_delay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
+    stats_root_nodelay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BIDS', "derivatives", "stats")
+
+    if groupsTag == "LexDelay":
+        hgmask_aud, _ = gp.load_stats(stat_type, 'Auditory' + Delayseleted, contrast, stats_root_delay, stats_root_delay)
+        hgmask_resp, _ = gp.load_stats(stat_type, 'Resp' + Delayseleted, contrast, stats_root_delay, stats_root_delay)
+
 #%% Load masks, sort, getting sort index, and plot the ranks
 # sig_idx_arr=np.empty((len(events), len(task_Tags),len(glm_feas),4), dtype=object)
 # sig_idx_lab=tuple(tuple(item) for item in (events,task_Tags,glm_feas,('all','aud','del','resp')))
@@ -58,28 +80,35 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             continue
         else:
             masks,stats,_=glm.load_stats(event,stat,task_Tag,'cluster_mask',glm_fea,subjs,chs,times,wordness)
+            if mask_type == 'glm':
+                if event=='Auditory':
+                    hgmask_aud=masks
+                elif event=='Resp':
+                    hgmask_resp=masks
+            del masks
+
             clean_chs_idx = gp.get_notmuscle_electrodes(stats)
             stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats
             if event=='Auditory':
                 # whole trial
-                all_masks_sorted,_,_,all_masks_sig = gp.sort_chs_by_actonset(masks,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
+                all_masks_sorted,_,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
                 all_masks_sig = all_masks_sig & clean_chs_idx
                 gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/all"] = all_masks_sig
                 # auditory window
-                aud_masks_sorted,_,_,aud_masks_sig = gp.sort_chs_by_actonset(masks,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
+                aud_masks_sorted,_,_,aud_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
                 aud_masks_sig = aud_masks_sig & clean_chs_idx
                 gp.plot_chs(aud_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_aud.jpg'),f"N chs = {len(aud_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_sig
                 # delay window
-                del_masks_sorted,_,_,del_masks_sig = gp.sort_chs_by_actonset(masks,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
+                del_masks_sorted,_,_,del_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
                 del_masks_sig = del_masks_sig & clean_chs_idx
                 gp.plot_chs(del_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_del.jpg'),f"N chs = {len(del_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_sig
 
             elif event=="Resp":
                 # response window
-                resp_masks_sorted, _, _, resp_masks_sig = gp.sort_chs_by_actonset(masks, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
+                resp_masks_sorted, _, _, resp_masks_sig = gp.sort_chs_by_actonset(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
                 resp_masks_sig = resp_masks_sig & clean_chs_idx
                 gp.plot_chs(resp_masks_sorted, os.path.join('plot', f'{event}_{task_Tag}_{wordness}_{glm_fea}_resp.jpg'),
                             f"N chs = {len(resp_masks_sig)}")
