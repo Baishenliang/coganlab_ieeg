@@ -49,34 +49,8 @@ subjs, _, _, chs, times = glm.fifread("Auditory", 'zscore', 'Repeat', wordnesses
 with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
 
-#%% Make Atlas histograms
-from ieeg.viz.mri import subject_to_info,gen_labels
-subjs_s = ['D' + subj[1:].lstrip('0') for subj in subjs]
-ch_labels = dict()
-for subj in subjs_s:
-    info_i = subject_to_info(subj)
-    ch_labels_k = gen_labels(info_i, subj, atlas='.BN_atlas')
-    for key, value in ch_labels_k.items():
-        ch_labels[f'{subj}-{key}'] = value
-
-# Extract relevant columns and create a mapping dictionary
-# Load the CSV file
-df = pd.read_csv('atlas.csv')
-# Create the dictionary
-mapping_dict = {}
-for index, row in df.iterrows():
-    key = str(row['Anatomical and modified Cyto-architectonic descriptions']).split(',')[0]
-    value = str(row['Left and Right Hemisphere']).split('_')[0]
-    mapping_dict[key] = value
-mapping_dict['TE1.0/TE1.2']='STG'
-ch_labels_roi=dict()
-for key,value in ch_labels.items():
-    try:
-        ch_labels_roi[key] = mapping_dict[value.split("_")[0]]
-    except KeyError as e:
-        ch_labels_roi[key] = 'unknown'
-
 #%% Plot brain
+ch_labels_roi,ch_labels=gp.chs2atlas(subjs)
 for wordness in wordnesses:
     # Just get the electrodes
     masks, _, _ = glm.load_stats('Auditory', 'mask', 'Repeat', 'cluster_mask', 'Acoustic', subjs, chs, times, wordness)

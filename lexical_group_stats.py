@@ -27,7 +27,7 @@ cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 import os
 import pickle
 import numpy as np
-from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, find_com_sig_chs, plot_wave,set2arr,get_notmuscle_electrodes
+from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, find_com_sig_chs, plot_wave,set2arr,get_notmuscle_electrodes, chs2atlas, atlas2_hist, hickok_roi, plot_sig_roi_counts
 import matplotlib.pyplot as plt
 
 HOME = os.path.expanduser("~")
@@ -82,6 +82,9 @@ elif groupsTag=="LexDelay&LexNoDelay":
     epoc_LexNoDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_delay)
     epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay)
 
+# Get the ROI of labels
+ch_labels_roi,ch_labels=chs2atlas(subjs)
+hickok_roi_labels=hickok_roi(ch_labels_roi,ch_labels)
 # Get sorted electrodes
 if "LexDelay" in groupsTag:
 
@@ -277,6 +280,8 @@ if groupsTag == "LexDelay":
 
         # TRY also to plot valid (white?) vs. invalid electrodes (dark grey)
         plot_brain(subjs, pick_labels,chs_cols_picked,None,os.path.join(fig_save_dir,f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
+        atlas2_hist(ch_labels_roi,pick_labels,chs_cols_picked[0],os.path.join(fig_save_dir,f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'))
+        plot_sig_roi_counts(hickok_roi_labels, chs_cols_picked[0], pick_sig_idx, os.path.join(fig_save_dir,f'Hickok ROI histogram {TypeLabel.replace('/', ' ')}.tif'))
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
@@ -333,7 +338,7 @@ if groupsTag == "LexDelay":
     plt.axhline(y=0, linestyle='--', color='k')
     plt.title('Z-scores in lexical delay repeat tasks for delay electrodes (aligned to stim onset)')
     plt.legend()
-    plt.xlim([-0.25, 1.6])
+    # plt.xlim([-0.25, 1.6])
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_save_dir, 'LexDelay_Delay_sig_zscore_Resp.tif'), dpi=300)

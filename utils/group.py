@@ -265,12 +265,13 @@ def plot_chs(data_in, fig_save_dir_fm,title):
 
     # Automatically adjust channel gap and time gap based on the number of channels and time points
     ch_gap = max(1, num_channels // 20)  # Adjust channel gap based on the total number of channels
-    time_gap = max(1, num_times // 10)  # Adjust time gap based on the total number of time points
+    time_gap = max(1, num_times // 3)  # Adjust time gap based on the total number of time points
 
     # Create the plot
     plt.figure(figsize=(15, 15))  # Make the figure size large enough for labeling
     fig, ax = plt.subplots()
-    ax.imshow(data, cmap='Blues')
+    im=ax.imshow(data, cmap='Blues')
+    fig.colorbar(im, ax=ax)
     ax.set_title(title)
 
     # Set channel names with adjusted gap
@@ -317,14 +318,16 @@ def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
             value_counts[value] = 1
 
     # Create the bar plot
-    plt.figure(figsize=(15, 10))  # Make the figure size large enough for labeling
+    plt.figure(figsize=(15, 6))  # Make the figure size large enough for labeling
     # Sort the values by their count in descending order
     sorted_values = sorted(value_counts.items(), key=lambda x: x[1], reverse=True)
     # Create the bar plot
     plt.bar([item[0] for item in sorted_values], [item[1] for item in sorted_values],color=col)
-    plt.xlabel('Atlas')
-    plt.ylabel('Number of Electrodes')
-    plt.show()
+    plt.xlabel('Atlas', fontsize=20)
+    plt.ylabel('Number of Electrodes', fontsize=20)
+    plt.xticks(fontsize=30, rotation=45, ha='right')
+    plt.yticks(fontsize=30)
+    plt.tight_layout()
     plt.savefig(fig_save_dir_fm, dpi=300)
     plt.close()
 
@@ -496,3 +499,82 @@ def set2arr(set,arr_len):
     arr=np.zeros(arr_len,dtype=int)
     arr[list(set)]=1
     return arr
+
+def chs2atlas(subjs):
+    import pandas as pd
+    # %% Make Atlas histograms
+    from ieeg.viz.mri import subject_to_info, gen_labels
+    subjs_s = ['D' + subj[1:].lstrip('0') for subj in subjs]
+    ch_labels = dict()
+    for subj in subjs_s:
+        info_i = subject_to_info(subj)
+        ch_labels_k = gen_labels(info_i, subj, atlas='.BN_atlas')
+        for key, value in ch_labels_k.items():
+            ch_labels[f'{subj}-{key}'] = value
+
+    # Extract relevant columns and create a mapping dictionary
+    # Load the CSV file
+    df = pd.read_csv('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\atlas.csv')
+    # Create the dictionary
+    mapping_dict = {}
+    for index, row in df.iterrows():
+        key = str(row['Anatomical and modified Cyto-architectonic descriptions']).split(',')[0]
+        value = str(row['Left and Right Hemisphere']).split('_')[0]
+        mapping_dict[key] = value
+    mapping_dict['TE1.0/TE1.2'] = 'STG'
+    ch_labels_roi = dict()
+    for key, value in ch_labels.items():
+        try:
+            ch_labels_roi[key] = mapping_dict[value.split("_")[0]]
+        except KeyError as e:
+            ch_labels_roi[key] = 'unknown'
+    return ch_labels_roi,ch_labels
+
+def hickok_roi(ch_labels_roi,ch_labels):
+    hickok_roi_labels = dict()
+    for key, value in ch_labels_roi.items():
+        value_raw=ch_labels[key]
+        if value_raw!='Unknown':
+            hemi=value_raw.split("_")[1]
+        else:
+            hemi='unknown'
+        try:
+            if (value=='IFG' and hemi=='L') or (value=='IPL' and hemi=='L'):
+                hickok_roi_labels[key]='l'+value
+            elif value_raw=='A441/42_L' or value_raw=='A22c_L' or value_raw=='G_L':
+                hickok_roi_labels[key] ='Spt'
+            elif value_raw=='A6cdl_L':
+                hickok_roi_labels[key] ='lPMC'
+            else:
+                hickok_roi_labels[key]='N/A'
+        except KeyError as e:
+            hickok_roi_labels[key] = 'unknown'
+    return hickok_roi_labels
+
+def plot_sig_roi_counts(hickok_roi_labels, color, sig_idx,savedir):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from collections import Counter
+    keys = list(hickok_roi_labels.keys())
+    if isinstance(sig_idx, set):
+        selected_labels = [
+            hickok_roi_labels[keys[i]]
+            for i in sig_idx
+            if hickok_roi_labels[keys[i]] != 'N/A'
+        ]
+    elif isinstance(sig_idx, np.ndarray):
+        selected_labels=[]
+        for i,val in enumerate(sig_idx):
+            if val==1 and hickok_roi_labels[keys[i]] != 'N/A':
+                selected_labels.append(hickok_roi_labels[keys[i]])
+    label_counts = Counter(selected_labels)
+    label_counts_s = dict(sorted(label_counts.items()))
+    plt.figure(figsize=(8, 5))
+    plt.bar(label_counts_s.keys(), label_counts_s.values(), color=color)
+    plt.xlabel('ROI Label',fontsize=20)
+    plt.ylabel('Number of Electrodes', fontsize=20)
+    plt.title('Significant Electrodes per ROI')
+    plt.xticks(fontsize=30, rotation=45, ha='right')
+    plt.yticks(fontsize=30)
+    plt.tight_layout()
+    plt.savefig(savedir,dpi=300)
