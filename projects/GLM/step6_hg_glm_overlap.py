@@ -5,6 +5,7 @@ from scipy import stats as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pyreadstat
+import matplotlib.cm as cm
 
 # Relocate the working directory if needed
 # Only need it if run it in an editor. If run in terminal, use cd.
@@ -23,6 +24,9 @@ import seaborn as sns
 import json
 import pickle
 
+grouping='anat'
+#"hg": grouping electrodes according to HG windows i.e., Auditory, Sensory-motor, Motor
+#"anat": grouping electrodes according to the ROIs i.e., STG, IFG, etc
 #%% Set parameters: HG
 groupsTag="LexDelay"
 
@@ -77,22 +81,43 @@ if groupsTag=="LexDelay":
     hgmask_resp, _ = gp.load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
 #%% hg glm r^2 plots
-subjs, _, _, chs, times = glm.fifread("Auditory", 'zscore', 'Repeat', wordnesses[0])
+subjs, _, _, chs, _ = glm.fifread("Auditory", 'zscore', 'Repeat', wordnesses[0])
 with open(os.path.join('data', 'LexDelay_twin_idxes.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
 
-twin_sets=[LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'],
-           LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'],
-           LexDelay_twin_idxes['LexDelay_Motor_sig_idx']]
-twin_labels=[np.repeat('Auditory',len(LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'])).tolist(),
-             np.repeat('Sensory-motor',len(LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'])).tolist(),
-             np.repeat('Motor',len(LexDelay_twin_idxes['LexDelay_Motor_sig_idx'])).tolist()]
-twin_labels=np.concatenate(twin_labels).tolist()
+if grouping=='hg':
+    twin_sets=[LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'],
+               LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'],
+               LexDelay_twin_idxes['LexDelay_Motor_sig_idx']]
+    twin_labels=[np.repeat('Auditory',len(LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'])).tolist(),
+                 np.repeat('Sensory-motor',len(LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'])).tolist(),
+                 np.repeat('Motor',len(LexDelay_twin_idxes['LexDelay_Motor_sig_idx'])).tolist()]
+    twin_labels=np.concatenate(twin_labels).tolist()
+    group_colors = {
+        'Auditory': 'g',
+        'Motor': 'b',
+        'Sensory-motor': 'r'
+    }
+elif grouping=='anat':
+    ch_labels_roi, _ = gp.chs2atlas(subjs,hgmask_aud.labels[0])
+    target_regions = {'Hipp','STG','PrG','pSTS','IPL','INS','MTG','MFG','SFG','IFG'}
+    twin_sets = [{k for k, v in enumerate(ch_labels_roi) if ch_labels_roi[v] in target_regions}]
+    twin_labels = [v for _, v in ch_labels_roi.items() if v in target_regions]
+    # Normalize to [0, 1] for colormap
+    num_regions = len(target_regions)
+    norm = np.linspace(0, 1, num_regions)
+    # Use a perceptually-uniform colormap
+    cmap = cm.get_cmap('viridis')  # or 'plasma', 'coolwarm'
+    # Create region-color mapping
+    group_colors = {
+        region: cmap(val)
+        for region, val in zip(target_regions, norm)
+    }
 
 glm_avgs=dict()
 stass=dict()
 for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
-    subjs, _, _, chs, times = glm.fifread(event, 'zscore', task_Tag,wordness)
+    _, _, _, _, times = glm.fifread(event, 'zscore', task_Tag,wordness)
     for glm_fea in glm_feas:
         # if task_Tag == "Yes_No" and ((event=='Auditory' and glm_fea=='Acoustic') or glm_fea=='Acoustic'):# (event != "Resp" or glm_fea != "Lexical"):
         #     continue
@@ -117,14 +142,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/resp']=glm_avg
 #%% Average and select and do 3d plots
 phs=['aud','del','resp']
-Sensorimotor_col = [1, 0, 0]  # Sensorimotor (Red)
-Auditory_col = [0, 1, 0]  # Auditory (Green)
-Motor_col = [0, 0, 1]  # Motor (Blue)
-group_colors = {
-    'Auditory': 'g',
-    'Motor': 'b',
-    'Sensory-motor': 'r'
-}
+
 from statsmodels.multivariate.manova import MANOVA
 def glm_normalize(data,meth):
     clean_data = data[~np.isnan(data)]
@@ -156,14 +174,14 @@ for task_Tag, wordness,ph in itertools.product(task_Tags,wordnesses,phs):
             ax.scatter(glm_normalize(subset[glm_feas[0]],'mean'),
                        glm_normalize(subset[glm_feas[1]],'mean'),
                        glm_normalize(subset[glm_feas[2]],'mean'),
-                c=color,label=group,alpha=1,s=5  # size of the point
+                c=color,label=group,alpha=1,s=15  # size of the point
             )
         ax.set_xlabel(glm_feas[0])
         ax.set_ylabel(glm_feas[1])
         ax.set_zlabel(glm_feas[2])
-        ax.set_xlim([0,0.2])
-        ax.set_ylim([0,0.2])
-        ax.set_zlim([0,0.2])
+        # ax.set_xlim([0,0.2])
+        # ax.set_ylim([0,0.2])
+        # ax.set_zlim([0,0.2])
         ax.set_title(f'{task_Tag}/{wordness}/{ph}')
         ax.legend()
         plt.tight_layout()
@@ -172,13 +190,14 @@ for task_Tag, wordness,ph in itertools.product(task_Tags,wordnesses,phs):
         plt.close()
         pyreadstat.write_sav(w, os.path.join('data',f'glm hg {task_Tag} {wordness} {ph}.sav'))
 
-        A=w[w['group']=='Auditory']['Lexical']
-        SM=w[w['group']=='Sensory-motor']['Lexical']
-        M=w[w['group']=='Motor']['Lexical']
+        if grouping=='hg':
+            A=w[w['group']=='Auditory']['Lexical']
+            SM=w[w['group']=='Sensory-motor']['Lexical']
+            M=w[w['group']=='Motor']['Lexical']
 
-        print(f'A-SM:{st.ttest_ind(A,SM,nan_policy='omit')}')
-        print(f'M-SM:{st.ttest_ind(M,SM,nan_policy='omit')}')
-        print(f'A-M:{st.ttest_ind(A,M,nan_policy='omit')}')
+            print(f'A-SM:{st.ttest_ind(A,SM,nan_policy='omit')}')
+            print(f'M-SM:{st.ttest_ind(M,SM,nan_policy='omit')}')
+            print(f'A-M:{st.ttest_ind(A,M,nan_policy='omit')}')
 
 #%% Get confusion between time-windowed selected electrodes and glm electrods
 if 1==0:

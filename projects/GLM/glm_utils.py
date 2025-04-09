@@ -79,7 +79,7 @@ def fifread(event,stat,task_Tag,wordness):
         for col in ['Stage', 'RepYesNo', 'Wordness', 'Stim', 'Correctness']:
             filtered_events_i[col] = filtered_events_i[col].astype('category')
 
-        if subject == 'sub-D0102' and task_Tag == 'Repeat' and event == 'Auditory':
+        if subject == 'sub-D0102' and task_Tag == 'Repeat' and event == 'Auditory' and wordness !='Nonword':
             filtered_events_i = filtered_events_i[:-1]
 
         # Get data
@@ -203,7 +203,6 @@ def aaron_perm_gt_1d(diff, axis=0):
     proportions = np.arange(diff.shape[axis]) / m  # Create proportions array
     # Rearrange to match original order
     return proportions[sorted_indices.argsort(axis=axis)]
-
 
 def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness):
 

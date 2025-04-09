@@ -50,6 +50,9 @@ if groupsTag=="LexDelay":
     data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
     data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
+    # Get the ROI of labels
+    ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
+
     clean_chs_idx = get_notmuscle_electrodes(data_LexDelay_Aud)
 
     epoc_LexDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay)
@@ -59,6 +62,9 @@ elif groupsTag=="LexNoDelay":
 
     data_LexNoDelay_Aud,subjs=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay)
     data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
+
+    # Get the ROI of labels
+    ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexNoDelay_Aud.labels[0])
 
     clean_chs_idx = get_notmuscle_electrodes(data_LexNoDelay_Aud)
 
@@ -71,6 +77,9 @@ elif groupsTag=="LexDelay&LexNoDelay":
     data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_nodelay,stats_root_delay)
     data_LexNoDelay_Aud,_=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay)
 
+    # Get the ROI of labels
+    ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
+
     clean_chs_idx = get_notmuscle_electrodes(data_LexDelay_Aud)
 
     data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_nodelay, stats_root_delay)
@@ -82,8 +91,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
     epoc_LexNoDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_delay)
     epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay)
 
-# Get the ROI of labels
-ch_labels_roi,ch_labels=chs2atlas(subjs)
+
 hickok_roi_labels=hickok_roi(ch_labels_roi,ch_labels)
 # Get sorted electrodes
 if "LexDelay" in groupsTag:

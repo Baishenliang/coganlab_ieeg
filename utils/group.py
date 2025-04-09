@@ -500,7 +500,7 @@ def set2arr(set,arr_len):
     arr[list(set)]=1
     return arr
 
-def chs2atlas(subjs):
+def chs2atlas(subjs,chs_all):
     import pandas as pd
     # %% Make Atlas histograms
     from ieeg.viz.mri import subject_to_info, gen_labels
@@ -523,12 +523,15 @@ def chs2atlas(subjs):
         mapping_dict[key] = value
     mapping_dict['TE1.0/TE1.2'] = 'STG'
     ch_labels_roi = dict()
+    ch_labels_clean = dict()
     for key, value in ch_labels.items():
-        try:
-            ch_labels_roi[key] = mapping_dict[value.split("_")[0]]
-        except KeyError as e:
-            ch_labels_roi[key] = 'unknown'
-    return ch_labels_roi,ch_labels
+        if key in chs_all:
+            ch_labels_clean[key]=value
+            try:
+                ch_labels_roi[key] = mapping_dict[value.split("_")[0]]
+            except KeyError as e:
+                ch_labels_roi[key] = 'unknown'
+    return ch_labels_roi,ch_labels_clean
 
 def hickok_roi(ch_labels_roi,ch_labels):
     hickok_roi_labels = dict()

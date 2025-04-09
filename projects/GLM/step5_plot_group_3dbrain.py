@@ -50,11 +50,12 @@ with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
 
 #%% Plot brain
-ch_labels_roi,ch_labels=gp.chs2atlas(subjs)
 for wordness in wordnesses:
     # Just get the electrodes
     masks, _, _ = glm.load_stats('Auditory', 'mask', 'Repeat', 'cluster_mask', 'Acoustic', subjs, chs, times, wordness)
     chs_all = masks.labels[0]
+    ch_labels_roi, ch_labels = gp.chs2atlas(subjs,chs_all)
+    hickok_roi_labels = gp.hickok_roi(ch_labels_roi, ch_labels)
     if wordness == 'ALL':
         keys_of_interest = [
             "Auditory/Repeat/ALL/Acoustic/aud",
@@ -91,6 +92,7 @@ for wordness in wordnesses:
         gp.plot_brain(subjs, chs_sel, cols, None,
                    os.path.join('plot', f'GLM electrode loc {TypeLabel}.jpg'))
         gp.atlas2_hist(ch_labels_roi,chs_sel,col,os.path.join('plot',f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'))
+        gp.plot_sig_roi_counts(hickok_roi_labels, col, sig, os.path.join('plot',f'Hickok ROI histogram {TypeLabel.replace('/', ' ')}.tif'))
 
 #%% ovelapped plot
 overlap_Plot=False
