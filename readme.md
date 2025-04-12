@@ -142,6 +142,7 @@ mne.viz.set_3d_view(fig1, azimuth=150, elevation=70, focalpoint="auto",
     <li>At the beginnings or the endings of a shank (maybe outside the cortex).</li>
     <li>Sudden and strong activities (real neural activities are usually persistent).</li>
     <li>Very large low frequency activities that extend to high gamma band.</li>
+    <li>Have very similar activities across electrodes in a shank ( since they span multiple ROIs and white matter, suggests it's coming from something other than brain).</li>
   </ol>
 </div>
 

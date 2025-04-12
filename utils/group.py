@@ -233,18 +233,27 @@ def get_notmuscle_electrodes(data_in):
     # Remove electrodes named as LAT or RAT which are by default muscle channels
     # These codes should be removed once another preprocessing is done
     chs = data_in.labels[0]
-    clean_chs_idx = {i for i, name in enumerate(chs) if
-                     "LAT" not in name and
-                     "RAT" not in name and
-                     ("LTP" not in name or any(x in name for x in ["LTPI", "LTPS", "LTPM"])) and
-                     ("RTP" not in name or any(x in name for x in ["RTPI", "RTPS", "RTPM"])) and
-                     "D66-RTAM" not in name and
-                     "D90-RTAI" not in name and
-                     "D84-RTAI" not in name and
-                     "D24-LTG" not in name and
-                     "D26-RAST" not in name and
-                     "D90-RFO" not in name}
+    # clean_chs_idx = {i for i, name in enumerate(chs) if
+    #                  "LAT" not in name and
+    #                  "RAT" not in name and
+    #                  ("LTP" not in name or any(x in name for x in ["LTPI", "LTPS", "LTPM"])) and
+    #                  ("RTP" not in name or any(x in name for x in ["RTPI", "RTPS", "RTPM"])) and
+    #                  "D66-RTAM" not in name and
+    #                  "D90-RTAI" not in name and
+    #                  "D84-RTAI" not in name and
+    #                  "D24-LTG" not in name and
+    #                  "D26-RAST" not in name and
+    #                  "D90-RFO" not in name}
+    clean_chs_idx={i for i, name in enumerate(chs)}
     return clean_chs_idx
+
+def get_sig_elecs_keyword(data_in,sig_idx,keyword):
+    chs = data_in.labels[0]
+    out = []
+    for i,val in enumerate(chs):
+        if i in sig_idx and keyword in val:
+            out.append(chs[i])
+    return out
 
 def plot_chs(data_in, fig_save_dir_fm,title):
     """

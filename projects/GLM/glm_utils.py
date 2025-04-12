@@ -162,6 +162,13 @@ def compute_r2_ch(x, y,perm_feature_idx):
     # beta = np.sqrt(np.sum(np.square(np.take(coef, perm_feature_idx[1:], axis=0)), axis=0)) # removed the intercept
     return r2,y_res
 
+
+def temporal_smoothing(data_i, window_size=5):
+    from scipy.ndimage import uniform_filter1d
+    #data_i: eeg data matrix, observations * channels * times
+    smoothed_data = uniform_filter1d(data_i, size=window_size, axis=2, mode='nearest')
+    return smoothed_data
+
 def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i):
     # loop through all the electrodes and run GLM
     # feature_mat_i: feature matrix, observations * channels * features

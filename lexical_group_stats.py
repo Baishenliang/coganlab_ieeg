@@ -21,13 +21,14 @@ auditory_decay=0.4 # a short period of time that we may assume auditory decay ta
 delay_len=0.5 # from task script
 motor_prep_win=[-0.5,-0.1] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
 motor_resp_win=[-0.1,0.75] # get windows for motor response (0.75s to avoid too much auditory feedback)
+pre_stimonset_win=[-0.5,0]
 cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 
 # %% Sort data and get significant electrode lists
 import os
 import pickle
 import numpy as np
-from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, find_com_sig_chs, plot_wave,set2arr,get_notmuscle_electrodes, chs2atlas, atlas2_hist, hickok_roi, plot_sig_roi_counts
+from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, find_com_sig_chs, plot_wave,set2arr,get_notmuscle_electrodes, chs2atlas, atlas2_hist, hickok_roi, plot_sig_roi_counts, get_sig_elecs_keyword
 import matplotlib.pyplot as plt
 
 HOME = os.path.expanduser("~")
@@ -102,6 +103,11 @@ if "LexDelay" in groupsTag:
     # plot the data
     plot_chs(data_LexDelay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_sig_idx)}")
 
+    # Get pre-onset activations:
+    data_LexDelay_sorted_preonset,_,_,LexDelay_sig_idx_preonset = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,pre_stimonset_win)
+    LexDelay_sig_idx_preonset = LexDelay_sig_idx_preonset & clean_chs_idx
+    plot_chs(data_LexDelay_sorted_preonset,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-{stat_type}-{contrast}_preonset.jpg'),f"N chs = {len(LexDelay_sig_idx_preonset)}")
+
     # (Auditory)
     data_LexDelay_Aud_sorted,_,_,LexDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[-0.1,mean_word_len+auditory_decay])
     LexDelay_Aud_sig_idx = LexDelay_Aud_sig_idx & clean_chs_idx
@@ -174,6 +180,8 @@ if "LexDelay" in groupsTag:
 
     del data_LexDelay_sorted, data_LexDelay_Aud_sorted, data_LexDelay_Delay_sorted, data_LexDelay_Motor_Prep_sorted, data_LexDelay_Motor_Resp_sorted
 
+    # Get the labels of all the motor electrodes in the temporal lobe
+    Mot_elec_in_tmp=get_sig_elecs_keyword(data_LexDelay_Aud,LexDelay_Motor_sig_idx,'T')
 if "LexNoDelay" in groupsTag:
 
     # (Auditory)

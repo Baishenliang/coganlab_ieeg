@@ -36,8 +36,13 @@ def main(event, task_Tag, glm_fea, wordness):
     else:
         feature_seleted = np.r_[0,f_ranges[0]:f_ranges[1]]
 
-    subjs, data_list, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
+    subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
 
+    #%% Smooth data
+    data_list=[]
+    for i, data_i_raw in enumerate(data_list_raw):
+        data_i=glm.temporal_smoothing(data_i_raw, window_size=30)
+        data_list.append(data_i)
     #%% Generate null distributions for each patient
     for i, data_i in enumerate(data_list):
         # feature_mat_i: feature matrix, observations * channels * features
