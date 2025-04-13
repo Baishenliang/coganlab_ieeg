@@ -26,8 +26,48 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0081": "gamma"
-    #"D0100": "gamma"# "multitaper"#"linernoise/outlierchs/wavelet"
+    "D0023": "linernoise/outlierchs/wavelet/multitaper",
+    "D0024": "linernoise/outlierchs/wavelet/multitaper",
+    "D0026": "linernoise/outlierchs/wavelet/multitaper",
+    "D0027": "linernoise/outlierchs/wavelet/multitaper",
+    "D0028": "linernoise/outlierchs/wavelet/multitaper",
+    "D0029": "linernoise/outlierchs/wavelet/multitaper",
+    "D0032": "linernoise/outlierchs/wavelet/multitaper",
+    "D0035": "linernoise/outlierchs/wavelet/multitaper",
+    "D0038": "linernoise/outlierchs/wavelet/multitaper",
+    "D0042": "linernoise/outlierchs/wavelet/multitaper",
+    "D0044": "linernoise/outlierchs/wavelet/multitaper",
+    "D0047": "linernoise/outlierchs/wavelet/multitaper",
+    "D0053": "linernoise/outlierchs/wavelet/multitaper",
+    "D0054": "linernoise/outlierchs/wavelet/multitaper",
+    "D0055": "linernoise/outlierchs/wavelet/multitaper",
+    "D0057": "linernoise/outlierchs/wavelet/multitaper",
+    "D0059": "linernoise/outlierchs/wavelet/multitaper",
+    "D0063": "linernoise/outlierchs/wavelet/multitaper",
+    "D0065": "linernoise/outlierchs/wavelet/multitaper",
+    "D0066": "linernoise/outlierchs/wavelet/multitaper",
+    "D0068": "linernoise/outlierchs/wavelet/multitaper",
+    "D0069": "linernoise/outlierchs/wavelet/multitaper",
+    "D0070": "linernoise/outlierchs/wavelet/multitaper",
+    "D0071": "linernoise/outlierchs/wavelet/multitaper",
+    "D0077": "linernoise/outlierchs/wavelet/multitaper",
+    "D0079": "linernoise/outlierchs/wavelet/multitaper",
+    "D0080": "linernoise/outlierchs/wavelet/multitaper",
+    "D0081": "linernoise/outlierchs/wavelet/multitaper",
+    "D0084": "linernoise/outlierchs/wavelet/multitaper",
+    "D0086": "linernoise/outlierchs/wavelet/multitaper",
+    "D0090": "linernoise/outlierchs/wavelet/multitaper",
+    "D0092": "linernoise/outlierchs/wavelet/multitaper",
+    "D0094": "linernoise/outlierchs/wavelet/multitaper",
+    "D0096": "linernoise/outlierchs/wavelet/multitaper",
+    "D0100": "linernoise/outlierchs/wavelet/multitaper",
+    "D0101": "linernoise/outlierchs/wavelet/multitaper",
+    "D0102": "linernoise/outlierchs/wavelet/multitaper",
+    "D0103": "linernoise/outlierchs/wavelet/multitaper",
+    "D0107": "linernoise/outlierchs/wavelet/multitaper",
+    "D0115": "linernoise/outlierchs/wavelet/multitaper",
+    "D0117": "linernoise/outlierchs/wavelet/multitaper"
+    #"D0027": "linernoise/outlierchs/wavelet/multitaper/gamma"
 }
 
 # %% define task
