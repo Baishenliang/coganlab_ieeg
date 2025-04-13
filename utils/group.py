@@ -1,6 +1,6 @@
 from pyqtgraph.util.cprint import color
 
-def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
+def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0):
     """
     Load patient level stats files (e.g., *.fif) for further group level analysis
     output is an ieeg LabeledArray
@@ -64,13 +64,29 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
         match stat_type:
             case "zscore":
                 subj_data_epo = subj_dataset._data
-                subj_data = np.mean(subj_data_epo, axis=0)
+                match split_half:
+                    case 0:
+                        subj_data = np.mean(subj_data_epo, axis=0)
+                    case 1:
+                        half = subj_data_epo.shape[0] // 2
+                        subj_data = np.std(subj_data_epo[:half], axis=0)
+                    case 2:
+                        half = subj_data_epo.shape[0] // 2
+                        subj_data = np.std(subj_data_epo[half:], axis=0)
                 subj_chs = subj_dataset.ch_names
                 if i == 0:
                     times = subj_dataset.times
             case "power":
                 subj_data_epo = subj_dataset._data
-                subj_data = np.mean(subj_data_epo, axis=0)
+                match split_half:
+                    case 0:
+                        subj_data = np.mean(subj_data_epo, axis=0)
+                    case 1:
+                        half = subj_data_epo.shape[0] // 2
+                        subj_data = np.std(subj_data_epo[:half], axis=0)
+                    case 2:
+                        half = subj_data_epo.shape[0] // 2
+                        subj_data = np.std(subj_data_epo[half:], axis=0)
                 subj_chs = subj_dataset.ch_names
                 if i == 0:
                     times = subj_dataset.times
@@ -138,6 +154,17 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata):
     labels = [chs, times]
     data=LabeledArray(data_raw, labels)
     return data,valid_subjs
+
+def sel_subj_data(data_in,chs_idx):
+    from ieeg.arrays.label import LabeledArray
+    times=data_in.labels[1]
+    chs=data_in.labels[0]
+    data=data_in.__array__() #data: chs*times
+    data_sel=data[list(chs_idx)]
+    chs_sel=chs[list(chs_idx)]
+    labels = [chs_sel, times]
+    data_out=LabeledArray(data_sel, labels)
+    return data_out
 
 def sort_chs_by_actonset(mask_in,data_in,win_len,time_range):
     """
@@ -280,7 +307,7 @@ def plot_chs(data_in, fig_save_dir_fm,title):
     plt.figure(figsize=(15, 15))  # Make the figure size large enough for labeling
     fig, ax = plt.subplots()
     im=ax.imshow(data, cmap='Blues')
-    fig.colorbar(im, ax=ax)
+    # fig.colorbar(im, ax=ax)
     ax.set_title(title)
 
     # Set channel names with adjusted gap
@@ -424,7 +451,7 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
 
 
 
-def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr):
+def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normalize=False):
 
     import numpy as np
     import matplotlib.pyplot as plt
@@ -460,12 +487,16 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr):
     # Compute the mean and SEM across trials while ignoring NaNs
     mean_waveform = np.nanmean(data_selected, axis=0)
     # Normalize
-    mean_waveform = rowwise_normalize(mean_waveform,0)
+    if normalize:
+        mean_waveform = rowwise_normalize(mean_waveform,0)
 
     # Baseline correction (should remove this)
     if bsl_crr:
         mean_waveform = mean_waveform - np.nanmean(mean_waveform[:51])
-    sem_waveform = np.nanstd(data_selected, axis=0) #/ np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
+    if errtype == 'std':
+        sem_waveform = np.nanstd(data_selected, axis=0)
+    elif errtype == 'se':
+        sem_waveform = np.nanstd(data_selected, axis=0) / np.sqrt(np.sum(~np.isnan(data_selected), axis=0))  # SEM ignoring NaNs
     # Plot the mean waveform
     plt.plot(times, mean_waveform, label=con_label, color=col,linestyle=Lstyle)
 
