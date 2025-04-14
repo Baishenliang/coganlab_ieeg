@@ -26,47 +26,47 @@ from matplotlib import pyplot as plt
 # %% Subj list
 
 subject_processing_dict_org = {
-    "D0023": "linernoise/outlierchs/wavelet/multitaper",
-    "D0024": "linernoise/outlierchs/wavelet/multitaper",
-    "D0026": "linernoise/outlierchs/wavelet/multitaper",
-    "D0027": "linernoise/outlierchs/wavelet/multitaper",
-    "D0028": "linernoise/outlierchs/wavelet/multitaper",
-    "D0029": "linernoise/outlierchs/wavelet/multitaper",
-    "D0032": "linernoise/outlierchs/wavelet/multitaper",
-    "D0035": "linernoise/outlierchs/wavelet/multitaper",
-    "D0038": "linernoise/outlierchs/wavelet/multitaper",
-    "D0042": "linernoise/outlierchs/wavelet/multitaper",
-    "D0044": "linernoise/outlierchs/wavelet/multitaper",
-    "D0047": "linernoise/outlierchs/wavelet/multitaper",
-    "D0053": "linernoise/outlierchs/wavelet/multitaper",
-    "D0054": "linernoise/outlierchs/wavelet/multitaper",
-    "D0055": "linernoise/outlierchs/wavelet/multitaper",
-    "D0057": "linernoise/outlierchs/wavelet/multitaper",
-    "D0059": "linernoise/outlierchs/wavelet/multitaper",
-    "D0063": "linernoise/outlierchs/wavelet/multitaper",
-    "D0065": "linernoise/outlierchs/wavelet/multitaper",
-    "D0066": "linernoise/outlierchs/wavelet/multitaper",
-    "D0068": "linernoise/outlierchs/wavelet/multitaper",
-    "D0069": "linernoise/outlierchs/wavelet/multitaper",
-    "D0070": "linernoise/outlierchs/wavelet/multitaper",
-    "D0071": "linernoise/outlierchs/wavelet/multitaper",
-    "D0077": "linernoise/outlierchs/wavelet/multitaper",
-    "D0079": "linernoise/outlierchs/wavelet/multitaper",
-    "D0080": "linernoise/outlierchs/wavelet/multitaper",
-    "D0081": "linernoise/outlierchs/wavelet/multitaper",
-    "D0084": "linernoise/outlierchs/wavelet/multitaper",
-    "D0086": "linernoise/outlierchs/wavelet/multitaper",
-    "D0090": "linernoise/outlierchs/wavelet/multitaper",
-    "D0092": "linernoise/outlierchs/wavelet/multitaper",
-    "D0094": "linernoise/outlierchs/wavelet/multitaper",
-    "D0096": "linernoise/outlierchs/wavelet/multitaper",
-    "D0100": "linernoise/outlierchs/wavelet/multitaper",
-    "D0101": "linernoise/outlierchs/wavelet/multitaper",
-    "D0102": "linernoise/outlierchs/wavelet/multitaper",
-    "D0103": "linernoise/outlierchs/wavelet/multitaper",
-    "D0107": "linernoise/outlierchs/wavelet/multitaper",
-    "D0115": "linernoise/outlierchs/wavelet/multitaper",
-    "D0117": "linernoise/outlierchs/wavelet/multitaper"
+    "D0023": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0024": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0026": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0027": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0028": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0029": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0032": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0035": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0038": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0042": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0044": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0047": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0053": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0054": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0055": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0057": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0059": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0063": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0065": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0066": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0068": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0069": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0070": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0071": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0077": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0079": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0080": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0081": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0084": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0086": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0090": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0092": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0094": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0096": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0100": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0101": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0102": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0103": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0107": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0115": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0117": "gamma"#"linernoise/outlierchs/wavelet/multitaper"
     #"D0027": "linernoise/outlierchs/wavelet/multitaper/gamma"
 }
 
@@ -640,75 +640,76 @@ for subject, processing_type in subject_processing_dict.items():
                 base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
                 del data, sig1, sig2, base, mask
 
-                # run permutation: contrast gamma (e.g., YesNo vs. Repeat, Word vs. Nonword)
-                #####!!!!!!!!!!!!!!!!!!!!! Don't need this in the future. Just merge the contrast to the upper baseline correction lines and set one signal as baseline
-                if Task_Tag == "LexicalDecRepDelay":
-                    if Select_trials == 'Rep_only':
+                if 1==0:
+                    # run permutation: contrast gamma (e.g., YesNo vs. Repeat, Word vs. Nonword)
+                    #####!!!!!!!!!!!!!!!!!!!!! Don't need this in the future. Just merge the contrast to the upper baseline correction lines and set one signal as baseline
+                    if Task_Tag == "LexicalDecRepDelay":
+                        if Select_trials == 'Rep_only':
+                            gamma_contrast_zip=zip(
+                                ('Word','Nonword'),
+                                ('Nonword','Word'),
+                                ('W_NW','NW_W')
+                            )
+                        elif Select_trials == 'All':
+                            gamma_contrast_zip=zip(
+                                ('Yes_No','Repeat'),
+                                ('Repeat','Yes_No'),
+                                ('YN_Rep','Rep_YN')
+                            )
+                    elif Task_Tag == "LexicalDecRepNoDelay":
                         gamma_contrast_zip=zip(
                             ('Word','Nonword'),
                             ('Nonword','Word'),
                             ('W_NW','NW_W')
                         )
-                    elif Select_trials == 'All':
+                    elif Task_Tag == "RetroCue": # wait for future setting
                         gamma_contrast_zip=zip(
-                            ('Yes_No','Repeat'),
-                            ('Repeat','Yes_No'),
-                            ('YN_Rep','Rep_YN')
+                            ('ree','ga'),
+                            ('ga','ree'),
+                            ('ree_ga','ga_ree')
                         )
-                elif Task_Tag == "LexicalDecRepNoDelay":
-                    gamma_contrast_zip=zip(
-                        ('Word','Nonword'),
-                        ('Nonword','Word'),
-                        ('W_NW','NW_W')
-                    )
-                elif Task_Tag == "RetroCue": # wait for future setting
-                    gamma_contrast_zip=zip(
-                        ('ree','ga'),
-                        ('ga','ree'),
-                        ('ree_ga','ga_ree')
-                    )
-                for sig1_tag, sig2_tag, contrast_Tag in gamma_contrast_zip:
+                    for sig1_tag, sig2_tag, contrast_Tag in gamma_contrast_zip:
 
-                    if Task_Tag == "RetroCue":
-                        break  # wait for future setting
+                        if Task_Tag == "RetroCue":
+                            break  # wait for future setting
 
-                    mask = dict()
-                    data = []
-                        
-                    sig1 = epoch[sig1_tag].get_data(tmin=t[0], tmax=t[1], copy=True) # as signal
-                    sig2 = epoch[sig2_tag].get_data(tmin=t[0], tmax=t[1], copy=True) # as baseline
+                        mask = dict()
+                        data = []
 
-                    # time-perm (test whether signal is greater than baseline, p=0.025 as it is a two-tailed test)
-                    mask[tag], p_act = stats.time_perm_cluster(
-                        sig1, sig2, p_thresh=0.025, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
-                        ignore_adjacency=1)
-                    epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
-                                                tmin=t[0])
+                        sig1 = epoch[sig1_tag].get_data(tmin=t[0], tmax=t[1], copy=True) # as signal
+                        sig2 = epoch[sig2_tag].get_data(tmin=t[0], tmax=t[1], copy=True) # as baseline
 
-                    # plot mask
-                    plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}_{contrast_Tag}.jpg')
+                        # time-perm (test whether signal is greater than baseline, p=0.025 as it is a two-tailed test)
+                        mask[tag], p_act = stats.time_perm_cluster(
+                            sig1, sig2, p_thresh=0.025, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
+                            ignore_adjacency=1)
+                        epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
+                                                    tmin=t[0])
 
-                    # baseline correction
-                    # not knowing if this one is correct but just made it (!!!! waiting for Aaron to solve !!!!)
-                    # sig2_rshape = make_data_same(sig2, sig1.shape, 0)
-                    power = scaling.rescale(epoch[sig1_tag], epoch[sig2_tag], 'mean', copy=True)
-                    z_score = scaling.rescale(epoch[sig1_tag], epoch[sig2_tag], 'zscore', copy=True)
+                        # plot mask
+                        plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}_{contrast_Tag}.jpg')
 
-                    # Calculate the p-value
-                    p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
+                        # baseline correction
+                        # not knowing if this one is correct but just made it (!!!! waiting for Aaron to solve !!!!)
+                        # sig2_rshape = make_data_same(sig2, sig1.shape, 0)
+                        power = scaling.rescale(epoch[sig1_tag], epoch[sig2_tag], 'mean', copy=True)
+                        z_score = scaling.rescale(epoch[sig1_tag], epoch[sig2_tag], 'zscore', copy=True)
 
-                    data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
+                        # Calculate the p-value
+                        p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
 
-                    for tag, epoch_mask, power, z_score, p_vals in data:
+                        data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
 
-                        power.save(subj_gamma_stats_dir + f"/{tag}_power-epo_{contrast_Tag}.fif", overwrite=True,fmt='double')
-                        z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo_{contrast_Tag}.fif", overwrite=True,fmt='double')
-                        epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave_{contrast_Tag}.fif", overwrite=True)
-                        p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave_{contrast_Tag}.fif", overwrite=True)
-                    
-                    del data, sig1, sig2, mask
+                        for tag, epoch_mask, power, z_score, p_vals in data:
 
-                del out
+                            power.save(subj_gamma_stats_dir + f"/{tag}_power-epo_{contrast_Tag}.fif", overwrite=True,fmt='double')
+                            z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo_{contrast_Tag}.fif", overwrite=True,fmt='double')
+                            epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave_{contrast_Tag}.fif", overwrite=True)
+                            p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave_{contrast_Tag}.fif", overwrite=True)
+
+                        del data, sig1, sig2, mask
+
+                    del out
 
             log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation  %%% completed %%% \n")
 
