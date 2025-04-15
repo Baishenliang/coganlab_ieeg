@@ -330,7 +330,7 @@ def plot_chs(data_in, fig_save_dir_fm,title):
         jitter_time_index = np.abs(times_array+.0234).argmin()
 
     ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
-    ax.axvline(x=jitter_time_index, color='red', linestyle='--', linewidth=1)
+    ax.axvline(x=jitter_time_index, color='red', linestyle='-', linewidth=1)
     ax.axvline(x=jitter_time_index+1, color='red', linestyle='--', linewidth=1)
     ax.axvline(x=jitter_time_index-1, color='red', linestyle='--', linewidth=1)
 
