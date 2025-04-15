@@ -51,7 +51,7 @@ subject_processing_dict_org = {
     # "D0070": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0071": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0077": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma"
+    # "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma",
     # "D0080": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0081": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0084": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
@@ -60,7 +60,7 @@ subject_processing_dict_org = {
     # "D0092": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0094": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0096": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0100": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
     # "D0101": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0102": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0103": "gamma",#"linernoise/outlierchs/wavelet/multitaper",

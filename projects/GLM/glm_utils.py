@@ -32,7 +32,7 @@ def fifread(event,stat,task_Tag,wordness):
             os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
     import warnings
     subjs = [subj for subj in subjs if
-            subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']  # always exclude D0115 now but not in ther future to keep the repeat
+            subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117' and subj != 'D0079']  # always exclude D0115 now but not in ther future to keep the repeat
     if task_Tag=='Yes_No':
         subjs = [subj for subj in subjs if subj != 'D0115']
     warnings.warn(f"The following subjects are not included: D0107 D0042")
