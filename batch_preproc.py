@@ -27,7 +27,7 @@ from matplotlib import pyplot as plt
 
 subject_processing_dict_org = {
     # "D0023": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0024": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
+    "D0024": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0026": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0027": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0028": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
@@ -60,7 +60,7 @@ subject_processing_dict_org = {
     # "D0092": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0094": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0096": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
+    # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
     # "D0101": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0102": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
     # "D0103": "gamma",#"linernoise/outlierchs/wavelet/multitaper",

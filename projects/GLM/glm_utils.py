@@ -32,7 +32,7 @@ def fifread(event,stat,task_Tag,wordness):
             os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
     import warnings
     subjs = [subj for subj in subjs if
-            subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117' and subj != 'D0079']  # always exclude D0115 now but not in ther future to keep the repeat
+            subj != 'D0024' and subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117' and subj != 'D0079' and subj != 'D0100']  # always exclude D0115 now but not in ther future to keep the repeat
     if task_Tag=='Yes_No':
         subjs = [subj for subj in subjs if subj != 'D0115']
     warnings.warn(f"The following subjects are not included: D0107 D0042")
@@ -64,11 +64,11 @@ def fifread(event,stat,task_Tag,wordness):
         dfs = [pd.read_csv(f, sep='\t') for f in files_sorted]
         events_df = pd.concat(dfs, ignore_index=True)
         if wordness=='ALL':
-            filtered_events_i = events_df[events_df['trial_type'].str.contains(event)
+            filtered_events_i = events_df[events_df['trial_type'].str.contains(event.split('_')[0])
                                           & events_df['trial_type'].str.contains('CORRECT')
                                           & events_df['trial_type'].str.contains(task_Tag)].reset_index(drop=True)
         else:
-            filtered_events_i = events_df[events_df['trial_type'].str.contains(event)
+            filtered_events_i = events_df[events_df['trial_type'].str.contains(event.split('_')[0])
                                           & events_df['trial_type'].str.contains('CORRECT')
                                           & events_df['trial_type'].str.contains(task_Tag)
                                           & events_df['trial_type'].str.contains(wordness)].reset_index(drop=True)
@@ -79,25 +79,25 @@ def fifread(event,stat,task_Tag,wordness):
         for col in ['Stage', 'RepYesNo', 'Wordness', 'Stim', 'Correctness']:
             filtered_events_i[col] = filtered_events_i[col].astype('category')
 
-        if subject == 'sub-D0102' and task_Tag == 'Repeat' and event == 'Auditory' and wordness !='Nonword':
+        if subject == 'sub-D0102' and task_Tag == 'Repeat' and event.split('_')[0] == 'Auditory' and wordness !='Nonword':
             filtered_events_i = filtered_events_i[:-1]
 
         # Get data
         if wordness == 'ALL':
-            if event == 'Auditory':
+            if event.split('_')[0] == 'Auditory':
                 data_i = epochs[f'Auditory_stim/{task_Tag}/CORRECT'].get_data()
-            elif event == 'Resp':
+            elif event.split('_')[0] == 'Resp':
                 data_i = epochs[f'Resp/{task_Tag}/CORRECT'].get_data()
-            elif event == 'Go':
+            elif event.split('_')[0] == 'Go':
                 data_i = epochs[f'Go/{task_Tag}/CORRECT'].get_data()
             if i == 0:
                 times = epochs.times
         else:
-            if event == 'Auditory':
+            if event.split('_')[0] == 'Auditory':
                 data_i = epochs[f'Auditory_stim/{task_Tag}/{wordness}/CORRECT'].get_data()
-            elif event == 'Resp':
+            elif event.split('_')[0] == 'Resp':
                 data_i = epochs[f'Resp/{task_Tag}/{wordness}/CORRECT'].get_data()
-            elif event == 'Go':
+            elif event.split('_')[0] == 'Go':
                 data_i = epochs[f'Go/{task_Tag}/{wordness}/CORRECT'].get_data()
             if i == 0:
                 times = epochs.times
