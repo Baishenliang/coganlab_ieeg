@@ -30,7 +30,7 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Auditory_inRep"]#,"Resp"]
+events = ["Auditory_inRep","Resp_inRep"]
 stat = "zscore"
 task_Tags = ["Repeat"]#,"Yes_No"]
 wordnesses = ["ALL"]#, "Word", "Nonword"]
@@ -81,15 +81,15 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
         else:
             masks,stats,_=glm.load_stats(event,stat,task_Tag,'cluster_mask',glm_fea,subjs,chs,times,wordness)
             if mask_type == 'glm':
-                if event=='Auditory':
+                if event.split('_')[0]=='Auditory':
                     hgmask_aud=masks
-                elif event=='Resp':
+                elif event.split('_')[0]=='Resp':
                     hgmask_resp=masks
             del masks
 
             clean_chs_idx = gp.get_notmuscle_electrodes(stats)
             stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats
-            if event=='Auditory':
+            if event.split('_')[0]=='Auditory':
                 # whole trial
                 all_masks_sorted,_,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
                 all_masks_sig = all_masks_sig & clean_chs_idx
@@ -106,7 +106,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 gp.plot_chs(del_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_del.jpg'),f"N chs = {len(del_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_sig
 
-            elif event=="Resp":
+            elif event.split('_')[0]=="Resp":
                 # response window
                 resp_masks_sorted, _, _, resp_masks_sig = gp.sort_chs_by_actonset(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
                 resp_masks_sig = resp_masks_sig & clean_chs_idx
@@ -129,11 +129,11 @@ for wordness in wordnesses[:2]:
             wid_scale = (xlim_r - xlim_l)*100/350
         plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
         if wordness == 'ALL':
-            gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Acoustic'], sig_idx[f"Auditory/Repeat/{wordness}/Acoustic/{md}"],
+            gp.plot_wave(stass[f'Auditory_inRep/Repeat/{wordness}/Acoustic'], sig_idx[f"Auditory_inRep/Repeat/{wordness}/Acoustic/{md}"],
                          'Acoustic rep', Acoustic_col, '-',True)
-            gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Phonemic'], sig_idx[f"Auditory/Repeat/{wordness}/Phonemic/{md}"],
+            gp.plot_wave(stass[f'Auditory_inRep/Repeat/{wordness}/Phonemic'], sig_idx[f"Auditory_inRep/Repeat/{wordness}/Phonemic/{md}"],
                          'Phonemic rep', Phonemic_col, '-',True)
-            gp.plot_wave(stass[f'Auditory/Repeat/{wordness}/Lexical'], sig_idx[f"Auditory/Repeat/{wordness}/Lexical/{md}"],
+            gp.plot_wave(stass[f'Auditory_inRep/Repeat/{wordness}/Lexical'], sig_idx[f"Auditory_inRep/Repeat/{wordness}/Lexical/{md}"],
                          'Lexical status rep', Lexical_col, '-',True)
             if 'Yes_No' in task_Tags:
                 gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Acoustic'], sig_idx[f"Auditory/Yes_No/{wordness}/Acoustic/{md}"],
@@ -143,13 +143,13 @@ for wordness in wordnesses[:2]:
                 gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Lexical'], sig_idx[f"Auditory/Yes_No/{wordness}/Lexical/{md}"],
                          'Lexical status YN', Lexical_col, '--',True)
         elif wordness == 'Word':
-            gp.plot_wave(stass[f'Auditory/Repeat/Word/Acoustic'], sig_idx[f"Auditory/Repeat/Word/Acoustic/{md}"],
+            gp.plot_wave(stass[f'Auditory_inRep/Repeat/Word/Acoustic'], sig_idx[f"Auditory_inRep/Repeat/Word/Acoustic/{md}"],
                          'Acoustic_Word', Acoustic_col, '-',True)
-            gp.plot_wave(stass[f'Auditory/Repeat/Word/Phonemic'], sig_idx[f"Auditory/Repeat/Word/Phonemic/{md}"],
+            gp.plot_wave(stass[f'Auditory_inRep/Repeat/Word/Phonemic'], sig_idx[f"Auditory_inRep/Repeat/Word/Phonemic/{md}"],
                          'Phonemic_Word', Phonemic_col, '-',True)
-            gp.plot_wave(stass[f'Auditory/Repeat/Nonword/Acoustic'], sig_idx[f"Auditory/Repeat/Nonword/Acoustic/{md}"],
+            gp.plot_wave(stass[f'Auditory_inRep/Repeat/Nonword/Acoustic'], sig_idx[f"Auditory_inRep/Repeat/Nonword/Acoustic/{md}"],
                          'Acoustic_Nonword', Acoustic_col, '--',True)
-            gp.plot_wave(stass[f'Auditory/Repeat/Nonword/Phonemic'], sig_idx[f"Auditory/Repeat/Nonword/Phonemic/{md}"],
+            gp.plot_wave(stass[f'Auditory_inRep/Repeat/Nonword/Phonemic'], sig_idx[f"Auditory_inRep/Repeat/Nonword/Phonemic/{md}"],
                          'Phonemic_Nonword', Phonemic_col, '--',True)
         plt.axvline(x=0, linestyle='--', color='k')
         plt.axhline(y=0, linestyle='--', color='k')
@@ -174,21 +174,21 @@ for wordness in wordnesses[:2]:
     wid_scale = (xlim_r - xlim_l)*100/350
     plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
     if wordness == 'ALL':
-        gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Acoustic'], sig_idx[f"Resp/Repeat/{wordness}/Acoustic/resp"],
+        gp.plot_wave(stass[f'Resp_inRep/Repeat/{wordness}/Acoustic'], sig_idx[f"Resp_inRep/Repeat/{wordness}/Acoustic/resp"],
                      'Acoustic', Acoustic_col, '-',False)
-        gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Phonemic'], sig_idx[f"Resp/Repeat/{wordness}/Phonemic/resp"],
+        gp.plot_wave(stass[f'Resp_inRep/Repeat/{wordness}/Phonemic'], sig_idx[f"Resp_inRep/Repeat/{wordness}/Phonemic/resp"],
                      'Phonemic', Phonemic_col, '-',False)
-        gp.plot_wave(stass[f'Resp/Repeat/{wordness}/Lexical'], sig_idx[f"Resp/Repeat/{wordness}/Lexical/resp"], 'Lexical status', Lexical_col,'-',True)
+        gp.plot_wave(stass[f'Resp_inRep/Repeat/{wordness}/Lexical'], sig_idx[f"Resp_inRep/Repeat/{wordness}/Lexical/resp"], 'Lexical status', Lexical_col,'-',True)
         gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Phonemic'], sig_idx[f"Resp/Yes_No/{wordness}/Phonemic/resp"], 'Phonemic in Decision', Phonemic_col,'--',False)
         gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"], 'Lexical status in Decision', Lexical_col,'--',False)
     elif wordness == 'Word':
-        gp.plot_wave(stass[f'Resp/Repeat/Word/Acoustic'], sig_idx[f"Resp/Repeat/Word/Acoustic/resp"],
+        gp.plot_wave(stass[f'Resp_inRep/Repeat/Word/Acoustic'], sig_idx[f"Resp_inRep/Repeat/Word/Acoustic/resp"],
                      'Acoustic_Word', Acoustic_col, '-',True)
-        gp.plot_wave(stass[f'Resp/Repeat/Word/Phonemic'], sig_idx[f"Resp/Repeat/Word/Phonemic/resp"],
+        gp.plot_wave(stass[f'Resp_inRep/Repeat/Word/Phonemic'], sig_idx[f"Resp_inRep/Repeat/Word/Phonemic/resp"],
                      'Phonemic_Word', Phonemic_col, '-',True)
-        gp.plot_wave(stass[f'Resp/Repeat/Nonword/Acoustic'], sig_idx[f"Resp/Repeat/Nonword/Acoustic/resp"],
+        gp.plot_wave(stass[f'Resp_inRep/Repeat/Nonword/Acoustic'], sig_idx[f"Resp_inRep/Repeat/Nonword/Acoustic/resp"],
                      'Acoustic_Nonword', Acoustic_col, '--',True)
-        gp.plot_wave(stass[f'Resp/Repeat/Nonword/Phonemic'], sig_idx[f"Resp/Repeat/Nonword/Phonemic/resp"],
+        gp.plot_wave(stass[f'Resp_inRep/Repeat/Nonword/Phonemic'], sig_idx[f"Resp_inRep/Repeat/Nonword/Phonemic/resp"],
                      'Phonemic_Nonword', Phonemic_col, '--',True)
 
     if wordness == 'ALL':
@@ -216,24 +216,24 @@ for wordness in wordnesses:
 
     if wordness == 'ALL':
         keys_of_interest = [
-            "Auditory/Repeat/ALL/Acoustic/aud",
-            "Auditory/Repeat/ALL/Phonemic/aud",
-            "Auditory/Repeat/ALL/Lexical/aud",
-            "Auditory/Repeat/ALL/Acoustic/del",
-            "Auditory/Repeat/ALL/Phonemic/del",
-            "Auditory/Repeat/ALL/Lexical/del",
-            "Resp/Repeat/ALL/Acoustic/resp",
-            "Resp/Repeat/ALL/Phonemic/resp",
-            "Resp/Repeat/ALL/Lexical/resp"
+            "Auditory_inRep/Repeat/ALL/Acoustic/aud",
+            "Auditory_inRep/Repeat/ALL/Phonemic/aud",
+            "Auditory_inRep/Repeat/ALL/Lexical/aud",
+            "Auditory_inRep/Repeat/ALL/Acoustic/del",
+            "Auditory_inRep/Repeat/ALL/Phonemic/del",
+            "Auditory_inRep/Repeat/ALL/Lexical/del",
+            "Resp_inRep/Repeat/ALL/Acoustic/resp",
+            "Resp_inRep/Repeat/ALL/Phonemic/resp",
+            "Resp_inRep/Repeat/ALL/Lexical/resp"
         ]
     else:
         keys_of_interest = [
-            f"Auditory/Repeat/{wordness}/Acoustic/aud",
-            f"Auditory/Repeat/{wordness}/Phonemic/aud",
-            f"Auditory/Repeat/{wordness}/Acoustic/del",
-            f"Auditory/Repeat/{wordness}/Phonemic/del",
-            f"Resp/Repeat/{wordness}/Acoustic/resp",
-            f"Resp/Repeat/{wordness}/Phonemic/resp"
+            f"Auditory_inRep/Repeat/{wordness}/Acoustic/aud",
+            f"Auditory_inRep/Repeat/{wordness}/Phonemic/aud",
+            f"Auditory_inRep/Repeat/{wordness}/Acoustic/del",
+            f"Auditory_inRep/Repeat/{wordness}/Phonemic/del",
+            f"Resp_inRep/Repeat/{wordness}/Acoustic/resp",
+            f"Resp_inRep/Repeat/{wordness}/Phonemic/resp"
          ]
 
     filtered_sets = {key: sig_idx[key] for key in keys_of_interest}

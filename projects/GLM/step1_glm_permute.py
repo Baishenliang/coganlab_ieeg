@@ -41,7 +41,7 @@ def main(event, task_Tag, glm_fea, wordness):
     #%% Smooth data
     data_list=[]
     for i, data_i_raw in enumerate(data_list_raw):
-        data_i=glm.temporal_smoothing(data_i_raw, window_size=30)
+        data_i=glm.temporal_smoothing(data_i_raw, window_size=5) #smoothing window: 1=10ms
         data_list.append(data_i)
     #%% Generate null distributions for each patient
     for i, data_i in enumerate(data_list):
