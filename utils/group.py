@@ -32,7 +32,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
     subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
     import warnings
-    subjs = [subj for subj in subjs if subj != 'D0024' and subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     warnings.warn(f"The following subjects are not included: D0107 D0042")
     chs = []
     data_lst = []
@@ -330,10 +330,6 @@ def plot_chs(data_in, fig_save_dir_fm,title):
         jitter_time_index = np.abs(times_array+.0234).argmin()
 
     ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
-    ax.axvline(x=jitter_time_index, color='red', linestyle='-', linewidth=1)
-    ax.axvline(x=jitter_time_index+1, color='red', linestyle='--', linewidth=1)
-    ax.axvline(x=jitter_time_index-1, color='red', linestyle='--', linewidth=1)
-
 
     # Save the figure
     fig.savefig(fig_save_dir_fm, dpi=300)

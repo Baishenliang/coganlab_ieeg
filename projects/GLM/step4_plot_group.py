@@ -175,12 +175,12 @@ for wordness in wordnesses[:2]:
     plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
     if wordness == 'ALL':
         gp.plot_wave(stass[f'Resp_inRep/Repeat/{wordness}/Acoustic'], sig_idx[f"Resp_inRep/Repeat/{wordness}/Acoustic/resp"],
-                     'Acoustic', Acoustic_col, '-',False)
+                     'Acoustic', Acoustic_col, '-',True)
         gp.plot_wave(stass[f'Resp_inRep/Repeat/{wordness}/Phonemic'], sig_idx[f"Resp_inRep/Repeat/{wordness}/Phonemic/resp"],
-                     'Phonemic', Phonemic_col, '-',False)
+                     'Phonemic', Phonemic_col, '-',True)
         gp.plot_wave(stass[f'Resp_inRep/Repeat/{wordness}/Lexical'], sig_idx[f"Resp_inRep/Repeat/{wordness}/Lexical/resp"], 'Lexical status', Lexical_col,'-',True)
-        gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Phonemic'], sig_idx[f"Resp/Yes_No/{wordness}/Phonemic/resp"], 'Phonemic in Decision', Phonemic_col,'--',False)
-        gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"], 'Lexical status in Decision', Lexical_col,'--',False)
+        # gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Phonemic'], sig_idx[f"Resp/Yes_No/{wordness}/Phonemic/resp"], 'Phonemic in Decision', Phonemic_col,'--',False)
+        # gp.plot_wave(stass[f'Resp/Yes_No/{wordness}/Lexical'], sig_idx[f"Resp/Yes_No/{wordness}/Lexical/resp"], 'Lexical status in Decision', Lexical_col,'--',False)
     elif wordness == 'Word':
         gp.plot_wave(stass[f'Resp_inRep/Repeat/Word/Acoustic'], sig_idx[f"Resp_inRep/Repeat/Word/Acoustic/resp"],
                      'Acoustic_Word', Acoustic_col, '-',True)
