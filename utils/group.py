@@ -341,7 +341,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, **kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
     fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',
-                            label_every=label_every, size=0.3, **kwargs)
+                            label_every=label_every, size=0.5, **kwargs)
     #fig3d.save_image(fig_save_dir_f)
 
 def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):

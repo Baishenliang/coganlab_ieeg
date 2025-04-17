@@ -45,37 +45,37 @@ delay_len=0.5
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
 
-subjs, _, _, chs, times = glm.fifread("Auditory", 'zscore', 'Repeat', wordnesses[0])
+subjs, _, _, chs, times = glm.fifread("Auditory_inRep", 'zscore', 'Repeat', wordnesses[0])
 with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
 
 #%% Plot brain
 for wordness in wordnesses:
     # Just get the electrodes
-    masks, _, _ = glm.load_stats('Auditory', 'mask', 'Repeat', 'cluster_mask', 'Acoustic', subjs, chs, times, wordness)
+    masks, _, _ = glm.load_stats('Auditory_inRep', 'mask', 'Repeat', 'cluster_mask', 'Acoustic', subjs, chs, times, wordness)
     chs_all = masks.labels[0]
     ch_labels_roi, ch_labels = gp.chs2atlas(subjs,chs_all)
     hickok_roi_labels = gp.hickok_roi(ch_labels_roi, ch_labels)
     if wordness == 'ALL':
         keys_of_interest = [
-            "Auditory/Repeat/ALL/Acoustic/aud",
-            "Auditory/Repeat/ALL/Phonemic/aud",
-            "Auditory/Repeat/ALL/Lexical/aud",
-            "Auditory/Repeat/ALL/Acoustic/del",
-            "Auditory/Repeat/ALL/Phonemic/del",
-            "Auditory/Repeat/ALL/Lexical/del",
-            "Resp/Repeat/ALL/Acoustic/resp",
-            "Resp/Repeat/ALL/Phonemic/resp",
-            "Resp/Repeat/ALL/Lexical/resp"
+            "Auditory_inRep/Repeat/ALL/Acoustic/aud",
+            "Auditory_inRep/Repeat/ALL/Phonemic/aud",
+            "Auditory_inRep/Repeat/ALL/Lexical/aud",
+            "Auditory_inRep/Repeat/ALL/Acoustic/del",
+            "Auditory_inRep/Repeat/ALL/Phonemic/del",
+            "Auditory_inRep/Repeat/ALL/Lexical/del",
+            "Resp_inRep/Repeat/ALL/Acoustic/resp",
+            "Resp_inRep/Repeat/ALL/Phonemic/resp",
+            "Resp_inRep/Repeat/ALL/Lexical/resp"
         ]
     else:
         keys_of_interest = [
-            f"Auditory/Repeat/{wordness}/Acoustic/aud",
-            f"Auditory/Repeat/{wordness}/Phonemic/aud",
-            f"Auditory/Repeat/{wordness}/Acoustic/del",
-            f"Auditory/Repeat/{wordness}/Phonemic/del",
-            f"Resp/Repeat/{wordness}/Acoustic/resp",
-            f"Resp/Repeat/{wordness}/Phonemic/resp"
+            f"Auditory_inRep/Repeat/{wordness}/Acoustic/aud",
+            f"Auditory_inRep/Repeat/{wordness}/Phonemic/aud",
+            f"Auditory_inRep/Repeat/{wordness}/Acoustic/del",
+            f"Auditory_inRep/Repeat/{wordness}/Phonemic/del",
+            f"Resp_inRep/Repeat/{wordness}/Acoustic/resp",
+            f"Resp_inRep/Repeat/{wordness}/Phonemic/resp"
          ]
 
     for TypeLabel in keys_of_interest:
@@ -107,12 +107,12 @@ for wordness in wordnesses:
     for TypeLabel, chs_ov, base_sig, spec_sig in zip(
             ('Auditory', 'Delay', 'Response'),
             ([100, 10, 1], [100, 10, 1], [100, 10, 1]),
-            (gp.set2arr(LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Acoustic/aud"] | LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Phonemic/aud"] | LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Lexical/aud"],len(chs_all)),
-            gp.set2arr(LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Acoustic/del"] | LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Phonemic/del"] | LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Lexical/del"],len(chs_all)),
-            gp.set2arr(LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Acoustic/resp"] | LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Phonemic/resp"] | LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Lexical/resp"],len(chs_all))),
-            ([LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Acoustic/aud"],LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Phonemic/aud"],LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Lexical/aud"]],
-             [LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Acoustic/del"],LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Phonemic/del"],LexDelay_glm_idxes[f"Auditory/Repeat/{wordness}/Lexical/del"]],
-             [LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Acoustic/resp"],LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Phonemic/resp"],LexDelay_glm_idxes[f"Resp/Repeat/{wordness}/Lexical/resp"]])
+            (gp.set2arr(LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Acoustic/aud"] | LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Phonemic/aud"] | LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Lexical/aud"],len(chs_all)),
+            gp.set2arr(LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Acoustic/del"] | LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Phonemic/del"] | LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Lexical/del"],len(chs_all)),
+            gp.set2arr(LexDelay_glm_idxes[f"Resp_inRep/Repeat/{wordness}/Acoustic/resp"] | LexDelay_glm_idxes[f"Resp_inRep/Repeat/{wordness}/Phonemic/resp"] | LexDelay_glm_idxes[f"Resp_inRep/Repeat/{wordness}/Lexical/resp"],len(chs_all))),
+            ([LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Acoustic/aud"],LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Phonemic/aud"],LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Lexical/aud"]],
+             [LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Acoustic/del"],LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Phonemic/del"],LexDelay_glm_idxes[f"Auditory_inRep/Repeat/{wordness}/Lexical/del"]],
+             [LexDelay_glm_idxes[f"Resp_inRep/Repeat/{wordness}/Acoustic/resp"],LexDelay_glm_idxes[f"Resp_inRep/Repeat/{wordness}/Phonemic/resp"],LexDelay_glm_idxes[f"Resp_inRep/Repeat/{wordness}/Lexical/resp"]])
     ):
 
         color_map = {
