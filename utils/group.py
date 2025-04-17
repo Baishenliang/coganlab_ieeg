@@ -341,7 +341,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, **kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
     fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',
-                            label_every=label_every, size=0.5, **kwargs)
+                            label_every=label_every, size=0.3, **kwargs)
     #fig3d.save_image(fig_save_dir_f)
 
 def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
@@ -505,7 +505,7 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normaliz
     # Add shaded region for SEM
     plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)
 
-    plt.xlabel('Time (s)')
+    plt.xlabel('Time (s)',fontsize=10)
     plt.xticks(tick_labels)
 
 def time_avg_select(data_in,sig_idx_lst):
@@ -614,12 +614,12 @@ def plot_sig_roi_counts(hickok_roi_labels, color, sig_idx,savedir):
                 selected_labels.append(hickok_roi_labels[keys[i]])
     label_counts = Counter(selected_labels)
     label_counts_s = dict(sorted(label_counts.items()))
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(6, 5))
     plt.bar(label_counts_s.keys(), label_counts_s.values(), color=color)
-    plt.xlabel('ROI Label',fontsize=20)
-    plt.ylabel('Number of Electrodes', fontsize=20)
-    plt.title('Significant Electrodes per ROI')
-    plt.xticks(fontsize=30, rotation=45, ha='right')
+    # plt.xlabel('ROI Label',fontsize=30)
+    # plt.ylabel('Number of Electrodes', fontsize=30)
+    # plt.title('Significant Electrodes per ROI')
+    plt.xticks(fontsize=40, rotation=45, ha='right')
     plt.yticks(fontsize=30)
     plt.tight_layout()
     plt.savefig(savedir,dpi=300)

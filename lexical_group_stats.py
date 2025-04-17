@@ -244,9 +244,9 @@ Sensorimotor_col = [1, 0, 0]  # Sensorimotor (Red)
 Auditory_col = [0, 1, 0]  # Auditory (Green)
 Delay_col = [1, 0.65, 0]  # Delay (Orange)
 Motor_col = [0, 0, 1]  # Motor (Blue)
-Sensorimotor_Delay_col = [1, 0, 1]  # Sensorimotor-Delay (Purple)
-Auditory_Delay_col = [1, 1, 0]  # Auditory-Delay (Yellow)
-Delay_Motor_col = [0, 1, 1]  # Delay-Motor (Greenblue)
+Sensorimotor_Delay_col = Sensorimotor_col#[1, 0, 1]  # Sensorimotor-Delay (Purple)
+Auditory_Delay_col = Auditory_col#[1, 1, 0]  # Auditory-Delay (Yellow)
+Delay_Motor_col = Motor_col#[0, 1, 1]  # Delay-Motor (Greenblue)
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
 
@@ -256,7 +256,7 @@ if groupsTag == "LexDelay":
     # Location plot for different types of electrodes
     len_d=len(data_LexDelay_Aud.labels[0])
     for TypeLabel,chs_ov,pick_sig_idx in zip(
-            ('Sensorimotor','Auditory','Delay','Delay_overlapped','Delay_only','Motor','Sensory_OR_Motor'),
+            ('Sensory-motor','Auditory','Delay','Delay_overlapped','Delay_only','Motor','Sensory_OR_Motor'),
             ([1000,0,0,0],[0,100,0,0],[0,0,10,0],[1000,100,10,1],[1000,100,10,1],[0,0,0,1],[1000,100,0,1]),
             (set2arr(LexDelay_Sensorimotor_sig_idx,len_d),
              set2arr(LexDelay_Aud_NoMotor_sig_idx,len_d),
@@ -301,14 +301,14 @@ if groupsTag == "LexDelay":
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx, f'Sensorimotor n={len(LexDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',False)
+    plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx, f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',False)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexDelay_Aud_NoMotor_sig_idx)}',Auditory_col,'-',False)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx, f'Motor n={len(LexDelay_Motor_sig_idx)}',Motor_col,'-',False)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx, f'Delay n={len(LexDelay_Delay_sig_idx)}', Delay_col,'--',False)
+    plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx, f'Delay n={len(LexDelay_Delay_sig_idx)}', Delay_col,'-',False)
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
-    plt.title('Z-scores in lexical delay repeat tasks (aligned to stim onset)')
-    plt.legend(loc='upper right')
+    plt.title('Z-scores in lexical delay repeat tasks (aligned to stim onset)',fontsize=20)
+    plt.legend(loc='upper right',fontsize=15)
     plt.xlim([-0.25,1.6])
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
@@ -318,14 +318,14 @@ if groupsTag == "LexDelay":
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
     plt.figure(figsize=(Waveplot_wth*(150/350), Waveplot_hgt))
     plot_wave(epoc_LexDelay_Resp, LexDelay_Sensorimotor_sig_idx,
-              f'Sensorimotor n={len(LexDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',False)
+              f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',False)
     plot_wave(epoc_LexDelay_Resp, LexDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexDelay_Aud_NoMotor_sig_idx)}',
               Auditory_col,'-',False)
     plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_sig_idx, f'Motor n={len(LexDelay_Motor_sig_idx)}', Motor_col,'-',False)
-    plot_wave(epoc_LexDelay_Resp, LexDelay_Delay_sig_idx, f'Delay n={len(LexDelay_Delay_sig_idx)}', Delay_col,'--',False)
+    plot_wave(epoc_LexDelay_Resp, LexDelay_Delay_sig_idx, f'Delay n={len(LexDelay_Delay_sig_idx)}', Delay_col,'-',False)
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
-    plt.title('Z-scores (aligned to motor onset)')
+    plt.title('(Aligned to motor onset)',fontsize=20)
     plt.legend().set_visible(False)
     plt.xlim([-0.25,1])
     plt.gca().spines[['top', 'right']].set_visible(False)
@@ -337,23 +337,23 @@ if groupsTag == "LexDelay":
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
     num_delay_elec=len(LexDelay_Delay_sig_idx)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx,
-              f'Delay All n={num_delay_elec}', [0.5,0.5,0.5],'--',False)
+              f'Delay All n={num_delay_elec}', [0.5,0.5,0.5],'-',False)
     plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx,
               f'Delay Only n={len(LexDelay_DelayOnly_sig_idx)} '
-              f'({np.round(100*len(LexDelay_DelayOnly_sig_idx)/num_delay_elec,3)}%)', Delay_col,'-',False)
+              f'({np.round(100*len(LexDelay_DelayOnly_sig_idx)/num_delay_elec,3)}%)', Delay_col,'--',False)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Auditory_in_Delay_sig_idx,
               f'Auditory in Delay n={len(LexDelay_Auditory_in_Delay_sig_idx)} '
-              f'({np.round(100*len(LexDelay_Auditory_in_Delay_sig_idx)/num_delay_elec,3)}%)', Auditory_Delay_col,'-',False)
+              f'({np.round(100*len(LexDelay_Auditory_in_Delay_sig_idx)/num_delay_elec,3)}%)', Auditory_Delay_col,'--',False)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_in_Delay_sig_idx,
-              f'Sensorimotor in Delay n={len(LexDelay_Sensorimotor_in_Delay_sig_idx)} '
-              f'({np.round(100*len(LexDelay_Sensorimotor_in_Delay_sig_idx)/num_delay_elec,3)}%)', Sensorimotor_Delay_col,'-',False)
+              f'Sensory-motor in Delay n={len(LexDelay_Sensorimotor_in_Delay_sig_idx)} '
+              f'({np.round(100*len(LexDelay_Sensorimotor_in_Delay_sig_idx)/num_delay_elec,3)}%)', Sensorimotor_Delay_col,'--',False)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_in_Delay_sig_idx,
               f'Motor in Delay n={len(LexDelay_Motor_in_Delay_sig_idx)} '
-              f'({np.round(100*len(LexDelay_Motor_in_Delay_sig_idx)/num_delay_elec,3)}%)',Delay_Motor_col,'-',False)
+              f'({np.round(100*len(LexDelay_Motor_in_Delay_sig_idx)/num_delay_elec,3)}%)',Delay_Motor_col,'--',False)
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
-    plt.title('Z-scores in lexical delay repeat tasks for delay electrodes (aligned to stim onset)')
-    plt.legend()
+    plt.title('Z-scores for delay electrodes (aligned to stim onset)',fontsize=20)
+    plt.legend(fontsize=10)
     # plt.xlim([-0.25, 1.6])
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()

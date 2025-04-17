@@ -130,11 +130,11 @@ for wordness in wordnesses[:2]:
         plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
         if wordness == 'ALL':
             gp.plot_wave(stass[f'Auditory_inRep/Repeat/{wordness}/Acoustic'], sig_idx[f"Auditory_inRep/Repeat/{wordness}/Acoustic/{md}"],
-                         'Acoustic rep', Acoustic_col, '-',True)
+                         'Acoustic', Acoustic_col, '-',True)
             gp.plot_wave(stass[f'Auditory_inRep/Repeat/{wordness}/Phonemic'], sig_idx[f"Auditory_inRep/Repeat/{wordness}/Phonemic/{md}"],
-                         'Phonemic rep', Phonemic_col, '-',True)
+                         'Phonemic', Phonemic_col, '-',True)
             gp.plot_wave(stass[f'Auditory_inRep/Repeat/{wordness}/Lexical'], sig_idx[f"Auditory_inRep/Repeat/{wordness}/Lexical/{md}"],
-                         'Lexical status rep', Lexical_col, '-',True)
+                         'Lexical status', Lexical_col, '-',True)
             if 'Yes_No' in task_Tags:
                 gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Acoustic'], sig_idx[f"Auditory/Yes_No/{wordness}/Acoustic/{md}"],
                          'Acoustic YN', Acoustic_col, '--',True)
@@ -157,15 +157,16 @@ for wordness in wordnesses[:2]:
             wordness_Tag = 'Word & Nonword'
         else:
             wordness_Tag = 'Word or Nonword'
-        plt.title(f'GLM:  {wordness_Tag} in {md_Tag}')
-        plt.ylabel(r'GLM R^2 bsl corrected (normalized)')
+        # plt.title(f'GLM:  {wordness_Tag} in {md_Tag}',fontsize=20)
+        plt.title(f'GLM in Encoding Phase',fontsize=20)
+        plt.ylabel(r'GLM R^2 bsl corrected',fontsize=20)
         plt.xlabel('Time from auditory onset (s)')
         plt.gca().spines[['top', 'right']].set_visible(False)
         if md == 'aud' or md=='del':
             plt.xlim(xlim_l, xlim_r)
         plt.tight_layout()
         if md=='all' or md == 'aud':
-            plt.legend()
+            plt.legend(fontsize=20)
         plt.savefig(os.path.join('plot',f'wave auditory onset {wordness} {md}.tif'),dpi=300)
         plt.close()
 
@@ -198,10 +199,10 @@ for wordness in wordnesses[:2]:
 
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
-    plt.title(f'GLM:  {wordness_Tag} in resp window')
-    plt.ylabel('GLM R^2 bsl corrected (-min)')
+    plt.title(f'GLM:  {wordness_Tag} in resp window',fontsize=20)
+    plt.ylabel('GLM R^2 bsl corrected',fontsize=15)
     plt.gca().spines[['top', 'right']].set_visible(False)
-    plt.legend()
+    plt.legend(fontsize=15)
     plt.xlim(xlim_l, xlim_r)
     plt.xlabel('Time from motor onset (s)')
     plt.tight_layout()
