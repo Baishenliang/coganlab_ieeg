@@ -623,3 +623,56 @@ def plot_sig_roi_counts(hickok_roi_labels, color, sig_idx,savedir):
     plt.yticks(fontsize=30)
     plt.tight_layout()
     plt.savefig(savedir,dpi=300)
+
+def get_coor(chs):
+    """
+    Given a list of channels like ['D23-RASF1', 'D23-RASF2', ...],
+    this function reads each subject's electrode file and returns
+    a dataframe of 3D coordinates for the specified electrodes.
+    """
+    # Parse into (subject, label)
+    import pandas as pd
+    import os
+    import numpy as np
+    parsed = {}
+    for ch in chs:
+        subj, label = ch.split('-')
+        if subj not in parsed:
+            parsed[subj] = []
+        parsed[subj].append(label)
+
+    # Initialize result dataframe
+    df_coords = pd.DataFrame(columns=['subj', 'label', 'x', 'y', 'z'])
+    HOME = os.path.expanduser("~")
+
+    for subj, labels in parsed.items():
+        # File path
+        path = os.path.join(HOME,f"Box\\ECoG_Recon\\{subj}\\elec_recon\\{subj}_elec_locations_RAS.txt")
+
+        try:
+            with open(path, 'r') as f:
+                lines = f.readlines()
+        except FileNotFoundError:
+            print(f"Warning: File not found for subject {subj}")
+            continue
+
+        # Create dictionary from label to coordinates
+        coord_map = {}
+        for line in lines:
+            parts = line.strip().split()
+            label = parts[0]+parts[1]
+            try:
+                x, y, z = map(float, parts[2:5])
+                coord_map[label] = (x, y, z)
+            except ValueError:
+                continue
+
+        # Add matching labels
+        for label in labels:
+            if label in coord_map:
+                x, y, z = coord_map[label]
+                df_coords.loc[len(df_coords)] = [subj, label, x, y, z]
+            else:
+                df_coords.loc[len(df_coords)] = [subj, label, np.nan, np.nan, np.nan]
+
+    return df_coords
