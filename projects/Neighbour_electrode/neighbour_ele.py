@@ -128,7 +128,7 @@ for i, var in enumerate(['count'], start=1):
 
     # ax=sns.boxplot(x='Group', y=var, data=data,showfliers=False, hue='Group',order=x_order,saturation=1)
     sns.despine()
-    stripstrip = sns.stripplot(chs_coor_c_l, x="type", y=var, size=2, hue='neighbor_type', hue_order=hue_order, alpha=1, jitter=0.3, linewidth=0.6,
+    stripstrip = sns.stripplot(chs_coor_c_l, x="type", y=var, size=3, hue='neighbor_type', hue_order=hue_order, alpha=1, jitter=0.3, linewidth=0.2,
                                edgecolor='white', order=x_order, zorder=2, dodge=True)
     # stripstrip.legend(title='Neighbor Type', loc='upper right')
 
