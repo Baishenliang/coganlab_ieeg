@@ -335,7 +335,7 @@ for subject, processing_type in subject_processing_dict.items():
             if Task_Tag=="LexicalDecRepDelay":
                 multitap_task_zip=zip(('Repeat', 'Yes_No'), ('Rep', 'YN'))
             elif Task_Tag=="LexicalDecRepNoDelay":
-                multitap_task_zip=zip(('Repeat', 'Yes_No',':=:'), ('Rep','YN','Mine'))
+                multitap_task_zip=zip(('Repeat', 'Yes_No',':=:'), ('Rep','YN','Blank'))
             elif Task_Tag == "RetroCue":
                 multitap_task_zip=zip(('DRP_BTH', 'REP_1ST', 'REP_2ND', 'REP_BTH', 'REV_BTH'),
                                       ('DRP_BTH', 'REP_1ST', 'REP_2ND', 'REP_BTH', 'REV_BTH'))
