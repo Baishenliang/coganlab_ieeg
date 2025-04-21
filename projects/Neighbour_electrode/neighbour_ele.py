@@ -119,7 +119,6 @@ for i, var in enumerate(['count'], start=1):
 
     barbar = sns.barplot(x='type', y=var, errorbar=None, data=chs_coor_c_l, hue='neighbor_type', hue_order=hue_order,order=x_order, saturation=1,
                          fill=True, alpha=1, linewidth=0.8, capsize=0.1, zorder=1)
-
     j = 0
     for patch in barbar.patches:
         patch.set_facecolor(boxplot_colors[j])
@@ -131,6 +130,7 @@ for i, var in enumerate(['count'], start=1):
     sns.despine()
     stripstrip = sns.stripplot(chs_coor_c_l, x="type", y=var, size=2, hue='neighbor_type', hue_order=hue_order, alpha=1, jitter=0.3, linewidth=0.6,
                                edgecolor='white', order=x_order, zorder=2, dodge=True)
+    # stripstrip.legend(title='Neighbor Type', loc='upper right')
 
     for k in range(9):
         path_collection = stripstrip.collections[k]
