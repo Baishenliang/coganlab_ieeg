@@ -17,8 +17,24 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import json
 import pickle
+
+# set plotting themes
+#sns.set_theme(style="ticks", palette="pastel")
+sns.set_theme(style="ticks")
+cm = 1/2.54
+plt.rcParams['savefig.dpi']=300
+plt.rcParams['font.size']=10
+plt.rcParams['axes.linewidth']=1
+plt.rcParams['axes.edgecolor']='black'
+plt.rcParams['font.family']=['Arial']
+plt.rcParams['text.color']='black'
+savefig_format='.pdf'
+
+Sensorimotor_col = [1, 0, 0]  # Sensorimotor (Red)
+Auditory_col = [0, 1, 0]  # Auditory (Green)
+Motor_col = [0, 0, 1]  # Motor (Blue)
+
 
 #%% functions
 
@@ -55,67 +71,104 @@ chs_coor_c = chs_coor[
 chs_coor_c = label_electrode_type(chs_coor_c)
 
 #%% get neighbour profile:
-#%% chaos
-df = chs_coor_c
+dist_thres=8
+def euclidean_distance(row1, row2):
+    return np.sqrt((row1['x'] - row2['x']) ** 2 + (row1['y'] - row2['y']) ** 2 + (row1['z'] - row2['z']) ** 2)
 
-# Step 1: Get the subframe from each subject
-subjects = df['subj'].unique()
-subject_frames = {subj: df[df['subj'] == subj] for subj in subjects}
+chs_coor_c['N_Auditory'] = 0
+chs_coor_c['N_SM'] = 0
+chs_coor_c['N_Motor'] = 0
 
+for subj in chs_coor_c['subj'].unique():
+    subj_df = chs_coor_c[chs_coor_c['subj'] == subj]
+    for index, electrode in subj_df.iterrows():
+        distances = []
+        for idx, other_electrode in subj_df.iterrows():
+            if index != idx:
+                distance = euclidean_distance(electrode, other_electrode)
+                distances.append((distance, other_electrode['type']))
+        distance_df = pd.DataFrame(distances, columns=['distance', 'type'])
+        chs_coor_c.at[index, 'Neib_Auditory'] = len(
+            distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Auditory')])
+        chs_coor_c.at[index, 'Neib_SM'] = len(
+            distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Sensory-motor')])
+        chs_coor_c.at[index, 'Neib_Motor'] = len(
+            distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Motor')])
 
-# Step 2: Calculate the distance between each electrode
-def calculate_distances(df):
-    coords = df[['x', 'y', 'z']].values
-    dist_matrix = cdist(coords, coords)
-    return dist_matrix
+#%% plot neighbouring
+#change data to long format
+hue_order = ['Neib_Auditory', 'Neib_SM', 'Neib_Motor']
+chs_coor_c['subj_label'] = chs_coor_c['subj'] + '-' + chs_coor_c['label']
+chs_coor_c_l = chs_coor_c.melt(id_vars=['subj_label', 'type'], value_vars=hue_order,
+                              var_name='neighbor_type', value_name='count')
+#plot
+plt.figure(figsize=(11 * cm, 11 * cm))
 
+boxplot_colors= [Auditory_col, Auditory_col, Auditory_col, Sensorimotor_col, Sensorimotor_col, Sensorimotor_col,Motor_col,Motor_col,Motor_col]
+stripplot_colors = [Auditory_col, Sensorimotor_col, Motor_col, Auditory_col, Sensorimotor_col, Motor_col,Auditory_col, Sensorimotor_col, Motor_col]
 
-# Step 3: Find neighbouring electrodes within a threshold
-def find_neighbours(dist_matrix, threshold=5):
-    neighbours = []
-    for i, row in enumerate(dist_matrix):
-        neighbours_i = np.where(row < threshold)[0]  # Indices of electrodes with distance lower than threshold
-        neighbours.append(neighbours_i)
-    return neighbours
+ytitles = ['No. Electrodes']
+subtitles = ['Neibouring Electrodes']
+x_order = ['Auditory', 'Sensory-motor', 'Motor']
+F_name = 'results/Exp3_easyhard' + savefig_format
 
+y_limits = [(-0.1, 8)]  # Specify different y-axis limits for each subplot
+y_ticks = [range(0, 9, 1)]
+for i, var in enumerate(['count'], start=1):
+    plt.subplot(1, 1, i)
 
-# Step 4: Count the number of electrodes in each type
-def count_types(df):
-    type_counts = df['type'].value_counts()
-    return type_counts
+    barbar = sns.barplot(x='type', y=var, errorbar=None, data=chs_coor_c_l, hue='neighbor_type', hue_order=hue_order,order=x_order, saturation=1,
+                         fill=True, alpha=1, linewidth=0.8, capsize=0.1, zorder=1)
 
+    j = 0
+    for patch in barbar.patches:
+        patch.set_facecolor(boxplot_colors[j])
+        j = j + 1
+        if j == 9:
+            break
 
-# Step 5: Get the neighbouring electrode types
-def get_neighbouring_types(neighbours, df):
-    neighbour_types = []
-    for i, neighbour_indices in enumerate(neighbours):
-        types = df.iloc[neighbour_indices]['type'].values
-        neighbour_types.append(types)
-    return neighbour_types
+    # ax=sns.boxplot(x='Group', y=var, data=data,showfliers=False, hue='Group',order=x_order,saturation=1)
+    sns.despine()
+    stripstrip = sns.stripplot(chs_coor_c_l, x="type", y=var, size=2, hue='neighbor_type', hue_order=hue_order, alpha=1, jitter=0.3, linewidth=0.6,
+                               edgecolor='white', order=x_order, zorder=2, dodge=True)
 
+    for k in range(9):
+        path_collection = stripstrip.collections[k]
+        path_collection.set_facecolor(stripplot_colors[k])
 
-# Main processing for each subject
-threshold = 5
-subject_results = {}
+    gp.bsliang_add_connecting_lines(plt, 0, stripstrip)
+    gp.bsliang_add_connecting_lines(plt, 1, stripstrip)
+    gp.bsliang_add_connecting_lines(plt, 3, stripstrip)
+    gp.bsliang_add_connecting_lines(plt, 4, stripstrip)
+    gp.bsliang_add_connecting_lines(plt, 6, stripstrip)
+    gp.bsliang_add_connecting_lines(plt, 7, stripstrip)
 
-for subj, sub_df in subject_frames.items():
-    # Step 2: Calculate the distance matrix
-    dist_matrix = calculate_distances(sub_df)
+    # Choice 3: bar plot with fill - errbar
+    ax2 = sns.barplot(x='type', y=var, errorbar='se', data=chs_coor_c_l, hue='neighbor_type', hue_order=hue_order,order=x_order, saturation=1,
+                      fill=False, alpha=0.5, linewidth=0, capsize=0.1, err_kws={'linewidth': 0.8, 'color': 'black'},
+                      zorder=3)
 
-    # Step 3: Find neighbouring electrodes
-    neighbours = find_neighbours(dist_matrix, threshold)
+    plt.xlabel('')
+    plt.ylabel(ytitles[i - 1], y=gp.bsliang_align_yaxis(y_limits[i - 1], y_ticks[i - 1]))
+    plt.ylim(y_limits[i - 1])
+    plt.yticks(y_ticks[i - 1])
+    plt.title(subtitles[i - 1], y=1.4)
+    plt.gca().tick_params(axis='x', direction='in', length=0, labelrotation=45)
+    plt.gca().tick_params(axis='y', direction='in', length=2)
+    plt.gca().get_legend().remove()
 
-    # Step 4: Count electrode types
-    type_counts = count_types(sub_df)
+plt.tight_layout(w_pad=1.5)
+plt.savefig(os.path.join('..','Neighbour_electrode','plot','Neighbour_ele.tif'), dpi=300,bbox_inches='tight', transparent=False)
 
-    # Step 5: Get neighbouring electrode types
-    neighbouring_types = get_neighbouring_types(neighbours, sub_df)
-
-    # Store the results for each subject
-    subject_results[subj] = {
-        'type_counts': type_counts,
-        'neighbouring_types': neighbouring_types
-    }
-
-# Now subject_results holds the information for each subject
-subject_results
+#%% stats
+from scipy.stats import ttest_ind
+for nei_type in hue_order:
+    Aud=chs_coor_c_l[(chs_coor_c_l['type'] == 'Auditory') & (chs_coor_c_l['neighbor_type'] == nei_type)]['count']
+    SM=chs_coor_c_l[(chs_coor_c_l['type'] == 'Sensory-motor') & (chs_coor_c_l['neighbor_type'] == nei_type)]['count']
+    Mot=chs_coor_c_l[(chs_coor_c_l['type'] == 'Motor') & (chs_coor_c_l['neighbor_type'] == nei_type)]['count']
+    t_stat, p_value = ttest_ind(Aud, SM)
+    print(f"Aud vs. SM in {nei_type}: {t_stat}, p-value: {p_value}")
+    t_stat, p_value = ttest_ind(SM, Mot)
+    print(f"SM vs. Mot in {nei_type}: {t_stat}, p-value: {p_value}")
+    t_stat, p_value = ttest_ind(Aud, Mot)
+    print(f"Aud vs. Mot in {nei_type}: {t_stat}, p-value: {p_value}")

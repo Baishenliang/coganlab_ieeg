@@ -676,3 +676,37 @@ def get_coor(chs):
                 df_coords.loc[len(df_coords)] = [subj, label, np.nan, np.nan, np.nan]
 
     return df_coords
+
+
+def bsliang_add_connecting_lines(plt, k, strip):
+    import pandas as pd
+    GroupA_Xpos = strip.collections[k].get_offsets().data[:, 0].tolist()
+    GroupA_Ypos = strip.collections[k].get_offsets().data[:, 1].tolist()
+    GroupB_Xpos = strip.collections[k + 1].get_offsets().data[:, 0].tolist()
+    GroupB_Ypos = strip.collections[k + 1].get_offsets().data[:, 1].tolist()
+
+    Xs = []
+    Ys = []
+    for i in range(len(GroupA_Xpos)):
+        Xs = Xs + [[GroupA_Xpos[i], GroupB_Xpos[i]]]
+        Ys = Ys + [[GroupA_Ypos[i], GroupB_Ypos[i]]]
+
+    data_line = {
+        'Categories': Xs,
+        'Values': Ys
+    }
+    data_line = pd.DataFrame(data_line)
+
+    # Draw lines between the points
+    for i in range(len(GroupA_Xpos)):
+        plt.plot(data_line.Categories[i], data_line.Values[i], color='grey', linewidth=0.05, linestyle='--',
+                 zorder=1)  # Draw
+
+    return plt
+
+def bsliang_align_yaxis(LIM, TICKS):
+    # Set the y-axis label at the midpoint of the y-axis range
+    midpoint_LIM = (LIM[0] + LIM[1]) / 2  # Calculate midpoint of y-axis range
+    midpoint_TICS = (TICKS[0] + TICKS[-1]) / 2
+    pos = 0.5 + (midpoint_TICS - midpoint_LIM) / (LIM[1] - LIM[0])
+    return pos
