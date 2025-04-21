@@ -24,55 +24,30 @@ from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_
 from matplotlib import pyplot as plt
 
 # %% Subj list
-
 subject_processing_dict_org = {
-    # "D0023": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    "D0024": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0026": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0027": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0028": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0029": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0032": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0035": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0038": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0042": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0044": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0047": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0053": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0054": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0055": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0057": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0059": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0063": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0065": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0066": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0068": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0069": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0070": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0071": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0077": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0079": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    # "D0080": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0081": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0084": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0086": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0090": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0092": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0094": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0096": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
-    # "D0101": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0102": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0103": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0107": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0115": "gamma",#"linernoise/outlierchs/wavelet/multitaper",
-    # "D0117": "gamma"#"linernoise/outlierchs/wavelet/multitaper"
-    #"D0027": "linernoise/outlierchs/wavelet/multitaper/gamma"
+    "D0024": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0026": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0027": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0028": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0029": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0057": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0063": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0065": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0086": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0090": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0092": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0094": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 }
 
 # %% define task
-Task_Tag="LexicalDecRepDelay" # ![RUN TWICE, one for Select_trials='Rep_only', another one for 'All']
-#Task_Tag="LexicalDecRepNoDelay"
+#Task_Tag="LexicalDecRepDelay" # ![RUN TWICE, one for Select_trials='Rep_only', another one for 'All']
+Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
@@ -360,7 +335,7 @@ for subject, processing_type in subject_processing_dict.items():
             if Task_Tag=="LexicalDecRepDelay":
                 multitap_task_zip=zip(('Repeat', 'Yes_No'), ('Rep', 'YN'))
             elif Task_Tag=="LexicalDecRepNoDelay":
-                multitap_task_zip=zip(('Repeat', ':=:'), ('Rep', 'Mine'))
+                multitap_task_zip=zip(('Repeat', 'Yes_No',':=:'), ('Rep','YN','Mine'))
             elif Task_Tag == "RetroCue":
                 multitap_task_zip=zip(('DRP_BTH', 'REP_1ST', 'REP_2ND', 'REP_BTH', 'REV_BTH'),
                                       ('DRP_BTH', 'REP_1ST', 'REP_2ND', 'REP_BTH', 'REV_BTH'))
@@ -390,7 +365,7 @@ for subject, processing_type in subject_processing_dict.items():
                                  'Auditory-' + task_Tag_multitap + '-' + word_Tag,
                                  'Resp-' + task_Tag_multitap + '-' + word_Tag)
                             )
-                        elif task == ':=:':
+                        elif task == ':=:' or task == 'Yes_No':
                             multitap_evnt_zip = zip(
                                 ('Cue/' + task + '/' + word + '/CORRECT',
                                  'Auditory_stim/' + task + '/' + word + '/CORRECT'),
@@ -538,10 +513,10 @@ for subject, processing_type in subject_processing_dict.items():
                      )
             elif Task_Tag == "LexicalDecRepNoDelay":
                 gamma_epoc_zip=zip(
-                    ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT'),
-                    ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/:=:/CORRECT','Cue/:=:/CORRECT'),
-                    ((-0.5, 1.5), (-0.5, 2), (-0.5, 1),(-0.5, 1.5), (-0.5, 2)),
-                    ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inSilence','Auditory_inSilence')
+                    ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT','Cue/Yes_No/CORRECT','Auditory_stim/Yes_No/CORRECT'),
+                    ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/:=:/CORRECT','Cue/:=:/CORRECT','Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT'),
+                    ((-0.5, 1.5), (-0.5, 2), (-0.5, 1),(-0.5, 1.5), (-0.5, 2),(-0.5, 1.5), (-0.5, 2)),
+                    ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inSilence','Auditory_inSilence','Cue_inYN','Auditory_inYN')
                  )
             elif Task_Tag == "RetroCue":
                 gamma_epoc_zip = zip(
