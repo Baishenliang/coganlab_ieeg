@@ -71,7 +71,7 @@ chs_coor_c = chs_coor[
 chs_coor_c = label_electrode_type(chs_coor_c)
 
 #%% get neighbour profile:
-dist_thres=8
+dist_thres=5 #mm
 def euclidean_distance(row1, row2):
     return np.sqrt((row1['x'] - row2['x']) ** 2 + (row1['y'] - row2['y']) ** 2 + (row1['z'] - row2['z']) ** 2)
 
@@ -108,12 +108,12 @@ boxplot_colors= [Auditory_col, Auditory_col, Auditory_col, Sensorimotor_col, Sen
 stripplot_colors = [Auditory_col, Sensorimotor_col, Motor_col, Auditory_col, Sensorimotor_col, Motor_col,Auditory_col, Sensorimotor_col, Motor_col]
 
 ytitles = ['No. Electrodes']
-subtitles = ['Neibouring Electrodes']
+subtitles = ['Neighboring Electrodes']
 x_order = ['Auditory', 'Sensory-motor', 'Motor']
 F_name = 'results/Exp3_easyhard' + savefig_format
 
-y_limits = [(-0.1, 8)]  # Specify different y-axis limits for each subplot
-y_ticks = [range(0, 9, 1)]
+y_limits = [(-0.1, 6)]  # Specify different y-axis limits for each subplot
+y_ticks = [range(0, 7, 1)]
 for i, var in enumerate(['count'], start=1):
     plt.subplot(1, 1, i)
 
