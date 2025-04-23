@@ -22,6 +22,8 @@ import pickle
 
 #%% Set parameters
 mask_type='glm' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
+plot_wave_type='stat' #stat: plot the HG stat in wave plots; mask: plot the HG significant mask in wave plots.
+
 with open('glm_config.json', 'r') as f:
     config = json.load(f)
 
@@ -85,10 +87,13 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                     hgmask_aud=masks
                 elif event.split('_')[0]=='Resp':
                     hgmask_resp=masks
-            del masks
 
             clean_chs_idx = gp.get_notmuscle_electrodes(stats)
-            stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats
+            if plot_wave_type=='stat':
+                stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats
+            elif plot_wave_type=='mask':
+                stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=masks*100
+            del masks,stats
             if event.split('_')[0]=='Auditory':
                 # whole trial
                 all_masks_sorted,_,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
@@ -154,12 +159,15 @@ for wordness in wordnesses[:2]:
         plt.axvline(x=0, linestyle='--', color='k')
         plt.axhline(y=0, linestyle='--', color='k')
         if wordness == 'ALL':
-            wordness_Tag = 'Word & Nonword'
+            wordness_Tag = 'All'
         else:
             wordness_Tag = 'Word or Nonword'
         # plt.title(f'GLM:  {wordness_Tag} in {md_Tag}',fontsize=20)
         plt.title(f'GLM in Encoding Phase',fontsize=20)
-        plt.ylabel(r'GLM R^2 bsl corrected',fontsize=20)
+        if plot_wave_type == 'stat':
+            plt.ylabel(r'GLM R^2 bsl corrected',fontsize=20)
+        elif plot_wave_type == 'mask':
+            plt.ylabel(r'Perc. of sig. elec. (%)',fontsize=20)
         plt.xlabel('Time from auditory onset (s)')
         plt.gca().spines[['top', 'right']].set_visible(False)
         if md == 'aud' or md=='del':
@@ -167,7 +175,7 @@ for wordness in wordnesses[:2]:
         plt.tight_layout()
         if md=='all' or md == 'aud':
             plt.legend(fontsize=20)
-        plt.savefig(os.path.join('plot',f'wave auditory onset {wordness} {md}.tif'),dpi=300)
+        plt.savefig(os.path.join('plot',f'wave auditory onset {wordness} {md} {plot_wave_type}.tif'),dpi=300)
         plt.close()
 
     xlim_l = -0.2
@@ -193,20 +201,23 @@ for wordness in wordnesses[:2]:
                      'Phonemic_Nonword', Phonemic_col, '--',True)
 
     if wordness == 'ALL':
-        wordness_Tag = 'Word & Nonword'
+        wordness_Tag = 'All'
     else:
         wordness_Tag = wordness
 
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
     plt.title(f'GLM:  {wordness_Tag} in resp window',fontsize=20)
-    plt.ylabel('GLM R^2 bsl corrected',fontsize=15)
+    if plot_wave_type == 'stat':
+        plt.ylabel(r'GLM R^2 bsl corrected', fontsize=20)
+    elif plot_wave_type == 'mask':
+        plt.ylabel(r'Perc. of sig. elec. (%)', fontsize=20)
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.legend(fontsize=15)
     plt.xlim(xlim_l, xlim_r)
     plt.xlabel('Time from motor onset (s)')
     plt.tight_layout()
-    plt.savefig(os.path.join('plot', f'wave motor onset in {wordness}.tif'),dpi=300)
+    plt.savefig(os.path.join('plot', f'wave motor onset in {wordness} {plot_wave_type}.tif'),dpi=300)
     plt.close()
 
     with open(os.path.join('data', 'sig_idx.npy'), "wb") as f:
