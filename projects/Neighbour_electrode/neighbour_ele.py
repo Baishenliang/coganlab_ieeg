@@ -37,7 +37,7 @@ Sensorimotor_col = [1, 0, 0]  # Sensorimotor (Red)
 Auditory_col = [0, 1, 0]  # Auditory (Green)
 Motor_col = [0, 0, 1]  # Motor (Blue)
 
-mode='count'#count: count the number of neighbouring electrodes, dist: calculate the averaged distance for neighbouring electrodes
+mode='dist'#count: count the number of neighbouring electrodes, dist: calculate the averaged distance for neighbouring electrodes
 def neigh_func_dist(d):
     d_in=d['distance']
     if len(d_in)==0:
@@ -49,6 +49,11 @@ if mode == 'count':
 elif mode == 'dist':
     neigh_func = neigh_func_dist
 
+individual=False # True: count individual neighbouring electrodes # False: count neighbouring electrodes on a group space
+if individual:
+    ind_tag='sub'
+else:
+    ind_tag='grp'
 #%% functions
 
 def label_electrode_type(df):
@@ -106,11 +111,27 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
     chs_coor_c['N_SM'] = 0
     chs_coor_c['N_Motor'] = 0
 
-    for subj in chs_coor_c['subj'].unique():
-        subj_df = chs_coor_c[chs_coor_c['subj'] == subj]
-        for index, electrode in subj_df.iterrows():
+    if individual:
+        for subj in chs_coor_c['subj'].unique():
+            subj_df = chs_coor_c[chs_coor_c['subj'] == subj]
+            for index, electrode in subj_df.iterrows():
+                distances = []
+                for idx, other_electrode in subj_df.iterrows():
+                    if index != idx:
+                        distance = euclidean_distance(electrode, other_electrode)
+                        distances.append((distance, other_electrode['type']))
+                distance_df = pd.DataFrame(distances, columns=['distance', 'type'])
+                chs_coor_c.at[index, 'Neib_Auditory'] = neigh_func(
+                    distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Auditory')])
+                chs_coor_c.at[index, 'Neib_SM'] = neigh_func(
+                    distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Sensory-motor')])
+                chs_coor_c.at[index, 'Neib_Motor'] = neigh_func(
+                    distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Motor')])
+    else:
+        for index, electrode in chs_coor_c.iterrows():
             distances = []
-            for idx, other_electrode in subj_df.iterrows():
+            print(electrode)
+            for idx, other_electrode in chs_coor_c.iterrows():
                 if index != idx:
                     distance = euclidean_distance(electrode, other_electrode)
                     distances.append((distance, other_electrode['type']))
@@ -144,8 +165,8 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
     F_name = 'results/Exp3_easyhard' + savefig_format
 
     if roi=='All' and mode=='count':
-        y_limits = [(-0.1, 20)]  # Specify different y-axis limits for each subplot
-        y_ticks = [range(0, 21, 1)]
+        y_limits = [(-0.1, 105)]  # Specify different y-axis limits for each subplot
+        y_ticks = [range(0, 106, 10)]
     elif mode=='count':
         y_limits = [(-0.1, 6)]
         y_ticks = [range(0, 7, 1)]
@@ -169,7 +190,7 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
 
         if mode=='count':
 
-            stripstrip = sns.stripplot(chs_coor_c_l, x="type", y=var, size=2, hue='neighbor_type', hue_order=hue_order, alpha=1, jitter=0.3, linewidth=0.2,
+            stripstrip = sns.stripplot(chs_coor_c_l, x="type", y=var, size=1, hue='neighbor_type', hue_order=hue_order, alpha=1, jitter=0.3, linewidth=0.1,
                                        edgecolor='white', order=x_order, zorder=2, dodge=True)
             # stripstrip.legend(title='Neighbor Type', loc='upper right')
 
@@ -199,7 +220,7 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
         plt.gca().get_legend().remove()
 
     plt.tight_layout(w_pad=1.5)
-    plt.savefig(os.path.join('..','Neighbour_electrode','plot',f'Neighbour_ele_{roi}_{mode}.tif'), dpi=300,bbox_inches='tight', transparent=False)
+    plt.savefig(os.path.join('..','Neighbour_electrode','plot',f'Neighbour_ele_{roi}_{mode}_{ind_tag}.tif'), dpi=300,bbox_inches='tight', transparent=False)
 
     #%% stats
     from scipy.stats import ttest_ind
