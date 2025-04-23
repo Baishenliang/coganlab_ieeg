@@ -2,6 +2,8 @@
 #%% Import everything
 import os
 
+from debugpy.adapter.components import missing
+
 # Relocate the working directory if needed
 # Only need it if run it in an editor. If run in terminal, use cd.
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM\\step1_glm_permute.py')
@@ -35,6 +37,17 @@ Sensorimotor_col = [1, 0, 0]  # Sensorimotor (Red)
 Auditory_col = [0, 1, 0]  # Auditory (Green)
 Motor_col = [0, 0, 1]  # Motor (Blue)
 
+mode='count'#count: count the number of neighbouring electrodes, dist: calculate the averaged distance for neighbouring electrodes
+def neigh_func_dist(d):
+    d_in=d['distance']
+    if len(d_in)==0:
+        return np.nan
+    else:
+        return np.nanmin(d_in).astype(float)
+if mode == 'count':
+    neigh_func = len
+elif mode == 'dist':
+    neigh_func = neigh_func_dist
 
 #%% functions
 
@@ -85,7 +98,7 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
     chs_coor_c = label_electrode_type(chs_coor_c)
 
     #%% get neighbour profile:
-    dist_thres=30 #mm
+    dist_thres=15 #mm
     def euclidean_distance(row1, row2):
         return np.sqrt((row1['x'] - row2['x']) ** 2 + (row1['y'] - row2['y']) ** 2 + (row1['z'] - row2['z']) ** 2)
 
@@ -102,11 +115,11 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
                     distance = euclidean_distance(electrode, other_electrode)
                     distances.append((distance, other_electrode['type']))
             distance_df = pd.DataFrame(distances, columns=['distance', 'type'])
-            chs_coor_c.at[index, 'Neib_Auditory'] = len(
+            chs_coor_c.at[index, 'Neib_Auditory'] = neigh_func(
                 distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Auditory')])
-            chs_coor_c.at[index, 'Neib_SM'] = len(
+            chs_coor_c.at[index, 'Neib_SM'] = neigh_func(
                 distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Sensory-motor')])
-            chs_coor_c.at[index, 'Neib_Motor'] = len(
+            chs_coor_c.at[index, 'Neib_Motor'] = neigh_func(
                 distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Motor')])
 
     #%% plot neighbouring
@@ -121,17 +134,24 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
     boxplot_colors= [Auditory_col, Auditory_col, Auditory_col, Sensorimotor_col, Sensorimotor_col, Sensorimotor_col,Motor_col,Motor_col,Motor_col]
     stripplot_colors = [Auditory_col, Sensorimotor_col, Motor_col, Auditory_col, Sensorimotor_col, Motor_col,Auditory_col, Sensorimotor_col, Motor_col]
 
-    ytitles = ['No. Electrodes']
-    subtitles = [f'Neighboring Electrodes for Elec. in {roi}']
+    if mode=='count':
+        ytitles = ['No. Electrodes']
+        subtitles = [f'Neighboring Electrodes for Elec. in {roi}']
+    elif mode=='dist':
+        ytitles = ['Distance (mm)']
+        subtitles = [f'Distance of Neighboring Elec. for Elec. in {roi}']
     x_order = ['Auditory', 'Sensory-motor', 'Motor']
     F_name = 'results/Exp3_easyhard' + savefig_format
 
-    if roi=='All':
+    if roi=='All' and mode=='count':
         y_limits = [(-0.1, 20)]  # Specify different y-axis limits for each subplot
         y_ticks = [range(0, 21, 1)]
-    else:
+    elif mode=='count':
         y_limits = [(-0.1, 6)]
         y_ticks = [range(0, 7, 1)]
+    elif mode=='dist':
+        y_limits = [(-0.1, dist_thres-1)]
+        y_ticks = [range(0, dist_thres, 1)]
     for i, var in enumerate(['count'], start=1):
         plt.subplot(1, 1, i)
 
@@ -146,20 +166,23 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
 
         # ax=sns.boxplot(x='Group', y=var, data=data,showfliers=False, hue='Group',order=x_order,saturation=1)
         sns.despine()
-        stripstrip = sns.stripplot(chs_coor_c_l, x="type", y=var, size=2, hue='neighbor_type', hue_order=hue_order, alpha=1, jitter=0.3, linewidth=0.2,
-                                   edgecolor='white', order=x_order, zorder=2, dodge=True)
-        # stripstrip.legend(title='Neighbor Type', loc='upper right')
 
-        for k in range(9):
-            path_collection = stripstrip.collections[k]
-            path_collection.set_facecolor(stripplot_colors[k])
+        if mode=='count':
 
-        gp.bsliang_add_connecting_lines(plt, 0, stripstrip)
-        gp.bsliang_add_connecting_lines(plt, 1, stripstrip)
-        gp.bsliang_add_connecting_lines(plt, 3, stripstrip)
-        gp.bsliang_add_connecting_lines(plt, 4, stripstrip)
-        gp.bsliang_add_connecting_lines(plt, 6, stripstrip)
-        gp.bsliang_add_connecting_lines(plt, 7, stripstrip)
+            stripstrip = sns.stripplot(chs_coor_c_l, x="type", y=var, size=2, hue='neighbor_type', hue_order=hue_order, alpha=1, jitter=0.3, linewidth=0.2,
+                                       edgecolor='white', order=x_order, zorder=2, dodge=True)
+            # stripstrip.legend(title='Neighbor Type', loc='upper right')
+
+            for k in range(9):
+                path_collection = stripstrip.collections[k]
+                path_collection.set_facecolor(stripplot_colors[k])
+
+            gp.bsliang_add_connecting_lines(plt, 0, stripstrip)
+            gp.bsliang_add_connecting_lines(plt, 1, stripstrip)
+            gp.bsliang_add_connecting_lines(plt, 3, stripstrip)
+            gp.bsliang_add_connecting_lines(plt, 4, stripstrip)
+            gp.bsliang_add_connecting_lines(plt, 6, stripstrip)
+            gp.bsliang_add_connecting_lines(plt, 7, stripstrip)
 
         # Choice 3: bar plot with fill - errbar
         ax2 = sns.barplot(x='type', y=var, errorbar='se', data=chs_coor_c_l, hue='neighbor_type', hue_order=hue_order,order=x_order, saturation=1,
@@ -176,7 +199,7 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
         plt.gca().get_legend().remove()
 
     plt.tight_layout(w_pad=1.5)
-    plt.savefig(os.path.join('..','Neighbour_electrode','plot',f'Neighbour_ele_{roi}.tif'), dpi=300,bbox_inches='tight', transparent=False)
+    plt.savefig(os.path.join('..','Neighbour_electrode','plot',f'Neighbour_ele_{roi}_{mode}.tif'), dpi=300,bbox_inches='tight', transparent=False)
 
     #%% stats
     from scipy.stats import ttest_ind
@@ -184,10 +207,10 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
         Aud=chs_coor_c_l[(chs_coor_c_l['type'] == 'Auditory') & (chs_coor_c_l['neighbor_type'] == nei_type)]['count']
         SM=chs_coor_c_l[(chs_coor_c_l['type'] == 'Sensory-motor') & (chs_coor_c_l['neighbor_type'] == nei_type)]['count']
         Mot=chs_coor_c_l[(chs_coor_c_l['type'] == 'Motor') & (chs_coor_c_l['neighbor_type'] == nei_type)]['count']
-        t_stat, p_value = ttest_ind(Aud, SM)
+        t_stat, p_value = ttest_ind(Aud, SM ,nan_policy='omit')
         print(f"Aud vs. SM in {nei_type} for {roi}: {t_stat}, p-value: {p_value}")
-        t_stat, p_value = ttest_ind(SM, Mot)
+        t_stat, p_value = ttest_ind(SM, Mot, nan_policy='omit')
         print(f"SM vs. Mot in {nei_type} for {roi}: {t_stat}, p-value: {p_value}")
-        t_stat, p_value = ttest_ind(Aud, Mot)
+        t_stat, p_value = ttest_ind(Aud, Mot, nan_policy='omit')
         print(f"Aud vs. Mot in {nei_type} for {roi}: {t_stat}, p-value: {p_value}")
         print("=========================================================================")
