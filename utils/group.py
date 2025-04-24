@@ -198,7 +198,6 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range):
         ch_mask = mask[ch_idx]
         found = False
 
-
         for start_idx in range(int(search_start),int(search_stop) - win + 1):
             win_mask = ch_mask[start_idx:start_idx + win]
 
@@ -255,6 +254,31 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range):
     data_us_out=LabeledArray(data_us, labes_all)
     # onset_out=LabeledArray(np.array(onsets_s_sorted), chs_s_sorted)
     return data_out,data_us_out,sorted_indices,chs_s_all_idx
+
+def get_peak(data_in):
+    import numpy as np
+    from ieeg.arrays.label import LabeledArray
+
+    # data: channels*times
+    times=data_in.labels[1]
+    times = [float(i) for i in times]
+    data=data_in.__array__()
+
+    max_values = []
+    max_positions = []
+
+    for channel in data:
+        if np.all(np.isnan(channel)):
+            max_values.append(np.nan)
+            max_positions.append(np.nan)
+        else:
+            max_value = np.nanmax(channel)
+            max_position = times[np.nanargmax(channel)]
+            max_values.append(max_value)
+            max_positions.append(max_position)
+
+    return max_values, max_positions
+
 
 def get_notmuscle_electrodes(data_in):
     # Remove electrodes named as LAT or RAT which are by default muscle channels
