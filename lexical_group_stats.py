@@ -1,6 +1,6 @@
 # %% groups of patients
-groupsTag="LexDelay"
-#groupsTag="LexNoDelay"
+#groupsTag="LexDelay"
+groupsTag="LexNoDelay"
 #groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
@@ -94,7 +94,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
 
 
 hickok_roi_labels=hickok_roi(ch_labels_roi,ch_labels)
-# Get sorted electrodes
+#%% Get sorted electrodes
 if "LexDelay" in groupsTag:
 
     # sort the data according to the onset within a time range (Full)
@@ -185,7 +185,7 @@ if "LexDelay" in groupsTag:
 if "LexNoDelay" in groupsTag:
 
     # (Auditory)
-    data_LexNoDelay_Aud_sorted,_,LexNoDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Aud,cluster_twin,[-0.1,mean_word_len+auditory_decay])
+    data_LexNoDelay_Aud_sorted,_,_,LexNoDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Aud,epoc_LexNoDelay_Aud, cluster_twin,[-0.1,mean_word_len+auditory_decay])
     LexNoDelay_Aud_sig_idx = LexNoDelay_Aud_sig_idx & clean_chs_idx
     plot_chs(data_LexNoDelay_Aud_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexNoDelay-{'Auditory_inRep'}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexNoDelay_Aud_sig_idx)}")
 
@@ -195,12 +195,12 @@ if "LexNoDelay" in groupsTag:
     # plot_chs(data_LexNoDelay_Go_sorted, os.path.join(fig_save_dir, f'{'Go_inRep'}_{stat_type}-{contrast}.jpg'))
 
     # (Motor prepare)
-    data_LexNoDelay_Motor_Prep_sorted, _, LexNoDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, cluster_twin, motor_prep_win)
+    data_LexNoDelay_Motor_Prep_sorted,_,_,LexNoDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_prep_win)
     LexNoDelay_Motor_Prep_sig_idx = LexNoDelay_Motor_Prep_sig_idx & clean_chs_idx
     plot_chs(data_LexNoDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexNoDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexNoDelay_Motor_Prep_sig_idx)}")
 
     # (Motor response)
-    data_LexNoDelay_Motor_Resp_sorted, _, LexNoDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, cluster_twin, motor_resp_win)
+    data_LexNoDelay_Motor_Resp_sorted,_,_,LexNoDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_resp_win)
     LexNoDelay_Motor_Resp_sig_idx = LexNoDelay_Motor_Resp_sig_idx & clean_chs_idx
     plot_chs(data_LexNoDelay_Motor_Resp_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexNoDelay-{'Motor_Resp'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexNoDelay_Motor_Resp_sig_idx)}")
 
@@ -216,6 +216,13 @@ if "LexNoDelay" in groupsTag:
     # Channel selection: Motor electrodes (auditory window:0, motor resp: 1)
     LexNoDelay_Motor_sig_idx = LexNoDelay_Motor_Resp_sig_idx - LexNoDelay_Aud_sig_idx
 
+    LexNoDelay_idxes = dict()
+    LexNoDelay_idxes['LexNoDelay_Aud_NoMotor_sig_idx'] = LexNoDelay_Aud_NoMotor_sig_idx
+    LexNoDelay_idxes['LexNoDelay_Sensorimotor_sig_idx'] = LexNoDelay_Sensorimotor_sig_idx
+    LexNoDelay_idxes['LexNoDelay_Sensory_OR_Motor_sig_idx'] = LexNoDelay_Sensory_OR_Motor_sig_idx
+    LexNoDelay_idxes['LexNoDelay_Motor_sig_idx'] = LexNoDelay_Motor_sig_idx
+    with open(os.path.join('projects','GLM','data', 'LexNoDelay_twin_idxes.npy'), "wb") as f:
+        pickle.dump(LexNoDelay_idxes, f)
     del data_LexNoDelay_Aud_sorted, data_LexNoDelay_Motor_Prep_sorted, data_LexNoDelay_Motor_Resp_sorted
 
 if "&" in groupsTag:
@@ -361,11 +368,14 @@ if groupsTag == "LexDelay":
     plt.close()
 
 elif groupsTag == "LexNoDelay":
+    len_d = len(data_LexNoDelay_Aud.labels[0])
     for TypeLabel, chs_ov, pick_sig_idx in zip(
             ('Sensorimotor', 'Auditory', 'Motor', 'Sensory_OR_Motor'),
             ([1000, 0, 0, 0], [0, 100, 0, 0], [0, 0, 0, 1],[1000, 100, 0, 1]),
-            (LexNoDelay_Sensorimotor_sig_idx, LexNoDelay_Aud_NoMotor_sig_idx, LexNoDelay_Motor_sig_idx,LexNoDelay_Sensory_OR_Motor_sig_idx)
-    ):
+            (set2arr(LexNoDelay_Sensorimotor_sig_idx,len_d),
+             set2arr(LexNoDelay_Aud_NoMotor_sig_idx,len_d),
+             set2arr(LexNoDelay_Motor_sig_idx,len_d),
+             set2arr(LexNoDelay_Sensory_OR_Motor_sig_idx,len_d))):
 
         # Elecorde selection and color assigning
 
@@ -376,7 +386,10 @@ elif groupsTag == "LexNoDelay":
         }
 
         chs_col_idx = [
-            chs_ov[0] * LexNoDelay_Sensorimotor_sig_idx[i] + chs_ov[1] * LexNoDelay_Aud_NoMotor_sig_idx[i] + chs_ov[3] * LexNoDelay_Motor_sig_idx[i] for i in
+            chs_ov[0] * set2arr(LexNoDelay_Sensorimotor_sig_idx,len_d)[i] +
+            chs_ov[1] * set2arr(LexNoDelay_Aud_NoMotor_sig_idx,len_d)[i] +
+            chs_ov[3] * set2arr(LexNoDelay_Motor_sig_idx,len_d)[i]
+            for i in
             range(len(data_LexNoDelay_Aud.labels[0]))]
         picks = [i for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[i] == 1]
         pick_labels = [data_LexNoDelay_Aud.labels[0][i] for i in range(len(data_LexNoDelay_Aud.labels[0])) if pick_sig_idx[
@@ -390,22 +403,33 @@ elif groupsTag == "LexNoDelay":
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
-    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_Sensorimotor_sig_idx, f'Sensorimotor n={np.sum(LexNoDelay_Sensorimotor_sig_idx)}', Sensorimotor_col)
-    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_Aud_NoMotor_sig_idx, f'Auditory n={np.sum(LexNoDelay_Aud_NoMotor_sig_idx)}',Auditory_col)
-    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_Motor_sig_idx, f'Motor n={np.sum(LexNoDelay_Motor_sig_idx)}',Motor_col)
+    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_Sensorimotor_sig_idx, f'Sensorimotor n={len(LexNoDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',False)
+    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexNoDelay_Aud_NoMotor_sig_idx)}',Auditory_col,'-',False)
+    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_Motor_sig_idx, f'Motor n={len(LexNoDelay_Motor_sig_idx)}',Motor_col,'-',False)
     plt.axvline(x=0, linestyle='--', color='k')
-    plt.title('Lexical No Delay (Auditory onset aligned)')
-    plt.show()
+    plt.axhline(y=0, linestyle='--', color='k')
+    plt.title('Z-scores in lexical nodelay repeat (aligned to stim onset)',fontsize=20)
+    plt.legend(loc='upper right',fontsize=15)
+    plt.xlim([-0.25,1.6])
+    plt.gca().spines[['top', 'right']].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_save_dir,'LexNoDelay_sig_zscore_Aud.tif'),dpi=300)
+    plt.close()
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
     plt.figure(figsize=(Waveplot_wth*(150/350), Waveplot_hgt))
-    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Sensorimotor_sig_idx, f'Sensorimotor n={np.sum(LexNoDelay_Sensorimotor_sig_idx)}', Sensorimotor_col)
-    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Aud_NoMotor_sig_idx, f'Auditory n={np.sum(LexNoDelay_Aud_NoMotor_sig_idx)}',Auditory_col)
-    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Motor_sig_idx, f'Motor n={np.sum(LexNoDelay_Motor_sig_idx)}',Motor_col)
+    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Sensorimotor_sig_idx, f'Sensorimotor n={len(LexNoDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',False)
+    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexNoDelay_Aud_NoMotor_sig_idx)}',Auditory_col,'-',False)
+    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Motor_sig_idx, f'Motor n={len(LexNoDelay_Motor_sig_idx)}',Motor_col,'-',False)
     plt.axvline(x=0, linestyle='--', color='k')
-    plt.title('Lexical No Delay (Auditory onset aligned)')
-    plt.legend().set_visible(False)
-    plt.show()
+    plt.axhline(y=0, linestyle='--', color='k')
+    plt.title('(aligned to motor onset)',fontsize=20)
+    plt.legend(loc='upper right',fontsize=15)
+    plt.xlim([-0.25,1.6])
+    plt.gca().spines[['top', 'right']].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_save_dir,'LexNoDelay_sig_zscore_Resp.tif'),dpi=300)
+    plt.close()
 
 elif groupsTag=="LexDelay&LexNoDelay":
 
