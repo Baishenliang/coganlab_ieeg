@@ -125,6 +125,81 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                             f"N chs = {len(resp_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/resp"] = resp_masks_sig
 
+#%% Plot peaks and do stats
+for df,peak_Tag in zip((pd.DataFrame(peaks_aud),pd.DataFrame(peaks_del)),('Aud','Del')):
+    # reshape data
+    df = df.dropna(how='all')
+    df.columns = ['/'.join(col.split('/')[-2:-1]) for col in df.columns]
+    df_long = df.reset_index().melt(id_vars='index', var_name='feature', value_name='value')
+    df_long.rename(columns={'index': 'trial'}, inplace=True)
+
+    #plot
+    plt.figure(figsize=(8, 11))
+
+    boxplot_colors= [Acoustic_col, Phonemic_col, Lexical_col]
+    stripplot_colors = boxplot_colors
+
+    ytitles = ['Peak latency from stim onset (ms)']
+    subtitles = [f'GLM R-squared peak latency in {peak_Tag}']
+    x_order = ['Acoustic', 'Phonemic', 'Lexical']
+
+    y_limits = [(0,1.5)]
+    # y_ticks = [range(0, 1.5, 0.1)]
+
+    for i, var in enumerate(['value'], start=1):
+
+        plt.subplot(1, 1, i)
+
+        barbar = sns.barplot(x='feature', y=var, errorbar=None, data=df_long, order=x_order, saturation=1,
+                             fill=True, alpha=1, linewidth=0.8, capsize=0.1, zorder=1)
+        j = 0
+        for patch in barbar.patches:
+            patch.set_facecolor(boxplot_colors[j])
+            j = j + 1
+            if j == 3:
+                break
+
+        # ax=sns.boxplot(x='Group', y=var, data=data,showfliers=False, hue='Group',order=x_order,saturation=1)
+        sns.despine()
+
+        stripstrip = sns.stripplot(df_long, x="feature", y=var, size=4, alpha=1, jitter=0.1, linewidth=0.5,
+                                   edgecolor='white', order=x_order, zorder=2, dodge=True)
+
+        for k in range(3):
+            path_collection = stripstrip.collections[k]
+            path_collection.set_facecolor(stripplot_colors[k])
+
+        # gp.bsliang_add_connecting_lines(plt, 0, stripstrip)
+        # gp.bsliang_add_connecting_lines(plt, 3, stripstrip)
+
+        # Choice 3: bar plot with fill - errbar
+        ax2 = sns.barplot(x='feature', y=var, errorbar='se', data=df_long, order=x_order, saturation=1,
+                          fill=False, alpha=0.5, linewidth=0, capsize=0.1, err_kws={'linewidth': 0.8, 'color': 'black'},
+                          zorder=3)
+
+        plt.xlabel('')
+        plt.ylabel(ytitles[i - 1])#, y=gp.bsliang_align_yaxis(y_limits[i - 1], y_ticks[i - 1]))
+        plt.ylim(y_limits[i - 1])
+        # plt.yticks(y_ticks[i - 1])
+        plt.title(subtitles[i - 1], y=1.4)
+        plt.gca().tick_params(axis='x', direction='in', length=0, labelrotation=45)
+        plt.gca().tick_params(axis='y', direction='in', length=2)
+        # plt.gca().get_legend().remove()
+
+    plt.tight_layout(w_pad=1.5)
+    plt.savefig(os.path.join('plot',f'Peak latency {peak_Tag}.tif'), dpi=300,bbox_inches='tight', transparent=False)
+
+# Stats
+from scipy.stats import ttest_ind
+
+ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Acoustic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Phonemic/aud'],nan_policy='omit')
+ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Phonemic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Lexical/aud'],nan_policy='omit')
+ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Acoustic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Lexical/aud'],nan_policy='omit')
+
+ttest_ind(peaks_del['Auditory_inRep/Repeat/ALL/Acoustic/del'],peaks_del['Auditory_inRep/Repeat/ALL/Phonemic/del'],nan_policy='omit')
+ttest_ind(peaks_del['Auditory_inRep/Repeat/ALL/Acoustic/del'],peaks_del['Auditory_inRep/Repeat/ALL/Lexical/del'],nan_policy='omit')
+ttest_ind(peaks_del['Auditory_inRep/Repeat/ALL/Phonemic/del'],peaks_del['Auditory_inRep/Repeat/ALL/Lexical/del'],nan_policy='omit')
+
 #%% plot significant electrodes
 for wordness in wordnesses[:2]:
     for md,md_Tag in zip(['all','aud','del'],['whole trial','auditory window','delay window']):
