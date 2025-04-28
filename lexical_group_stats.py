@@ -199,6 +199,9 @@ if "LexNoDelay" in groupsTag:
     data_LexNoDelay_Silence_Del_sorted,_,_,LexNoDelay_Silence_Del_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Silence_Aud,epoc_LexNoDelay_Silence_Aud, cluster_twin,[mean_word_len+auditory_decay,10])
     plot_chs(data_LexNoDelay_Silence_Del_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexNoDelay-{'Auditory_inSilence_Delay'}.jpg'),f"N chs = {len(LexNoDelay_Silence_Del_sig_idx)}")
 
+    # (Encoding electrodes without Delay)
+    LexNoDelay_Silence_Encode_Only_sig_idx = LexNoDelay_Silence_Encode_sig_idx.difference(LexNoDelay_Silence_Del_sig_idx)
+
     # Channel selection: Auditory nomotor electrodes (auditory window:1, motor prep: 0)
     LexNoDelay_Aud_NoMotor_sig_idx = LexNoDelay_Aud_sig_idx - LexNoDelay_Motor_Prep_sig_idx
 
@@ -216,6 +219,7 @@ if "LexNoDelay" in groupsTag:
     Lex_idxes['LexNoDelay_Sensory_OR_Motor_sig_idx'] = LexNoDelay_Sensory_OR_Motor_sig_idx
     Lex_idxes['LexNoDelay_Motor_sig_idx'] = LexNoDelay_Motor_sig_idx
     Lex_idxes['LexNoDelay_Silence_Encode_sig_idx'] = LexNoDelay_Silence_Encode_sig_idx
+    Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx'] = LexNoDelay_Silence_Encode_Only_sig_idx
     Lex_idxes['LexNoDelay_Silence_Del_sig_idx'] = LexNoDelay_Silence_Del_sig_idx
 
 
@@ -451,39 +455,75 @@ elif groupsTag=="LexDelay&LexNoDelay":
     plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_rep.tif'), dpi=300)
     plt.close()
 
-    Ndel_S_encode=Lex_idxes['LexNoDelay_Silence_Encode_sig_idx']
+    # Do the same things but for the Silent trials in lexical No Delay tasks (i.e., just listen)
+    Ndel_S_encode_only=Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx']
     Ndel_S_del=Lex_idxes['LexNoDelay_Silence_Del_sig_idx']
-    P_silence_SM_delay=len(del_sm.difference(Ndel_S_del))/len(del_sm)*100
-    ##################从这里开始编辑！！！！！！！！！
 
+    P_silence_SM_encode_only=len(Ndel_S_encode_only & del_sm)/len(del_sm)*100
+    P_silence_SM_delay=len(Ndel_S_del & del_sm)/len(del_sm)*100
+    P_silence_SM_silent=len(del_sm.difference(Ndel_S_encode_only | Ndel_S_del))/len(del_sm)*100
+
+    P_silence_Aud_encode_only=len(Ndel_S_encode_only & del_aud)/len(del_aud)*100
+    P_silence_Aud_delay=len(Ndel_S_del & del_aud)/len(del_aud)*100
+    P_silence_Aud_silent=len(del_aud.difference(Ndel_S_encode_only | Ndel_S_del))/len(del_aud)*100
+
+    P_silence_M_encode_only=len(Ndel_S_encode_only & del_mtr)/len(del_mtr)*100
+    P_silence_M_delay=len(Ndel_S_del & del_mtr)/len(del_mtr)*100
+    P_silence_M_silent=len(del_mtr.difference(Ndel_S_encode_only | Ndel_S_del))/len(del_mtr)*100
+
+    data = {
+        "Del_A": [P_silence_Aud_encode_only, P_silence_Aud_delay, P_silence_Aud_silent],
+        "Del_SM": [P_silence_SM_encode_only, P_silence_SM_delay, P_silence_SM_silent],
+        "Del_M": [P_silence_M_encode_only, P_silence_M_delay, P_silence_M_silent],
+    }
+    df_cm = pd.DataFrame(data, index=[":=:Encodeonly", ":=:Delay", ":=:Silent"]).transpose()
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=100, cbar=False)
+    plt.title(f"Delay overlaped with Nodelay in :=: (% in Delay)")
+    plt.ylabel("Delay")
+    plt.xlabel("No Delay :=:")
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_Silent.tif'), dpi=300)
+    plt.close()
 
     # Brain plot for SM electrodes in Delay (separated by functions in No Delay)
     len_d=len(data_LexDelay_Aud.labels[0])
     for TypeLabel,col,sig_idx in zip(
-            ('Auditory','Sensory-motor','Motor','Silent'),
-            (Auditory_col,Sensorimotor_col,Motor_col,[1,1,1]),
+            ('Auditory','Sensory-motor','Motor','Silent','Silent_Encodeonly', 'Silent_Delay', 'Silent_Silent'),
+            (Auditory_col,Sensorimotor_col,Motor_col,[1,1,1],Auditory_col,Delay_col,[1,1,1]),
             (set2arr(del_sm & Ndel_aud,len_d),
              set2arr(del_sm & Ndel_sm,len_d),
              set2arr(del_sm & Ndel_mtr,len_d),
-             set2arr(del_sm.difference(Ndel_all),len_d))):
+             set2arr(del_sm.difference(Ndel_all),len_d),
+             set2arr(del_sm & Ndel_S_encode_only, len_d),
+             set2arr(del_sm & Ndel_S_del, len_d),
+             set2arr(del_sm.difference(Ndel_S_encode_only | Ndel_S_del), len_d)
+             )):
 
             pick_labels = [data_LexDelay_Aud.labels[0][i] for i in range(len_d) if sig_idx[i] == 1]
             chs_cols =[col for i in range(len(pick_labels))]
 
             plot_brain(subjs, pick_labels,chs_cols,None,os.path.join(fig_save_dir,f'DelaySM_inNoDelay_Rep{TypeLabel}.tif'),0.5)
-            if TypeLabel=='Silent':
+            if TypeLabel=='Silent' or TypeLabel=='Silent_Silent':
                 atlas_col=[0.5,0.5,0.5]
             else:
                 atlas_col=col
-            atlas2_hist(ch_labels_roi,pick_labels,atlas_col,os.path.join(fig_save_dir,f'DelaySM_inNoDelay_Rep_ROIhist{TypeLabel}.tif'))
+            atlas2_hist(ch_labels_roi,pick_labels,atlas_col,os.path.join(fig_save_dir,f'DelaySM_inNoDelay_Rep_ROIhist_{TypeLabel}.tif'))
 
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+
+    plot_wave(epoc_LexDelay_Aud, del_sm.difference(Ndel_all), f'Delay',[0.5,0.5,0.5],'--',False)
+    plot_wave(epoc_LexDelay_Aud, del_sm & Ndel_mtr, f'Delay',Motor_col,'--',False)
+    plot_wave(epoc_LexDelay_Aud, del_sm & Ndel_aud, f'Delay', Auditory_col,'--',False)
+    plot_wave(epoc_LexDelay_Aud, del_sm & Ndel_sm, f'Delay',Sensorimotor_col,'--',False)
+
     plot_wave(epoc_LexNoDelay_Aud, del_sm.difference(Ndel_all), f'Silent n={len(del_sm.difference(Ndel_all))}',[0.5,0.5,0.5],'-',False)
     plot_wave(epoc_LexNoDelay_Aud, del_sm & Ndel_mtr, f'Motor n={len(del_sm & Ndel_mtr)}',Motor_col,'-',False)
     plot_wave(epoc_LexNoDelay_Aud, del_sm & Ndel_aud, f'Auditory n={len(del_sm & Ndel_aud)}', Auditory_col,'-',False)
     plot_wave(epoc_LexNoDelay_Aud, del_sm & Ndel_sm, f'Sensory-motor n={len(del_sm & Ndel_sm)}',Sensorimotor_col,'-',False)
+
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
     plt.title('LexDelay SM elec. in LexNoDelay (aligned to stim onset)',fontsize=20)
@@ -491,7 +531,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
     plt.xlim([-0.25,1.6])
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir,'DelaySM_inNoDelay_Rep_wave.tif'),dpi=300)
+    plt.savefig(os.path.join(fig_save_dir,'DelaySM_inNoDelay_Rep_contraDelay_wave.tif'),dpi=300)
     plt.close()
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
@@ -522,4 +562,28 @@ elif groupsTag=="LexDelay&LexNoDelay":
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_save_dir,'DelaySilentSM_inNoDelay_Rep_wave.tif'),dpi=300)
+    plt.close()
+
+    # Plot EncodeOnly, Delay, and Silent (Aligned to auditory onset)
+    plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+
+    plot_wave(epoc_LexDelay_Aud, del_sm.difference(Ndel_S_encode_only | Ndel_S_del), f'DelayRep',[0.5,0.5,0.5],'--',False)
+    plot_wave(epoc_LexDelay_Aud, del_sm & Ndel_S_encode_only, f'DelayRep', Auditory_col,'--',False)
+    plot_wave(epoc_LexDelay_Aud, del_sm & Ndel_S_del, f'DelayRep',Delay_col,'--',False)
+
+    # plot_wave(epoc_LexNoDelay_Aud, del_sm.difference(Ndel_S_encode_only | Ndel_S_del), f'NoDelayRep',[0.5,0.5,0.5],'--',False)
+    # plot_wave(epoc_LexNoDelay_Aud, del_sm & Ndel_S_encode_only, f'NoDelayRep', Auditory_col,'--',False)
+    # plot_wave(epoc_LexNoDelay_Aud, del_sm & Ndel_S_del, f'NoDelayRep',Delay_col,'--',False)
+
+    plot_wave(epoc_LexNoDelay_Silence_Aud, del_sm.difference(Ndel_S_encode_only | Ndel_S_del), f':=:Silent n={len(del_sm.difference(Ndel_S_encode_only | Ndel_S_del))}',[0.5,0.5,0.5],'-',False)
+    plot_wave(epoc_LexNoDelay_Silence_Aud, del_sm & Ndel_S_encode_only, f':=:Encodeonly n={len(del_sm & Ndel_S_encode_only)}', Auditory_col,'-',False)
+    plot_wave(epoc_LexNoDelay_Silence_Aud, del_sm & Ndel_S_del, f':=:Delay n={len(del_sm & Ndel_S_del)}',Delay_col,'-',False)
+    plt.axvline(x=0, linestyle='--', color='k')
+    plt.axhline(y=0, linestyle='--', color='k')
+    plt.title('LexDelay SM elec. in LexNoDelay (aligned to stim onset)',fontsize=20)
+    plt.legend(loc='upper right',fontsize=15)
+    # plt.xlim([-0.25,1.6])
+    plt.gca().spines[['top', 'right']].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_save_dir,'DelaySM_inNoDelay_Silent_wave_contrDelay.tif'),dpi=300)
     plt.close()
