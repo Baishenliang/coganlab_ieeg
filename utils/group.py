@@ -342,11 +342,11 @@ def plot_chs(data_in, fig_save_dir_fm,title):
     plt.close()
 
 
-def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, **kwargs):
+def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,**kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
     fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',
-                            label_every=label_every, size=0.3, **kwargs)
+                            label_every=label_every, size=dotsize, **kwargs)
     #fig3d.save_image(fig_save_dir_f)
 
 def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
@@ -373,33 +373,6 @@ def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
     plt.tight_layout()
     plt.savefig(fig_save_dir_fm, dpi=300)
     plt.close()
-
-def find_com_sig_chs(data1_labels, data1_sig_idx, data2_labels, data2_sig_idx):
-    """
-    Find common significant channels between two datasets.
-
-    Args:
-        data1_labels: Channel labels from first dataset
-        data1_sig_idx: Significance indices from first dataset
-        data2_labels: Channel labels from second dataset
-        data2_sig_idx: Significance indices from second dataset
-
-    Returns:
-        common_sig_idx: Binary array marking common significant channels
-        common_sig_labels: Labels of common significant channels
-    """
-    # Get significant channel labels from both datasets
-    import numpy as np
-
-    sig_channels1 = set([label for label in data1_labels if label in data1_sig_idx])
-    sig_channels2 = set([label for label in data2_labels if label in data2_sig_idx])
-    # Find common significant channels
-    common_sig_channels = sig_channels1.intersection(sig_channels2)
-
-    # Create a set for common significant channels
-    common_sig_idx = {i for i, channel in enumerate(data1_labels) if channel in common_sig_channels}
-
-    return common_sig_idx
 
 def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
     """
