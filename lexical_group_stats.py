@@ -19,7 +19,7 @@ Delayseleted = '_inRep'
 # Parameters from the lexical delay task
 mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0.1 # a short period of time that we may assume auditory decay takes
-delay_len=0.5 # from task script
+delay_len=0.8 # from task script
 motor_prep_win=[-0.2,-0.1] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
 motor_resp_win=[-0.1,0.75] # get windows for motor response (0.75s to avoid too much auditory feedback)
 pre_stimonset_win=[-0.5,0]
@@ -471,13 +471,25 @@ elif groupsTag=="LexDelay&LexNoDelay":
 
         plt.figure()
         plt.title('Active SM electrodes')
-        venn2([del_sm,Ndel_sm],set_labels = (tag1, tag2))
+        venn2([del_sm & del_aud, Ndel_sm & Ndel_aud],set_labels = (tag1, tag2))
         plt.tight_layout()
         plt.show()
 
         plt.figure()
         plt.title('Active SM electrodes')
         venn2([del_sm,Ndel_S_all],set_labels = (tag1, 'NDL_JL_all'))
+        plt.tight_layout()
+        plt.show()
+
+        plt.figure()
+        plt.title('Active SM electrodes')
+        venn3([del_sm,Ndel_aud,Ndel_sm],set_labels = ('SM Delay Rep', 'Aud NoDelay Rep', 'SM NoDelay Rep'))
+        plt.tight_layout()
+        plt.show()
+
+        plt.figure()
+        plt.title('Active SM electrodes')
+        venn3([del_sm,Ndel_S_encode_only,Ndel_S_del],set_labels = ('SM Delay Rep', 'NoDelay JL Encode', ' NoDelay JL Late'))
         plt.tight_layout()
         plt.show()
 
