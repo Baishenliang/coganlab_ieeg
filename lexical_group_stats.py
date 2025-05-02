@@ -1,7 +1,7 @@
 # %% groups of patients
-#groupsTag="LexDelay"
+groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -16,10 +16,10 @@ contrast='ave' # average, not contrasting different conditions
 Delayseleted = '_inRep'
 
 # Parameters from the lexical delay task
-mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
-auditory_decay=0.1 # a short period of time that we may assume auditory decay takes
-delay_len=0.8 # from task script
-motor_prep_win=[-0.2,-0.1] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
+mean_word_len=0.5#0.62 # from utils/lexdelay_get_stim_length.m
+auditory_decay=0.0 # a short period of time that we may assume auditory decay takes
+delay_len=1 # from task script
+motor_prep_win=[-0.25,-0.1] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
 motor_resp_win=[-0.1,0.75] # get windows for motor response (0.75s to avoid too much auditory feedback)
 pre_stimonset_win=[-0.5,0]
 cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
@@ -480,6 +480,27 @@ elif groupsTag=="LexDelay&LexNoDelay":
     plt.close()
 
     data = {
+        "Aud responses": [len(del_del & (del_aud | del_sm) & (Ndel_aud | Ndel_sm))/len(del_del & (del_aud | del_sm))*100,
+                       len(del_del & (del_aud | del_sm) & Ndel_mtr)/len(del_del & (del_aud | del_sm))*100,
+                       len((del_del & (del_aud | del_sm)).difference(Ndel_all))/len(del_del & (del_aud | del_sm))*100],
+        "Mot responses": [len(del_del & (del_mtr | del_sm) & Ndel_aud)/len(del_del & (del_mtr | del_sm))*100,
+                       len(del_del & (del_mtr | del_sm) & (Ndel_mtr | Ndel_sm))/len(del_del & (del_mtr | del_sm))*100,
+                       len((del_del & (del_mtr | del_sm)).difference(Ndel_all))/len(del_del & (del_mtr | del_sm))*100],
+        "Delay Only": [len(del_delol & (Ndel_aud | Ndel_sm)) / len(del_delol) * 100,
+                       len(del_delol & (Ndel_mtr | Ndel_sm)) / len(del_delol) * 100,
+                       len(del_delol.difference(Ndel_all)) / len(del_delol) * 100]
+    }
+    df_cm = pd.DataFrame(data, index=["Aud responses", "Mot responses", "Silent"]).transpose()
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=80, cbar=False)
+    plt.title(f"NoDelay Repeat (% in Delay)")
+    plt.ylabel("Delay electrodes in LexDelay Repeat")
+    plt.xlabel("LexNoDelay Repeat")
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_rep_A_M.tif'), dpi=300)
+    plt.close()
+
+    data = {
         "Auditory": [len(del_del & del_aud & Ndel_S_encode_only)/len(del_del & del_aud)*100,
                        len(del_del & del_aud & Ndel_S_del)/len(del_del & del_aud)*100,
                        len((del_del & del_aud).difference(Ndel_S_all))/len(del_del & del_aud)*100],
@@ -552,24 +573,31 @@ elif groupsTag=="LexDelay&LexNoDelay":
         pick_labels = list(data_LexDelay_Aud.labels[0][list(D_sig)])
         plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.5, 0.2)
 
-        for epch_data,epoch_taf,figwid,xlim in zip(
-                (epoc_LexDelay_Aud,epoc_LexNoDelay_Aud,epoc_LexDelay_Resp,epoc_LexNoDelay_Resp),
-                ('Del_Aud','NoDel_Aud','Del_Resp','NoDel_Resp'),
-                (1,1,(150/350),(150/350)),
-                ([-0.5,3],[-0.5,3],[-0.5,0.75],[-0.5,0.75])):
-            plt.figure(figsize=(Waveplot_wth*figwid, Waveplot_hgt))
-            plot_wave(epch_data, D_sig & Ndel_aud, f'Auditory', Auditory_col, '-', False)
-            plot_wave(epch_data, D_sig & Ndel_sm, f'Sensory-motor', Sensorimotor_col, '-', False)
-            plot_wave(epch_data, D_sig & Ndel_mtr, f'Motor', Motor_col, '-', False)
-            plot_wave(epch_data, D_sig.difference(Ndel_all), f'Silent',[0.5,0.5,0.5], '-', False)
-            plt.axvline(x=0, linestyle='--', color='k')
-            plt.axhline(y=0, linestyle='--', color='k')
-            plt.legend(loc='upper right', fontsize=8)
-            plt.gca().spines[['top', 'right']].set_visible(False)
-            plt.tight_layout()
-            plt.xlim(xlim)
-            plt.savefig(os.path.join(fig_save_dir, f'{D_tag}_Delay_Rep in NoDelay Rep {epoch_taf} Traces.tif'), dpi=300)
-            plt.close()
+        for ele_cat, ele_cat_tag,spec_col in zip(
+                ([D_sig & Ndel_aud,D_sig & Ndel_sm,D_sig & Ndel_mtr,D_sig.difference(Ndel_all)],
+                 [D_sig & del_aud,D_sig & del_sm,D_sig & del_mtr,del_delol]),
+                (['NDL_Aud','NDL_SM','NDL_M','NDL_Silent'],
+                ['DL_Aud','DL_SM','DL_M','Delay_Only']),
+                 ([0.5,0.5,0.5],Delay_col)
+        ):
+            for epch_data,epoch_taf,figwid,xlim in zip(
+                    (epoc_LexDelay_Aud,epoc_LexNoDelay_Aud,epoc_LexDelay_Resp,epoc_LexNoDelay_Resp),
+                    ('Del_Aud','NoDel_Aud','Del_Resp','NoDel_Resp'),
+                    (1,1,(150/350),(150/350)),
+                    ([-0.5,3],[-0.5,3],[-0.5,0.75],[-0.5,0.75])):
+                plt.figure(figsize=(Waveplot_wth*figwid, Waveplot_hgt))
+                plot_wave(epch_data, ele_cat[0], ele_cat_tag[0], Auditory_col, '-', False)
+                plot_wave(epch_data, ele_cat[1], ele_cat_tag[1], Sensorimotor_col, '-', False)
+                plot_wave(epch_data, ele_cat[2], ele_cat_tag[2], Motor_col, '-', False)
+                plot_wave(epch_data, ele_cat[3], ele_cat_tag[3],spec_col, '-', False)
+                plt.axvline(x=0, linestyle='--', color='k')
+                plt.axhline(y=0, linestyle='--', color='k')
+                plt.legend(loc='upper right', fontsize=8)
+                plt.gca().spines[['top', 'right']].set_visible(False)
+                plt.tight_layout()
+                plt.xlim(xlim)
+                plt.savefig(os.path.join(fig_save_dir, f'{D_tag}_Delay_Rep in NoDelay Rep {epoch_taf} Traces {ele_cat_tag[0]}.tif'), dpi=300)
+                plt.close()
 
         # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
         for epch_data,epoch_taf,figwid,xlim in zip(

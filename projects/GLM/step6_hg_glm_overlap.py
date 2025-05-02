@@ -24,7 +24,7 @@ import seaborn as sns
 import json
 import pickle
 
-grouping='anat'
+grouping='hg'
 #"hg": grouping electrodes according to HG windows i.e., Auditory, Sensory-motor, Motor
 #"anat": grouping electrodes according to the ROIs i.e., STG, IFG, etc
 #%% Set parameters: HG
@@ -38,10 +38,10 @@ contrast='ave' # average, not contrasting different conditions
 Delayseleted = '_inRep'
 
 # Parameters from the lexical delay task
-mean_word_len=0.62 # from utils/lexdelay_get_stim_length.m
-auditory_decay=0.4 # a short period of time that we may assume auditory decay takes
-delay_len=0.5 # from task script
-motor_prep_win=[-0.5,-0.1] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
+mean_word_len=0.5 # from utils/lexdelay_get_stim_length.m
+auditory_decay=0 # a short period of time that we may assume auditory decay takes
+delay_len=1 # from task script
+motor_prep_win=[-0.25,-0.1] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
 motor_resp_win=[-0.1,0.75] # get windows for motor response (0.75s to avoid too much auditory feedback)
 cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 
@@ -60,15 +60,11 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Auditory","Resp"]
+events = ["Auditory_inRep","Resp_inRep"]
 stat = "zscore"
 task_Tags = ["Repeat"]#,"Yes_No"]
 glm_feas = ["Acoustic","Phonemic","Lexical"]
 wordnesses = ["ALL"]#["ALL", "Word", "Nonword"]
-cluster_twin=0.011
-mean_word_len=0.62
-auditory_decay=0.4
-delay_len=0.5
 # motor_prep_win=[-0.5,-0.1]
 # motor_resp_win=[0.25,0.75]
 Waveplot_wth=10 # Width of wave plots
@@ -78,12 +74,19 @@ Waveplot_hgt=4 # Height of wave plots
 if groupsTag=="LexDelay":
 
     hgmask_aud,_=gp.load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
+    hgmask_bsl_labels=hgmask_aud.labels
+    hgmask_bsl_labels[1]=hgmask_bsl_labels[1]
+    hgmask_bsl_data=np.full((np.shape(hgmask_aud.__array__())[0],np.shape(hgmask_aud.__array__())[1]),1)
+    from ieeg.arrays.label import LabeledArray
+    hgmask_bsl = LabeledArray(hgmask_bsl_data, hgmask_bsl_labels)
     hgmask_resp, _ = gp.load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
 #%% hg glm r^2 plots
-subjs, _, _, chs, _ = glm.fifread("Auditory", 'zscore', 'Repeat', wordnesses[0])
-with open(os.path.join('data', 'LexDelay_twin_idxes.npy'), "rb") as f:
+subjs, _, _, chs, _ = glm.fifread("Auditory_inRep", 'zscore', 'Repeat', wordnesses[0])
+with open(os.path.join('data', 'Lex_twin_idxes.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
+with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
+    LexDelay_glm_idxes = pickle.load(f)
 
 if grouping=='hg':
     twin_sets=[LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'],
@@ -126,13 +129,17 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
         else:
             _,stats,_=glm.load_stats(event,stat,task_Tag,'cluster_mask',glm_fea,subjs,chs,times,wordness)
             stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats
-            if event=='Auditory':
+            if event=='Auditory_inRep':
+                # pre_onset baseline window
+                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_bsl,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.5,0])
+                _,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
+                glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/bsl']=glm_avg
                 # auditory window
                 _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
                 _,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/aud']=glm_avg
                 # delay window
-                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
+                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
                 _,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/del']=glm_avg
             elif event=="Resp":
@@ -200,7 +207,7 @@ for task_Tag, wordness,ph in itertools.product(task_Tags,wordnesses,phs):
             print(f'A-M:{st.ttest_ind(A,M,nan_policy='omit')}')
 
 #%% Get confusion between time-windowed selected electrodes and glm electrods
-if 1==0:
+if 1==1:
     win_aud=LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx']
     win_sm=LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']
     win_mtr=LexDelay_twin_idxes['LexDelay_Motor_sig_idx']
@@ -209,13 +216,13 @@ if 1==0:
 
     for ph,ph_Tag in zip(['aud','del','resp'],['Auditory',"Delay","Response"]):
         if ph !='resp':
-            glm_aco=LexDelay_glm_idxes[f'Auditory/Repeat/ALL/Acoustic/{ph}']
-            glm_pho=LexDelay_glm_idxes[f'Auditory/Repeat/ALL/Phonemic/{ph}']
-            glm_lex=LexDelay_glm_idxes[f'Auditory/Repeat/ALL/Lexical/{ph}']
+            glm_aco=LexDelay_glm_idxes[f'Auditory_inRep/Repeat/ALL/Acoustic/{ph}']
+            glm_pho=LexDelay_glm_idxes[f'Auditory_inRep/Repeat/ALL/Phonemic/{ph}']
+            glm_lex=LexDelay_glm_idxes[f'Auditory_inRep/Repeat/ALL/Lexical/{ph}']
         else:
-            glm_aco=LexDelay_glm_idxes[f'Resp/Repeat/ALL/Acoustic/{ph}']
-            glm_pho=LexDelay_glm_idxes[f'Resp/Repeat/ALL/Phonemic/{ph}']
-            glm_lex=LexDelay_glm_idxes[f'Resp/Repeat/ALL/Lexical/{ph}']
+            glm_aco=LexDelay_glm_idxes[f'Resp_inRep/Repeat/ALL/Acoustic/{ph}']
+            glm_pho=LexDelay_glm_idxes[f'Resp_inRep/Repeat/ALL/Phonemic/{ph}']
+            glm_lex=LexDelay_glm_idxes[f'Resp_inRep/Repeat/ALL/Lexical/{ph}']
 
         all_win_electrodes = win_aud | win_sm | win_mtr | win_mtrprep | win_delo
 

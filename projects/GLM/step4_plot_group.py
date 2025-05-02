@@ -90,7 +90,6 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 elif event.split('_')[0]=='Resp':
                     hgmask_resp=masks
 
-            clean_chs_idx = gp.get_notmuscle_electrodes(stats)
             if plot_wave_type=='stat':
                 stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats
             elif plot_wave_type=='mask':
@@ -99,20 +98,17 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             if event.split('_')[0]=='Auditory':
                 # whole trial
                 all_masks_sorted,_,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
-                all_masks_sig = all_masks_sig & clean_chs_idx
                 gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/all"] = all_masks_sig
                 # auditory window
                 aud_masks_sorted,aud_masks_raw,_,aud_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
                 _,aud_masks_peak=gp.get_peak(aud_masks_raw)
-                aud_masks_sig = aud_masks_sig & clean_chs_idx
                 gp.plot_chs(aud_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_aud.jpg'),f"N chs = {len(aud_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_sig
                 peaks_aud[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_peak
                 # delay window
                 del_masks_sorted,del_masks_raw,_,del_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
                 _,del_masks_peak=gp.get_peak(del_masks_raw)
-                del_masks_sig = del_masks_sig & clean_chs_idx
                 gp.plot_chs(del_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_del.jpg'),f"N chs = {len(del_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_sig
                 peaks_del[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_peak
@@ -120,7 +116,6 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             elif event.split('_')[0]=="Resp":
                 # response window
                 resp_masks_sorted, _, _, resp_masks_sig = gp.sort_chs_by_actonset(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
-                resp_masks_sig = resp_masks_sig & clean_chs_idx
                 gp.plot_chs(resp_masks_sorted, os.path.join('plot', f'{event}_{task_Tag}_{wordness}_{glm_fea}_resp.jpg'),
                             f"N chs = {len(resp_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/resp"] = resp_masks_sig
