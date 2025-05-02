@@ -356,7 +356,10 @@ if groupsTag == "LexDelay":
                                   len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Sensorimotor_sig_idx']),
                                   len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Motor_sig_idx']),
                                   len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_DelayOnly_sig_idx'])])
-    DLREP_DEL_inDLREP_labels = ["Auditory", "Sensory-motor", "Motor", "Delay Only"]
+    DLREP_DEL_inDLREP_labels = [f"Auditory N = {len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Aud_NoMotor_sig_idx'])}",
+                                f"Sensory-motor N = {len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Sensorimotor_sig_idx'])}",
+                                f"Motor N = {len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Motor_sig_idx'])}",
+                                f"Delay Only N = {len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_DelayOnly_sig_idx'])}"]
     DLREP_DEL_inDLREP_colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col]
     plt.pie(DLREP_DEL_inDLREP, labels=DLREP_DEL_inDLREP_labels, colors=DLREP_DEL_inDLREP_colors, startangle=90,
             autopct='%1.2f%%')
@@ -508,7 +511,10 @@ elif groupsTag=="LexDelay&LexNoDelay":
         plt.title(f'{D_tag} in NoDelRep')
         DLREP_SM_inNDLREP = np.array([len(D_sig & Ndel_aud), len(D_sig & Ndel_sm),
                                       len(D_sig & Ndel_mtr), len(D_sig - Ndel_all)])
-        DLREP_SM_inNDLREP_labels = ["Auditory", "Sensory-motor", "Motor", "Silent"]
+        DLREP_SM_inNDLREP_labels = [f"Auditory {len(D_sig & Ndel_aud)}",
+                                    f"Sensory-motor {len(D_sig & Ndel_sm)}",
+                                    f"Motor {len(D_sig & Ndel_mtr)}",
+                                    f"Silent {len(D_sig - Ndel_all)}"]
         DLREP_SM_inNDLREP_colors = [Auditory_col, Sensorimotor_col, Motor_col, [0.5,0.5,0.5]]
         plt.pie(DLREP_SM_inNDLREP,labels=DLREP_SM_inNDLREP_labels,colors=DLREP_SM_inNDLREP_colors,startangle=90,autopct='%1.2f%%')
         plt.show()
@@ -517,7 +523,9 @@ elif groupsTag=="LexDelay&LexNoDelay":
         plt.title(f'{D_tag} in NoDelJ')
         DLREP_SM_inNDLJL = np.array([len(D_sig & Ndel_S_encode_only), len(D_sig & Ndel_S_del),
                                       len(D_sig - Ndel_S_all)])
-        DLREP_SM_inNDLJL_labels = ["Encode_Only", "Delay", "Silent"]
+        DLREP_SM_inNDLJL_labels = [f"Encode_Only{len(D_sig & Ndel_S_encode_only)}",
+                                   f"Delay{len(D_sig & Ndel_S_del)}",
+                                   f"Silent{len(D_sig - Ndel_S_all)}"]
         DLREP_SM_inNDLJL_colors = [Auditory_col, Delay_col, [0.5,0.5,0.5]]
         plt.pie(DLREP_SM_inNDLJL,labels=DLREP_SM_inNDLJL_labels,colors=DLREP_SM_inNDLJL_colors,startangle=90,autopct='%1.2f%%')
         plt.show()
