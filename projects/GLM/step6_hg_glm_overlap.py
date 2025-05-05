@@ -75,7 +75,6 @@ if groupsTag=="LexDelay":
 
     hgmask_aud,_=gp.load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
     hgmask_bsl_labels=hgmask_aud.labels
-    hgmask_bsl_labels[1]=hgmask_bsl_labels[1]
     hgmask_bsl_data=np.full((np.shape(hgmask_aud.__array__())[0],np.shape(hgmask_aud.__array__())[1]),1)
     from ieeg.arrays.label import LabeledArray
     hgmask_bsl = LabeledArray(hgmask_bsl_data, hgmask_bsl_labels)
@@ -145,6 +144,9 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
                 glm_avg_raw,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/del']=glm_avg
+                # delay window (unmasked)
+                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_bsl,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
+                glm_avg_raw,_,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/del'] = glm_avg_raw
             elif event=="Resp":
                 # response window
@@ -159,21 +161,35 @@ sm_del_idx=LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']&LexDelay_twin_id
 del_ol_idx=LexDelay_twin_idxes['LexDelay_DelayOnly_sig_idx']
 mtr_del_idx=LexDelay_twin_idxes['LexDelay_Motor_sig_idx']&LexDelay_twin_idxes['LexDelay_Delay_sig_idx']
 
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Acoustic/del'][list(aud_del_idx)],glm_avgs_raws['Repeat/ALL/Acoustic/bsl'][list(aud_del_idx)],nan_policy='omit')
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Phonemic/del'][list(aud_del_idx)],glm_avgs_raws['Repeat/ALL/Phonemic/bsl'][list(aud_del_idx)],nan_policy='omit')
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Lexical/del'][list(aud_del_idx)],glm_avgs_raws['Repeat/ALL/Lexical/bsl'][list(aud_del_idx)],nan_policy='omit')
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Acoustic/del'][list(aud_del_idx)],glm_avgs_raws['Repeat/ALL/Acoustic/bsl'][list(aud_del_idx)],nan_policy='omit')
+print(f"Acoustic GLM, Auditory electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Phonemic/del'][list(aud_del_idx)],glm_avgs_raws['Repeat/ALL/Phonemic/bsl'][list(aud_del_idx)],nan_policy='omit')
+print(f"Phonemic GLM, Auditory electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Lexical/del'][list(aud_del_idx)],glm_avgs_raws['Repeat/ALL/Lexical/bsl'][list(aud_del_idx)],nan_policy='omit')
+print(f"Lexical GLM, Auditory electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
 
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Acoustic/del'][list(mtr_del_idx)],glm_avgs_raws['Repeat/ALL/Acoustic/bsl'][list(mtr_del_idx)],nan_policy='omit')
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Phonemic/del'][list(mtr_del_idx)],glm_avgs_raws['Repeat/ALL/Phonemic/bsl'][list(mtr_del_idx)],nan_policy='omit')
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Lexical/del'][list(mtr_del_idx)],glm_avgs_raws['Repeat/ALL/Lexical/bsl'][list(mtr_del_idx)],nan_policy='omit')
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Acoustic/del'][list(mtr_del_idx)],glm_avgs_raws['Repeat/ALL/Acoustic/bsl'][list(mtr_del_idx)],nan_policy='omit')
+print(f"Acoustic GLM, Motor electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Phonemic/del'][list(mtr_del_idx)],glm_avgs_raws['Repeat/ALL/Phonemic/bsl'][list(mtr_del_idx)],nan_policy='omit')
+print(f"Phonemic GLM, Motor electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Lexical/del'][list(mtr_del_idx)],glm_avgs_raws['Repeat/ALL/Lexical/bsl'][list(mtr_del_idx)],nan_policy='omit')
+print(f"Lexical GLM, Motor electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
 
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Acoustic/del'][list(sm_del_idx)],glm_avgs_raws['Repeat/ALL/Acoustic/bsl'][list(sm_del_idx)],nan_policy='omit')
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Phonemic/del'][list(sm_del_idx)],glm_avgs_raws['Repeat/ALL/Phonemic/bsl'][list(sm_del_idx)],nan_policy='omit')
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Lexical/del'][list(sm_del_idx)],glm_avgs_raws['Repeat/ALL/Lexical/bsl'][list(sm_del_idx)],nan_policy='omit')
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Acoustic/del'][list(sm_del_idx)],glm_avgs_raws['Repeat/ALL/Acoustic/bsl'][list(sm_del_idx)],nan_policy='omit')
+print(f"Acoustic GLM, Sensory-motor electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Phonemic/del'][list(sm_del_idx)],glm_avgs_raws['Repeat/ALL/Phonemic/bsl'][list(sm_del_idx)],nan_policy='omit')
+print(f"Phonemic GLM, Sensory-motor electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Lexical/del'][list(sm_del_idx)],glm_avgs_raws['Repeat/ALL/Lexical/bsl'][list(sm_del_idx)],nan_policy='omit')
+print(f"Lexical GLM, Sensory-motor electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
 
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Acoustic/del'][list(del_ol_idx)],glm_avgs_raws['Repeat/ALL/Acoustic/bsl'][list(del_ol_idx)],nan_policy='omit')
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Phonemic/del'][list(del_ol_idx)],glm_avgs_raws['Repeat/ALL/Phonemic/bsl'][list(del_ol_idx)],nan_policy='omit')
-st.ttest_rel(glm_avgs_raws['Repeat/ALL/Lexical/del'][list(del_ol_idx)],glm_avgs_raws['Repeat/ALL/Lexical/bsl'][list(del_ol_idx)],nan_policy='omit')
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Acoustic/del'][list(del_ol_idx)],glm_avgs_raws['Repeat/ALL/Acoustic/bsl'][list(del_ol_idx)],nan_policy='omit')
+print(f"Acoustic GLM, Delay-only electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Phonemic/del'][list(del_ol_idx)],glm_avgs_raws['Repeat/ALL/Phonemic/bsl'][list(del_ol_idx)],nan_policy='omit')
+print(f"Phonemic GLM, Delay-only electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
+t_stat, p_val=st.ttest_rel(glm_avgs_raws['Repeat/ALL/Lexical/del'][list(del_ol_idx)],glm_avgs_raws['Repeat/ALL/Lexical/bsl'][list(del_ol_idx)],nan_policy='omit')
+print(f"Lexical GLM, Delay-only electrodes in Delay: t = {t_stat:.3f}, p = {p_val:.3g}")
+
+
 
 #%% Average and select and do 3d plots
 phs=['aud','del','resp']
