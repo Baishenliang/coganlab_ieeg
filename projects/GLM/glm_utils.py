@@ -46,7 +46,7 @@ def fifread(event,stat,task_Tag,wordness):
     acoustic_codes = pd.read_pickle("envelope_feature_dict.pickle")
 
     for i, subject in enumerate(subjs):
-        print(f"Now do patient eeee {subject}")
+        print(f"Now do patient {subject}")
 
         # Load fif data
         subject_label_chs = 'D' + subject[1:].lstrip('0')
@@ -89,6 +89,8 @@ def fifread(event,stat,task_Tag,wordness):
                 data_i = epochs[f'Resp/{task_Tag}/CORRECT'].get_data()
             elif event.split('_')[0] == 'Go':
                 data_i = epochs[f'Go/{task_Tag}/CORRECT'].get_data()
+            elif event.split('_')[0] == 'Cue':
+                data_i = epochs[f'Cue/{task_Tag}/CORRECT'].get_data()
             if i == 0:
                 times = epochs.times
         else:
@@ -98,6 +100,8 @@ def fifread(event,stat,task_Tag,wordness):
                 data_i = epochs[f'Resp/{task_Tag}/{wordness}/CORRECT'].get_data()
             elif event.split('_')[0] == 'Go':
                 data_i = epochs[f'Go/{task_Tag}/{wordness}/CORRECT'].get_data()
+            elif event.split('_')[0] == 'Cue':
+                data_i = epochs[f'Cue/{task_Tag}/{wordness}/CORRECT'].get_data()
             if i == 0:
                 times = epochs.times
         chs_i = epochs.ch_names
