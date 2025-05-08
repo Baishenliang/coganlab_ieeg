@@ -130,6 +130,24 @@ def fifread(event,stat,task_Tag,wordness):
 
     return subjs, data_list, filtered_events_list, chs, times
 
+def bsl_t_fdr(epc,bsl):
+    import numpy as np
+    from scipy.stats import ttest_rel
+    from statsmodels.stats.multitest import fdrcorrection
+
+    t_vals = np.zeros(epc.shape[1])
+    p_vals = np.zeros(epc.shape[1])
+
+    for i in range(epc.shape[1]):
+        t_stat, p_val_two_tailed = ttest_rel(epc[:, i], bsl, nan_policy='omit')
+        t_vals[i] = t_stat
+        if t_stat > 0:
+            p_vals[i] = p_val_two_tailed / 2
+        else:
+            p_vals[i] = 1 - (p_val_two_tailed / 2)
+    _, p_vals_fdr = fdrcorrection(p_vals, alpha=0.05)
+    return t_vals, p_vals,p_vals_fdr
+
 def par_regress(filtered_events_list_i,feature_seleted,feature_controlled,data_i):
     """
     Partial regression to control the contributions of unseleted features:

@@ -428,9 +428,6 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
 
     return aligned_data, aligned_chs
 
-
-
-
 def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normalize=False):
 
     import numpy as np
