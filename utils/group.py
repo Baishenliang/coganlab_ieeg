@@ -51,7 +51,6 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
             file_dir = os.path.join(subj_gamma_stats_dir, f'GLM_{con}_{contrast}.npy')
         else:
             file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}-{contrast}.fif')
-        # 对于GLM这里需要合并一下：电极还是要load fif的，但是mask/beta/p就是直接load的*.npy so
 
         if not os.path.exists(file_dir):
             continue
