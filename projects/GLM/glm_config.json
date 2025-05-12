@@ -2,14 +2,16 @@
     "model": "partial",
     "alpha": 0.05,
     "alpha_clus": 0.05,
-    "n_perms": 100000,
+    "n_perms": 100,
     "stat": "zscore",
     "feature_ranges": {
+        "BSL_correct": [1],
         "Lexical": [1],
         "Phonemic": [2, 34],
         "Acoustic": [34, 50]
     },
     "control_feature_ranges": {
+        "BSL_correct": [],
         "Acoustic": [],
         "Phonemic": [34, 50],
         "Lexical": [2, 50]

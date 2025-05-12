@@ -23,7 +23,7 @@ stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "deri
 
 #%% Functions
 
-def fifread(event,stat,task_Tag,wordness):
+def fifread(event,stat,task_Tag,wordness,bsl_contrast=False):
 
     fif_name=f'{event}_{stat}-epo.fif'
 
@@ -56,30 +56,36 @@ def fifread(event,stat,task_Tag,wordness):
         file_dir = os.path.join(subj_gamma_stats_dir, fif_name)
         epochs = mne.read_epochs(file_dir, False, preload=True)
 
-        # Load events
-        subj_gamma_clean_dir = os.path.join(clean_root, subject, 'ieeg')
-        files = glob.glob(os.path.join(subj_gamma_clean_dir, '*acq-*_run-*_desc-clean_events.tsv'))
-        files_sorted = sorted(files, key=lambda x: [int(i) for i in re.findall(r'acq-(\d+)_run-(\d+)', x)[0]])
-        dfs = [pd.read_csv(f, sep='\t') for f in files_sorted]
-        events_df = pd.concat(dfs, ignore_index=True)
-        if wordness=='ALL':
-            filtered_events_i = events_df[events_df['trial_type'].str.contains(event.split('_')[0])
-                                          & events_df['trial_type'].str.contains('CORRECT')
-                                          & events_df['trial_type'].str.contains(task_Tag)].reset_index(drop=True)
-        else:
-            filtered_events_i = events_df[events_df['trial_type'].str.contains(event.split('_')[0])
-                                          & events_df['trial_type'].str.contains('CORRECT')
-                                          & events_df['trial_type'].str.contains(task_Tag)
-                                          & events_df['trial_type'].str.contains(wordness)].reset_index(drop=True)
+        if bsl_contrast:
+            fif_name_cue = f'Cue_inRep_{stat}-epo.fif'
+            file_dir = os.path.join(subj_gamma_stats_dir, fif_name_cue)
+            epochs_bsl = mne.read_epochs(file_dir, False, preload=True)
+            epochs_bsl_crop = epochs_bsl.copy().crop(tmin=-0.5, tmax=0)
 
-        trial_split = filtered_events_i['trial_type'].str.split('/', expand=True)
-        trial_split.columns = ['Stage', 'RepYesNo', 'Wordness', 'Stim', 'Correctness']
-        filtered_events_i = pd.concat([filtered_events_i, trial_split], axis=1)
-        for col in ['Stage', 'RepYesNo', 'Wordness', 'Stim', 'Correctness']:
-            filtered_events_i[col] = filtered_events_i[col].astype('category')
+        if not bsl_contrast:
+            # Load events
+            subj_gamma_clean_dir = os.path.join(clean_root, subject, 'ieeg')
+            files = glob.glob(os.path.join(subj_gamma_clean_dir, '*acq-*_run-*_desc-clean_events.tsv'))
+            files_sorted = sorted(files, key=lambda x: [int(i) for i in re.findall(r'acq-(\d+)_run-(\d+)', x)[0]])
+            dfs = [pd.read_csv(f, sep='\t') for f in files_sorted]
+            events_df = pd.concat(dfs, ignore_index=True)
 
-        if subject == 'sub-D0102' and task_Tag == 'Repeat' and event.split('_')[0] == 'Auditory' and wordness !='Nonword':
-            filtered_events_i = filtered_events_i[:-1]
+            if wordness=='ALL':
+                filtered_events_i = events_df[events_df['trial_type'].str.contains(event.split('_')[0])
+                                              & events_df['trial_type'].str.contains('CORRECT')
+                                              & events_df['trial_type'].str.contains(task_Tag)].reset_index(drop=True)
+            else:
+                filtered_events_i = events_df[events_df['trial_type'].str.contains(event.split('_')[0])
+                                              & events_df['trial_type'].str.contains('CORRECT')
+                                              & events_df['trial_type'].str.contains(task_Tag)
+                                              & events_df['trial_type'].str.contains(wordness)].reset_index(drop=True)
+
+            trial_split = filtered_events_i['trial_type'].str.split('/', expand=True)
+            trial_split.columns = ['Stage', 'RepYesNo', 'Wordness', 'Stim', 'Correctness']
+            filtered_events_i = pd.concat([filtered_events_i, trial_split], axis=1)
+
+            for col in ['Stage', 'RepYesNo', 'Wordness', 'Stim', 'Correctness']:
+                filtered_events_i[col] = filtered_events_i[col].astype('category')
 
         # Get data
         if wordness == 'ALL':
@@ -93,6 +99,8 @@ def fifread(event,stat,task_Tag,wordness):
                 data_i = epochs[f'Cue/{task_Tag}/CORRECT'].get_data()
             if i == 0:
                 times = epochs.times
+            if bsl_contrast:
+                data_i_bsl = epochs_bsl_crop[f'Cue/{task_Tag}/CORRECT'].get_data()
         else:
             if event.split('_')[0] == 'Auditory':
                 data_i = epochs[f'Auditory_stim/{task_Tag}/{wordness}/CORRECT'].get_data()
@@ -104,22 +112,42 @@ def fifread(event,stat,task_Tag,wordness):
                 data_i = epochs[f'Cue/{task_Tag}/{wordness}/CORRECT'].get_data()
             if i == 0:
                 times = epochs.times
+            if bsl_contrast:
+                data_i_bsl = epochs_bsl_crop[f'Cue/{task_Tag}/{wordness}/CORRECT'].get_data()
         chs_i = epochs.ch_names
         chs_i = [f"{subject_label_chs}-{ch}" for ch in chs_i]
 
-        # Feature matrix
-        wordness_dummy = (filtered_events_i.Wordness == "Word").astype(float)
-        phoneme_vectors = []
-        acoustic_vectors = []
-        for stim in filtered_events_i.Stim:
-            phoneme_vectors.append(phoneme_codes[stim])
-            acoustic_vectors.append(acoustic_codes[stim])
-        X_i = np.column_stack([np.ones(np.shape(data_i)[0]), wordness_dummy, phoneme_vectors, acoustic_vectors])
+        # Handle the case of D0102
+        # D0102 has a different number of trials for the last trial
+        if subject == 'sub-D0102' and task_Tag == 'Repeat' and event.split('_')[0] == 'Auditory' and wordness != 'Nonword':
+            if not bsl_contrast:
+                filtered_events_i = filtered_events_i[:-1]
+            else:
+                data_i_bsl = data_i_bsl[:-1]
+        if bsl_contrast and subject == 'sub-D0102' and task_Tag == 'Repeat' and event.split('_')[0] == 'Resp' and wordness != 'Nonword':
+            data_i_bsl = data_i_bsl[:-1]
 
-        # Test Multicollinearity
-        # if i == 0:
-        #     vif_data = glm_plot.check_multicollinearity(X_i)
-        #     print(vif_data['VIF'])
+        if bsl_contrast:
+            data_i_bsl_mean = np.nanmean(data_i_bsl, axis=2, keepdims=True)
+            data_i_bsl_mean_repeated = np.repeat(data_i_bsl_mean, np.shape(data_i)[2], axis=2)
+            data_i = np.concatenate([data_i, data_i_bsl_mean_repeated], axis=0)
+            bsl_dummy = np.concatenate([np.ones(np.shape(data_i_bsl_mean_repeated)[0]), np.zeros(np.shape(data_i_bsl_mean_repeated)[0])]).astype(int)#.reshape(-1, 1)
+            X_i = np.column_stack([np.ones(np.shape(data_i)[0]), bsl_dummy])
+
+        else:
+            # Feature matrix
+            wordness_dummy = (filtered_events_i.Wordness == "Word").astype(float)
+            phoneme_vectors = []
+            acoustic_vectors = []
+            for stim in filtered_events_i.Stim:
+                phoneme_vectors.append(phoneme_codes[stim])
+                acoustic_vectors.append(acoustic_codes[stim])
+            X_i = np.column_stack([np.ones(np.shape(data_i)[0]), wordness_dummy, phoneme_vectors, acoustic_vectors])
+
+            # Test Multicollinearity
+            # if i == 0:
+            #     vif_data = glm_plot.check_multicollinearity(X_i)
+            #     print(vif_data['VIF'])
 
         feature_mat_i = np.repeat(X_i[:, np.newaxis, :], np.shape(data_i)[1], axis=1)
 

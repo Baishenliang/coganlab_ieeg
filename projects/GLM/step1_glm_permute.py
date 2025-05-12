@@ -19,7 +19,10 @@ def main(event, task_Tag, glm_fea, wordness):
         config = json.load(f)
 
     # Extract parameters from config
-    model = config['model']
+    if glm_fea=='BSL_correct':
+        model = glm_fea
+    else:
+        model = config['model']
     alpha = config['alpha']
     n_perms = config['n_perms']
     stat = config['stat'] # zscore, power
@@ -36,7 +39,10 @@ def main(event, task_Tag, glm_fea, wordness):
     else:
         feature_seleted = np.r_[0,f_ranges[0]:f_ranges[1]]
 
-    subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
+    if glm_fea=='BSL_correct':
+        subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness, bsl_contrast=True)
+    else:
+        subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
 
     #%% Smooth data
     data_list=[]
@@ -48,7 +54,7 @@ def main(event, task_Tag, glm_fea, wordness):
         # feature_mat_i: feature matrix, observations * channels * features
         # data_i: eeg data matrix, observations * channels * times
         print(f"Generate null distribution Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")
-        if model=='simple' or (model=='partial' and glm_fea=='Acoustic'):
+        if model=='simple' or (model=='partial' and glm_fea=='Acoustic') or model=='BSL_correct':
             feature_mat_i=filtered_events_list[i][:,:,feature_seleted]
             null_r2 = glm.permutation_baishen_parallel(feature_mat_i, data_i, n_perms,np.r_[0:np.shape(feature_mat_i)[2]])
         elif model=='partial':
@@ -69,7 +75,7 @@ def main(event, task_Tag, glm_fea, wordness):
         # data_i: eeg data matrix, observations * channels * times
         # r2_i: r2 matrix, channels * features * times
         print(f"Getting uncorrected significance: Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")
-        if model=='simple' or (model=='partial' and glm_fea=='Acoustic'):
+        if model=='simple' or (model=='partial' and glm_fea=='Acoustic') or model=='BSL_correct':
             feature_mat_i=filtered_events_list[i][:,:,feature_seleted]
             r2_i,_ = glm.compute_r2_loop(feature_mat_i, np.r_[0:np.shape(feature_mat_i)[2]],data_i)
         elif model == 'partial':
