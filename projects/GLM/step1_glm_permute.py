@@ -21,11 +21,12 @@ def main(event, task_Tag, glm_fea, wordness):
     # Extract parameters from config
     if glm_fea=='BSL_correct':
         model = glm_fea
+        stat = 'power'
     else:
         model = config['model']
+        stat = config['stat'] # zscore, power
     alpha = config['alpha']
     n_perms = config['n_perms']
-    stat = config['stat'] # zscore, power
     f_ranges = config['feature_ranges'][glm_fea]
     f_ranges_ctr = config['control_feature_ranges'][glm_fea]
 
