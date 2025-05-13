@@ -1,4 +1,5 @@
 # %% groups of patients
+datasource='glm' # 'glm' or 'hg'
 groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
 #groupsTag="LexDelay&LexNoDelay"
@@ -30,6 +31,7 @@ import pickle
 import numpy as np
 from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, hickok_roi, plot_sig_roi_counts, get_sig_elecs_keyword
 import matplotlib.pyplot as plt
+import projects.GLM.glm_utils as glm
 
 HOME = os.path.expanduser("~")
 LAB_root = os.path.join(HOME, "Box", "CoganLab")
@@ -47,15 +49,24 @@ if not os.path.exists(os.path.join(stats_save_root)):
 
 if groupsTag=="LexDelay":
 
-    data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
-    data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
-    data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
+    if datasource=='hg':
 
-    # Get the ROI of labels
-    ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
+        data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
+        data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
+        data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
-    epoc_LexDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay)
-    epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay)
+        # Get the ROI of labels
+        ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
+
+        epoc_LexDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay)
+        epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay)
+
+    elif datasource=='glm':
+        subjs, _, _, chs, times = glm.fifread('Auditory_inRep', 'zscore', 'Repeat','ALL')
+        data_LexDelay_Aud,epoc_LexDelay_Aud,_=glm.load_stats('Auditory'+Delayseleted,'zscore','Repeat','cluster_mask','BSL_correct',subjs,chs,times,'ALL')
+        _, _, _, _, times = glm.fifread('Resp_inRep', 'zscore', 'Repeat','ALL')
+        data_LexDelay_Resp,epoc_LexDelay_Resp,_=glm.load_stats('Resp'+Delayseleted,'zscore','Repeat','cluster_mask','BSL_correct',subjs,chs,times,'ALL')
+        ch_labels_roi, ch_labels = chs2atlas(subjs, data_LexDelay_Aud.labels[0])
 
 elif groupsTag=="LexNoDelay":
 
@@ -222,10 +233,9 @@ if "LexNoDelay" in groupsTag:
     Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx'] = LexNoDelay_Silence_Encode_Only_sig_idx
     Lex_idxes['LexNoDelay_Silence_Del_sig_idx'] = LexNoDelay_Silence_Del_sig_idx
 
-
     # May do in_Silence electrodes later
 Lex_idxes['groupsTag']=groupsTag
-with open(os.path.join('projects','GLM','data', 'Lex_twin_idxes.npy'), "wb") as f:
+with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.npy'), "wb") as f:
     pickle.dump(Lex_idxes, f)
 
 # %% reassign electrode indices by conditions
@@ -290,13 +300,18 @@ if groupsTag == "LexDelay":
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx, f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',False)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexDelay_Aud_NoMotor_sig_idx)}',Auditory_col,'-',False)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx, f'Motor n={len(LexDelay_Motor_sig_idx)}',Motor_col,'-',False)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx, f'Delay n={len(LexDelay_Delay_sig_idx)}', Delay_col,'-',False)
+    if datasource == 'hg':
+        plt.title('Z-scores in lexical delay repeat tasks (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr=False
+    elif datasource=='glm':
+        plt.title('GLM $R^{2}$ in lexical delay repeat (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr = True
+    plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx, f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexDelay_Aud_NoMotor_sig_idx)}',Auditory_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx, f'Motor n={len(LexDelay_Motor_sig_idx)}',Motor_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx, f'Delay n={len(LexDelay_Delay_sig_idx)}', Delay_col,'-',wav_bsl_corr)
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
-    plt.title('Z-scores in lexical delay repeat tasks (aligned to stim onset)',fontsize=20)
     plt.legend(loc='upper right',fontsize=15)
     plt.xlim([-0.25,1.6])
     plt.gca().spines[['top', 'right']].set_visible(False)
@@ -324,24 +339,29 @@ if groupsTag == "LexDelay":
 
     # Plot Delay electrodes
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+    if datasource == 'hg':
+        plt.title('Z-scores in delay electrodes (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr = False
+    elif datasource=='glm':
+        plt.title('GLM $R^{2}$ in delay electrodes (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr = True
     num_delay_elec=len(LexDelay_Delay_sig_idx)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx,
-              f'Delay All n={num_delay_elec}', [0.5,0.5,0.5],'-',False)
+              f'Delay All n={num_delay_elec}', [0.5,0.5,0.5],'-',wav_bsl_corr)
     plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx,
               f'Delay Only n={len(LexDelay_DelayOnly_sig_idx)} '
-              f'({np.round(100*len(LexDelay_DelayOnly_sig_idx)/num_delay_elec,3)}%)', Delay_col,'--',False)
+              f'({np.round(100*len(LexDelay_DelayOnly_sig_idx)/num_delay_elec,3)}%)', Delay_col,'--',wav_bsl_corr)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Auditory_in_Delay_sig_idx,
               f'Auditory in Delay n={len(LexDelay_Auditory_in_Delay_sig_idx)} '
-              f'({np.round(100*len(LexDelay_Auditory_in_Delay_sig_idx)/num_delay_elec,3)}%)', Auditory_Delay_col,'--',False)
+              f'({np.round(100*len(LexDelay_Auditory_in_Delay_sig_idx)/num_delay_elec,3)}%)', Auditory_Delay_col,'--',wav_bsl_corr)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_in_Delay_sig_idx,
               f'Sensory-motor in Delay n={len(LexDelay_Sensorimotor_in_Delay_sig_idx)} '
-              f'({np.round(100*len(LexDelay_Sensorimotor_in_Delay_sig_idx)/num_delay_elec,3)}%)', Sensorimotor_Delay_col,'--',False)
+              f'({np.round(100*len(LexDelay_Sensorimotor_in_Delay_sig_idx)/num_delay_elec,3)}%)', Sensorimotor_Delay_col,'--',wav_bsl_corr)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_in_Delay_sig_idx,
               f'Motor in Delay n={len(LexDelay_Motor_in_Delay_sig_idx)} '
-              f'({np.round(100*len(LexDelay_Motor_in_Delay_sig_idx)/num_delay_elec,3)}%)',Delay_Motor_col,'--',False)
+              f'({np.round(100*len(LexDelay_Motor_in_Delay_sig_idx)/num_delay_elec,3)}%)',Delay_Motor_col,'--',wav_bsl_corr)
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
-    plt.title('Z-scores for delay electrodes (aligned to stim onset)',fontsize=20)
     plt.legend(fontsize=10)
     # plt.xlim([-0.25, 1.6])
     plt.gca().spines[['top', 'right']].set_visible(False)
@@ -407,7 +427,12 @@ elif groupsTag == "LexNoDelay":
     plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_Motor_sig_idx, f'Motor n={len(LexNoDelay_Motor_sig_idx)}',Motor_col,'-',False)
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
-    plt.title('Z-scores in lexical nodelay repeat (aligned to stim onset)',fontsize=20)
+    if datasource == 'hg':
+        plt.title('Z-scores in lexical nodelay repeat (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr = False
+    elif datasource=='glm':
+        plt.title('GLM $R^{2}$ in lexical nodelay repeat (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr = True
     plt.legend(loc='upper right',fontsize=15)
     plt.xlim([-0.25,1.6])
     plt.gca().spines[['top', 'right']].set_visible(False)
@@ -417,9 +442,9 @@ elif groupsTag == "LexNoDelay":
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
     plt.figure(figsize=(Waveplot_wth*(150/350), Waveplot_hgt))
-    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Sensorimotor_sig_idx, f'Sensorimotor n={len(LexNoDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',False)
-    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexNoDelay_Aud_NoMotor_sig_idx)}',Auditory_col,'-',False)
-    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Motor_sig_idx, f'Motor n={len(LexNoDelay_Motor_sig_idx)}',Motor_col,'-',False)
+    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Sensorimotor_sig_idx, f'Sensorimotor n={len(LexNoDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexNoDelay_Aud_NoMotor_sig_idx)}',Auditory_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Motor_sig_idx, f'Motor n={len(LexNoDelay_Motor_sig_idx)}',Motor_col,'-',wav_bsl_corr)
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
     plt.title('(aligned to motor onset)',fontsize=20)

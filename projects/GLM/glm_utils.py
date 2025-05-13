@@ -10,7 +10,6 @@ import os
 import glob
 import re
 import pandas as pd
-import glm_validate_plot as glm_plot
 from joblib import Parallel, delayed
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
@@ -42,8 +41,8 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False):
     filtered_events_list = []
     chs = []
 
-    phoneme_codes = pd.read_pickle("phoneme_one_hot_dict.pickle")
-    acoustic_codes = pd.read_pickle("envelope_feature_dict.pickle")
+    phoneme_codes = pd.read_pickle("D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM\\phoneme_one_hot_dict.pickle")
+    acoustic_codes = pd.read_pickle("D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM\\envelope_feature_dict.pickle")
 
     for i, subject in enumerate(subjs):
         print(f"Now do patient {subject}")
@@ -271,8 +270,8 @@ def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness):
 
     for i, subject in enumerate(subjs):
 
-        subj_mask = np.load(os.path.join('data',f'{masktype} {subject} {event} {task_Tag} {wordness} {glm_fea}.npy'))
-        subj_stat = np.load(os.path.join('data',f'org_r2 {subject} {event} {task_Tag} {wordness} {glm_fea}.npy'))
+        subj_mask = np.load(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM','data',f'{masktype} {subject} {event} {task_Tag} {wordness} {glm_fea}.npy'))
+        subj_stat = np.load(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM','data',f'org_r2 {subject} {event} {task_Tag} {wordness} {glm_fea}.npy'))
 
         # read original channel labels (before outlier and muscle channel removals)
         subj_chs_org_pattern = os.path.join(clean_root, f"*sub-{subject}", 'ieeg', f"*_acq-*_run-*_desc-clean_channels.tsv")
