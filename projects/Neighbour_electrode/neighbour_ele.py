@@ -32,6 +32,8 @@ plt.rcParams['axes.edgecolor']='black'
 plt.rcParams['font.family']=['Arial']
 plt.rcParams['text.color']='black'
 savefig_format='.pdf'
+datasource='glm'
+
 
 Sensorimotor_col = [1, 0, 0]  # Sensorimotor (Red)
 Auditory_col = [0, 1, 0]  # Auditory (Green)
@@ -88,7 +90,7 @@ chs=data_LexDelay_Aud.labels[0]
 # Load coordinates
 chs_coor=gp.get_coor(chs)
 # Get Auditory, Sensory-motor, and motor electrode index
-with open(os.path.join('data', 'LexDelay_twin_idxes.npy'), "rb") as f:
+with open(os.path.join('data', f'Lex_twin_idxes_{datasource}.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
 
 for roi in ['All','lIFG','lIPL','Spt','lPMC']:

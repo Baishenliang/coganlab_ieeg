@@ -25,6 +25,7 @@ import json
 import pickle
 
 grouping='hg'
+datasource='glm'
 #"hg": grouping electrodes according to HG windows i.e., Auditory, Sensory-motor, Motor
 #"anat": grouping electrodes according to the ROIs i.e., STG, IFG, etc
 #%% Set parameters: HG
@@ -90,7 +91,7 @@ if groupsTag=="LexDelay":
 
 #%% hg glm r^2 plots
 subjs, _, _, chs, _ = glm.fifread("Auditory_inRep", 'zscore', 'Repeat', wordnesses[0])
-with open(os.path.join('data', 'Lex_twin_idxes.npy'), "rb") as f:
+with open(os.path.join('data', f'Lex_twin_idxes_{datasource}.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
 with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
