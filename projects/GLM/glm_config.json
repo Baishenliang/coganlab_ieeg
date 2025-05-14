@@ -8,13 +8,15 @@
         "BSL_correct": [1],
         "Lexical": [1],
         "Phonemic": [2, 34],
-        "Acoustic": [34, 50]
+        "Acoustic": [34, 50],
+        "Full": [1,50]
     },
     "control_feature_ranges": {
         "BSL_correct": [],
         "Acoustic": [],
         "Phonemic": [34, 50],
-        "Lexical": [2, 50]
+        "Lexical": [2, 50],
+        "Full": []
     },
     "Acoustic_col": [1, 0.549, 0],
     "Phonemic_col": [0.541, 0.169, 0.886],

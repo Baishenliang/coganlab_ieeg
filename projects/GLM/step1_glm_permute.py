@@ -22,6 +22,9 @@ def main(event, task_Tag, glm_fea, wordness):
     if glm_fea=='BSL_correct':
         model = glm_fea
         stat = 'power'
+    elif glm_fea=='Full':
+        model = 'full'
+        stat = 'power'
     else:
         model = config['model']
         stat = config['stat'] # zscore, power
