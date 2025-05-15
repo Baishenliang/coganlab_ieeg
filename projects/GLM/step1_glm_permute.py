@@ -3,10 +3,10 @@ import argparse
 import os
 # Relocate the working directory if needed
 # Only need it if run it in an editor. If run in terminal, use cd.
-# script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM\\step1_glm_permute.py')
-# current_dir = os.getcwd()
-# if current_dir != script_dir:
-#     os.chdir(script_dir)
+script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM\\step1_glm_permute.py')
+current_dir = os.getcwd()
+if current_dir != script_dir:
+    os.chdir(script_dir)
 
 import numpy as np
 import json
@@ -24,7 +24,7 @@ def main(event, task_Tag, glm_fea, wordness):
         stat = 'power'
     elif glm_fea=='Full':
         model = 'full'
-        stat = 'power'
+        stat = 'zscore'
     else:
         model = config['model']
         stat = config['stat'] # zscore, power

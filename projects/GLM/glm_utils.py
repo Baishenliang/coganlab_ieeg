@@ -13,6 +13,8 @@ import pandas as pd
 from joblib import Parallel, delayed
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
+from sklearn.linear_model import RidgeCV
+from sklearn.model_selection import KFold
 
 # Locations
 HOME = os.path.expanduser("~")
@@ -210,6 +212,26 @@ def compute_r2_ch(x, y,perm_feature_idx):
     # beta = np.sqrt(np.sum(np.square(np.take(coef, perm_feature_idx[1:], axis=0)), axis=0)) # removed the intercept
     return r2,y_res
 
+def compute_r2_ch_ridge(x, y,perm_feature_idx):
+    """
+    Computes the global R^2 score using Ridge regression with Leave-One-Out
+    cross-validation across all time points simultaneously.
+    """
+    mask = ~np.isnan(y[:, 0])
+    y_clean = y[mask, :]
+    x_clean = x[mask, :]
+    ridge_cv = RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1,10], cv=KFold(n_splits=5))
+    ridge_cv.fit(x_clean, y_clean)
+    # global_r2_score = ridge_cv.score(x_clean, y_clean)
+    coef = np.sum(np.abs(ridge_cv.coef_), axis=1)
+
+    # Calculate residuals using the best model
+    y_pred = ridge_cv.predict(x_clean)
+    y_clean_res = y_clean - y_pred
+    y_res = np.full_like(y, np.nan)
+    y_res[mask, :] = y_clean_res
+
+    return coef, y_res
 
 def temporal_smoothing(data_i, window_size=5):
     from scipy.ndimage import uniform_filter1d
@@ -229,7 +251,7 @@ def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i):
     for ch in range(n_channels_i):
         x = feature_mat_i[:, ch, :]
         y = data_i[:, ch, :]
-        beta_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch(x,y,perm_feature_idx)
+        beta_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch_ridge(x,y,perm_feature_idx)
     return beta_i, y_res_i
 
 def permutation_baishen_parallel(feature_mat_i, data_i, n_perms,perm_feature_idx):
