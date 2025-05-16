@@ -241,7 +241,7 @@ for wordness in wordnesses[:2]:
         # plt.title(f'GLM:  {wordness_Tag} in {md_Tag}',fontsize=20)
         plt.title(f'GLM in Encoding Phase',fontsize=20)
         if plot_wave_type == 'stat':
-            plt.ylabel(r'GLM R^2 bsl corrected',fontsize=20)
+            plt.ylabel(r'GLM Sum|β| bsl corrected',fontsize=20)
         elif plot_wave_type == 'mask':
             plt.ylabel(r'Perc. of sig. elec. (%)',fontsize=20)
         plt.xlabel('Time from auditory onset (s)')

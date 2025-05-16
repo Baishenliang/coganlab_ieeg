@@ -1,5 +1,5 @@
 # %% groups of patients
-datasource='glm_Acoustic' # 'glm_(Feature)' or 'hg'
+datasource='glm_Phonemic' # 'glm_(Feature)' or 'hg'
 groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
 #groupsTag="LexDelay&LexNoDelay"
@@ -63,9 +63,9 @@ if groupsTag=="LexDelay":
 
     elif datasource.split('_')[0]=='glm':
         subjs, _, _, chs, times = glm.fifread('Auditory_inRep', 'zscore', 'Repeat','ALL')
-        data_LexDelay_Aud,epoc_LexDelay_Aud,_=glm.load_stats('Auditory'+Delayseleted,'zscore','Repeat','org_mask',datasource.split('_')[1],subjs,chs,times,'ALL')
+        data_LexDelay_Aud,epoc_LexDelay_Aud,_=glm.load_stats('Auditory'+Delayseleted,'zscore','Repeat','cluster_mask',datasource.split('_')[1],subjs,chs,times,'ALL')
         _, _, _, _, times = glm.fifread('Resp_inRep', 'zscore', 'Repeat','ALL')
-        data_LexDelay_Resp,epoc_LexDelay_Resp,_=glm.load_stats('Resp'+Delayseleted,'zscore','Repeat','org_mask',datasource.split('_')[1],subjs,chs,times,'ALL')
+        data_LexDelay_Resp,epoc_LexDelay_Resp,_=glm.load_stats('Resp'+Delayseleted,'zscore','Repeat','cluster_mask',datasource.split('_')[1],subjs,chs,times,'ALL')
         ch_labels_roi, ch_labels = chs2atlas(subjs, data_LexDelay_Aud.labels[0])
 
 elif groupsTag=="LexNoDelay":
@@ -305,7 +305,7 @@ if groupsTag == "LexDelay":
         wav_bsl_corr = False
         plt.xlim([-0.25, 1.6])
     elif datasource.split('_')[0]=='glm':
-        plt.title('GLM $R^{2}$ in lexical delay repeat (aligned to stim onset)',fontsize=20)
+        plt.title('GLM Sum|β| in lexical delay repeat (aligned to stim onset)',fontsize=20)
         wav_bsl_corr = False
         plt.xlim([-0.25, 2.5])
     plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx, f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx)}',
@@ -314,7 +314,7 @@ if groupsTag == "LexDelay":
     plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx, f'Motor n={len(LexDelay_Motor_sig_idx)}',Motor_col,'-',wav_bsl_corr)
     plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx, f'Delay n={len(LexDelay_Delay_sig_idx)}', Delay_col,'-',wav_bsl_corr)
     plt.axvline(x=0, linestyle='--', color='k')
-    plt.axhline(y=0, linestyle='--', color='k')
+    # plt.axhline(y=0, linestyle='--', color='k')
     plt.legend(loc='upper right',fontsize=15)
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
@@ -350,7 +350,7 @@ if groupsTag == "LexDelay":
         plt.title('Z-scores in delay electrodes (aligned to stim onset)',fontsize=20)
         wav_bsl_corr = False
     elif datasource.split('_')[0]=='glm':
-        plt.title('GLM $R^{2}$ in delay electrodes (aligned to stim onset)',fontsize=20)
+        plt.title('GLM Sum|β| in delay electrodes (aligned to stim onset)',fontsize=20)
         wav_bsl_corr = False
     plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx,
                   f'Delay All n={num_delay_elec}', [0.5, 0.5, 0.5], '-', wav_bsl_corr)
@@ -367,7 +367,7 @@ if groupsTag == "LexDelay":
               f'Motor in Delay n={len(LexDelay_Motor_in_Delay_sig_idx)} '
               f'({np.round(100*len(LexDelay_Motor_in_Delay_sig_idx)/num_delay_elec,3)}%)',Delay_Motor_col,'--',wav_bsl_corr)
     plt.axvline(x=0, linestyle='--', color='k')
-    plt.axhline(y=0, linestyle='--', color='k')
+    # plt.axhline(y=0, linestyle='--', color='k')
     plt.legend(fontsize=10)
     # plt.xlim([-0.25, 1.6])
     plt.gca().spines[['top', 'right']].set_visible(False)
@@ -437,8 +437,10 @@ elif groupsTag == "LexNoDelay":
         plt.title('Z-scores in lexical nodelay repeat (aligned to stim onset)',fontsize=20)
         wav_bsl_corr = False
     elif datasource.split('_')[0]=='glm':
-        plt.title('GLM $R^{2}$ in lexical nodelay repeat (aligned to stim onset)',fontsize=20)
+        plt.title('GLM Sum|β| in lexical nodelay repeat (aligned to stim onset)',fontsize=20)
         wav_bsl_corr = True
+    if datasource=='glm_Phonemic':
+        plt.xlim([2.5, 3.5])
     plt.legend(loc='upper right',fontsize=15)
     plt.xlim([-0.25,1.6])
     plt.gca().spines[['top', 'right']].set_visible(False)
