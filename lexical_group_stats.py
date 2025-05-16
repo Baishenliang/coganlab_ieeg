@@ -1,5 +1,5 @@
 # %% groups of patients
-datasource='glm_BSL_correct' # 'glm_(Feature)' or 'hg'
+datasource='glm_Acoustic' # 'glm_(Feature)' or 'hg'
 groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
 #groupsTag="LexDelay&LexNoDelay"
@@ -307,7 +307,6 @@ if groupsTag == "LexDelay":
     elif datasource.split('_')[0]=='glm':
         plt.title('GLM $R^{2}$ in lexical delay repeat (aligned to stim onset)',fontsize=20)
         wav_bsl_corr = False
-        plt.ylim([3.8, 5])
         plt.xlim([-0.25, 2.5])
     plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx, f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx)}',
               Sensorimotor_col, '-', wav_bsl_corr)
@@ -326,7 +325,6 @@ if groupsTag == "LexDelay":
     plt.figure(figsize=(Waveplot_wth*(150/350), Waveplot_hgt))
     if datasource.split('_')[0] != 'glm':
         wav_bsl_corr = False
-        plt.ylim([3.8, 5])
     else:
         wav_bsl_corr = False
     plot_wave(epoc_LexDelay_Resp, LexDelay_Sensorimotor_sig_idx,
@@ -354,7 +352,6 @@ if groupsTag == "LexDelay":
     elif datasource.split('_')[0]=='glm':
         plt.title('GLM $R^{2}$ in delay electrodes (aligned to stim onset)',fontsize=20)
         wav_bsl_corr = False
-        plt.ylim([3.8,5])
     plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx,
                   f'Delay All n={num_delay_elec}', [0.5, 0.5, 0.5], '-', wav_bsl_corr)
     plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx,
