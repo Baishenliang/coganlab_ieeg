@@ -2,7 +2,7 @@
 #%% Load data
 import os
 import pickle
-with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM','data','Lex_twin_idxes_glm.npy'), "rb") as f:
+with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM','data','Lex_twin_idxes_glm_BSL_correct.npy'), "rb") as f:
     Lex_twin_idxes_glm = pickle.load(f)
 with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM','data','Lex_twin_idxes_hg.npy'), "rb") as f:
     Lex_twin_idxes_hg = pickle.load(f)
@@ -21,7 +21,7 @@ glm_bsl_all = Lex_twin_idxes_glm['LexDelay_Aud_NoMotor_sig_idx'] | Lex_twin_idxe
 hg_bsl_all = Lex_twin_idxes_hg['LexDelay_Aud_NoMotor_sig_idx'] | Lex_twin_idxes_hg['LexDelay_Sensorimotor_sig_idx'] | Lex_twin_idxes_hg['LexDelay_Motor_sig_idx'] | Lex_twin_idxes_hg['LexDelay_Motorprep_Only_sig_idx']
 
 plt.figure(figsize=(6, 6))
-venn3([glm_all, glm_bsl_all, hg_bsl_all], ('GLM_features', 'GLM_baseline', 'Tstat_baseline'))
+venn3([glm_all, glm_bsl_all, hg_bsl_all], ('GLM_features_corrected', 'GLM_baseline_uncorrected', 'Tstat_baseline'))
 plt.tight_layout()
 plt.savefig(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM','plot','glm_tstat_overlap.tif'), dpi=300)
 plt.close()
