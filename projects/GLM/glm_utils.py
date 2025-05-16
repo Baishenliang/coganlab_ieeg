@@ -212,7 +212,7 @@ def compute_r2_ch(x, y,perm_feature_idx):
     # beta = np.sqrt(np.sum(np.square(np.take(coef, perm_feature_idx[1:], axis=0)), axis=0)) # removed the intercept
     return r2,y_res
 
-def compute_r2_ch_ridge(x, y,perm_feature_idx):
+def compute_r2_ch_ridge(x, y,perm_feature_idx,residual=False):
     """
     Computes the global R^2 score using Ridge regression with Leave-One-Out
     cross-validation across all time points simultaneously.
@@ -223,13 +223,16 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx):
     ridge_cv = RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1,10], cv=KFold(n_splits=5))
     ridge_cv.fit(x_clean, y_clean)
     # global_r2_score = ridge_cv.score(x_clean, y_clean)
-    coef = np.sum(np.abs(ridge_cv.coef_), axis=1)
+    coef = np.sum(np.abs(ridge_cv.coef_[:,perm_feature_idx]), axis=1)
 
     # Calculate residuals using the best model
-    y_pred = ridge_cv.predict(x_clean)
-    y_clean_res = y_clean - y_pred
-    y_res = np.full_like(y, np.nan)
-    y_res[mask, :] = y_clean_res
+    if residual:
+        y_pred = ridge_cv.predict(x_clean)
+        y_clean_res = y_clean - y_pred
+        y_res = np.full_like(y, np.nan)
+        y_res[mask, :] = y_clean_res
+    else:
+        y_res = np.full_like(y, np.nan)
 
     return coef, y_res
 
