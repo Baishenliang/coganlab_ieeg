@@ -212,7 +212,7 @@ def compute_r2_ch(x, y,perm_feature_idx):
     # beta = np.sqrt(np.sum(np.square(np.take(coef, perm_feature_idx[1:], axis=0)), axis=0)) # removed the intercept
     return r2,y_res
 
-def compute_r2_ch_ridge(x, y,perm_feature_idx,residual=False):
+def compute_r2_ch_ridge(x, y,perm_feature_idx,residual: bool=False,glm_out: str='beta'):
     """
     Computes the global R^2 score using Ridge regression with Leave-One-Out
     cross-validation across all time points simultaneously.
@@ -222,8 +222,12 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,residual=False):
     x_clean = x[mask, :]
     ridge_cv = RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1,10], cv=KFold(n_splits=5))
     ridge_cv.fit(x_clean, y_clean)
-    # global_r2_score = ridge_cv.score(x_clean, y_clean)
-    coef = np.sum(np.abs(ridge_cv.coef_[:,perm_feature_idx]), axis=1)
+    if glm_out=='beta':
+        # output beta values: as a function of times
+        coef = np.sum(np.abs(ridge_cv.coef_[:,perm_feature_idx]), axis=1)
+    elif glm_out=='r2':
+        # output r^2 values: one single value for a whole function
+        coef = ridge_cv.score(x_clean, y_clean)
 
     # Calculate residuals using the best model
     if residual:
@@ -242,22 +246,25 @@ def temporal_smoothing(data_i, window_size=5):
     smoothed_data = uniform_filter1d(data_i, size=window_size, axis=2, mode='nearest')
     return smoothed_data
 
-def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i):
+def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out):
     # loop through all the electrodes and run GLM
     # feature_mat_i: feature matrix, observations * channels * features
     # data_i: eeg data matrix, observations * channels * times
     # return
     #   beta_i: r2 matrix, channels * times
     n_trials, n_channels_i, n_times = data_i.shape
-    beta_i = np.full((n_channels_i, n_times), np.nan)
+    if glm_out == 'beta':
+        beta_i = np.full((n_channels_i, n_times), np.nan)
+    elif glm_out == 'r2':
+        beta_i = np.full((n_channels_i, 1), np.nan)
     y_res_i = np.full((n_trials, n_channels_i, n_times), np.nan)
     for ch in range(n_channels_i):
         x = feature_mat_i[:, ch, :]
         y = data_i[:, ch, :]
-        beta_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch_ridge(x,y,perm_feature_idx)
+        beta_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch_ridge(x,y,perm_feature_idx,False,glm_out)
     return beta_i, y_res_i
 
-def permutation_baishen_parallel(feature_mat_i, data_i, n_perms,perm_feature_idx):
+def permutation_baishen_parallel(feature_mat_i, data_i, n_perms,perm_feature_idx,glm_out):
     n_obs = feature_mat_i.shape[0]
     # feature_mat_i: feature matrix, observations * channels * features
     # data_i: eeg data matrix, observations * channels * times
@@ -266,7 +273,7 @@ def permutation_baishen_parallel(feature_mat_i, data_i, n_perms,perm_feature_idx
         feature_mat_i_input=feature_mat_i.copy()
         feature_mat_i_perm = np.take(feature_mat_i, perm_indices, axis=0)
         feature_mat_i_input[:, :, perm_feature_idx] = np.take(feature_mat_i_perm, perm_feature_idx, axis=2)
-        beta_i,_ = compute_r2_loop(feature_mat_i_input, perm_feature_idx,data_i)
+        beta_i,_ = compute_r2_loop(feature_mat_i_input, perm_feature_idx,data_i,glm_out)
         del feature_mat_i_input,feature_mat_i_perm
         return beta_i
 
@@ -284,7 +291,7 @@ def aaron_perm_gt_1d(diff, axis=0):
     # Rearrange to match original order
     return proportions[sorted_indices.argsort(axis=axis)]
 
-def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness):
+def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness,glm_out: str='beta'):
 
     print(subjs)
 
@@ -317,8 +324,8 @@ def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness):
             org_labeled_chs = [ch for ch in org_labeled_chs if 'RPF' not in ch]
         chs_i=chs[i]
         chs_i = [chs_i[i].replace("-", " ") for i in range(len(chs_i))]
-        aligned_subj_mask, aligned_chs = gp.align_channel_data(subj_mask, chs_i, org_labeled_chs)
-        aligned_subj_stat, _ = gp.align_channel_data(subj_stat, chs_i, org_labeled_chs)
+        aligned_subj_mask, aligned_chs = gp.align_channel_data(subj_mask, chs_i, org_labeled_chs,glm_out)
+        aligned_subj_stat, _ = gp.align_channel_data(subj_stat, chs_i, org_labeled_chs,glm_out)
 
         mask_lst.append(aligned_subj_mask)
         stat_lst.append(aligned_subj_stat)
@@ -331,8 +338,14 @@ def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness):
     mask_raw = np.concatenate(mask_lst, axis=0)
     stat_raw = np.concatenate(stat_lst, axis=0)
     chs_lst = np.concatenate(chs_lst, axis=0)
-    labels = [chs_lst, times]
-    masks=LabeledArray(mask_raw, labels)
-    stats=LabeledArray(stat_raw, labels)
+
+    if glm_out == 'beta':
+        labels = [chs_lst, times]
+        masks=LabeledArray(mask_raw, labels)
+        stats=LabeledArray(stat_raw, labels)
+    elif glm_out == 'r2':
+        labels = [chs_lst, [0]]
+        masks=LabeledArray(mask_raw, labels)
+        stats=LabeledArray(stat_raw, labels)
 
     return masks,stats,subjs

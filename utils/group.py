@@ -373,7 +373,7 @@ def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
     plt.savefig(fig_save_dir_fm, dpi=300)
     plt.close()
 
-def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
+def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs,glm_out: str='beta'):
     """
     Aligns channel data by adding missing channels with NaN values.
 
@@ -401,11 +401,13 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs):
     # Extract just the channel names from good_labeled_chs (removing subject prefix)
     current_chs = [ch.split()[-1] for ch in good_labeled_chs]
 
-    # Get the number of timepoints from the original data
-    n_timepoints = subj_data.shape[1]
-
-    # Initialize the new data array with NaNs
-    aligned_data = np.full((len(org_labeled_chs), n_timepoints), np.nan)
+    if glm_out=='beta':
+        # Get the number of timepoints from the original data
+        n_timepoints = subj_data.shape[1]
+        # Initialize the new data array with NaNs
+        aligned_data = np.full((len(org_labeled_chs), n_timepoints), np.nan)
+    if glm_out == 'r2':
+        aligned_data = np.full((len(org_labeled_chs), 1), np.nan)
 
     # Create a mapping of current channels to their indices
     current_ch_indices = {ch: idx for idx, ch in enumerate(current_chs)}
