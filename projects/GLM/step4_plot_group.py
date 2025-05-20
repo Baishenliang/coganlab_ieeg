@@ -21,7 +21,7 @@ import pickle
 
 
 #%% Set parameters
-mask_type='hg' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
+mask_type='glm' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
 plot_wave_type='stat' #stat: plot the HG stat in wave plots; mask: plot the HG significant mask in wave plots.
 
 with open('glm_config.json', 'r') as f:
@@ -32,7 +32,7 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Auditory_inRep","Resp_inRep"]
+events = ["Cue_inRep","Auditory_inRep","Resp_inRep"]
 stat = "zscore"
 task_Tags = ["Repeat"]#,"Yes_No"]
 wordnesses = ["ALL"]#, "Word", "Nonword"]
@@ -107,7 +107,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
         else:
             masks,stats,_=glm.load_stats(event,stat,task_Tag,'cluster_mask',glm_fea,subjs,chs,times,wordness)
             if mask_type == 'glm':
-                if event.split('_')[0]=='Auditory':
+                if event.split('_')[0]=='Auditory' or 'Cue':
                     hgmask_aud=masks
                 elif event.split('_')[0]=='Resp':
                     hgmask_resp=masks
@@ -117,7 +117,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             elif plot_wave_type=='mask':
                 stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=masks*100
             del masks,stats
-            if event.split('_')[0]=='Auditory':
+            if event.split('_')[0]=='Auditory' or 'Cue':
                 # whole trial
                 all_masks_sorted,_,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
                 gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}")
