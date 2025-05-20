@@ -21,7 +21,7 @@ import pickle
 
 
 #%% Set parameters
-mask_type='glm' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
+mask_type='hg' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
 plot_wave_type='stat' #stat: plot the HG stat in wave plots; mask: plot the HG significant mask in wave plots.
 
 with open('glm_config.json', 'r') as f:
@@ -38,9 +38,9 @@ task_Tags = ["Repeat"]#,"Yes_No"]
 wordnesses = ["ALL"]#, "Word", "Nonword"]
 glm_feas = ["Acoustic","Phonemic","Lexical"]
 cluster_twin=0.011
-mean_word_len=0.62
-auditory_decay=0.4
-delay_len=0.5
+mean_word_len=0.5
+auditory_decay=0
+delay_len=1
 # motor_prep_win=[-0.5,-0.1]
 # motor_resp_win=[0.25,0.75]
 Waveplot_wth=18 # Width of wave plots
@@ -49,6 +49,7 @@ Waveplot_hgt=4 # Height of wave plots
 # %% get hg masks
 if mask_type == 'hg':
 
+    from ieeg.arrays.label import LabeledArray
     # % Set parameters: HG
     groupsTag = "LexDelay"
     stat_type = 'mask'
@@ -66,6 +67,27 @@ if mask_type == 'hg':
     if groupsTag == "LexDelay":
         hgmask_aud, _ = gp.load_stats(stat_type, 'Auditory' + Delayseleted, contrast, stats_root_delay, stats_root_delay)
         hgmask_resp, _ = gp.load_stats(stat_type, 'Resp' + Delayseleted, contrast, stats_root_delay, stats_root_delay)
+
+    # Select a electrode category to analyze e.g., Auditory, Sensory-motor, or Motor.
+    # Set the other active electrodes as nan
+    with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM', 'data',
+                           'Lex_twin_idxes_hg.npy'), "rb") as f:
+        Lex_twin_idxes_hg = pickle.load(f)
+        sel_idx=Lex_twin_idxes_hg['LexDelay_Motor_in_Delay_sig_idx']
+
+    hgmask_aud_data=hgmask_aud.__array__()
+    mask = np.ones(hgmask_aud_data.shape[0], dtype=bool)
+    mask[list(sel_idx)] = False
+    hgmask_aud_data[mask, :] = np.nan
+    labels = [hgmask_aud.labels[0], hgmask_aud.labels[1]]
+    hgmask_aud = LabeledArray(hgmask_aud_data, labels)
+
+    hgmask_resp_data=hgmask_resp.__array__()
+    mask = np.ones(hgmask_resp_data.shape[0], dtype=bool)
+    mask[list(sel_idx)] = False
+    hgmask_aud_data[mask, :] = np.nan
+    labels = [hgmask_resp.labels[0], hgmask_resp.labels[1]]
+    hgmask_resp = LabeledArray(hgmask_resp_data, labels)
 
 #%% Load masks, sort, getting sort index, and plot the ranks
 # sig_idx_arr=np.empty((len(events), len(task_Tags),len(glm_feas),4), dtype=object)
@@ -100,18 +122,19 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 all_masks_sorted,_,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
                 gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/all"] = all_masks_sig
-                # auditory window
-                aud_masks_sorted,aud_masks_raw,_,aud_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
-                _,aud_masks_peak=gp.get_peak(aud_masks_raw)
-                gp.plot_chs(aud_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_aud.jpg'),f"N chs = {len(aud_masks_sig)}")
-                sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_sig
-                peaks_aud[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_peak
-                # delay window
-                del_masks_sorted,del_masks_raw,_,del_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
-                _,del_masks_peak=gp.get_peak(del_masks_raw)
-                gp.plot_chs(del_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_del.jpg'),f"N chs = {len(del_masks_sig)}")
-                sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_sig
-                peaks_del[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_peak
+                if mask_type=='glm':
+                    # auditory window
+                    aud_masks_sorted,aud_masks_raw,_,aud_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
+                    _,aud_masks_peak=gp.get_peak(aud_masks_raw)
+                    gp.plot_chs(aud_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_aud.jpg'),f"N chs = {len(aud_masks_sig)}")
+                    sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_sig
+                    peaks_aud[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_peak
+                    # delay window
+                    del_masks_sorted,del_masks_raw,_,del_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
+                    _,del_masks_peak=gp.get_peak(del_masks_raw)
+                    gp.plot_chs(del_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_del.jpg'),f"N chs = {len(del_masks_sig)}")
+                    sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_sig
+                    peaks_del[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_peak
 
             elif event.split('_')[0]=="Resp":
                 # response window
@@ -121,83 +144,86 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/resp"] = resp_masks_sig
 
 #%% Plot peaks and do stats
-for df,peak_Tag in zip((pd.DataFrame(peaks_aud),pd.DataFrame(peaks_del)),('Aud','Del')):
-    # reshape data
-    df = df.dropna(how='all')
-    df.columns = ['/'.join(col.split('/')[-2:-1]) for col in df.columns]
-    df_long = df.reset_index().melt(id_vars='index', var_name='feature', value_name='value')
-    df_long.rename(columns={'index': 'trial'}, inplace=True)
+if mask_type=='glm':
+    for df,peak_Tag in zip((pd.DataFrame(peaks_aud),pd.DataFrame(peaks_del)),('Aud','Del')):
+        # reshape data
+        df = df.dropna(how='all')
+        df.columns = ['/'.join(col.split('/')[-2:-1]) for col in df.columns]
+        df_long = df.reset_index().melt(id_vars='index', var_name='feature', value_name='value')
+        df_long.rename(columns={'index': 'trial'}, inplace=True)
 
-    #plot
-    plt.figure(figsize=(8, 11))
+        #plot
+        plt.figure(figsize=(8, 11))
 
-    boxplot_colors= [Acoustic_col, Phonemic_col, Lexical_col]
-    stripplot_colors = boxplot_colors
+        boxplot_colors= [Acoustic_col, Phonemic_col, Lexical_col]
+        stripplot_colors = boxplot_colors
 
-    ytitles = ['Peak latency from stim onset (ms)']
-    subtitles = [f'GLM R-squared peak latency in {peak_Tag}']
-    x_order = ['Acoustic', 'Phonemic', 'Lexical']
+        ytitles = ['Peak latency from stim onset (ms)']
+        subtitles = [f'GLM R-squared peak latency in {peak_Tag}']
+        x_order = ['Acoustic', 'Phonemic', 'Lexical']
 
-    y_limits = [(0,1.5)]
-    # y_ticks = [range(0, 1.5, 0.1)]
+        y_limits = [(0,1.5)]
+        # y_ticks = [range(0, 1.5, 0.1)]
 
-    for i, var in enumerate(['value'], start=1):
+        for i, var in enumerate(['value'], start=1):
 
-        plt.subplot(1, 1, i)
+            plt.subplot(1, 1, i)
 
-        barbar = sns.barplot(x='feature', y=var, errorbar=None, data=df_long, order=x_order, saturation=1,
-                             fill=True, alpha=1, linewidth=0.8, capsize=0.1, zorder=1)
-        j = 0
-        for patch in barbar.patches:
-            patch.set_facecolor(boxplot_colors[j])
-            j = j + 1
-            if j == 3:
-                break
+            barbar = sns.barplot(x='feature', y=var, errorbar=None, data=df_long, order=x_order, saturation=1,
+                                 fill=True, alpha=1, linewidth=0.8, capsize=0.1, zorder=1)
+            j = 0
+            for patch in barbar.patches:
+                patch.set_facecolor(boxplot_colors[j])
+                j = j + 1
+                if j == 3:
+                    break
 
-        # ax=sns.boxplot(x='Group', y=var, data=data,showfliers=False, hue='Group',order=x_order,saturation=1)
-        sns.despine()
+            # ax=sns.boxplot(x='Group', y=var, data=data,showfliers=False, hue='Group',order=x_order,saturation=1)
+            sns.despine()
 
-        stripstrip = sns.stripplot(df_long, x="feature", y=var, size=4, alpha=1, jitter=0.1, linewidth=0.5,
-                                   edgecolor='white', order=x_order, zorder=2, dodge=True)
+            stripstrip = sns.stripplot(df_long, x="feature", y=var, size=4, alpha=1, jitter=0.1, linewidth=0.5,
+                                       edgecolor='white', order=x_order, zorder=2, dodge=True)
 
-        for k in range(3):
-            path_collection = stripstrip.collections[k]
-            path_collection.set_facecolor(stripplot_colors[k])
+            for k in range(3):
+                path_collection = stripstrip.collections[k]
+                path_collection.set_facecolor(stripplot_colors[k])
 
-        # gp.bsliang_add_connecting_lines(plt, 0, stripstrip)
-        # gp.bsliang_add_connecting_lines(plt, 3, stripstrip)
+            # gp.bsliang_add_connecting_lines(plt, 0, stripstrip)
+            # gp.bsliang_add_connecting_lines(plt, 3, stripstrip)
 
-        # Choice 3: bar plot with fill - errbar
-        ax2 = sns.barplot(x='feature', y=var, errorbar='se', data=df_long, order=x_order, saturation=1,
-                          fill=False, alpha=0.5, linewidth=0, capsize=0.1, err_kws={'linewidth': 0.8, 'color': 'black'},
-                          zorder=3)
+            # Choice 3: bar plot with fill - errbar
+            ax2 = sns.barplot(x='feature', y=var, errorbar='se', data=df_long, order=x_order, saturation=1,
+                              fill=False, alpha=0.5, linewidth=0, capsize=0.1, err_kws={'linewidth': 0.8, 'color': 'black'},
+                              zorder=3)
 
-        plt.xlabel('')
-        plt.ylabel(ytitles[i - 1])#, y=gp.bsliang_align_yaxis(y_limits[i - 1], y_ticks[i - 1]))
-        plt.ylim(y_limits[i - 1])
-        # plt.yticks(y_ticks[i - 1])
-        plt.title(subtitles[i - 1], y=1.4)
-        plt.gca().tick_params(axis='x', direction='in', length=0, labelrotation=45)
-        plt.gca().tick_params(axis='y', direction='in', length=2)
-        # plt.gca().get_legend().remove()
+            plt.xlabel('')
+            plt.ylabel(ytitles[i - 1])#, y=gp.bsliang_align_yaxis(y_limits[i - 1], y_ticks[i - 1]))
+            plt.ylim(y_limits[i - 1])
+            # plt.yticks(y_ticks[i - 1])
+            plt.title(subtitles[i - 1], y=1.4)
+            plt.gca().tick_params(axis='x', direction='in', length=0, labelrotation=45)
+            plt.gca().tick_params(axis='y', direction='in', length=2)
+            # plt.gca().get_legend().remove()
 
-    plt.tight_layout(w_pad=1.5)
-    plt.savefig(os.path.join('plot',f'Peak latency {peak_Tag}.tif'), dpi=300,bbox_inches='tight', transparent=False)
+        plt.tight_layout(w_pad=1.5)
+        plt.savefig(os.path.join('plot',f'Peak latency {peak_Tag}.tif'), dpi=300,bbox_inches='tight', transparent=False)
 
-# Stats
-from scipy.stats import ttest_ind
+    # Stats
+    from scipy.stats import ttest_ind
 
-ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Acoustic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Phonemic/aud'],nan_policy='omit')
-ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Phonemic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Lexical/aud'],nan_policy='omit')
-ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Acoustic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Lexical/aud'],nan_policy='omit')
+    ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Acoustic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Phonemic/aud'],nan_policy='omit')
+    ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Phonemic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Lexical/aud'],nan_policy='omit')
+    ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Acoustic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Lexical/aud'],nan_policy='omit')
 
-ttest_ind(peaks_del['Auditory_inRep/Repeat/ALL/Acoustic/del'],peaks_del['Auditory_inRep/Repeat/ALL/Phonemic/del'],nan_policy='omit')
-ttest_ind(peaks_del['Auditory_inRep/Repeat/ALL/Acoustic/del'],peaks_del['Auditory_inRep/Repeat/ALL/Lexical/del'],nan_policy='omit')
-ttest_ind(peaks_del['Auditory_inRep/Repeat/ALL/Phonemic/del'],peaks_del['Auditory_inRep/Repeat/ALL/Lexical/del'],nan_policy='omit')
+    ttest_ind(peaks_del['Auditory_inRep/Repeat/ALL/Acoustic/del'],peaks_del['Auditory_inRep/Repeat/ALL/Phonemic/del'],nan_policy='omit')
+    ttest_ind(peaks_del['Auditory_inRep/Repeat/ALL/Acoustic/del'],peaks_del['Auditory_inRep/Repeat/ALL/Lexical/del'],nan_policy='omit')
+    ttest_ind(peaks_del['Auditory_inRep/Repeat/ALL/Phonemic/del'],peaks_del['Auditory_inRep/Repeat/ALL/Lexical/del'],nan_policy='omit')
 
 #%% plot significant electrodes
 for wordness in wordnesses[:2]:
     for md,md_Tag in zip(['all','aud','del'],['whole trial','auditory window','delay window']):
+        if mask_type == 'hg' and (md=='aud' or md=='del'):
+            continue
         if md=='all':
             wid_scale=1
         elif md=='aud':
@@ -239,7 +265,7 @@ for wordness in wordnesses[:2]:
         else:
             wordness_Tag = 'Word or Nonword'
         # plt.title(f'GLM:  {wordness_Tag} in {md_Tag}',fontsize=20)
-        plt.title(f'GLM in Encoding Phase',fontsize=20)
+        plt.title(f'GLM in {md_Tag} Phase',fontsize=20)
         if plot_wave_type == 'stat':
             plt.ylabel(r'GLM Sum|β| bsl corrected',fontsize=20)
         elif plot_wave_type == 'mask':

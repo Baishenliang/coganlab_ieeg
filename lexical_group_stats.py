@@ -1,5 +1,5 @@
 # %% groups of patients
-datasource='glm_Phonemic' # 'glm_(Feature)' or 'hg'
+datasource='hg' # 'glm_(Feature)' or 'hg'
 groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
 #groupsTag="LexDelay&LexNoDelay"
