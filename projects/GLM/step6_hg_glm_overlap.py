@@ -25,7 +25,7 @@ import json
 import pickle
 
 grouping='hg'
-datasource='glm'
+datasource='hg'
 #"hg": grouping electrodes according to HG windows i.e., Auditory, Sensory-motor, Motor
 #"anat": grouping electrodes according to the ROIs i.e., STG, IFG, etc
 #%% Set parameters: HG
@@ -97,9 +97,9 @@ with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
 
 if grouping=='hg':
-    twin_sets=[LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'],
-               LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'],
-               LexDelay_twin_idxes['LexDelay_Motor_sig_idx']]
+    twin_sets=[LexDelay_twin_idxes['LexDelay_Auditory_in_Delay_sig_idx'],
+               LexDelay_twin_idxes['LexDelay_Sensorimotor_in_Delay_sig_idx'],
+               LexDelay_twin_idxes['LexDelay_Motor_in_Delay_sig_idx']]
     twin_labels=[np.repeat('Auditory',len(LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'])).tolist(),
                  np.repeat('Sensory-motor',len(LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'])).tolist(),
                  np.repeat('Motor',len(LexDelay_twin_idxes['LexDelay_Motor_sig_idx'])).tolist()]
@@ -157,26 +157,20 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/bsl']=glm_avg
                 glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/bsl']=glm_avg_raw
                 # auditory window
-                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
+                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,10])#mean_word_len+auditory_decay])
+                glm_raws[f'{task_Tag}/{wordness}/{glm_fea}/aud']=glm_masked.__array__()
                 glm_avg_raw,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/aud']=glm_avg
-                # auditory window (unmasked)
-                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_bsl,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
-                glm_raws[f'{task_Tag}/{wordness}/{glm_fea}/aud'] = glm_masked.__array__()
                 times_d[f'{task_Tag}/{wordness}/{glm_fea}/aud'] = [float(i) for i in glm_masked.labels[1]]
-                glm_avg_raw,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/aud'] = glm_avg_raw
                 # delay window
                 _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
                 glm_avg_raw,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/del']=glm_avg
-                # delay window (unmasked)
-                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_bsl,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
                 glm_raws[f'{task_Tag}/{wordness}/{glm_fea}/del'] = glm_masked.__array__()
                 times_d[f'{task_Tag}/{wordness}/{glm_fea}/del'] = [float(i) for i in glm_masked.labels[1]]
-                glm_avg_raw,_,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/del'] = glm_avg_raw
-            elif event=="Resp":
+            elif event=="Resp_inRep":
                 # response window
                 _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
                 glm_raws[f'{task_Tag}/{wordness}/{glm_fea}/resp'] = glm_masked.__array__()
@@ -213,9 +207,9 @@ for bsl,bsl_Tag in zip(('bsl','cue_bsl'),('Pre-onset baseline','Cue baseline')):
 
             # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
             plt.figure()#(figsize=(Waveplot_wth, Waveplot_hgt))
-            plt.plot(times_d[f'Repeat/ALL/Acoustic/{phase}'],t_stat_aco, label='Acoustic', color=Acoustic_col, linestyle='-')
-            plt.plot(times_d[f'Repeat/ALL/Phonemic/{phase}'],t_stat_pho, label='Phonemic', color=Phonemic_col, linestyle='-')
-            plt.plot(times_d[f'Repeat/ALL/Lexical/{phase}'],t_stat_lex, label='Lexical', color=Lexical_col, linestyle='-')
+            plt.plot(times_d[f'Repeat/ALL/Acoustic/{phase}'],p_val_fdr_aco, label='Acoustic', color=Acoustic_col, linestyle='-')
+            plt.plot(times_d[f'Repeat/ALL/Phonemic/{phase}'],p_val_fdr_pho, label='Phonemic', color=Phonemic_col, linestyle='-')
+            plt.plot(times_d[f'Repeat/ALL/Lexical/{phase}'],p_val_fdr_lex, label='Lexical', color=Lexical_col, linestyle='-')
             plt.axvline(x=0, linestyle='--', color='k')
             plt.axhline(y=0, linestyle='--', color='k')
             plt.axhline(y=0.05, linestyle='--', color='r')
