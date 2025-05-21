@@ -61,7 +61,7 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Cue_inRep","Auditory_inRep","Resp_inRep"]
+events = ["Cue_inRep","Auditory_inRep"]
 stat = "zscore"
 task_Tags = ["Repeat"]#,"Yes_No"]
 glm_feas = ["Acoustic","Phonemic","Lexical"]
@@ -97,13 +97,14 @@ with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
 
 if grouping=='hg':
-    twin_sets=[LexDelay_twin_idxes['LexDelay_Auditory_in_Delay_sig_idx'],
-               LexDelay_twin_idxes['LexDelay_Sensorimotor_in_Delay_sig_idx'],
-               LexDelay_twin_idxes['LexDelay_Motor_in_Delay_sig_idx']]
-    twin_labels=[np.repeat('Auditory',len(LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'])).tolist(),
-                 np.repeat('Sensory-motor',len(LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'])).tolist(),
-                 np.repeat('Motor',len(LexDelay_twin_idxes['LexDelay_Motor_sig_idx'])).tolist()]
-    twin_labels=np.concatenate(twin_labels).tolist()
+    twin_sets = [LexDelay_twin_idxes['LexDelay_Auditory_in_Delay_sig_idx'],
+                 LexDelay_twin_idxes['LexDelay_Sensorimotor_in_Delay_sig_idx'],
+                 LexDelay_twin_idxes['LexDelay_Motor_in_Delay_sig_idx']]
+    twin_labels = [np.repeat('Auditory', len(LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'])).tolist(),
+                   np.repeat('Sensory-motor', len(LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'])).tolist(),
+                   np.repeat('Motor', len(LexDelay_twin_idxes['LexDelay_Motor_sig_idx'])).tolist()]
+    twin_labels = np.concatenate(twin_labels).tolist()
+
     group_colors = {
         'Auditory': 'g',
         'Motor': 'b',
@@ -149,138 +150,127 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/cue_bsl']=glm_avg
                 glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/cue_bsl']=glm_avg_raw
             if event=='Auditory_inRep':
-                # pre_onset baseline window
-                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_bsl,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.5,0])
-                glm_raws[f'{task_Tag}/{wordness}/{glm_fea}/bsl']=glm_masked.__array__()
-                times_d[f'{task_Tag}/{wordness}/{glm_fea}/bsl'] = [float(i) for i in glm_masked.labels[1]]
-                glm_avg_raw,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
-                glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/bsl']=glm_avg
-                glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/bsl']=glm_avg_raw
-                # auditory window
-                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,10])#mean_word_len+auditory_decay])
+                # auditory window (used the unmasked glm traces for the sig electrodes)
+                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_bsl,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,10])#mean_word_len+auditory_decay])
                 glm_raws[f'{task_Tag}/{wordness}/{glm_fea}/aud']=glm_masked.__array__()
                 glm_avg_raw,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/aud']=glm_avg
                 times_d[f'{task_Tag}/{wordness}/{glm_fea}/aud'] = [float(i) for i in glm_masked.labels[1]]
                 glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/aud'] = glm_avg_raw
-                # delay window
-                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
-                glm_avg_raw,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
-                glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/del']=glm_avg
-                glm_raws[f'{task_Tag}/{wordness}/{glm_fea}/del'] = glm_masked.__array__()
-                times_d[f'{task_Tag}/{wordness}/{glm_fea}/del'] = [float(i) for i in glm_masked.labels[1]]
-                glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/del'] = glm_avg_raw
             elif event=="Resp_inRep":
-                # response window
-                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
+                # response window (used the unmasked glm traces for the sig electrodes)
+                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_cue, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
                 glm_raws[f'{task_Tag}/{wordness}/{glm_fea}/resp'] = glm_masked.__array__()
                 times_d[f'{task_Tag}/{wordness}/{glm_fea}/resp'] = [float(i) for i in glm_masked.labels[1]]
                 glm_avg_raw,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)
                 glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/resp']=glm_avg
                 glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/resp'] = glm_avg_raw
-#%% ttest against pre-onset baseline
+#%% ttest against baseline
 import scipy.stats as st
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
-for bsl,bsl_Tag in zip(('bsl','cue_bsl'),('Pre-onset baseline','Cue baseline')):
-    for  phase, Tag in zip(('aud','del'),('Encoding','Delay')):
-        match phase:
-            case 'del':
-                aud_idx = LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'] & LexDelay_twin_idxes['LexDelay_Delay_sig_idx']
-                sm_idx = LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'] & LexDelay_twin_idxes['LexDelay_Delay_sig_idx']
-                mtr_idx = LexDelay_twin_idxes['LexDelay_Motor_sig_idx'] & LexDelay_twin_idxes['LexDelay_Delay_sig_idx']
-                del_ol_idx = LexDelay_twin_idxes['LexDelay_DelayOnly_sig_idx']
-                ele_grp = (aud_idx,sm_idx,mtr_idx,del_ol_idx)
-                ele_grp_tag = ('Aud', 'SM', 'M','DelOn')
-            case 'aud':
-                aud_idx = LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx']
-                sm_idx = LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']
-                mtr_idx = LexDelay_twin_idxes['LexDelay_Motor_sig_idx']
-                ele_grp = (aud_idx, sm_idx, mtr_idx)
-                ele_grp_tag = ('Aud', 'SM', 'M')
+for phase, Tag in zip(('aud','resp'),('Aligned to stim onset','Aligned to motor onset')):
+    match phase:
+        case 'aud':
+            aud_idx = LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx']
+            sm_idx = LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']
+            mtr_idx = LexDelay_twin_idxes['LexDelay_Motor_sig_idx']
+            aud_del_idx = LexDelay_twin_idxes['LexDelay_Auditory_in_Delay_sig_idx']
+            sm_del_idx = LexDelay_twin_idxes['LexDelay_Sensorimotor_in_Delay_sig_idx']
+            mtr_del_idx = LexDelay_twin_idxes['LexDelay_Motor_in_Delay_sig_idx']
+            del_ol_idx = LexDelay_twin_idxes['LexDelay_DelayOnly_sig_idx']
+            ele_grp = (aud_idx,sm_idx,mtr_idx,aud_del_idx,sm_del_idx,mtr_del_idx,del_ol_idx)
+            ele_grp_tag = ('Aud', 'SM', 'M','Aud_Del', 'SM_Del', 'M_Del','DelOn')
+        case 'resp':
+            aud_idx = LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx']
+            sm_idx = LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']
+            mtr_idx = LexDelay_twin_idxes['LexDelay_Motor_sig_idx']
+            ele_grp = (aud_idx, sm_idx, mtr_idx)
+            ele_grp_tag = ('Aud', 'SM', 'M')
 
-        for ele,ele_Tag in zip(ele_grp,ele_grp_tag):
+    for ele,ele_Tag in zip(ele_grp,ele_grp_tag):
 
-            t_stat_aco, p_val_aco, p_val_fdr_aco=glm.bsl_t_fdr(glm_raws[f'Repeat/ALL/Acoustic/{phase}'][list(ele)],glm_avgs_raws[f'Repeat/ALL/Acoustic/{bsl}'][list(ele)])
-            t_stat_pho, p_val_pho, p_val_fdr_pho=glm.bsl_t_fdr(glm_raws[f'Repeat/ALL/Phonemic/{phase}'][list(ele)],glm_avgs_raws[f'Repeat/ALL/Phonemic/{bsl}'][list(ele)])
-            t_stat_lex, p_val_lex, p_val_fdr_lex=glm.bsl_t_fdr(glm_raws[f'Repeat/ALL/Lexical/{phase}'][list(ele)],glm_avgs_raws[f'Repeat/ALL/Lexical/{bsl}'][list(ele)])
+        t_stat_aco, p_val_aco, p_val_fdr_aco=glm.bsl_t_fdr(glm_raws[f'Repeat/ALL/Acoustic/{phase}'][list(ele),],glm_avgs_raws[f'Repeat/ALL/Acoustic/cue_bsl'][list(ele)])
+        t_stat_pho, p_val_pho, p_val_fdr_pho=glm.bsl_t_fdr(glm_raws[f'Repeat/ALL/Phonemic/{phase}'][list(ele),],glm_avgs_raws[f'Repeat/ALL/Phonemic/cue_bsl'][list(ele)])
+        t_stat_lex, p_val_lex, p_val_fdr_lex=glm.bsl_t_fdr(glm_raws[f'Repeat/ALL/Lexical/{phase}'][list(ele),],glm_avgs_raws[f'Repeat/ALL/Lexical/cue_bsl'][list(ele)])
 
-            # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
-            plt.figure()#(figsize=(Waveplot_wth, Waveplot_hgt))
-            plt.plot(times_d[f'Repeat/ALL/Acoustic/{phase}'],p_val_fdr_aco, label='Acoustic', color=Acoustic_col, linestyle='-')
-            plt.plot(times_d[f'Repeat/ALL/Phonemic/{phase}'],p_val_fdr_pho, label='Phonemic', color=Phonemic_col, linestyle='-')
-            plt.plot(times_d[f'Repeat/ALL/Lexical/{phase}'],p_val_fdr_lex, label='Lexical', color=Lexical_col, linestyle='-')
-            plt.axvline(x=0, linestyle='--', color='k')
-            plt.axhline(y=0, linestyle='--', color='k')
-            plt.axhline(y=0.05, linestyle='--', color='r')
-            plt.title(f'{Tag} GLM pfdr to {bsl_Tag} for {ele_Tag} elec.', fontsize=15)
-            plt.legend(loc='upper right', fontsize=15)
-            plt.gca().spines[['top', 'right']].set_visible(False)
-            plt.tight_layout()
-            plt.savefig(os.path.join('plot', f'Auditory Electrode GLM to {bsl_Tag} in {Tag} for {ele_Tag} elec.tif'), dpi=300)
-            plt.close()
+        # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
+        plt.figure()#(figsize=(Waveplot_wth, Waveplot_hgt))
+        plt.plot(times_d[f'Repeat/ALL/Acoustic/{phase}'],p_val_fdr_aco, label='Acoustic', color=Acoustic_col, linestyle='-')
+        plt.plot(times_d[f'Repeat/ALL/Phonemic/{phase}'],p_val_fdr_pho, label='Phonemic', color=Phonemic_col, linestyle='-')
+        plt.plot(times_d[f'Repeat/ALL/Lexical/{phase}'],p_val_fdr_lex, label='Lexical', color=Lexical_col, linestyle='-')
+        plt.axvline(x=0, linestyle='--', color='k')
+        plt.axhline(y=0, linestyle='--', color='k')
+        plt.axhline(y=0.01, linestyle='--', color='r')
+        plt.title(f'{Tag} GLM pfdr to bsl for {ele_Tag} elec.', fontsize=15)
+        plt.legend(loc='upper right', fontsize=15)
+        plt.gca().spines[['top', 'right']].set_visible(False)
+        plt.tight_layout()
+        plt.savefig(os.path.join('plot', f'Auditory Electrode GLM to bsl in {Tag} for {ele_Tag} elec.tif'), dpi=300)
+        plt.close()
 
 #%% Average and select and do 3d plots
-phs=['aud','del','resp']
+if 1==0:
+    phs=['aud','del','resp']
 
-from statsmodels.multivariate.manova import MANOVA
-def glm_normalize(data,meth):
-    clean_data = data[~np.isnan(data)]
-    z_full = np.full_like(data, np.nan)
-    if meth=='zscore':
-        z_full[~np.isnan(data)] = stats.zscore(clean_data)
-    elif meth=='one':
-        z_full[~np.isnan(data)] = (clean_data-np.nanmean(clean_data))/(np.max(clean_data)-np.min(clean_data))
-    elif meth=='mean':
-        z_full[~np.isnan(data)] = np.nanmean(clean_data)
-    return z_full
-def rm_out(data, threshold=3):
-    mean = np.nanmean(data)
-    std = np.nanstd(data)
-    z_scores = (data - mean) / std
-    data[np.abs(z_scores) > threshold] = np.nan
-    return data
+    from statsmodels.multivariate.manova import MANOVA
+    def glm_normalize(data,meth):
+        clean_data = data[~np.isnan(data)]
+        z_full = np.full_like(data, np.nan)
+        if meth=='zscore':
+            z_full[~np.isnan(data)] = stats.zscore(clean_data)
+        elif meth=='one':
+            z_full[~np.isnan(data)] = (clean_data-np.nanmean(clean_data))/(np.max(clean_data)-np.min(clean_data))
+        elif meth=='mean':
+            z_full[~np.isnan(data)] = np.nanmean(clean_data)
+        return z_full
+    def rm_out(data, threshold=3):
+        mean = np.nanmean(data)
+        std = np.nanstd(data)
+        z_scores = (data - mean) / std
+        data[np.abs(z_scores) > threshold] = np.nan
+        return data
 
-for task_Tag, wordness,ph in itertools.product(task_Tags,wordnesses,phs):
-        w=dict()
-        w['group']=twin_labels
-        for glm_fea in glm_feas:
-            w[glm_fea]=rm_out(glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/{ph}'])
-        fig = plt.figure(figsize=(8, 6))
-        ax = fig.add_subplot(111, projection='3d')
-        w=pd.DataFrame(w)
-        for group, color in group_colors.items():
-            subset = w[w['group'] == group]
-            ax.scatter(glm_normalize(subset[glm_feas[0]],'mean'),
-                       glm_normalize(subset[glm_feas[1]],'mean'),
-                       glm_normalize(subset[glm_feas[2]],'mean'),
-                c=color,label=group,alpha=1,s=15  # size of the point
-            )
-        ax.set_xlabel(glm_feas[0])
-        ax.set_ylabel(glm_feas[1])
-        ax.set_zlabel(glm_feas[2])
-        # ax.set_xlim([0,0.2])
-        # ax.set_ylim([0,0.2])
-        # ax.set_zlim([0,0.2])
-        ax.set_title(f'{task_Tag}/{wordness}/{ph}')
-        ax.legend()
-        plt.tight_layout()
-        # ax.view_init(elev=90, azim=-90)
-        plt.savefig(os.path.join('plot',f'glm hg plot {task_Tag} {wordness} {ph}.tif'),dpi=300)
-        plt.close()
-        pyreadstat.write_sav(w, os.path.join('data',f'glm hg {task_Tag} {wordness} {ph}.sav'))
+    for task_Tag, wordness,ph in itertools.product(task_Tags,wordnesses,phs):
+            w=dict()
+            w['group']=twin_labels
+            for glm_fea in glm_feas:
+                w[glm_fea]=rm_out(glm_avgs[f'{task_Tag}/{wordness}/{glm_fea}/{ph}'])
+            fig = plt.figure(figsize=(8, 6))
+            ax = fig.add_subplot(111, projection='3d')
+            w=pd.DataFrame(w)
+            for group, color in group_colors.items():
+                subset = w[w['group'] == group]
+                ax.scatter(glm_normalize(subset[glm_feas[0]],'mean'),
+                           glm_normalize(subset[glm_feas[1]],'mean'),
+                           glm_normalize(subset[glm_feas[2]],'mean'),
+                    c=color,label=group,alpha=1,s=15  # size of the point
+                )
+            ax.set_xlabel(glm_feas[0])
+            ax.set_ylabel(glm_feas[1])
+            ax.set_zlabel(glm_feas[2])
+            # ax.set_xlim([0,0.2])
+            # ax.set_ylim([0,0.2])
+            # ax.set_zlim([0,0.2])
+            ax.set_title(f'{task_Tag}/{wordness}/{ph}')
+            ax.legend()
+            plt.tight_layout()
+            # ax.view_init(elev=90, azim=-90)
+            plt.savefig(os.path.join('plot',f'glm hg plot {task_Tag} {wordness} {ph}.tif'),dpi=300)
+            plt.close()
+            pyreadstat.write_sav(w, os.path.join('data',f'glm hg {task_Tag} {wordness} {ph}.sav'))
 
-        if grouping=='hg':
-            A=w[w['group']=='Auditory']['Lexical']
-            SM=w[w['group']=='Sensory-motor']['Lexical']
-            M=w[w['group']=='Motor']['Lexical']
+            if grouping=='hg':
+                A=w[w['group']=='Auditory']['Lexical']
+                SM=w[w['group']=='Sensory-motor']['Lexical']
+                M=w[w['group']=='Motor']['Lexical']
 
-            print(f'A-SM:{st.ttest_ind(A,SM,nan_policy='omit')}')
-            print(f'M-SM:{st.ttest_ind(M,SM,nan_policy='omit')}')
-            print(f'A-M:{st.ttest_ind(A,M,nan_policy='omit')}')
+                print(f'A-SM:{st.ttest_ind(A,SM,nan_policy='omit')}')
+                print(f'M-SM:{st.ttest_ind(M,SM,nan_policy='omit')}')
+                print(f'A-M:{st.ttest_ind(A,M,nan_policy='omit')}')
 
 #%% Get confusion between time-windowed selected electrodes and glm electrods
-if 1==1:
+if 1==0:
     win_aud=LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx']
     win_sm=LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']
     win_mtr=LexDelay_twin_idxes['LexDelay_Motor_sig_idx']

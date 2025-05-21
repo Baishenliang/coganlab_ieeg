@@ -21,7 +21,7 @@ import pickle
 
 
 #%% Set parameters
-mask_type='glm' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
+mask_type='hg' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
 plot_wave_type='stat' #stat: plot the HG stat in wave plots; mask: plot the HG significant mask in wave plots.
 
 with open('glm_config.json', 'r') as f:
@@ -32,7 +32,7 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Cue_inRep","Auditory_inRep","Resp_inRep"]
+events = ["Auditory_inRep","Resp_inRep"]
 stat = "zscore"
 task_Tags = ["Repeat"]#,"Yes_No"]
 wordnesses = ["ALL"]#, "Word", "Nonword"]
@@ -73,7 +73,7 @@ if mask_type == 'hg':
     with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM', 'data',
                            'Lex_twin_idxes_hg.npy'), "rb") as f:
         Lex_twin_idxes_hg = pickle.load(f)
-        sel_idx=Lex_twin_idxes_hg['LexDelay_Motor_in_Delay_sig_idx']
+        sel_idx=Lex_twin_idxes_hg['LexDelay_Motor_sig_idx']
 
     hgmask_aud_data=hgmask_aud.__array__()
     mask = np.ones(hgmask_aud_data.shape[0], dtype=bool)
@@ -117,7 +117,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             elif plot_wave_type=='mask':
                 stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=masks*100
             del masks,stats
-            if event.split('_')[0]=='Auditory' or 'Cue':
+            if event.split('_')[0]=='Auditory':
                 # whole trial
                 all_masks_sorted,_,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
                 gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}")
@@ -286,7 +286,7 @@ for wordness in wordnesses[:2]:
     plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
     if wordness == 'ALL':
         gp.plot_wave(stass[f'Resp_inRep/Repeat/{wordness}/Acoustic'], sig_idx[f"Resp_inRep/Repeat/{wordness}/Acoustic/resp"],
-                     'Acoustic', Acoustic_col, '-',True)
+                     f'Acoustic', Acoustic_col, '-',True)
         gp.plot_wave(stass[f'Resp_inRep/Repeat/{wordness}/Phonemic'], sig_idx[f"Resp_inRep/Repeat/{wordness}/Phonemic/resp"],
                      'Phonemic', Phonemic_col, '-',True)
         gp.plot_wave(stass[f'Resp_inRep/Repeat/{wordness}/Lexical'], sig_idx[f"Resp_inRep/Repeat/{wordness}/Lexical/resp"], 'Lexical status', Lexical_col,'-',True)
@@ -326,48 +326,49 @@ for wordness in wordnesses[:2]:
         pickle.dump(sig_idx, f)
 
 #%% Get confusion matrix of glm sig electrode sets
-for wordness in wordnesses:
+if 1==0:
+    for wordness in wordnesses:
 
-    if wordness == 'ALL':
-        keys_of_interest = [
-            "Auditory_inRep/Repeat/ALL/Acoustic/aud",
-            "Auditory_inRep/Repeat/ALL/Phonemic/aud",
-            "Auditory_inRep/Repeat/ALL/Lexical/aud",
-            "Auditory_inRep/Repeat/ALL/Acoustic/del",
-            "Auditory_inRep/Repeat/ALL/Phonemic/del",
-            "Auditory_inRep/Repeat/ALL/Lexical/del",
-            "Resp_inRep/Repeat/ALL/Acoustic/resp",
-            "Resp_inRep/Repeat/ALL/Phonemic/resp",
-            "Resp_inRep/Repeat/ALL/Lexical/resp"
-        ]
-    else:
-        keys_of_interest = [
-            f"Auditory_inRep/Repeat/{wordness}/Acoustic/aud",
-            f"Auditory_inRep/Repeat/{wordness}/Phonemic/aud",
-            f"Auditory_inRep/Repeat/{wordness}/Acoustic/del",
-            f"Auditory_inRep/Repeat/{wordness}/Phonemic/del",
-            f"Resp_inRep/Repeat/{wordness}/Acoustic/resp",
-            f"Resp_inRep/Repeat/{wordness}/Phonemic/resp"
-         ]
+        if wordness == 'ALL':
+            keys_of_interest = [
+                "Auditory_inRep/Repeat/ALL/Acoustic/aud",
+                "Auditory_inRep/Repeat/ALL/Phonemic/aud",
+                "Auditory_inRep/Repeat/ALL/Lexical/aud",
+                "Auditory_inRep/Repeat/ALL/Acoustic/del",
+                "Auditory_inRep/Repeat/ALL/Phonemic/del",
+                "Auditory_inRep/Repeat/ALL/Lexical/del",
+                "Resp_inRep/Repeat/ALL/Acoustic/resp",
+                "Resp_inRep/Repeat/ALL/Phonemic/resp",
+                "Resp_inRep/Repeat/ALL/Lexical/resp"
+            ]
+        else:
+            keys_of_interest = [
+                f"Auditory_inRep/Repeat/{wordness}/Acoustic/aud",
+                f"Auditory_inRep/Repeat/{wordness}/Phonemic/aud",
+                f"Auditory_inRep/Repeat/{wordness}/Acoustic/del",
+                f"Auditory_inRep/Repeat/{wordness}/Phonemic/del",
+                f"Resp_inRep/Repeat/{wordness}/Acoustic/resp",
+                f"Resp_inRep/Repeat/{wordness}/Phonemic/resp"
+             ]
 
-    filtered_sets = {key: sig_idx[key] for key in keys_of_interest}
-    short_names = {key: "\n".join(key.split("/")[-2:]).replace('del', 'Delay').replace('aud', 'Auditory').replace('resp', 'Response') for key in keys_of_interest}
-    conf_matrix = pd.DataFrame(index=short_names.values(), columns=short_names.values())
+        filtered_sets = {key: sig_idx[key] for key in keys_of_interest}
+        short_names = {key: "\n".join(key.split("/")[-2:]).replace('del', 'Delay').replace('aud', 'Auditory').replace('resp', 'Response') for key in keys_of_interest}
+        conf_matrix = pd.DataFrame(index=short_names.values(), columns=short_names.values())
 
-    for key1 in keys_of_interest:
-        for key2 in keys_of_interest:
-            conf_matrix.loc[short_names[key1], short_names[key2]] = (len(filtered_sets[key1] & filtered_sets[key2]) / len(filtered_sets[key1])) * 100
+        for key1 in keys_of_interest:
+            for key2 in keys_of_interest:
+                conf_matrix.loc[short_names[key1], short_names[key2]] = (len(filtered_sets[key1] & filtered_sets[key2]) / len(filtered_sets[key1])) * 100
 
-    conf_matrix = conf_matrix.astype(float)
+        conf_matrix = conf_matrix.astype(float)
 
-    plt.figure(figsize=(10, 10))
-    sns.heatmap(conf_matrix, annot=True, fmt=".2f",cmap="rocket_r", xticklabels=short_names.values(),
-                    yticklabels=short_names.values(), annot_kws={"size": 14},vmin=0, vmax=100,cbar=False)
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
+        plt.figure(figsize=(10, 10))
+        sns.heatmap(conf_matrix, annot=True, fmt=".2f",cmap="rocket_r", xticklabels=short_names.values(),
+                        yticklabels=short_names.values(), annot_kws={"size": 14},vmin=0, vmax=100,cbar=False)
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
 
-    plt.title("Shared encoding electrodes across features and phase (%)",fontsize=18)
-    plt.tight_layout()
-    plt.savefig(os.path.join('plot', f'GLM electrode sharing in {wordness}.tif'),dpi=300)
-    plt.close()
+        plt.title("Shared encoding electrodes across features and phase (%)",fontsize=18)
+        plt.tight_layout()
+        plt.savefig(os.path.join('plot', f'GLM electrode sharing in {wordness}.tif'),dpi=300)
+        plt.close()
 

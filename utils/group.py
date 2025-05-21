@@ -286,7 +286,7 @@ def get_sig_elecs_keyword(data_in,sig_idx,keyword):
             out.append(chs[i])
     return out
 
-def plot_chs(data_in, fig_save_dir_fm,title):
+def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False):
     """
     plot the significant channels in a sorted order
     """
@@ -316,8 +316,11 @@ def plot_chs(data_in, fig_save_dir_fm,title):
 
     # Set channel names with adjusted gap
     channel_names = chs[::ch_gap]
-    ax.set_yticks(range(0, len(channel_names) * ch_gap, ch_gap))
-    ax.set_yticklabels(channel_names)
+    if is_ytick==True:
+        ax.set_yticks(range(0, len(channel_names) * ch_gap, ch_gap))
+        ax.set_yticklabels(channel_names)
+    else:
+        ax.yaxis.set_visible(False)
 
     # Set time stamps with adjusted gap
     time_stamps = [round(t, 3) for t in times[::time_gap]]
