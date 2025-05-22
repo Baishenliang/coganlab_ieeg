@@ -165,7 +165,7 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def sort_chs_by_actonset(mask_in,data_in,win_len,time_range):
+def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=True):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     Sort the significant channels according to the onset.
@@ -237,7 +237,8 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range):
     sorted_indices = np.argsort(np.array(onsets_s))  # Get the indices that would sort the array
     mask_s_sorted = mask_s[sorted_indices]
     data_s_sorted = data_s[sorted_indices]
-    data_s_sorted = np.where(mask_s_sorted == 1, data_s_sorted, np.nan)
+    if mask_data:
+        data_s_sorted = np.where(mask_s_sorted == 1, data_s_sorted, np.nan)
     chs_s_sorted = [chs_s[i] for i in sorted_indices]
     onsets_s_sorted = [onsets_s[i] for i in sorted_indices]
 
@@ -310,7 +311,9 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False):
     # Create the plot
     plt.figure(figsize=(15, 15))  # Make the figure size large enough for labeling
     fig, ax = plt.subplots()
-    im=ax.imshow(data, cmap='Blues')
+    vmin = np.percentile(data, 35)
+    vmax = np.percentile(data, 65)
+    im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax)
     # fig.colorbar(im, ax=ax)
     ax.set_title(title)
 

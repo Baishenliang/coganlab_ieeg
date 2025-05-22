@@ -6,7 +6,7 @@ with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM',
     Lex_glm_uncorrected_idxes = pickle.load(f)
 with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM','data','Lex_twin_idxes_hg.npy'), "rb") as f:
     Lex_twin_idxes_hg = pickle.load(f)
-with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM','data', 'sig_idx_fdr_mask.npy'), "rb") as f:
+with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM','data', 'sig_idx_org_mask.npy'), "rb") as f:
     Lex_glm_idxes = pickle.load(f)
 
 #%% Plot Venn plot # Venn diagrams

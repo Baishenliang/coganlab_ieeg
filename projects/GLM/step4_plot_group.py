@@ -21,9 +21,9 @@ import pickle
 
 
 #%% Set parameters
-mask_type='glm' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
+mask_type='hg' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
 plot_wave_type='stat' #stat: plot the HG stat in wave plots; mask: plot the HG significant mask in wave plots.
-mask_corr_type='fdr_mask' #cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
+mask_corr_type='cluster_mask' #cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
 
 with open('glm_config.json', 'r') as f:
     config = json.load(f)
@@ -74,7 +74,8 @@ if mask_type == 'hg':
     with open(os.path.join('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM', 'data',
                            'Lex_twin_idxes_hg.npy'), "rb") as f:
         Lex_twin_idxes_hg = pickle.load(f)
-        sel_idx=Lex_twin_idxes_hg['LexDelay_Motor_sig_idx']
+        # !!!!!!!!!!!!!!!!! Know that now we just select the Sensory-motor electrodes !!!!!!!!!!!!!!!!
+        sel_idx=Lex_twin_idxes_hg['LexDelay_Sensorimotor_sig_idx']
 
     hgmask_aud_data=hgmask_aud.__array__()
     mask = np.ones(hgmask_aud_data.shape[0], dtype=bool)
