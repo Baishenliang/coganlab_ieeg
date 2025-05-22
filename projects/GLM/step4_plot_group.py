@@ -21,8 +21,9 @@ import pickle
 
 
 #%% Set parameters
-mask_type='hg' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
+mask_type='glm' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
 plot_wave_type='stat' #stat: plot the HG stat in wave plots; mask: plot the HG significant mask in wave plots.
+mask_corr_type='org_mask' #cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution)
 
 with open('glm_config.json', 'r') as f:
     config = json.load(f)
@@ -105,9 +106,9 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
         if wordness != "ALL" and glm_fea == "Lexical":
             continue
         else:
-            masks,stats,_=glm.load_stats(event,stat,task_Tag,'cluster_mask',glm_fea,subjs,chs,times,wordness)
+            masks,stats,_=glm.load_stats(event,stat,task_Tag,mask_corr_type,glm_fea,subjs,chs,times,wordness)
             if mask_type == 'glm':
-                if event.split('_')[0]=='Auditory' or 'Cue':
+                if event.split('_')[0]=='Auditory' or event.split('_')[0]=='Cue':
                     hgmask_aud=masks
                 elif event.split('_')[0]=='Resp':
                     hgmask_resp=masks
@@ -322,7 +323,7 @@ for wordness in wordnesses[:2]:
     plt.savefig(os.path.join('plot', f'wave motor onset in {wordness} {plot_wave_type}.tif'),dpi=300)
     plt.close()
 
-    with open(os.path.join('data', 'sig_idx.npy'), "wb") as f:
+    with open(os.path.join('data', f'sig_idx_{mask_corr_type}.npy'), "wb") as f:
         pickle.dump(sig_idx, f)
 
 #%% Get confusion matrix of glm sig electrode sets
