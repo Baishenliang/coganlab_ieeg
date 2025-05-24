@@ -13,8 +13,9 @@ import pandas as pd
 from joblib import Parallel, delayed
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
-from sklearn.linear_model import RidgeCV
+from sklearn.linear_model import RidgeCV, Ridge
 from sklearn.model_selection import KFold
+import time
 
 # Locations
 HOME = os.path.expanduser("~")
@@ -212,7 +213,7 @@ def compute_r2_ch(x, y,perm_feature_idx):
     # beta = np.sqrt(np.sum(np.square(np.take(coef, perm_feature_idx[1:], axis=0)), axis=0)) # removed the intercept
     return r2,y_res
 
-def compute_r2_ch_ridge(x, y,perm_feature_idx,residual: bool=False,glm_out: str='beta'):
+def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual: bool=True,glm_out: str='beta',alpha: float=np.nan):
     """
     Computes the global R^2 score using Ridge regression with Leave-One-Out
     cross-validation across all time points simultaneously.
@@ -220,23 +221,34 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,residual: bool=False,glm_out: str=
     mask = ~np.isnan(y[:, 0])
     y_clean = y[mask, :]
     x_clean = x[mask, :]
-    ridge_cv = RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1,10], cv=KFold(n_splits=5))
-    ridge_cv.fit(x_clean, y_clean)
-    if glm_out=='beta':
-        # output beta values: as a function of times
-        coef = np.sum(np.abs(ridge_cv.coef_[:,perm_feature_idx]), axis=1)
-    elif glm_out=='r2':
-        # output r^2 values: one single value for a whole function
-        coef = ridge_cv.score(x_clean, y_clean)
+    if np.isnan(alpha):
+        ridge_model = RidgeCV(alphas=np.logspace(-6, 6, 10), cv=KFold(n_splits=5))
+        ridge_model.fit(x_clean, y_clean)
+    else:
+        ridge_model = Ridge(alpha=alpha)
+        ridge_model.fit(x_clean, y_clean)
 
     # Calculate residuals using the best model
-    if residual:
-        y_pred = ridge_cv.predict(x_clean)
+    if isresidual:
+        y_pred = ridge_model.predict(x_clean)
         y_clean_res = y_clean - y_pred
         y_res = np.full_like(y, np.nan)
         y_res[mask, :] = y_clean_res
     else:
         y_res = np.full_like(y, np.nan)
+
+    if glm_out=='beta':
+        # output beta values: as a function of times
+        # sum of abs betas
+        coef = np.nanmean(np.abs(ridge_model.coef_[:,perm_feature_idx]), axis=1)
+        # r2
+        # residual = np.sum(y_clean_res ** 2, axis=0)
+        # coef = 1 - residual / (np.sum((y_clean - np.mean(y_clean, axis=0)) ** 2, axis=0))
+    elif glm_out == 'r2':
+        # output r^2 values: one single value for a whole function
+        coef = ridge_model.score(x_clean, y_clean)
+    elif glm_out == 'alpha':
+        coef = ridge_model.alpha_
 
     return coef, y_res
 
@@ -246,7 +258,7 @@ def temporal_smoothing(data_i, window_size=5):
     smoothed_data = uniform_filter1d(data_i, size=window_size, axis=2, mode='nearest')
     return smoothed_data
 
-def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out):
+def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas):
     # loop through all the electrodes and run GLM
     # feature_mat_i: feature matrix, observations * channels * features
     # data_i: eeg data matrix, observations * channels * times
@@ -254,26 +266,42 @@ def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out):
     #   beta_i: r2 matrix, channels * times
     n_trials, n_channels_i, n_times = data_i.shape
     if glm_out == 'beta':
-        beta_i = np.full((n_channels_i, n_times), np.nan)
-    elif glm_out == 'r2':
-        beta_i = np.full((n_channels_i, 1), np.nan)
+        coef_i = np.full((n_channels_i, n_times), np.nan)
+    elif glm_out == 'r2' or glm_out == 'alpha':
+        coef_i = np.full((n_channels_i, 1), np.nan)
     y_res_i = np.full((n_trials, n_channels_i, n_times), np.nan)
     for ch in range(n_channels_i):
         x = feature_mat_i[:, ch, :]
         y = data_i[:, ch, :]
-        beta_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch_ridge(x,y,perm_feature_idx,False,glm_out)
-    return beta_i, y_res_i
+        if glm_out == 'beta' or glm_out == 'r2':
+            alpha = alphas[ch]
+        elif glm_out == 'alpha':
+            alpha = np.nan
+        coef_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch_ridge(x,y,perm_feature_idx,False,glm_out,alpha)
+    return coef_i, y_res_i
 
-def permutation_baishen_parallel(feature_mat_i, data_i, n_perms,perm_feature_idx,glm_out):
+def gen_ind_perms(n_obs):
+    main_seed = int(time.time())
+    master_rng = np.random.RandomState(main_seed)
+    seed1 = master_rng.randint(0, 2**31 - 1)
+    seed2 = master_rng.randint(0, 2**31 - 1)
+    rng1 = np.random.RandomState(seed1)
+    rng2 = np.random.RandomState(seed2)
+    perm_indices1 = rng1.permutation(n_obs)
+    perm_indices2 = rng2.permutation(n_obs)
+    return perm_indices1, perm_indices2
+
+def permutation_baishen_parallel(feature_mat_i, data_i, n_perms,perm_feature_idx,glm_out,alphas):
     n_obs = feature_mat_i.shape[0]
     # feature_mat_i: feature matrix, observations * channels * features
     # data_i: eeg data matrix, observations * channels * times
     def worker(_):
-        perm_indices = np.random.permutation(n_obs)
+        perm_indices1,perm_indices2 = gen_ind_perms(n_obs)
         feature_mat_i_input=feature_mat_i.copy()
-        feature_mat_i_perm = np.take(feature_mat_i, perm_indices, axis=0)
+        feature_mat_i_perm = np.take(feature_mat_i, perm_indices1, axis=0)
+        data_i_perm = np.take(data_i, perm_indices2, axis=0)
         feature_mat_i_input[:, :, perm_feature_idx] = np.take(feature_mat_i_perm, perm_feature_idx, axis=2)
-        beta_i,_ = compute_r2_loop(feature_mat_i_input, perm_feature_idx,data_i,glm_out)
+        beta_i,_ = compute_r2_loop(feature_mat_i_input, perm_feature_idx,data_i_perm,glm_out,alphas)
         del feature_mat_i_input,feature_mat_i_perm
         return beta_i
 

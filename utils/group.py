@@ -165,7 +165,7 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=True):
+def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     Sort the significant channels according to the onset.
@@ -255,7 +255,7 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=True):
     # onset_out=LabeledArray(np.array(onsets_s_sorted), chs_s_sorted)
     return data_out,data_us_out,sorted_indices,chs_s_all_idx
 
-def get_peak(data_in):
+def get_latency(data_in,mode:str='peak'):
     import numpy as np
     from ieeg.arrays.label import LabeledArray
 
@@ -264,20 +264,31 @@ def get_peak(data_in):
     times = [float(i) for i in times]
     data=data_in.__array__()
 
-    max_values = []
-    max_positions = []
+    values = []
+    positions = []
 
     for channel in data:
         if np.all(np.isnan(channel)):
-            max_values.append(np.nan)
-            max_positions.append(np.nan)
+            values.append(np.nan)
+            positions.append(np.nan)
         else:
-            max_value = np.nanmax(channel)
-            max_position = times[np.nanargmax(channel)]
-            max_values.append(max_value)
-            max_positions.append(max_position)
+            if mode=='peak':
+                value = np.nanmax(channel)
+                position = times[np.nanargmax(channel)]
+            elif mode=='onset':
+                non_nan_indices = np.where(~np.isnan(channel))[0]
+                first_non_nan_idx = non_nan_indices[0]
+                value = channel[first_non_nan_idx]
+                position = times[first_non_nan_idx]
+            elif mode=='clustermid':
+                non_nan_indices = np.where(~np.isnan(channel))[0]
+                mid_non_nan_idx = non_nan_indices[non_nan_indices.size // 2]
+                value = channel[mid_non_nan_idx]
+                position = times[mid_non_nan_idx]
+            values.append(value)
+            positions.append(position)
 
-    return max_values, max_positions
+    return values, positions
 
 def get_sig_elecs_keyword(data_in,sig_idx,keyword):
     chs = data_in.labels[0]
@@ -311,8 +322,8 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False):
     # Create the plot
     plt.figure(figsize=(15, 15))  # Make the figure size large enough for labeling
     fig, ax = plt.subplots()
-    vmin = np.percentile(data, 35)
-    vmax = np.percentile(data, 65)
+    vmin = np.percentile(data, 25)
+    vmax = np.percentile(data, 75)
     im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax)
     # fig.colorbar(im, ax=ax)
     ax.set_title(title)

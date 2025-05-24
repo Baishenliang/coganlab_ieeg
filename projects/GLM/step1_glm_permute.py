@@ -14,6 +14,13 @@ import glm_utils as glm
 
 def main(event, task_Tag, glm_fea, wordness,glm_out):
 
+    # #%% For testing:
+    # event="Auditory_inRep"
+    # task_Tag="Repeat"
+    # glm_fea="Phonemic"
+    # wordness="ALL"
+    # glm_out="beta"
+
     #%% Read data
     with open('glm_config.json', 'r') as f:
         config = json.load(f)
@@ -47,6 +54,7 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
 
     #%% Smooth data
     data_list=[]
+    alpha_list=[]
     for i, data_i_raw in enumerate(data_list_raw):
         data_i=glm.temporal_smoothing(data_i_raw, window_size=5) #smoothing window: 1=10ms
         data_list.append(data_i)
@@ -57,15 +65,22 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
         print(f"Generate null distribution Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")
         if model=='simple' or (model=='partial' and glm_fea=='Acoustic') or model=='BSL_correct':
             feature_mat_i=filtered_events_list[i][:,:,feature_seleted]
-            null_r2 = glm.permutation_baishen_parallel(feature_mat_i, data_i, n_perms,np.r_[0:np.shape(feature_mat_i)[2]],glm_out)
+            alpha_i, _ = glm.compute_r2_loop(feature_mat_i, np.r_[0:np.shape(feature_mat_i)[2]], data_i, 'alpha',np.nan)
+            alpha_list.append(alpha_i)
+            null_r2 = glm.permutation_baishen_parallel(feature_mat_i, data_i, n_perms,np.r_[0:np.shape(feature_mat_i)[2]],glm_out,alpha_i)
         elif model=='partial':
             # Get the residuals of data and seleted features controlling out unseleted features
             feature_mat_i_res, data_i_res = glm.par_regress(filtered_events_list[i], feature_seleted,feature_controlled, data_i)
             # Get null distribution
+            alpha_i, _ = glm.compute_r2_loop(feature_mat_i_res, np.r_[0:np.shape(feature_mat_i_res)[2]], data_i_res,'alpha',np.nan)
+            alpha_list.append(alpha_i)
             null_r2 = glm.permutation_baishen_parallel(feature_mat_i_res, data_i_res, n_perms,
-                                                       np.r_[0:np.shape(feature_mat_i_res)[2]],glm_out)
+                                                       np.r_[0:np.shape(feature_mat_i_res)[2]],glm_out,alpha_i)
         elif model=='full':
-            null_r2 = glm.permutation_baishen_parallel(filtered_events_list[i], data_i, n_perms,feature_seleted,glm_out)
+            alpha_i, _ = glm.compute_r2_loop(filtered_events_list[i], feature_seleted, data_i, 'alpha',np.nan)
+            alpha_list.append(alpha_i)
+            null_r2 = glm.permutation_baishen_parallel(filtered_events_list[i], data_i, n_perms,feature_seleted,glm_out,alpha_i)
+
     # save the null distribution
         np.save(os.path.join('data',f'null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy'), null_r2)
         del null_r2
@@ -75,17 +90,18 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
         # feature_mat_i: feature matrix, observations * channels * features
         # data_i: eeg data matrix, observations * channels * times
         # r2_i: r2 matrix, channels * features * times
+        alpha_i=alpha_list[i]
         print(f"Getting uncorrected significance: Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")
         if model=='simple' or (model=='partial' and glm_fea=='Acoustic') or model=='BSL_correct':
             feature_mat_i=filtered_events_list[i][:,:,feature_seleted]
-            r2_i,_ = glm.compute_r2_loop(feature_mat_i, np.r_[0:np.shape(feature_mat_i)[2]],data_i,glm_out)
+            r2_i,_ = glm.compute_r2_loop(feature_mat_i, np.r_[0:np.shape(feature_mat_i)[2]],data_i,glm_out,alpha_i)
         elif model == 'partial':
             # Get the residuals of data and seleted features controlling out unseleted features
             feature_mat_i_res, data_i_res = glm.par_regress(filtered_events_list[i], feature_seleted,
                                                             feature_controlled, data_i)
-            r2_i, _ = glm.compute_r2_loop(feature_mat_i_res, np.r_[0:np.shape(feature_mat_i_res)[2]], data_i_res,glm_out)
+            r2_i, _ = glm.compute_r2_loop(feature_mat_i_res, np.r_[0:np.shape(feature_mat_i_res)[2]], data_i_res,glm_out,alpha_i)
         elif model=='full':
-            r2_i, _ = glm.compute_r2_loop(filtered_events_list[i], feature_seleted,data_i,glm_out)
+            r2_i, _ = glm.compute_r2_loop(filtered_events_list[i], feature_seleted,data_i,glm_out,alpha_i)
         np.save(f'data\\org_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy', r2_i)
         r2_i = np.expand_dims(r2_i, axis=0)
         null_r2_i = np.load(f"data\\null_r2 {subjs[i]} {event} {task_Tag} {wordness} {glm_fea}.npy")
