@@ -14,10 +14,10 @@ import glm_utils as glm
 
 def main(event, task_Tag, glm_fea, wordness,glm_out):
 
-    # #%% For testing:
+    # # %% For testing:
     # event="Auditory_inRep"
     # task_Tag="Repeat"
-    # glm_fea="Phonemic"
+    # glm_fea="BSL_correct"
     # wordness="ALL"
     # glm_out="beta"
 
@@ -36,6 +36,7 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
     n_perms = config['n_perms']
     f_ranges = config['feature_ranges'][glm_fea]
     f_ranges_ctr = config['control_feature_ranges'][glm_fea]
+    query_ridge_aloha = True
 
     if model=='partial' and glm_fea!='Acoustic':
         feature_controlled = np.r_[f_ranges_ctr[0]:f_ranges_ctr[1]]
@@ -55,9 +56,33 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
     #%% Smooth data
     data_list=[]
     alpha_list=[]
+    cv_r_list=[]
     for i, data_i_raw in enumerate(data_list_raw):
         data_i=glm.temporal_smoothing(data_i_raw, window_size=5) #smoothing window: 1=10ms
         data_list.append(data_i)
+
+    #%% Get the electrode wise alpha-r^2 plots
+    if query_ridge_aloha:
+        for i, data_i in enumerate(data_list):
+            # feature_mat_i: feature matrix, observations * channels * features
+            # data_i: eeg data matrix, observations * channels * times
+            print(f"Getting CV r^2 for Ridge alpha Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")
+            if model=='simple' or (model=='partial' and glm_fea=='Acoustic') or model=='BSL_correct':
+                feature_mat_i=filtered_events_list[i][:,:,feature_seleted]
+                cv_r_i, _ = glm.compute_r2_loop(feature_mat_i, np.r_[0:np.shape(feature_mat_i)[2]], data_i, 'cv_r2',np.nan)
+                cv_r_list.append(cv_r_i)
+            elif model=='partial':
+                # Get the residuals of data and seleted features controlling out unseleted features
+                feature_mat_i_res, data_i_res = glm.par_regress(filtered_events_list[i], feature_seleted,feature_controlled, data_i)
+                # Get null distribution
+                cv_r_i, _ = glm.compute_r2_loop(feature_mat_i_res, np.r_[0:np.shape(feature_mat_i_res)[2]], data_i_res,'cv_r2',np.nan)
+                cv_r_list.append(cv_r_i)
+            elif model=='full':
+                cv_r_i, _ = glm.compute_r2_loop(filtered_events_list[i], feature_seleted, data_i, 'cv_r2',np.nan)
+                cv_r_list.append(cv_r_i)
+        cv_r_list=np.concatenate(cv_r_list)
+        # np.save(os.path.join('data',f'CV_mse {event} {task_Tag} {wordness} {glm_fea}.npy'), cv_r_list)
+        glm.plot_mean_se_for_alphas(cv_r_list, np.logspace(-6, 6, 10),f'CV_mse {event} {task_Tag} {wordness} {glm_fea}.jpg')
     #%% Generate null distributions for each patient
     for i, data_i in enumerate(data_list):
         # feature_mat_i: feature matrix, observations * channels * features

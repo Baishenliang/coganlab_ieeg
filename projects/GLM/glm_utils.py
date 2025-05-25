@@ -15,6 +15,7 @@ sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
 from sklearn.linear_model import RidgeCV, Ridge
 from sklearn.model_selection import KFold
+from sklearn.metrics import mean_squared_error
 import time
 
 # Locations
@@ -213,6 +214,27 @@ def compute_r2_ch(x, y,perm_feature_idx):
     # beta = np.sqrt(np.sum(np.square(np.take(coef, perm_feature_idx[1:], axis=0)), axis=0)) # removed the intercept
     return r2,y_res
 
+def ridge_cv_alpha2score(X_clean, y_clean, alphas_to_test, n_splits=5, random_state=42):
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    r2s = []
+    for alpha in alphas_to_test:
+        fold_r2_scores = []
+        for train_index, test_index in kf.split(X_clean):
+            X_train, X_test = X_clean[train_index], X_clean[test_index]
+            y_train, y_test = y_clean[train_index], y_clean[test_index]
+
+            ridge_model = Ridge(alpha=alpha)
+            ridge_model.fit(X_train, y_train)
+
+            y_pred = ridge_model.predict(X_test)
+
+            r2 = mean_squared_error(y_test, y_pred)
+            fold_r2_scores.append(r2)
+
+        r2s.append(np.mean(fold_r2_scores))
+
+    return r2s
+
 def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual: bool=True,glm_out: str='beta',alpha: float=np.nan):
     """
     Computes the global R^2 score using Ridge regression with Leave-One-Out
@@ -221,9 +243,12 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual: bool=True,glm_out: str
     mask = ~np.isnan(y[:, 0])
     y_clean = y[mask, :]
     x_clean = x[mask, :]
-    if np.isnan(alpha):
+    if glm_out == 'alpha':
         ridge_model = RidgeCV(alphas=np.logspace(-6, 6, 10), cv=KFold(n_splits=5))
         ridge_model.fit(x_clean, y_clean)
+    elif glm_out == 'cv_r2':
+        alphas = np.logspace(-6, 6, 10)
+        r2_scores = ridge_cv_alpha2score(x_clean, y_clean, alphas, n_splits=5)
     else:
         ridge_model = Ridge(alpha=alpha)
         ridge_model.fit(x_clean, y_clean)
@@ -244,12 +269,13 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual: bool=True,glm_out: str
         # r2
         # residual = np.sum(y_clean_res ** 2, axis=0)
         # coef = 1 - residual / (np.sum((y_clean - np.mean(y_clean, axis=0)) ** 2, axis=0))
+    elif glm_out == 'cv_r2':
+        coef = r2_scores
     elif glm_out == 'r2':
         # output r^2 values: one single value for a whole function
         coef = ridge_model.score(x_clean, y_clean)
     elif glm_out == 'alpha':
         coef = ridge_model.alpha_
-
     return coef, y_res
 
 def temporal_smoothing(data_i, window_size=5):
@@ -267,6 +293,8 @@ def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas):
     n_trials, n_channels_i, n_times = data_i.shape
     if glm_out == 'beta':
         coef_i = np.full((n_channels_i, n_times), np.nan)
+    elif glm_out == 'cv_r2':
+        coef_i = np.full((n_channels_i, 10), np.nan)
     elif glm_out == 'r2' or glm_out == 'alpha':
         coef_i = np.full((n_channels_i, 1), np.nan)
     y_res_i = np.full((n_trials, n_channels_i, n_times), np.nan)
@@ -275,7 +303,7 @@ def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas):
         y = data_i[:, ch, :]
         if glm_out == 'beta' or glm_out == 'r2':
             alpha = alphas[ch]
-        elif glm_out == 'alpha':
+        elif glm_out == 'alpha' or glm_out == 'cv_r2':
             alpha = np.nan
         coef_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch_ridge(x,y,perm_feature_idx,False,glm_out,alpha)
     return coef_i, y_res_i
@@ -377,3 +405,37 @@ def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness,glm
         stats=LabeledArray(stat_raw, labels)
 
     return masks,stats,subjs
+
+def plot_mean_se_for_alphas(data_matrix, alphas_x_coords,fig_names):
+    import matplotlib.pyplot as plt
+    if data_matrix.shape[1] != len(alphas_x_coords):
+        raise ValueError(
+            f"Got data_matrix.shape[1]={data_matrix.shape[1]} and len(alphas_x_coords)={len(alphas_x_coords)}"
+        )
+    mean_values = np.mean(data_matrix, axis=0)
+    std_dev_values = np.std(data_matrix, axis=0)
+    n_samples_per_alpha = data_matrix.shape[0]
+    if n_samples_per_alpha <= 1:
+        se_values = np.zeros_like(std_dev_values)
+    else:
+        se_values = std_dev_values / np.sqrt(n_samples_per_alpha)
+    plt.figure(figsize=(10, 6))
+    plt.errorbar(
+        alphas_x_coords,
+        mean_values,
+        yerr=se_values,
+        fmt='-o',
+        capsize=5,
+        label='Mean with SE',
+        color='blue',
+        ecolor='red',
+        elinewidth=1
+    )
+    plt.xscale('log')
+    plt.xlabel('Alpha Value (log scale)')
+    plt.ylabel('Mean sqaured error')
+    plt.title('Mean Metric Value vs. Alpha with Standard Error')
+    plt.grid(True, which="both", ls="-", alpha=0.2)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(fig_names)
