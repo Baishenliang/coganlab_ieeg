@@ -179,7 +179,7 @@ def bsl_t_fdr(epc,bsl):
     _, p_vals_fdr = fdrcorrection(p_vals, alpha=0.05)
     return t_vals, p_vals,p_vals_fdr
 
-def par_regress(filtered_events_list_i,feature_seleted,feature_controlled,data_i):
+def par_regress(filtered_events_list_i,feature_seleted,feature_controlled,data_i,glm_out,alphas,isresidual: bool=True):
     """
     Partial regression to control the contributions of unseleted features:
     X1 ~ X2@beta -> X1res
@@ -191,9 +191,9 @@ def par_regress(filtered_events_list_i,feature_seleted,feature_controlled,data_i
     # Get the control geatures (X2)
     feature_mat_i_ctr = filtered_events_list_i[:, :, feature_controlled]
     # X1 ~ X2@beta -> X1res
-    _, feature_mat_i_res = compute_r2_loop(feature_mat_i_ctr, np.r_[0:np.shape(feature_mat_i_ctr)[2]], feature_mat_i)
+    _, feature_mat_i_res = compute_r2_loop(feature_mat_i_ctr, np.r_[0:np.shape(feature_mat_i_ctr)[2]], feature_mat_i,glm_out,alphas,isresidual)
     # Y ~ X2@beta -> Yres
-    _, data_i_res = compute_r2_loop(feature_mat_i_ctr, np.r_[0:np.shape(feature_mat_i_ctr)[2]],data_i)
+    _, data_i_res = compute_r2_loop(feature_mat_i_ctr, np.r_[0:np.shape(feature_mat_i_ctr)[2]],data_i,glm_out,alphas,isresidual)
     return feature_mat_i_res, data_i_res
 
 def compute_r2_ch(x, y,perm_feature_idx):
@@ -235,7 +235,7 @@ def ridge_cv_alpha2score(X_clean, y_clean, alphas_to_test, n_splits=5, random_st
 
     return r2s
 
-def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual: bool=True,glm_out: str='beta',alpha: float=np.nan):
+def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual,glm_out: str='beta',alpha: float=np.nan):
     """
     Computes the global R^2 score using Ridge regression with Leave-One-Out
     cross-validation across all time points simultaneously.
@@ -275,7 +275,8 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual: bool=True,glm_out: str
         # output r^2 values: one single value for a whole function
         coef = ridge_model.score(x_clean, y_clean)
     elif glm_out == 'alpha':
-        coef = ridge_model.alpha_
+        # coef = ridge_model.alpha_
+        coef = 2.15443469e+03
     return coef, y_res
 
 def temporal_smoothing(data_i, window_size=5):
@@ -284,7 +285,7 @@ def temporal_smoothing(data_i, window_size=5):
     smoothed_data = uniform_filter1d(data_i, size=window_size, axis=2, mode='nearest')
     return smoothed_data
 
-def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas):
+def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas,isresidual=False):
     # loop through all the electrodes and run GLM
     # feature_mat_i: feature matrix, observations * channels * features
     # data_i: eeg data matrix, observations * channels * times
@@ -305,7 +306,7 @@ def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas):
             alpha = alphas[ch]
         elif glm_out == 'alpha' or glm_out == 'cv_r2':
             alpha = np.nan
-        coef_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch_ridge(x,y,perm_feature_idx,False,glm_out,alpha)
+        coef_i[ch,:], y_res_i[:,ch,:]= compute_r2_ch_ridge(x,y,perm_feature_idx,isresidual,glm_out,alpha)
     return coef_i, y_res_i
 
 def gen_ind_perms(n_obs):

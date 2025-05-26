@@ -17,7 +17,7 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
     # # %% For testing:
     # event="Auditory_inRep"
     # task_Tag="Repeat"
-    # glm_fea="BSL_correct"
+    # glm_fea="Phonemic"
     # wordness="ALL"
     # glm_out="beta"
 
@@ -36,7 +36,7 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
     n_perms = config['n_perms']
     f_ranges = config['feature_ranges'][glm_fea]
     f_ranges_ctr = config['control_feature_ranges'][glm_fea]
-    query_ridge_aloha = True
+    query_ridge_aloha = False
 
     if model=='partial' and glm_fea!='Acoustic':
         feature_controlled = np.r_[f_ranges_ctr[0]:f_ranges_ctr[1]]
@@ -71,12 +71,13 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
                 feature_mat_i=filtered_events_list[i][:,:,feature_seleted]
                 cv_r_i, _ = glm.compute_r2_loop(feature_mat_i, np.r_[0:np.shape(feature_mat_i)[2]], data_i, 'cv_r2',np.nan)
                 cv_r_list.append(cv_r_i)
-            elif model=='partial':
-                # Get the residuals of data and seleted features controlling out unseleted features
-                feature_mat_i_res, data_i_res = glm.par_regress(filtered_events_list[i], feature_seleted,feature_controlled, data_i)
-                # Get null distribution
-                cv_r_i, _ = glm.compute_r2_loop(feature_mat_i_res, np.r_[0:np.shape(feature_mat_i_res)[2]], data_i_res,'cv_r2',np.nan)
-                cv_r_list.append(cv_r_i)
+            # partial暂时未开启CV功能
+            # elif model=='partial':
+            #     # Get the residuals of data and seleted features controlling out unseleted features
+            #     feature_mat_i_res, data_i_res = glm.par_regress(filtered_events_list[i], feature_seleted,feature_controlled, data_i,glm_out,alpha_i)
+            #     # Get null distribution
+            #     cv_r_i, _ = glm.compute_r2_loop(feature_mat_i_res, np.r_[0:np.shape(feature_mat_i_res)[2]], data_i_res,'cv_r2',np.nan)
+            #     cv_r_list.append(cv_r_i)
             elif model=='full':
                 cv_r_i, _ = glm.compute_r2_loop(filtered_events_list[i], feature_seleted, data_i, 'cv_r2',np.nan)
                 cv_r_list.append(cv_r_i)
@@ -95,10 +96,13 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
             null_r2 = glm.permutation_baishen_parallel(feature_mat_i, data_i, n_perms,np.r_[0:np.shape(feature_mat_i)[2]],glm_out,alpha_i)
         elif model=='partial':
             # Get the residuals of data and seleted features controlling out unseleted features
-            feature_mat_i_res, data_i_res = glm.par_regress(filtered_events_list[i], feature_seleted,feature_controlled, data_i)
-            # Get null distribution
-            alpha_i, _ = glm.compute_r2_loop(feature_mat_i_res, np.r_[0:np.shape(feature_mat_i_res)[2]], data_i_res,'alpha',np.nan)
+            # 这一部分写法不是很规范，但是因为最后我定住了alpha所以下面获得alpha_i的语句只是如写，之后要改
+            feature_mat_i = filtered_events_list[i][:, :, feature_seleted]
+            alpha_i, _ = glm.compute_r2_loop(feature_mat_i, np.r_[0:np.shape(feature_mat_i)[2]], data_i, 'alpha',
+                                             np.nan)
             alpha_list.append(alpha_i)
+            feature_mat_i_res, data_i_res = glm.par_regress(filtered_events_list[i], feature_seleted,feature_controlled, data_i,glm_out,alpha_i)
+            # Get null distribution
             null_r2 = glm.permutation_baishen_parallel(feature_mat_i_res, data_i_res, n_perms,
                                                        np.r_[0:np.shape(feature_mat_i_res)[2]],glm_out,alpha_i)
         elif model=='full':
@@ -123,7 +127,7 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
         elif model == 'partial':
             # Get the residuals of data and seleted features controlling out unseleted features
             feature_mat_i_res, data_i_res = glm.par_regress(filtered_events_list[i], feature_seleted,
-                                                            feature_controlled, data_i)
+                                                            feature_controlled, data_i,glm_out,alpha_i,True)
             r2_i, _ = glm.compute_r2_loop(feature_mat_i_res, np.r_[0:np.shape(feature_mat_i_res)[2]], data_i_res,glm_out,alpha_i)
         elif model=='full':
             r2_i, _ = glm.compute_r2_loop(filtered_events_list[i], feature_seleted,data_i,glm_out,alpha_i)
