@@ -254,7 +254,7 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual,glm_out: str='beta',alp
         ridge_model.fit(x_clean, y_clean)
 
     # Calculate residuals using the best model
-    if isresidual:
+    if isresidual or glm_out=='r2_series':
         y_pred = ridge_model.predict(x_clean)
         y_clean_res = y_clean - y_pred
         y_res = np.full_like(y, np.nan)
@@ -266,9 +266,10 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual,glm_out: str='beta',alp
         # output beta values: as a function of times
         # sum of abs betas
         coef = np.nanmean(np.abs(ridge_model.coef_[:,perm_feature_idx]), axis=1)
-        # r2
-        # residual = np.sum(y_clean_res ** 2, axis=0)
-        # coef = 1 - residual / (np.sum((y_clean - np.mean(y_clean, axis=0)) ** 2, axis=0))
+    if glm_out=='r2_series':
+        # r2 time-resolved
+        residual = np.nansum(y_clean_res ** 2, axis=0)
+        coef = 1 - residual / (np.nansum((y_clean - np.nanmean(y_clean, axis=0)) ** 2, axis=0))
     elif glm_out == 'cv_r2':
         coef = r2_scores
     elif glm_out == 'r2':
@@ -292,7 +293,7 @@ def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas,isresid
     # return
     #   beta_i: r2 matrix, channels * times
     n_trials, n_channels_i, n_times = data_i.shape
-    if glm_out == 'beta':
+    if glm_out == 'beta' or glm_out == 'r2_series':
         coef_i = np.full((n_channels_i, n_times), np.nan)
     elif glm_out == 'cv_r2':
         coef_i = np.full((n_channels_i, 10), np.nan)
@@ -302,7 +303,7 @@ def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas,isresid
     for ch in range(n_channels_i):
         x = feature_mat_i[:, ch, :]
         y = data_i[:, ch, :]
-        if glm_out == 'beta' or glm_out == 'r2':
+        if glm_out == 'beta' or glm_out == 'r2' or glm_out == 'r2_series':
             alpha = alphas[ch]
         elif glm_out == 'alpha' or glm_out == 'cv_r2':
             alpha = np.nan
