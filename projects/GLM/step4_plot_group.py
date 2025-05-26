@@ -100,6 +100,7 @@ stass=dict()
 peaks_all=dict()
 peaks_aud=dict()
 peaks_del=dict()
+peaks_aud_del=dict()
 for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
     subjs, _, _, chs, times = glm.fifread(event, 'zscore', task_Tag,wordness)
     for glm_fea in glm_feas:
@@ -123,23 +124,27 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             if event.split('_')[0]=='Auditory':
                 # whole trial
                 all_masks_sorted,all_masks_raw,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
-                _, all_masks_peak = gp.get_latency(all_masks_raw,'peak')
+                _, all_masks_peak = gp.get_latency(all_masks_raw,'onset')
                 gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/all"] = all_masks_sig
                 peaks_all[f"{event}/{task_Tag}/{wordness}/{glm_fea}/all"] = all_masks_peak
                 if mask_type=='glm':
                     # auditory window
                     aud_masks_sorted,aud_masks_raw,_,aud_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
-                    _,aud_masks_peak=gp.get_latency(aud_masks_raw,'peak')
+                    _,aud_masks_peak=gp.get_latency(aud_masks_raw,'onset')
                     gp.plot_chs(aud_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_aud.jpg'),f"N chs = {len(aud_masks_sig)}")
                     sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_sig
                     peaks_aud[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_peak
                     # delay window
                     del_masks_sorted,del_masks_raw,_,del_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
-                    _,del_masks_peak=gp.get_latency(del_masks_raw,'peak')
+                    _,del_masks_peak=gp.get_latency(del_masks_raw,'onset')
                     gp.plot_chs(del_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_del.jpg'),f"N chs = {len(del_masks_sig)}")
                     sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_sig
                     peaks_del[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_peak
+                    # aud_delay window (before motor)
+                    _,aud_del_masks_raw,_,_=gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[0.1,mean_word_len+auditory_decay+delay_len+0.1])
+                    _,aud_del_masks_peak=gp.get_latency(aud_del_masks_raw,'onset')
+                    peaks_aud_del[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud_del"] = aud_del_masks_peak
 
             elif event.split('_')[0]=="Resp":
                 # response window
@@ -150,7 +155,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
 
 #%% Plot peaks and do stats
 if mask_type=='glm':
-    for df,peak_Tag in zip((pd.DataFrame(peaks_all),pd.DataFrame(peaks_aud),pd.DataFrame(peaks_del)),('All','Aud','Del')):
+    for df,peak_Tag in zip((pd.DataFrame(peaks_all),pd.DataFrame(peaks_aud),pd.DataFrame(peaks_del),pd.DataFrame(peaks_aud_del)),('All','Aud','Del','Aud_Del')):
         # reshape data
         df = df.dropna(how='all')
         df.columns = ['/'.join(col.split('/')[-2:-1]) for col in df.columns]
@@ -216,10 +221,13 @@ if mask_type=='glm':
     # Stats
     from scipy.stats import ttest_ind
 
+    ttest_ind(peaks_aud_del['Auditory_inRep/Repeat/ALL/Acoustic/aud_del'],peaks_aud_del['Auditory_inRep/Repeat/ALL/Phonemic/aud_del'],nan_policy='omit')
+    ttest_ind(peaks_aud_del['Auditory_inRep/Repeat/ALL/Phonemic/aud_del'],peaks_aud_del['Auditory_inRep/Repeat/ALL/Lexical/aud_del'],nan_policy='omit')
+    ttest_ind(peaks_aud_del['Auditory_inRep/Repeat/ALL/Acoustic/aud_del'],peaks_aud_del['Auditory_inRep/Repeat/ALL/Lexical/aud_del'],nan_policy='omit')
+
     ttest_ind(peaks_all['Auditory_inRep/Repeat/ALL/Acoustic/all'],peaks_all['Auditory_inRep/Repeat/ALL/Phonemic/all'],nan_policy='omit')
     ttest_ind(peaks_all['Auditory_inRep/Repeat/ALL/Phonemic/all'],peaks_all['Auditory_inRep/Repeat/ALL/Lexical/all'],nan_policy='omit')
     ttest_ind(peaks_all['Auditory_inRep/Repeat/ALL/Acoustic/all'],peaks_all['Auditory_inRep/Repeat/ALL/Lexical/all'],nan_policy='omit')
-
 
     ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Acoustic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Phonemic/aud'],nan_policy='omit')
     ttest_ind(peaks_aud['Auditory_inRep/Repeat/ALL/Phonemic/aud'],peaks_aud['Auditory_inRep/Repeat/ALL/Lexical/aud'],nan_policy='omit')
