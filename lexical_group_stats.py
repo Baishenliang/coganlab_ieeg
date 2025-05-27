@@ -29,7 +29,7 @@ cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 import os
 import pickle
 import numpy as np
-from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, hickok_roi, plot_sig_roi_counts, get_sig_elecs_keyword
+from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere
 import matplotlib.pyplot as plt
 import projects.GLM.glm_utils as glm
 
@@ -103,7 +103,12 @@ elif groupsTag=="LexDelay&LexNoDelay":
     epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_delay)
     epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay)
 
-hickok_roi_labels=hickok_roi(ch_labels_roi,ch_labels)
+if groupsTag=="LexNoDelay":
+    chs_coor=get_coor(data_LexNoDelay_Aud.labels[0],'group')
+else:
+    chs_coor=get_coor(data_LexDelay_Aud.labels[0],'group')
+hickok_roi_labels=hickok_roi_sphere(chs_coor)
+
 #%% Get sorted electrodes
 Lex_idxes = dict()
 if "LexDelay" in groupsTag:

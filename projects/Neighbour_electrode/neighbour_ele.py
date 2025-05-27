@@ -2,8 +2,6 @@
 #%% Import everything
 import os
 
-from debugpy.adapter.components import missing
-
 # Relocate the working directory if needed
 # Only need it if run it in an editor. If run in terminal, use cd.
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM\\step1_glm_permute.py')
@@ -81,17 +79,16 @@ data_LexDelay_Aud,subjs=gp.load_stats('mask','Auditory_inRep','ave',stats_root_d
 
 #Get electrodes in hickok SM ROIs
 ch_labels_roi,ch_labels=gp.chs2atlas(subjs,data_LexDelay_Aud.labels[0])
-hickok_roi_labels=gp.hickok_roi(ch_labels_roi,ch_labels)
 hickok_roi_sets={'All':set(),'lIFG':set(),'lIPL':set(),'Spt':set(),'lPMC':set()}
-
-for i,item in enumerate(hickok_roi_labels.values()):
-    hickok_roi_sets['All'].add(i)
-    if item!='N/A':
-        hickok_roi_sets[item].add(i)
 
 chs=data_LexDelay_Aud.labels[0]
 # Load coordinates
 chs_coor=gp.get_coor(chs,get_coord_method)
+hickok_roi_labels=gp.hickok_roi_sphere(chs_coor)
+for i,item in enumerate(hickok_roi_labels.values()):
+    hickok_roi_sets['All'].add(i)
+    if item!='N/A':
+        hickok_roi_sets[item].add(i)
 # Get Auditory, Sensory-motor, and motor electrode index
 with open(os.path.join('data', f'Lex_twin_idxes_{datasource}.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
@@ -170,25 +167,40 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
     F_name = 'results/Exp3_easyhard' + savefig_format
 
     if roi=='All' and mode=='count':
-        y_limits = [(-0.1, 25)]  # Specify different y-axis limits for each subplot
-        y_ticks = [range(0, 26, 5)]
+        if get_coord_method == 'individual':
+            y_limits = [(-0.1, 25)]  # Specify different y-axis limits for each subplot
+            y_ticks = [range(0, 26, 5)]
+        elif get_coord_method == 'group':
+            y_limits = [(-0.1, 105)]
+            y_ticks = [range(0, 106, 10)]
     elif mode=='count':
-        y_limits = [(-0.1, 6)]
-        y_ticks = [range(0, 7, 1)]
+        if get_coord_method == 'individual':
+            y_limits = [(-0.1, 6)]
+            y_ticks = [range(0, 7, 1)]
+        elif get_coord_method == 'group':
+            y_limits = [(-0.1, 25)]
+            y_ticks = [range(0, 26, 2)]
     elif mode=='dist':
         y_limits = [(-0.1, dist_thres-1)]
         y_ticks = [range(0, dist_thres, 1)]
     for i, var in enumerate(['count'], start=1):
         plt.subplot(1, 1, i)
 
+        if roi=='All':
+            fillbar=True
+        else:
+            fillbar=False
+
         barbar = sns.barplot(x='type', y=var, errorbar=None, data=chs_coor_c_l, hue='neighbor_type', hue_order=hue_order,order=x_order, saturation=1,
-                             fill=True, alpha=1, linewidth=0.8, capsize=0.1, zorder=1)
-        j = 0
-        for patch in barbar.patches:
-            patch.set_facecolor(boxplot_colors[j])
-            j = j + 1
-            if j == 9:
-                break
+                             fill=fillbar, alpha=1, linewidth=0.8, capsize=0.1, zorder=1)
+
+        if roi=='All':
+            j = 0
+            for patch in barbar.patches:
+                patch.set_facecolor(boxplot_colors[j])
+                j = j + 1
+                if j == 9:
+                    break
 
         # ax=sns.boxplot(x='Group', y=var, data=data,showfliers=False, hue='Group',order=x_order,saturation=1)
         sns.despine()
@@ -199,9 +211,10 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
                                        edgecolor='white', order=x_order, zorder=2, dodge=True)
             # stripstrip.legend(title='Neighbor Type', loc='upper right')
 
-            for k in range(9):
-                path_collection = stripstrip.collections[k]
-                path_collection.set_facecolor(stripplot_colors[k])
+            if roi == 'All':
+                for k in range(9):
+                    path_collection = stripstrip.collections[k]
+                    path_collection.set_facecolor(stripplot_colors[k])
 
             gp.bsliang_add_connecting_lines(plt, 0, stripstrip)
             gp.bsliang_add_connecting_lines(plt, 1, stripstrip)

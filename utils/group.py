@@ -165,7 +165,7 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False):
+def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=True):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     Sort the significant channels according to the onset.
@@ -568,6 +568,48 @@ def chs2atlas(subjs,chs_all):
                 ch_labels_roi[key] = 'unknown'
     return ch_labels_roi,ch_labels_clean
 
+def hickok_roi_sphere(df_coords,thres: float=15):
+
+    # The fs_average mri space is actually MNI space:
+    # "And because fsaverage is special in that it’s already in MNI space (its MRI-to-MNI transform is identity),
+    # it should land in the equivalent anatomical location"
+    # (source: https://mne.tools/stable/auto_tutorials/forward/
+    # 50_background_freesurfer_mne.html)
+    from scipy.spatial.distance import euclidean
+    # Define the activation peaks
+    activation_peaks = {
+        'lIFG': (-56, 8, 20),
+        'Spt': (-54, -40, 20),
+        'lPMC': (-50, -4, 46),
+        'lIPL': (-42, -50, 42)
+    }
+
+    hickok_roi_labels = {}
+
+    # Iterate through each electrode in the DataFrame
+    for index, row in df_coords.iterrows():
+        subj = row['subj']
+        label = row['label']
+        electrode_coord = (row['x'], row['y'], row['z'])
+        assigned_roi = 'N/A'
+        min_distance = float('inf')
+
+        # Check distance to each activation peak
+        for roi_name, peak_coord in activation_peaks.items():
+            distance = euclidean(electrode_coord, peak_coord)
+            if distance <= thres:
+                # If multiple peaks are within the threshold, assign to the closest one
+                if distance < min_distance:
+                    min_distance = distance
+                    assigned_roi = roi_name
+
+        # Create a unique identifier for the electrode
+        electrode_id = f"{subj}-{label}"
+        hickok_roi_labels[electrode_id] = assigned_roi
+
+    return hickok_roi_labels
+
+
 def hickok_roi(ch_labels_roi,ch_labels):
     hickok_roi_labels = dict()
     for key, value in ch_labels_roi.items():
@@ -633,7 +675,7 @@ def get_coor(chs,method: str='individual'):
     import os
     import mne
     import numpy as np
-    from ieeg.viz.mri import subject_to_info, force2frame
+    from ieeg.viz.mri import subject_to_info, force2frame, get_sub_dir
     parsed = {}
     for ch in chs:
         subj, label = ch.split('-')
@@ -650,7 +692,8 @@ def get_coor(chs,method: str='individual'):
         if method == 'individual':
             trans = mne.transforms.Transform(fro='head', to='mri')
         elif method == 'group':
-            to_fsaverage = mne.read_talxfm(subj, os.path.join(HOME, f"Box\\ECoG_Recon"))
+            # get_subject_dir
+            to_fsaverage = mne.read_talxfm(subj, get_sub_dir())
             trans = mne.transforms.Transform(fro='head', to='mri',trans=to_fsaverage['trans'])
         elif method == 'ras':
             # File path
