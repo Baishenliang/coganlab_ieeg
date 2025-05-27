@@ -32,14 +32,14 @@ plt.rcParams['axes.edgecolor']='black'
 plt.rcParams['font.family']=['Arial']
 plt.rcParams['text.color']='black'
 savefig_format='.pdf'
-datasource='glm'
+datasource='hg'
 
 
 Sensorimotor_col = [1, 0, 0]  # Sensorimotor (Red)
 Auditory_col = [0, 1, 0]  # Auditory (Green)
 Motor_col = [0, 0, 1]  # Motor (Blue)
 
-mode='dist'#count: count the number of neighbouring electrodes, dist: calculate the averaged distance for neighbouring electrodes
+mode='count'#count: count the number of neighbouring electrodes, dist: calculate the averaged distance for neighbouring electrodes
 def neigh_func_dist(d):
     d_in=d['distance']
     if len(d_in)==0:
@@ -51,10 +51,13 @@ if mode == 'count':
 elif mode == 'dist':
     neigh_func = neigh_func_dist
 
-individual=False # True: count individual neighbouring electrodes # False: count neighbouring electrodes on a group space
-if individual:
+get_coord_method='group'
+# Method to get coordinate, and do neighbouring analyses.
+# - individual: project to individual space, and do analyses only in individual electrodes
+# - group: project to fs_average group space, and do analyses in all individuals' electrodes
+if get_coord_method=='individual':
     ind_tag='sub'
-else:
+elif get_coord_method=='group':
     ind_tag='grp'
 #%% functions
 
@@ -88,7 +91,7 @@ for i,item in enumerate(hickok_roi_labels.values()):
 
 chs=data_LexDelay_Aud.labels[0]
 # Load coordinates
-chs_coor=gp.get_coor(chs)
+chs_coor=gp.get_coor(chs,get_coord_method)
 # Get Auditory, Sensory-motor, and motor electrode index
 with open(os.path.join('data', f'Lex_twin_idxes_{datasource}.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
@@ -113,7 +116,7 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
     chs_coor_c['N_SM'] = 0
     chs_coor_c['N_Motor'] = 0
 
-    if individual:
+    if get_coord_method=='individual':
         for subj in chs_coor_c['subj'].unique():
             subj_df = chs_coor_c[chs_coor_c['subj'] == subj]
             for index, electrode in subj_df.iterrows():
@@ -129,7 +132,7 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
                     distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Sensory-motor')])
                 chs_coor_c.at[index, 'Neib_Motor'] = neigh_func(
                     distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Motor')])
-    else:
+    elif get_coord_method=='group':
         for index, electrode in chs_coor_c.iterrows():
             distances = []
             print(electrode)
@@ -167,8 +170,8 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
     F_name = 'results/Exp3_easyhard' + savefig_format
 
     if roi=='All' and mode=='count':
-        y_limits = [(-0.1, 105)]  # Specify different y-axis limits for each subplot
-        y_ticks = [range(0, 106, 10)]
+        y_limits = [(-0.1, 25)]  # Specify different y-axis limits for each subplot
+        y_ticks = [range(0, 26, 5)]
     elif mode=='count':
         y_limits = [(-0.1, 6)]
         y_ticks = [range(0, 7, 1)]

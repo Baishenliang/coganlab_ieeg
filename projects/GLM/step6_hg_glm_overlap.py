@@ -24,10 +24,10 @@ import seaborn as sns
 import json
 import pickle
 
-grouping='hg'
-datasource='hg'
+grouping='anat'
 #"hg": grouping electrodes according to HG windows i.e., Auditory, Sensory-motor, Motor
 #"anat": grouping electrodes according to the ROIs i.e., STG, IFG, etc
+datasource='hg'
 #%% Set parameters: HG
 groupsTag="LexDelay"
 
@@ -61,7 +61,7 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Cue_inRep","Auditory_inRep"]
+events = ["Cue_inRep","Auditory_inRep","Resp_inRep"]
 stat = "zscore"
 task_Tags = ["Repeat"]#,"Yes_No"]
 glm_feas = ["Acoustic","Phonemic","Lexical"]
@@ -159,7 +159,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 glm_avgs_raws[f'{task_Tag}/{wordness}/{glm_fea}/aud'] = glm_avg_raw
             elif event=="Resp_inRep":
                 # response window (used the unmasked glm traces for the sig electrodes)
-                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_cue, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
+                _,glm_masked,_,_ = gp.sort_chs_by_actonset(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
                 glm_raws[f'{task_Tag}/{wordness}/{glm_fea}/resp'] = glm_masked.__array__()
                 times_d[f'{task_Tag}/{wordness}/{glm_fea}/resp'] = [float(i) for i in glm_masked.labels[1]]
                 glm_avg_raw,glm_avg,_=gp.time_avg_select(glm_masked, twin_sets)

@@ -617,16 +617,23 @@ def plot_sig_roi_counts(hickok_roi_labels, color, sig_idx,savedir):
     plt.tight_layout()
     plt.savefig(savedir,dpi=300)
 
-def get_coor(chs):
+def get_coor(chs,method: str='individual'):
     """
     Given a list of channels like ['D23-RASF1', 'D23-RASF2', ...],
     this function reads each subject's electrode file and returns
     a dataframe of 3D coordinates for the specified electrodes.
+
+    method:
+        'individual': get individual electrode coordinates
+        'group': use fs_average to transform to group space
+        'ras': old method. read ras locations directly. ! May be wrong!
     """
     # Parse into (subject, label)
     import pandas as pd
     import os
+    import mne
     import numpy as np
+    from ieeg.viz.mri import subject_to_info, force2frame
     parsed = {}
     for ch in chs:
         subj, label = ch.split('-')
@@ -639,31 +646,49 @@ def get_coor(chs):
     HOME = os.path.expanduser("~")
 
     for subj, labels in parsed.items():
-        # File path
-        path = os.path.join(HOME,f"Box\\ECoG_Recon\\{subj}\\elec_recon\\{subj}_elec_locations_RAS.txt")
 
-        try:
-            with open(path, 'r') as f:
-                lines = f.readlines()
-        except FileNotFoundError:
-            print(f"Warning: File not found for subject {subj}")
-            continue
+        if method == 'individual':
+            trans = mne.transforms.Transform(fro='head', to='mri')
+        elif method == 'group':
+            to_fsaverage = mne.read_talxfm(subj, os.path.join(HOME, f"Box\\ECoG_Recon"))
+            trans = mne.transforms.Transform(fro='head', to='mri',trans=to_fsaverage['trans'])
+        elif method == 'ras':
+            # File path
+            path = os.path.join(HOME,f"Box\\ECoG_Recon\\{subj}\\elec_recon\\{subj}_elec_locations_RAS.txt")
 
-        # Create dictionary from label to coordinates
-        coord_map = {}
-        for line in lines:
-            parts = line.strip().split()
-            label = parts[0]+parts[1]
             try:
-                x, y, z = map(float, parts[2:5])
-                coord_map[label] = (x, y, z)
-            except ValueError:
+                with open(path, 'r') as f:
+                    lines = f.readlines()
+            except FileNotFoundError:
+                print(f"Warning: File not found for subject {subj}")
                 continue
+
+            # Create dictionary from label to coordinates
+            coord_map = {}
+            for line in lines:
+                parts = line.strip().split()
+                label = parts[0]+parts[1]
+                try:
+                    x, y, z = map(float, parts[2:5])
+                    coord_map[label] = (x, y, z)
+                except ValueError:
+                    continue
+
+        if method == 'individual' or method == 'group':
+            info = subject_to_info(subj)
+            montage = info.get_montage()
+            force2frame(montage, trans.from_str)
+            montage.apply_trans(trans)
+            coord_map = {k: v for k, v in montage.get_positions()['ch_pos'].items()}
 
         # Add matching labels
         for label in labels:
             if label in coord_map:
                 x, y, z = coord_map[label]
+                if method == 'individual' or method == 'group':
+                    x = 1000*x
+                    y = 1000*y
+                    z = 1000*z
                 df_coords.loc[len(df_coords)] = [subj, label, x, y, z]
             else:
                 df_coords.loc[len(df_coords)] = [subj, label, np.nan, np.nan, np.nan]
