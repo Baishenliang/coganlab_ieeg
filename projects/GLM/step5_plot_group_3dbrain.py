@@ -51,8 +51,9 @@ for wordness in wordnesses:
     # Just get the electrodes
     masks, _, _ = glm.load_stats('Auditory_inRep', 'mask', 'Repeat', 'cluster_mask', 'Acoustic', subjs, chs, times, wordness)
     chs_all = masks.labels[0]
-    ch_labels_roi, ch_labels = gp.chs2atlas(subjs,chs_all)
-    hickok_roi_labels = gp.hickok_roi(ch_labels_roi, ch_labels)
+    chs_coor = gp.get_coor(chs_all, 'group')
+    ch_labels_roi, _ = gp.chs2atlas(subjs,chs_all)
+    hickok_roi_labels = gp.hickok_roi_sphere(chs_coor)
     if wordness == 'ALL':
         keys_of_interest = [
             "Auditory_inRep/Repeat/ALL/Acoustic/aud",
