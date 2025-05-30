@@ -165,7 +165,7 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=True):
+def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     Sort the significant channels according to the onset.
@@ -365,7 +365,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,tran
                             label_every=label_every, size=dotsize,transparency=transparency, **kwargs)
     #fig3d.save_image(fig_save_dir_f)
 
-def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
+def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,100]):
     label2atlas={ch_sel: label2atlas_raw[ch_sel] for ch_sel in chs_sel}
     import matplotlib.pyplot as plt
     # Count the number of keys for each value
@@ -386,6 +386,7 @@ def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm):
     plt.ylabel('Number of Electrodes', fontsize=20)
     plt.xticks(fontsize=30, rotation=45, ha='right')
     plt.yticks(fontsize=30)
+    plt.ylim(ylim)
     plt.tight_layout()
     plt.savefig(fig_save_dir_fm, dpi=300)
     plt.close()
@@ -576,6 +577,9 @@ def hickok_roi_sphere(df_coords,thres: float=15):
     # (source: https://mne.tools/stable/auto_tutorials/forward/
     # 50_background_freesurfer_mne.html)
     from scipy.spatial.distance import euclidean
+    from collections import defaultdict
+    hickok_roi_sig_idx = defaultdict(set)
+
     # Define the activation peaks
     activation_peaks = {
         'lIFG': (-56, 8, 20),
@@ -606,8 +610,9 @@ def hickok_roi_sphere(df_coords,thres: float=15):
         # Create a unique identifier for the electrode
         electrode_id = f"{subj}-{label}"
         hickok_roi_labels[electrode_id] = assigned_roi
+        hickok_roi_sig_idx[assigned_roi].add(index)
 
-    return hickok_roi_labels
+    return hickok_roi_labels, hickok_roi_sig_idx
 
 
 def hickok_roi(ch_labels_roi,ch_labels):
@@ -658,6 +663,94 @@ def plot_sig_roi_counts(hickok_roi_labels, color, sig_idx,savedir):
     plt.yticks(fontsize=30)
     plt.tight_layout()
     plt.savefig(savedir,dpi=300)
+
+def get_sig_roi_counts(hickok_roi_labels, sig_idx):
+    """
+    Calculates the number of significant electrodes per ROI when sig_idx is a set of indices.
+
+    Args:
+        hickok_roi_labels (dict): A dictionary where keys are electrode IDs
+                                  and values are their assigned ROIs (e.g., 'lIFG' or 'N/A').
+        sig_idx (set): A set containing the numerical indices of the significant electrodes.
+
+    Returns:
+        pd.Series: A Series with ROI labels as index and counts of significant electrodes as values.
+                   Includes all known ROIs from hickok_roi_labels, with 0 if no significant electrodes.
+    """
+    import pandas as pd
+    from collections import Counter
+
+    keys = list(hickok_roi_labels.keys())
+
+    # Collect ROI labels for significant, non-N/A electrodes
+    selected_labels = [
+        hickok_roi_labels[keys[i]]
+        for i in sig_idx
+        if hickok_roi_labels[keys[i]] != 'N/A'
+    ]
+
+    # Get all unique ROI labels (excluding 'N/A') from the full set of electrodes
+    all_rois = set(roi for roi in hickok_roi_labels.values() if roi != 'N/A')
+
+    # Count significant electrodes per ROI
+    label_counts = Counter(selected_labels)
+
+    # Create a Series, ensuring all possible ROIs are present, with 0 if no significant electrodes
+    roi_series = pd.Series(label_counts, index=list(all_rois)).fillna(0).astype(int)
+
+    # Sort the series by index (ROI label) for consistent order
+    roi_series = roi_series.sort_index()
+
+    return roi_series
+
+def plot_roi_counts_comparison(df_roi_counts, savedir, y_label='Number of Electrodes', title_suffix='',ylim: list=[0,30]):
+    """
+    Plots the number of electrodes per ROI for different significant conditions.
+
+    Args:
+        df_roi_counts (pd.DataFrame): A DataFrame where index is ROI label,
+                                      columns are sig_idx condition names,
+                                      and values are electrode counts.
+        savedir (str): The directory to save the individual plots.
+        y_label (str, optional): The label for the y-axis. Defaults to 'Number of Electrodes'.
+        title_suffix (str, optional): A suffix to add to the plot title. Defaults to ''.
+    """
+    # Create a figure for each ROI
+    import matplotlib.pyplot as plt
+    for roi_label in df_roi_counts.index:
+        plt.figure(figsize=(6, 5)) # Use the same figure size as your original function
+
+        # Get the counts for the current ROI across all sig_idx conditions
+        counts = df_roi_counts.loc[roi_label]
+
+        # Plotting the bar chart
+        # x-axis will be the sig_idx names (DataFrame columns)
+        # y-axis will be the counts
+        plt.bar(counts.index, counts.values, color='skyblue') # You can define a color palette if needed
+
+        # Set titles and labels
+        plt.title(f'{roi_label} - Significant Electrodes {title_suffix}', fontsize=20)
+        # plt.xlabel('Significance Condition', fontsize=15) # You can uncomment if needed
+        plt.ylabel(y_label, fontsize=15)
+
+        # Set tick parameters, adapting from your original function
+        original_labels = counts.index
+        # Process each label to keep only the last two parts
+        processed_labels = []
+        for label in original_labels:
+            parts = label.split('/')
+            if len(parts) >= 2:
+                processed_labels.append('/'.join(parts[-2:]))
+            else:
+                processed_labels.append(label)  # Fallback if less than 2 parts
+        # Set the x-ticks with the processed labels
+        plt.xticks(ticks=range(len(original_labels)), labels=processed_labels,
+                   fontsize=12, rotation=45, ha='right')
+        plt.yticks(fontsize=12) # Adjusted fontsize for better readability given the smaller figure size
+        plt.ylim(ylim)
+        plt.tight_layout()
+        plt.savefig(f"{savedir}_{roi_label}_counts.png", dpi=300)
+        plt.close() # Close the figure to free up memory
 
 def get_coor(chs,method: str='individual'):
     """

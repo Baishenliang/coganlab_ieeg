@@ -29,7 +29,8 @@ cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 import os
 import pickle
 import numpy as np
-from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere
+import pandas as pd
+from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison
 import matplotlib.pyplot as plt
 import projects.GLM.glm_utils as glm
 
@@ -107,7 +108,7 @@ if groupsTag=="LexNoDelay":
     chs_coor=get_coor(data_LexNoDelay_Aud.labels[0],'group')
 else:
     chs_coor=get_coor(data_LexDelay_Aud.labels[0],'group')
-hickok_roi_labels=hickok_roi_sphere(chs_coor)
+hickok_roi_labels, hickok_roi_sig_idx=hickok_roi_sphere(chs_coor)
 
 #%% Get sorted electrodes
 Lex_idxes = dict()
@@ -255,7 +256,7 @@ Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
 
 if groupsTag == "LexDelay":
-
+    hickok_roi_all = pd.DataFrame()
     # %% Electrode selection
     # Location plot for different types of electrodes
     len_d=len(data_LexDelay_Aud.labels[0])
@@ -300,8 +301,12 @@ if groupsTag == "LexDelay":
 
         # TRY also to plot valid (white?) vs. invalid electrodes (dark grey)
         plot_brain(subjs, pick_labels,chs_cols_picked,None,os.path.join(fig_save_dir,f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
-        atlas2_hist(ch_labels_roi,pick_labels,chs_cols_picked[0],os.path.join(fig_save_dir,f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'))
+        atlas2_hist(ch_labels_roi,pick_labels,chs_cols_picked[0],os.path.join(fig_save_dir,f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'),[0,300])
         plot_sig_roi_counts(hickok_roi_labels, chs_cols_picked[0], pick_sig_idx, os.path.join(fig_save_dir,f'Hickok ROI histogram {TypeLabel.replace('/', ' ')}.tif'))
+        if TypeLabel=='Sensory-motor' or TypeLabel=='Auditory' or TypeLabel=='Motor':
+            hickok_roi_all[TypeLabel] = get_sig_roi_counts(hickok_roi_labels, {i for i, val in enumerate(pick_sig_idx) if val == 1})
+
+    plot_roi_counts_comparison(hickok_roi_all, os.path.join(fig_save_dir, f'Hickok ROI his {TypeLabel.replace('/', ' ')}'))
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
@@ -565,7 +570,24 @@ elif groupsTag=="LexDelay&LexNoDelay":
     for D_sig,D_tag in zip(
             (del_sm,del_del,del_delol),
             ('SM_DEL','DEL_DEL','DELOL_DEL')):
+
+        if D_tag!='DEL_DEL':
+            continue
+
         # Pie chart (How the Lexical Delay Repeat SM electrodes are distributed )
+        plt.figure()
+        plt.title(f'{D_tag} in DelRep')
+        DLREP_SM_inDLREP = np.array([len(D_sig & del_aud), len(D_sig & del_sm),
+                                      len(D_sig & del_mtr), len(D_sig & del_delol)])
+        DLREP_SM_inDLREP_labels = [f"Auditory {len(D_sig & del_aud)}",
+                                    f"Sensory-motor {len(D_sig & del_sm)}",
+                                    f"Motor {len(D_sig & del_mtr)}",
+                                    f"Delay-only {len(D_sig & del_delol)}"]
+        DLREP_SM_inDLREP_colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col]
+        plt.pie(DLREP_SM_inDLREP,labels=DLREP_SM_inDLREP_labels,colors=DLREP_SM_inDLREP_colors,startangle=90,autopct='%1.2f%%')
+        plt.show()
+
+        # Pie chart
         plt.figure()
         plt.title(f'{D_tag} in NoDelRep')
         DLREP_SM_inNDLREP = np.array([len(D_sig & Ndel_aud), len(D_sig & Ndel_sm),

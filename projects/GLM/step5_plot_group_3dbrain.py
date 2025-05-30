@@ -41,12 +41,15 @@ delay_len=0.5
 # motor_resp_win=[0.25,0.75]
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
+mask_corr_type='cluster_mask' #cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
+
 
 subjs, _, _, chs, times = glm.fifread("Auditory_inRep", 'zscore', 'Repeat', wordnesses[0])
-with open(os.path.join('data', 'sig_idx.npy'), "rb") as f:
+with open(os.path.join('data', f'sig_idx_{mask_corr_type}.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
 
 #%% Plot brain
+hickok_roi_all=pd.DataFrame()
 for wordness in wordnesses:
     # Just get the electrodes
     masks, _, _ = glm.load_stats('Auditory_inRep', 'mask', 'Repeat', 'cluster_mask', 'Acoustic', subjs, chs, times, wordness)
@@ -91,6 +94,9 @@ for wordness in wordnesses:
                    os.path.join('plot', f'GLM electrode loc {TypeLabel}.jpg'))
         gp.atlas2_hist(ch_labels_roi,chs_sel,col,os.path.join('plot',f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'))
         gp.plot_sig_roi_counts(hickok_roi_labels, col, sig, os.path.join('plot',f'Hickok ROI histogram {TypeLabel.replace('/', ' ')}.tif'))
+        hickok_roi_all[TypeLabel] = gp.get_sig_roi_counts(hickok_roi_labels, sig)
+
+gp.plot_roi_counts_comparison(hickok_roi_all, os.path.join('plot',f'Hickok ROI his {TypeLabel.replace('/', ' ')}'),ylim=[0,10])
 
 #%% ovelapped plot
 overlap_Plot=False
