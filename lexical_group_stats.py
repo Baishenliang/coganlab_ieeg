@@ -1,4 +1,6 @@
 # %% groups of patients
+from pickle import FALSE
+
 datasource='hg' # 'glm_(Feature)' or 'hg'
 groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
@@ -154,6 +156,9 @@ if "LexDelay" in groupsTag:
     # Channel selection: Sensory OR motor electrodes (auditory window:1 or motor prep: 1 or motor resp: 1)
     LexDelay_Sensory_OR_Motor_sig_idx = LexDelay_Aud_sig_idx | LexDelay_Motor_Prep_sig_idx | LexDelay_Motor_Resp_sig_idx
 
+    # Channel selection: All sig electrodes (auditory window:1 or delay: 1 or motor prep: 1 or motor resp: 1)
+    LexDelay_all_sig_idx = LexDelay_Aud_sig_idx | LexDelay_Delay_sig_idx | LexDelay_Motor_Prep_sig_idx | LexDelay_Motor_Resp_sig_idx
+
     # Channel selection: Motor electrodes (auditory window:0, motor resp: 1)
     LexDelay_Motor_sig_idx = LexDelay_Motor_Resp_sig_idx - LexDelay_Aud_sig_idx
 
@@ -182,6 +187,7 @@ if "LexDelay" in groupsTag:
     Lex_idxes['LexDelay_Delay_sig_idx']=LexDelay_Delay_sig_idx
     Lex_idxes['LexDelay_DelayOnly_sig_idx']=LexDelay_DelayOnly_sig_idx
     Lex_idxes['LexDelay_Auditory_in_Delay_sig_idx']=LexDelay_Auditory_in_Delay_sig_idx
+    Lex_idxes['LexDelay_all_sig_idx']=LexDelay_all_sig_idx
     Lex_idxes['LexDelay_Sensorimotor_in_Delay_sig_idx']=LexDelay_Sensorimotor_in_Delay_sig_idx
     Lex_idxes['LexDelay_Motor_in_Delay_sig_idx']=LexDelay_Motor_in_Delay_sig_idx
     Lex_idxes['LexDelay_Motorprep_Only_sig_idx']=LexDelay_Motorprep_Only_sig_idx
@@ -261,15 +267,17 @@ if groupsTag == "LexDelay":
     # Location plot for different types of electrodes
     len_d=len(data_LexDelay_Aud.labels[0])
     for TypeLabel,chs_ov,pick_sig_idx in zip(
-            ('Sensory-motor','Auditory','Delay','Delay_overlapped','Delay_only','Motor','Sensory_OR_Motor'),
-            ([1000,0,0,0],[0,100,0,0],[0,0,10,0],[1000,100,10,1],[1000,100,10,1],[0,0,0,1],[1000,100,0,1]),
+            ('Sensory-motor','Auditory','Delay','Delay_overlapped','Delay_only','Motor','Sensory_OR_Motor','Hickok_ROI_SM','Hickok_ROI_Delay'),
+            ([1000,0,0,0],[0,100,0,0],[0,0,10,0],[1000,100,10,1],[1000,100,10,1],[0,0,0,1],[1000,100,0,1],[1000,100,10,1],[1000,100,10,1],[1000,100,10,1]),
             (set2arr(LexDelay_Sensorimotor_sig_idx,len_d),
              set2arr(LexDelay_Aud_NoMotor_sig_idx,len_d),
              set2arr(LexDelay_Delay_sig_idx,len_d),
              set2arr(LexDelay_Delay_sig_idx,len_d),
              set2arr(LexDelay_DelayOnly_sig_idx,len_d),
              set2arr(LexDelay_Motor_sig_idx,len_d),
-             set2arr(LexDelay_Sensory_OR_Motor_sig_idx,len_d))
+             set2arr(LexDelay_Sensory_OR_Motor_sig_idx,len_d),
+             set2arr(LexDelay_Sensory_OR_Motor_sig_idx & (hickok_roi_sig_idx['Spt'] | hickok_roi_sig_idx['lPMC'] | hickok_roi_sig_idx['lIPL'] | hickok_roi_sig_idx['lIFG']),len_d),
+             set2arr(LexDelay_Delay_sig_idx & (hickok_roi_sig_idx['Spt'] | hickok_roi_sig_idx['lPMC'] | hickok_roi_sig_idx['lIPL'] | hickok_roi_sig_idx['lIFG']),len_d))
     ):
 
         # Elecorde selection and color assigning
@@ -301,7 +309,7 @@ if groupsTag == "LexDelay":
 
         # TRY also to plot valid (white?) vs. invalid electrodes (dark grey)
         plot_brain(subjs, pick_labels,chs_cols_picked,None,os.path.join(fig_save_dir,f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
-        atlas2_hist(ch_labels_roi,pick_labels,chs_cols_picked[0],os.path.join(fig_save_dir,f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'),[0,300])
+        atlas2_hist(ch_labels_roi,pick_labels,chs_cols_picked[0],os.path.join(fig_save_dir,f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'))
         plot_sig_roi_counts(hickok_roi_labels, chs_cols_picked[0], pick_sig_idx, os.path.join(fig_save_dir,f'Hickok ROI histogram {TypeLabel.replace('/', ' ')}.tif'))
         if TypeLabel=='Sensory-motor' or TypeLabel=='Auditory' or TypeLabel=='Motor':
             hickok_roi_all[TypeLabel] = get_sig_roi_counts(hickok_roi_labels, {i for i, val in enumerate(pick_sig_idx) if val == 1})
@@ -309,6 +317,125 @@ if groupsTag == "LexDelay":
     plot_roi_counts_comparison(hickok_roi_all, os.path.join(fig_save_dir, f'Hickok ROI his {TypeLabel.replace('/', ' ')}'))
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
+    for ROI_idx,ROI_tag in zip(
+    (LexDelay_all_sig_idx,hickok_roi_sig_idx['Spt'],hickok_roi_sig_idx['lPMC'], hickok_roi_sig_idx['lIFG']),
+            ('All','Spt','lPMC','lIFG')):
+        plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+        if datasource == 'hg':
+            plt.title('Z-scores in lexical delay repeat tasks (aligned to stim onset)',fontsize=20)
+            wav_bsl_corr = False
+            plt.xlim([-0.25, 1.6])
+        elif datasource.split('_')[0]=='glm':
+            plt.title('GLM Sum|β| in lexical delay repeat (aligned to stim onset)',fontsize=20)
+            wav_bsl_corr = False
+            plt.xlim([-0.25, 2.5])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx & ROI_idx, f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx & ROI_idx)}',
+                  Sensorimotor_col, '-', wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_NoMotor_sig_idx & ROI_idx, f'Auditory n={len(LexDelay_Aud_NoMotor_sig_idx & ROI_idx)}',Auditory_col,'-',wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx & ROI_idx, f'Motor n={len(LexDelay_Motor_sig_idx & ROI_idx)}',Motor_col,'-',wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Motorprep_Only_sig_idx & ROI_idx, f'Prepare only n={len(LexDelay_Motorprep_Only_sig_idx & ROI_idx)}', Delay_col,'-',wav_bsl_corr)
+        plt.axvline(x=0, linestyle='--', color='k')
+        # plt.axhline(y=0, linestyle='--', color='k')
+        plt.legend(loc='upper right',fontsize=15)
+        plt.gca().spines[['top', 'right']].set_visible(False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(fig_save_dir,f'LexDelay_sig_zscore_Aud_{ROI_tag}.tif'),dpi=300)
+        plt.close()
+
+        # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
+        plt.figure(figsize=(Waveplot_wth*(150/350), Waveplot_hgt))
+        if datasource.split('_')[0] != 'glm':
+            wav_bsl_corr = False
+        else:
+            wav_bsl_corr = False
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Sensorimotor_sig_idx & ROI_idx,
+                  f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx & ROI_idx)}', Sensorimotor_col, '-', False)
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Aud_NoMotor_sig_idx & ROI_idx, f'Auditory n={len(LexDelay_Aud_NoMotor_sig_idx & ROI_idx)}',
+                  Auditory_col,'-',False)
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_sig_idx & ROI_idx, f'Motor n={len(LexDelay_Motor_sig_idx & ROI_idx)}', Motor_col,'-',wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Motorprep_Only_sig_idx & ROI_idx, f'Prepare only n={len(LexDelay_Motorprep_Only_sig_idx & ROI_idx)}', Delay_col,'-',wav_bsl_corr)
+        plt.axvline(x=0, linestyle='--', color='k')
+        # plt.axhline(y=0, linestyle='--', color='k')
+        plt.title('(Aligned to motor onset)',fontsize=20)
+        plt.legend().set_visible(False)
+        plt.xlim([-0.25,1])
+        plt.gca().spines[['top', 'right']].set_visible(False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_Resp_{ROI_tag}.tif'), dpi=300)
+        plt.close()
+
+        # Plot Delay electrodes
+        plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+        num_delay_elec=len(LexDelay_Delay_sig_idx & ROI_idx)
+        if datasource == 'hg':
+            plt.title('Z-scores in delay electrodes (aligned to stim onset)',fontsize=20)
+            wav_bsl_corr = False
+        elif datasource.split('_')[0]=='glm':
+            plt.title('GLM Sum|β| in delay electrodes (aligned to stim onset)',fontsize=20)
+            wav_bsl_corr = False
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx & ROI_idx,
+                      f'Delay All n={num_delay_elec}', [0.5, 0.5, 0.5], '-', wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx & ROI_idx,
+                  f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & ROI_idx)} '
+                  f'({np.round(100*len(LexDelay_DelayOnly_sig_idx & ROI_idx)/num_delay_elec,3)}%)', Delay_col,'--',wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Auditory_in_Delay_sig_idx & ROI_idx,
+                  f'Auditory in Delay n={len(LexDelay_Auditory_in_Delay_sig_idx & ROI_idx)} '
+                  f'({np.round(100*len(LexDelay_Auditory_in_Delay_sig_idx & ROI_idx)/num_delay_elec,3)}%)', Auditory_Delay_col,'--',wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_in_Delay_sig_idx & ROI_idx,
+                  f'Sensory-motor in Delay n={len(LexDelay_Sensorimotor_in_Delay_sig_idx & ROI_idx)} '
+                  f'({np.round(100*len(LexDelay_Sensorimotor_in_Delay_sig_idx & ROI_idx)/num_delay_elec,3)}%)', Sensorimotor_Delay_col,'--',wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_in_Delay_sig_idx & ROI_idx,
+                  f'Motor in Delay n={len(LexDelay_Motor_in_Delay_sig_idx & ROI_idx)} '
+                  f'({np.round(100*len(LexDelay_Motor_in_Delay_sig_idx & ROI_idx)/num_delay_elec,3)}%)',Delay_Motor_col,'--',wav_bsl_corr)
+        plt.axvline(x=0, linestyle='--', color='k')
+        # plt.axhline(y=0, linestyle='--', color='k')
+        plt.legend(fontsize=10)
+        # plt.xlim([-0.25, 1.6])
+        plt.gca().spines[['top', 'right']].set_visible(False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(fig_save_dir, f'LexDelay_Delay_sig_zscore_{ROI_tag}.tif'), dpi=300)
+        plt.close()
+
+        # Plot Delay electrodes (Aligned to motor onset)
+        plt.figure(figsize=(Waveplot_wth*(150/350), Waveplot_hgt))
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Delay_sig_idx & ROI_idx,
+                  f'Delay n={len(LexDelay_Delay_sig_idx & ROI_idx)}', [0.5,0.5,0.5], '-', False)
+        plot_wave(epoc_LexDelay_Resp, LexDelay_DelayOnly_sig_idx & ROI_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & ROI_idx)}',
+                  Delay_col,'--',False)
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Auditory_in_Delay_sig_idx & ROI_idx, f'Auditory in Delay n={len(LexDelay_Auditory_in_Delay_sig_idx & ROI_idx)}', Auditory_col,'--',wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Sensorimotor_in_Delay_sig_idx & ROI_idx, f'Sensory-motor in Delay n={len(LexDelay_Sensorimotor_in_Delay_sig_idx & ROI_idx)}', Sensorimotor_col,'--',wav_bsl_corr)
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_in_Delay_sig_idx & ROI_idx, f'Motor in Delay n={len(LexDelay_Motor_in_Delay_sig_idx & ROI_idx)}', Motor_col,'--',wav_bsl_corr)
+        plt.axvline(x=0, linestyle='--', color='k')
+        # plt.axhline(y=0, linestyle='--', color='k')
+        plt.title('(Aligned to motor onset)',fontsize=20)
+        plt.legend().set_visible(False)
+        plt.xlim([-0.25,1])
+        plt.gca().spines[['top', 'right']].set_visible(False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(fig_save_dir, f'LexDelay_Delay_sig_zscore_Resp_{ROI_tag}.tif'), dpi=300)
+        plt.close()
+
+    TypeLabel='Hickok_ROIs'
+    chs_ov=[1000,100,10,1]
+    pick_sig_idx=set2arr(LexDelay_all_sig_idx & (hickok_roi_sig_idx['Spt'] | hickok_roi_sig_idx['lPMC'] | hickok_roi_sig_idx['lIPL'] | hickok_roi_sig_idx['lIFG']),len_d)
+    color_map = {
+        1000: Auditory_col,
+         100: Sensorimotor_col,
+          10: Delay_col,
+           1: Motor_col
+    }
+
+    chs_col_idx=[chs_ov[0]*set2arr(hickok_roi_sig_idx['Spt'],len_d)[i]
+                 +chs_ov[1]*set2arr(hickok_roi_sig_idx['lPMC'],len_d)[i]
+                 +chs_ov[2]*set2arr(hickok_roi_sig_idx['lIPL'],len_d)[i]
+                 +chs_ov[3]*set2arr(hickok_roi_sig_idx['lIFG'],len_d)[i] for i in range(len_d)]
+    picks = [i for i in range(len_d) if pick_sig_idx[i] == 1]
+    pick_labels = [data_LexDelay_Aud.labels[0][i] for i in range(len_d) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
+    chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len_d)]
+    chs_cols_picked=[chs_cols[i] for i in picks]
+    plot_brain(subjs, pick_labels,chs_cols_picked,None,os.path.join(fig_save_dir,f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
+
+    # Plot the Hickok ROI traces
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
     if datasource == 'hg':
         plt.title('Z-scores in lexical delay repeat tasks (aligned to stim onset)',fontsize=20)
@@ -318,71 +445,39 @@ if groupsTag == "LexDelay":
         plt.title('GLM Sum|β| in lexical delay repeat (aligned to stim onset)',fontsize=20)
         wav_bsl_corr = False
         plt.xlim([-0.25, 2.5])
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx, f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx)}',
-              Sensorimotor_col, '-', wav_bsl_corr)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexDelay_Aud_NoMotor_sig_idx)}',Auditory_col,'-',wav_bsl_corr)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx, f'Motor n={len(LexDelay_Motor_sig_idx)}',Motor_col,'-',wav_bsl_corr)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx, f'Delay n={len(LexDelay_Delay_sig_idx)}', Delay_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexDelay_Aud, LexDelay_all_sig_idx & hickok_roi_sig_idx['Spt'], f'Spt n={len(LexDelay_all_sig_idx & hickok_roi_sig_idx['Spt'])}',
+              Auditory_col, '-', wav_bsl_corr)
+    plot_wave(epoc_LexDelay_Aud, LexDelay_all_sig_idx & hickok_roi_sig_idx['lPMC'], f'lPMC n={len(LexDelay_all_sig_idx & hickok_roi_sig_idx['lPMC'])}',Sensorimotor_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexDelay_Aud, LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG'], f'lIFG n={len(LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG'])}',Motor_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexDelay_Aud, LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL'], f'lIPL n={len(LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL'])}',Delay_col,'-',wav_bsl_corr)
     plt.axvline(x=0, linestyle='--', color='k')
     # plt.axhline(y=0, linestyle='--', color='k')
     plt.legend(loc='upper right',fontsize=15)
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir,'LexDelay_sig_zscore_Aud.tif'),dpi=300)
+    plt.savefig(os.path.join(fig_save_dir,f'LexDelay_sig_zscore_Aud_Hikcok_ROI.tif'),dpi=300)
     plt.close()
 
-    # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
-    plt.figure(figsize=(Waveplot_wth*(150/350), Waveplot_hgt))
-    if datasource.split('_')[0] != 'glm':
-        wav_bsl_corr = False
-    else:
-        wav_bsl_corr = False
-    plot_wave(epoc_LexDelay_Resp, LexDelay_Sensorimotor_sig_idx,
-              f'Sensory-motor n={len(LexDelay_Sensorimotor_sig_idx)}', Sensorimotor_col, '-', False)
-    plot_wave(epoc_LexDelay_Resp, LexDelay_Aud_NoMotor_sig_idx, f'Auditory n={len(LexDelay_Aud_NoMotor_sig_idx)}',
-              Auditory_col,'-',False)
-    plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_sig_idx, f'Motor n={len(LexDelay_Motor_sig_idx)}', Motor_col,'-',wav_bsl_corr)
-    plot_wave(epoc_LexDelay_Resp, LexDelay_Delay_sig_idx, f'Delay n={len(LexDelay_Delay_sig_idx)}', Delay_col,'-',wav_bsl_corr)
+    # Plot the Hickok ROIs (Aligned to motor onset)
+    plt.figure(figsize=(Waveplot_wth * (150 / 350), Waveplot_hgt))
+    plot_wave(epoc_LexDelay_Resp, LexDelay_all_sig_idx & hickok_roi_sig_idx['Spt'],
+              f'Spt n={len(LexDelay_all_sig_idx & hickok_roi_sig_idx['Spt'])}', Auditory_col, '-', False)
+    plot_wave(epoc_LexDelay_Resp, LexDelay_all_sig_idx & hickok_roi_sig_idx['lPMC'],
+              f'lPMC n={len(LexDelay_all_sig_idx & hickok_roi_sig_idx['lPMC'])}',
+              Sensorimotor_col, '-', False)
+    plot_wave(epoc_LexDelay_Resp, LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL'],
+              f'lIPL n={len(LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL'])}',
+              Delay_col, '-', False)
+    plot_wave(epoc_LexDelay_Resp, LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG'], f'lIFG n={len(LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG'])}',
+              Motor_col, '-', False)
     plt.axvline(x=0, linestyle='--', color='k')
     # plt.axhline(y=0, linestyle='--', color='k')
-    plt.title('(Aligned to motor onset)',fontsize=20)
-    plt.legend().set_visible(False)
-    plt.xlim([-0.25,1])
+    plt.title('(Aligned to motor onset)', fontsize=20)
+    plt.legend().set_visible(True)
+    plt.xlim([-0.25, 1])
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir, 'LexDelay_sig_zscore_Resp.tif'), dpi=300)
-    plt.close()
-
-    # Plot Delay electrodes
-    plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
-    num_delay_elec=len(LexDelay_Delay_sig_idx)
-    if datasource == 'hg':
-        plt.title('Z-scores in delay electrodes (aligned to stim onset)',fontsize=20)
-        wav_bsl_corr = False
-    elif datasource.split('_')[0]=='glm':
-        plt.title('GLM Sum|β| in delay electrodes (aligned to stim onset)',fontsize=20)
-        wav_bsl_corr = False
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx,
-                  f'Delay All n={num_delay_elec}', [0.5, 0.5, 0.5], '-', wav_bsl_corr)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx,
-              f'Delay Only n={len(LexDelay_DelayOnly_sig_idx)} '
-              f'({np.round(100*len(LexDelay_DelayOnly_sig_idx)/num_delay_elec,3)}%)', Delay_col,'--',wav_bsl_corr)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Auditory_in_Delay_sig_idx,
-              f'Auditory in Delay n={len(LexDelay_Auditory_in_Delay_sig_idx)} '
-              f'({np.round(100*len(LexDelay_Auditory_in_Delay_sig_idx)/num_delay_elec,3)}%)', Auditory_Delay_col,'--',wav_bsl_corr)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_in_Delay_sig_idx,
-              f'Sensory-motor in Delay n={len(LexDelay_Sensorimotor_in_Delay_sig_idx)} '
-              f'({np.round(100*len(LexDelay_Sensorimotor_in_Delay_sig_idx)/num_delay_elec,3)}%)', Sensorimotor_Delay_col,'--',wav_bsl_corr)
-    plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_in_Delay_sig_idx,
-              f'Motor in Delay n={len(LexDelay_Motor_in_Delay_sig_idx)} '
-              f'({np.round(100*len(LexDelay_Motor_in_Delay_sig_idx)/num_delay_elec,3)}%)',Delay_Motor_col,'--',wav_bsl_corr)
-    plt.axvline(x=0, linestyle='--', color='k')
-    # plt.axhline(y=0, linestyle='--', color='k')
-    plt.legend(fontsize=10)
-    # plt.xlim([-0.25, 1.6])
-    plt.gca().spines[['top', 'right']].set_visible(False)
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir, 'LexDelay_Delay_sig_zscore.tif'), dpi=300)
+    plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_Resp_Hikcok_ROI.tif'), dpi=300)
     plt.close()
 
     # Pie chart for Delay electrodes

@@ -365,7 +365,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,tran
                             label_every=label_every, size=dotsize,transparency=transparency, **kwargs)
     #fig3d.save_image(fig_save_dir_f)
 
-def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,100]):
+def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,25]):
     label2atlas={ch_sel: label2atlas_raw[ch_sel] for ch_sel in chs_sel}
     import matplotlib.pyplot as plt
     # Count the number of keys for each value
@@ -447,7 +447,7 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs,glm_out: str
 
     return aligned_data, aligned_chs
 
-def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normalize=False):
+def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normalize=False,ylim: list=[0,3.5]):
 
     import numpy as np
     import matplotlib.pyplot as plt
@@ -500,6 +500,7 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normaliz
     plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)
 
     plt.xlabel('Time (s)',fontsize=10)
+    plt.ylim(ylim)
     plt.xticks(tick_labels)
 
 def time_avg_select(data_in,sig_idx_lst):
