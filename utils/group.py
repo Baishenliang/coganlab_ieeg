@@ -1,6 +1,6 @@
 from pyqtgraph.util.cprint import color
 
-def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0):
+def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0,trial_labels: str='CORRECT'):
     """
     Load patient level stats files (e.g., *.fif) for further group level analysis
     output is an ieeg LabeledArray
@@ -62,6 +62,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
         match stat_type:
             case "zscore":
+                subj_dataset = subj_dataset[trial_labels]
                 subj_data_epo = subj_dataset._data
                 match split_half:
                     case 0:
@@ -76,6 +77,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
                 if i == 0:
                     times = subj_dataset.times
             case "power":
+                subj_dataset = subj_dataset[trial_labels]
                 subj_data_epo = subj_dataset._data
                 match split_half:
                     case 0:
