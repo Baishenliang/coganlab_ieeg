@@ -25,29 +25,29 @@ from matplotlib import pyplot as plt
 
 # %% Subj list
 subject_processing_dict_org = {
-    "D0024": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0026": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0027": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0028": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0029": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0053": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0054": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0057": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0063": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0065": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0069": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0071": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0077": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0086": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0090": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0092": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0094": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
+    "D0024": "gamma",
+    "D0026": "gamma",
+    "D0027": "gamma",
+    "D0028": "gamma",
+    "D0029": "gamma",
+    "D0053": "gamma",
+    "D0054": "gamma",
+    "D0057": "gamma",
+    "D0063": "gamma",
+    "D0065": "gamma",
+    "D0069": "gamma",
+    "D0071": "gamma",
+    "D0077": "gamma",
+    "D0086": "gamma",
+    "D0090": "gamma",
+    "D0092": "gamma",
+    "D0094": "gamma",
+    "D0100": "gamma"
 }
-
+# "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 # %% define task
-#Task_Tag="LexicalDecRepDelay" # ![RUN TWICE, one for Select_trials='Rep_only', another one for 'All']
-Task_Tag="LexicalDecRepNoDelay"
+Task_Tag="LexicalDecRepDelay" # ![RUN TWICE, one for Select_trials='Rep_only', another one for 'All']
+#Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
@@ -499,10 +499,10 @@ for subject, processing_type in subject_processing_dict.items():
             if Task_Tag == "LexicalDecRepDelay":
                 if Select_trials=='Rep_only':
                     gamma_epoc_zip=zip(
-                        ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT','Resp/Repeat/CORRECT'),
-                        ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT'),
-                        ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                        ('Cue_inRep', 'Auditory_inRep','Go_inRep','Resp_inRep')
+                        ('Auditory_stim/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT','Auditory_stim/Repeat/Nonword/CORRECT', 'Resp/Repeat/Nonword/CORRECT','Auditory_stim/Yes_No/Nonword/CORRECT', 'Resp/Yes_No/Nonword/CORRECT'),
+                        ('Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT','Auditory_stim/Repeat/Word/CORRECT', 'Resp/Repeat/Word/CORRECT','Auditory_stim/Yes_No/Word/CORRECT', 'Resp/Yes_No/Word/CORRECT'),
+                        ((-0.5, 3), (-0.5, 1),(-0.5, 3), (-0.5, 1),(-0.5, 3), (-0.5, 1)),
+                        ('Auditory_inYN','Resp_inYN','Auditory_inRep_NWW','Resp_inRep_NWW','Auditory_inYN_NWW','Resp_inYN_NWW')
                      )
                 elif Select_trials=='All':
                     gamma_epoc_zip=zip(
