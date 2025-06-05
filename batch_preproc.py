@@ -25,24 +25,47 @@ from matplotlib import pyplot as plt
 
 # %% Subj list
 subject_processing_dict_org = {
+    "D0023": "gamma",
     "D0024": "gamma",
     "D0026": "gamma",
     "D0027": "gamma",
     "D0028": "gamma",
     "D0029": "gamma",
+    "D0032": "gamma",
+    "D0035": "gamma",
+    "D0038": "gamma",
+    "D0042": "gamma",
+    "D0044": "gamma",
+    "D0047": "gamma",
     "D0053": "gamma",
     "D0054": "gamma",
+    "D0055": "gamma",
     "D0057": "gamma",
+    "D0059": "gamma",
     "D0063": "gamma",
     "D0065": "gamma",
+    "D0066": "gamma",
+    "D0068": "gamma",
     "D0069": "gamma",
+    "D0070": "gamma",
     "D0071": "gamma",
     "D0077": "gamma",
+    "D0079": "gamma",
+    "D0080": "gamma",
+    "D0081": "gamma",
+    "D0084": "gamma",
     "D0086": "gamma",
     "D0090": "gamma",
     "D0092": "gamma",
     "D0094": "gamma",
-    "D0100": "gamma"
+    "D0096": "gamma",
+    "D0100": "gamma",
+    "D0101": "gamma",
+    "D0102": "gamma",
+    "D0103": "gamma",
+    "D0107": "gamma",
+    "D0115": "gamma",
+    "D0117": "gamma"
 }
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 # %% define task
@@ -499,10 +522,26 @@ for subject, processing_type in subject_processing_dict.items():
             if Task_Tag == "LexicalDecRepDelay":
                 if Select_trials=='Rep_only':
                     gamma_epoc_zip=zip(
-                        ('Auditory_stim/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT','Auditory_stim/Repeat/Nonword/CORRECT', 'Resp/Repeat/Nonword/CORRECT','Auditory_stim/Yes_No/Nonword/CORRECT', 'Resp/Yes_No/Nonword/CORRECT'),
-                        ('Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT','Auditory_stim/Repeat/Word/CORRECT', 'Resp/Repeat/Word/CORRECT','Auditory_stim/Yes_No/Word/CORRECT', 'Resp/Yes_No/Word/CORRECT'),
-                        ((-0.5, 3), (-0.5, 1),(-0.5, 3), (-0.5, 1),(-0.5, 3), (-0.5, 1)),
-                        ('Auditory_inYN','Resp_inYN','Auditory_inRep_NWW','Resp_inRep_NWW','Auditory_inYN_NWW','Resp_inYN_NWW')
+                        ('Auditory_stim/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT',
+                         'Auditory_stim/Repeat/Nonword/CORRECT','Resp/Repeat/Nonword/CORRECT',
+                         'Auditory_stim/Repeat/Word/CORRECT', 'Resp/Repeat/Word/CORRECT',
+                         'Auditory_stim/Yes_No/Nonword/CORRECT', 'Resp/Yes_No/Nonword/CORRECT',
+                         'Auditory_stim/Yes_No/Word/CORRECT', 'Resp/Yes_No/Word/CORRECT'),
+                        ('Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT',
+                         'Auditory_stim/Repeat/Word/CORRECT', 'Resp/Repeat/Word/CORRECT',
+                         'Auditory_stim/Repeat/Nonword/CORRECT', 'Resp/Repeat/Nonword/CORRECT',
+                         'Auditory_stim/Yes_No/Word/CORRECT', 'Resp/Yes_No/Word/CORRECT',
+                         'Auditory_stim/Yes_No/Nonword/CORRECT', 'Resp/Yes_No/Nonword/CORRECT'),
+                        ((-0.5, 3), (-0.5, 1),
+                         (-0.5, 3), (-0.5, 1),
+                         (-0.5, 3), (-0.5, 1),
+                         (-0.5, 3), (-0.5, 1),
+                         (-0.5, 3), (-0.5, 1)),
+                        ('Auditory_inYN','Resp_inYN',
+                         'Auditory_inRep_NWW','Resp_inRep_NWW',
+                         'Auditory_inRep_WNW', 'Resp_inRep_WNW',
+                         'Auditory_inYN_NWW','Resp_inYN_NWW',
+                         'Auditory_inYN_WNW', 'Resp_inYN_WNW')
                      )
                 elif Select_trials=='All':
                     gamma_epoc_zip=zip(
@@ -587,6 +626,10 @@ for subject, processing_type in subject_processing_dict.items():
                 sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
 
                 # time-perm  (test whether signal is greater than baseline, p=0.05 as it is a one-tailed test)
+                if Task_Tag=='LexicalDecRepDelay' and (epoch_phase=='Auditory_inYN' or epoch_phase=='Resp_inYN'):
+                    p_thresh_time_perm_cluster=0.05
+                else:
+                    p_thresh_time_perm_cluster=0.025
                 mask[tag], p_act = stats.time_perm_cluster(
                     sig1, sig2, p_thresh=0.05, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
                     ignore_adjacency=1)
