@@ -33,6 +33,9 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
     subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
     import warnings
     subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+    # else:
+    #     subjs = [subj for subj in subjs if subj != 'D0023' and subj != 'D0032' and subj != 'D0035'  and subj != 'D0038' and subj != 'D0042' and subj != 'D0044' and subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+
     warnings.warn(f"The following subjects are not included: D0107 D0042")
     chs = []
     data_lst = []
@@ -58,7 +61,10 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
             valid_subjs.append(subject)
 
         # read patient data
-        subj_dataset = fif_read(file_dir)
+        try:
+            subj_dataset = fif_read(file_dir)
+        except Exception as e:
+            continue
 
         match stat_type:
             case "zscore":
@@ -74,8 +80,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
                         half = subj_data_epo.shape[0] // 2
                         subj_data = np.std(subj_data_epo[half:], axis=0)
                 subj_chs = subj_dataset.ch_names
-                if i == 0:
-                    times = subj_dataset.times
+                times = subj_dataset.times
             case "power":
                 subj_dataset = subj_dataset[trial_labels]
                 subj_data_epo = subj_dataset._data
@@ -89,32 +94,27 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
                         half = subj_data_epo.shape[0] // 2
                         subj_data = np.std(subj_data_epo[half:], axis=0)
                 subj_chs = subj_dataset.ch_names
-                if i == 0:
-                    times = subj_dataset.times
+                times = subj_dataset.times
             case "significance":
                 # Not yet tested, maybe wrong
                 subj_data = subj_dataset[0].data
                 subj_chs = subj_dataset[0].ch_names
-                if i == 0:
-                    times = subj_dataset[0].times
+                times = subj_dataset[0].times
             case "pval":
                 # Not yet tested, maybe wrong
                 subj_data = subj_dataset[0].data
                 subj_chs = subj_dataset[0].ch_names
-                if i == 0:
-                    times = subj_dataset[0].times
+                times = subj_dataset[0].times
             case "mask":
                 subj_data = subj_dataset[0].data
                 subj_chs = subj_dataset[0].ch_names
-                if i == 0:
-                    times = subj_dataset[0].times
+                times = subj_dataset[0].times
             case 'glm':
                 subj_data = subj_dataset
                 evoke_dir = os.path.join(subj_gamma_stats_dir, 'Auditory_inRep_mask-ave.fif')
                 chs_time_dataset_forglm = mne.read_evokeds(evoke_dir)
                 subj_chs = chs_time_dataset_forglm[0].ch_names
-                if i == 0:
-                    times = chs_time_dataset_forglm[0].times
+                times = chs_time_dataset_forglm[0].times
 
         del subj_dataset # clear up memory
 
