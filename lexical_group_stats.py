@@ -17,7 +17,7 @@ contrast='ave' # average, not contrasting different conditions
 # For lexical delay task, whether run the data only with repeat tasks
 #Delayseleted=''
 Delayseleted = '_inRep'
-trial_labels='Word'
+trial_labels='CORRECT'
 
 # Parameters from the lexical delay task
 mean_word_len=0.5#0.62 # from utils/lexdelay_get_stim_length.m
@@ -89,6 +89,11 @@ elif groupsTag=="LexNoDelay":
     epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
     epoc_LexNoDelay_Silence_Aud,_=load_stats('zscore','Auditory_inSilence','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
+
+    epoc_LexNoDelay_Aud_nonword, _ = load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,
+                                              trial_labels='Nonword')
+    epoc_LexNoDelay_Resp_nonword, _ = load_stats('zscore', 'Resp_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,
+                                               trial_labels='Nonword')
 
 elif groupsTag=="LexDelay&LexNoDelay":
 
@@ -238,12 +243,16 @@ if "LexNoDelay" in groupsTag:
     # Channel selection: Sensory OR motor electrodes (auditory window:1 or motor prep: 1 or motor resp: 1)
     LexNoDelay_Sensory_OR_Motor_sig_idx = LexNoDelay_Aud_sig_idx | LexNoDelay_Motor_Prep_sig_idx | LexNoDelay_Motor_Resp_sig_idx
 
+    # Channel selection: All sig electrodes (auditory window:1 or delay: 1 or motor prep: 1 or motor resp: 1)
+    LexNoDelay_all_sig_idx = LexNoDelay_Aud_sig_idx | LexNoDelay_Motor_Prep_sig_idx | LexNoDelay_Motor_Resp_sig_idx
+
     # Channel selection: Motor electrodes (auditory window:0, motor resp: 1)
     LexNoDelay_Motor_sig_idx = LexNoDelay_Motor_Resp_sig_idx - LexNoDelay_Aud_sig_idx
 
     Lex_idxes['LexNoDelay_Aud_NoMotor_sig_idx'] = LexNoDelay_Aud_NoMotor_sig_idx
     Lex_idxes['LexNoDelay_Sensorimotor_sig_idx'] = LexNoDelay_Sensorimotor_sig_idx
     Lex_idxes['LexNoDelay_Sensory_OR_Motor_sig_idx'] = LexNoDelay_Sensory_OR_Motor_sig_idx
+    Lex_idxes['LexNoDelay_all_sig_idx'] = LexNoDelay_all_sig_idx
     Lex_idxes['LexNoDelay_Motor_sig_idx'] = LexNoDelay_Motor_sig_idx
     Lex_idxes['LexNoDelay_Silence_Encode_sig_idx'] = LexNoDelay_Silence_Encode_sig_idx
     Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx'] = LexNoDelay_Silence_Encode_Only_sig_idx
@@ -537,8 +546,9 @@ if groupsTag == "LexDelay":
 
 elif groupsTag == "LexNoDelay":
     len_d = len(data_LexNoDelay_Aud.labels[0])
+    hickok_roi_all = pd.DataFrame()
     for TypeLabel, chs_ov, pick_sig_idx in zip(
-            ('Sensorimotor', 'Auditory', 'Motor', 'Sensory_OR_Motor'),
+            ('Sensory-motor', 'Auditory', 'Motor', 'Sensory_OR_Motor'),
             ([1000, 0, 0, 0], [0, 100, 0, 0], [0, 0, 0, 1],[1000, 100, 0, 1]),
             (set2arr(LexNoDelay_Sensorimotor_sig_idx,len_d),
              set2arr(LexNoDelay_Aud_NoMotor_sig_idx,len_d),
@@ -568,6 +578,12 @@ elif groupsTag == "LexNoDelay":
         # TRY also to plot valid (white?) vs. invalid electrodes (dark grey)
         plot_brain(subjs, pick_labels, chs_cols_picked, None,
                    os.path.join(fig_save_dir, f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
+
+        if TypeLabel == 'Sensory-motor' or TypeLabel == 'Auditory' or TypeLabel == 'Motor':
+            hickok_roi_all[TypeLabel] = get_sig_roi_counts(hickok_roi_labels,
+                                                           {i for i, val in enumerate(pick_sig_idx) if val == 1})
+
+    plot_roi_counts_comparison(hickok_roi_all, os.path.join(fig_save_dir, f'Hickok ROI his {TypeLabel.replace('/', ' ')}'))
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
@@ -604,6 +620,50 @@ elif groupsTag == "LexNoDelay":
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_save_dir,'LexNoDelay_sig_zscore_Resp.tif'),dpi=300)
+    plt.close()
+
+    TypeLabel='Hickok_ROIs'
+    chs_ov=[1000,100,10,1]
+    pick_sig_idx=set2arr(LexNoDelay_all_sig_idx & (hickok_roi_sig_idx['Spt'] | hickok_roi_sig_idx['lPMC'] | hickok_roi_sig_idx['lIPL'] | hickok_roi_sig_idx['lIFG']),len_d)
+    color_map = {
+        1000: Auditory_col,
+         100: Sensorimotor_col,
+          10: Delay_col,
+           1: Motor_col
+    }
+
+    chs_col_idx=[chs_ov[0]*set2arr(hickok_roi_sig_idx['Spt'],len_d)[i]
+                 +chs_ov[1]*set2arr(hickok_roi_sig_idx['lPMC'],len_d)[i]
+                 +chs_ov[2]*set2arr(hickok_roi_sig_idx['lIPL'],len_d)[i]
+                 +chs_ov[3]*set2arr(hickok_roi_sig_idx['lIFG'],len_d)[i] for i in range(len_d)]
+    picks = [i for i in range(len_d) if pick_sig_idx[i] == 1]
+    pick_labels = [data_LexNoDelay_Aud.labels[0][i] for i in range(len_d) if pick_sig_idx[i] == 1]        # picks=[i for i in range(len(data.labels[0])) if chs_col_idx[i] == 100] # Use this to pick auditory only electrodes (i.e., no delay)
+    chs_cols =[color_map.get(chs_col_idx[i], [0.5, 0.5, 0.5]) for i in range(len_d)]
+    chs_cols_picked=[chs_cols[i] for i in picks]
+    plot_brain(subjs, pick_labels,chs_cols_picked,None,os.path.join(fig_save_dir,f'{TypeLabel}_{stat_type}-{contrast}.jpg'))
+
+    # Plot the Hickok ROI traces: LexNoDelay
+    plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+    plt.title('Z-scores in lexical no delay repeat tasks (aligned to stim onset)',fontsize=20)
+    wav_bsl_corr = False
+    plt.xlim([-0.25, 1.6])
+    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_all_sig_idx & hickok_roi_sig_idx['Spt'], f'Spt (Word) n={len(LexNoDelay_all_sig_idx & hickok_roi_sig_idx['Spt'])}',
+              Auditory_col, '-', wav_bsl_corr)
+    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lPMC'], f'lPMC (Word) n={len(LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lPMC'])}',Sensorimotor_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lIFG'], f'lIFG (Word) n={len(LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lIFG'])}',Motor_col,'-',wav_bsl_corr)
+    plot_wave(epoc_LexNoDelay_Aud, LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lIPL'], f'lIPL (Word) n={len(LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lIPL'])}',Delay_col,'-',wav_bsl_corr)
+    if trial_labels=='Word':
+        plot_wave(epoc_LexNoDelay_Aud_nonword,LexNoDelay_all_sig_idx & hickok_roi_sig_idx['Spt'], f'Spt (Nonword) n={len(LexNoDelay_all_sig_idx & hickok_roi_sig_idx['Spt'])}',
+                  Auditory_col, '--', wav_bsl_corr)
+        plot_wave(epoc_LexNoDelay_Aud_nonword, LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lPMC'], f'lPMC (Nonword) n={len(LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lPMC'])}',Sensorimotor_col,'--',wav_bsl_corr)
+        plot_wave(epoc_LexNoDelay_Aud_nonword, LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lIFG'], f'lIFG (Nonword) n={len(LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lIFG'])}',Motor_col,'--',wav_bsl_corr)
+        plot_wave(epoc_LexNoDelay_Aud_nonword, LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lIPL'], f'lIPL (Nonword) n={len(LexNoDelay_all_sig_idx & hickok_roi_sig_idx['lIPL'])}',Delay_col,'--',wav_bsl_corr)
+    plt.axvline(x=0, linestyle='--', color='k')
+    # plt.axhline(y=0, linestyle='--', color='k')
+    plt.legend(loc='upper right',fontsize=15)
+    plt.gca().spines[['top', 'right']].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_save_dir,f'LexNoDelay_sig_zscore_Aud_Hikcok_ROI.tif'),dpi=300)
     plt.close()
 
 elif groupsTag=="LexDelay&LexNoDelay":
