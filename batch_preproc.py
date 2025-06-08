@@ -522,23 +522,19 @@ for subject, processing_type in subject_processing_dict.items():
             if Task_Tag == "LexicalDecRepDelay":
                 if Select_trials=='Rep_only':
                     gamma_epoc_zip=zip(
-                        ('Auditory_stim/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT',
-                         'Auditory_stim/Repeat/Nonword/CORRECT','Resp/Repeat/Nonword/CORRECT',
+                        ('Auditory_stim/Repeat/Nonword/CORRECT','Resp/Repeat/Nonword/CORRECT',
                          'Auditory_stim/Repeat/Word/CORRECT', 'Resp/Repeat/Word/CORRECT',
                          'Auditory_stim/Yes_No/Nonword/CORRECT', 'Resp/Yes_No/Nonword/CORRECT',
                          'Auditory_stim/Yes_No/Word/CORRECT', 'Resp/Yes_No/Word/CORRECT'),
-                        ('Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT',
-                         'Auditory_stim/Repeat/Word/CORRECT', 'Resp/Repeat/Word/CORRECT',
+                        ('Auditory_stim/Repeat/Word/CORRECT', 'Resp/Repeat/Word/CORRECT',
                          'Auditory_stim/Repeat/Nonword/CORRECT', 'Resp/Repeat/Nonword/CORRECT',
                          'Auditory_stim/Yes_No/Word/CORRECT', 'Resp/Yes_No/Word/CORRECT',
                          'Auditory_stim/Yes_No/Nonword/CORRECT', 'Resp/Yes_No/Nonword/CORRECT'),
                         ((-0.5, 3), (-0.5, 1),
                          (-0.5, 3), (-0.5, 1),
                          (-0.5, 3), (-0.5, 1),
-                         (-0.5, 3), (-0.5, 1),
                          (-0.5, 3), (-0.5, 1)),
-                        ('Auditory_inYN','Resp_inYN',
-                         'Auditory_inRep_NWW','Resp_inRep_NWW',
+                        ('Auditory_inRep_NWW','Resp_inRep_NWW',
                          'Auditory_inRep_WNW', 'Resp_inRep_WNW',
                          'Auditory_inYN_NWW','Resp_inYN_NWW',
                          'Auditory_inYN_WNW', 'Resp_inYN_WNW')
@@ -631,7 +627,7 @@ for subject, processing_type in subject_processing_dict.items():
                 else:
                     p_thresh_time_perm_cluster=0.025
                 mask[tag], p_act = stats.time_perm_cluster(
-                    sig1, sig2, p_thresh=0.05, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
+                    sig1, sig2, p_thresh=p_thresh_time_perm_cluster, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
                     ignore_adjacency=1)
                 epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
                                             tmin=t[0])
