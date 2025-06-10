@@ -266,9 +266,9 @@ for tag,epoc in zip(
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
     plt.title('Z-scores in lexical delay repeat tasks (aligned to stim onset)', fontsize=20)
     plt.xlim([-0.25, 2.5])
-    gp.plot_wave(epoc, rep_aud_idx & yn_aud_idx, f'AudSM_inRep & AudSM_inYN', [1,0,0], '-', False)
-    gp.plot_wave(epoc, yn_mtr_idx - rep_mtr_idx, f'AudSM_inYN - AudSM_inRep', [0,1,0], '-', False)
-    gp.plot_wave(epoc, rep_mtr_idx - yn_mtr_idx, f'AudSM_inRep - AudSM_inYN', [0,0,1], '-', False)
+    gp.plot_wave(epoc, rep_aud_idx & yn_aud_idx, f'AudSM_inRep & AudSM_inYN', [1,0,0], '-', False,ylim=[0,1.5])
+    gp.plot_wave(epoc, yn_mtr_idx - rep_mtr_idx, f'AudSM_inYN - AudSM_inRep', [0,1,0], '-', False,ylim=[0,1.5])
+    gp.plot_wave(epoc, rep_mtr_idx - yn_mtr_idx, f'AudSM_inRep - AudSM_inYN', [0,0,1], '-', False,ylim=[0,1.5])
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
     plt.legend(loc='upper right', fontsize=15)
@@ -284,13 +284,61 @@ for tag, epoc in zip(
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
     plt.title('Z-scores in lexical delay repeat tasks (aligned to stim onset)', fontsize=20)
     plt.xlim([-0.25, 2.5])
-    gp.plot_wave(epoc, Lex_idxes['Rep']['LexDelay_Delay_sig_idx'] & Lex_idxes['YN']['LexDelay_Delay_sig_idx'], f'Del_inRep & Del_inYN', [1,0,0], '-', False)
-    gp.plot_wave(epoc, Lex_idxes['Rep']['LexDelay_Delay_sig_idx'] - Lex_idxes['YN']['LexDelay_Delay_sig_idx'], f'Del_inYN - Del_inRep', [0,1,0], '-', False)
-    gp.plot_wave(epoc, Lex_idxes['YN']['LexDelay_Delay_sig_idx'] - Lex_idxes['Rep']['LexDelay_Delay_sig_idx'], f'Del_inRep - Del_inYN', [0,0,1], '-', False)
+    gp.plot_wave(epoc, Lex_idxes['Rep']['LexDelay_Delay_sig_idx'] & Lex_idxes['YN']['LexDelay_Delay_sig_idx'], f'Del_inRep & Del_inYN', [1,0,0], '-', False,ylim=[0,1.5])
+    gp.plot_wave(epoc, Lex_idxes['Rep']['LexDelay_Delay_sig_idx'] - Lex_idxes['YN']['LexDelay_Delay_sig_idx'], f'Del_inYN - Del_inRep', [0,1,0], '-', False,ylim=[0,1.5])
+    gp.plot_wave(epoc, Lex_idxes['YN']['LexDelay_Delay_sig_idx'] - Lex_idxes['Rep']['LexDelay_Delay_sig_idx'], f'Del_inRep - Del_inYN', [0,0,1], '-', False,ylim=[0,1.5])
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='k')
     plt.legend(loc='upper right', fontsize=15)
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
     plt.savefig(os.path.join(sf_dir,f'Del_inRep_inYN_{tag}_epoc.tif'), dpi=300)
+    plt.close()
+
+# %% Plot venn plots for overlapping between Repeat and Word：
+
+# Plot traces for NWW and WNW:
+plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+plt.title('Word>Nonword and Nonword>Word electrodes (aligned to stim onset)', fontsize=20)
+plt.xlim([-0.25, 2.5])
+gp.plot_wave(epoc_LexDelayRep_WNW_Aud, Lex_idxes['Rep_WNW']['Aud_epoc'] & Lex_idxes['Rep_NWW']['Aud_epoc'], f'W-NW & NW-W in W-NW epoc', [1,0,0], '-', False,ylim=[0,1.5])
+gp.plot_wave(epoc_LexDelayRep_NWW_Aud, Lex_idxes['Rep_WNW']['Aud_epoc'] & Lex_idxes['Rep_NWW']['Aud_epoc'], f'W-NW & NW-W in NW-W epoc', [0,1,0], '-', False,ylim=[0,1.5])
+gp.plot_wave(epoc_LexDelayRep_WNW_Aud, Lex_idxes['Rep_WNW']['Aud_epoc'] - Lex_idxes['Rep_NWW']['Aud_epoc'], f'W-NW - NW-W in W-NW epoc', [0,0,1], '-', False,ylim=[0,1.5])
+gp.plot_wave(epoc_LexDelayRep_NWW_Aud, Lex_idxes['Rep_NWW']['Aud_epoc'] - Lex_idxes['Rep_WNW']['Aud_epoc'], f'NW-W - W-NW in NW-W epoc', [1,1,0], '-', False,ylim=[0,1.5])
+gp.plot_wave(epoc_LexDelayRep_WNW_Aud, Lex_idxes['Rep_WNW']['Aud_epoc'], f'W-NW epoc', [0,1,1], '-', False,ylim=[0,1.5])
+gp.plot_wave(epoc_LexDelayRep_NWW_Aud, Lex_idxes['Rep_NWW']['Aud_epoc'], f'NW-W epoc', [0.5,0.5,0.5], '-', False,ylim=[0,1.5])
+plt.axvline(x=0, linestyle='--', color='k')
+plt.axhline(y=0, linestyle='--', color='k')
+plt.legend(loc='upper right', fontsize=15)
+plt.gca().spines[['top', 'right']].set_visible(False)
+plt.tight_layout()
+plt.savefig(os.path.join(sf_dir,f'NWW and WNW.tif'), dpi=300)
+plt.close()
+
+for tag,bslcomp_ele,taskcomp_ele1,taskcomp_ele2 in zip(
+        ('Aud_Aud','SM_Aud','Delay_Aud','DelayOnly_Aud','SM_Resp','M_Resp'),
+        (Lex_idxes['Rep']['LexDelay_Aud_NoMotor_sig_idx'],
+         Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx'],
+         Lex_idxes['Rep']['LexDelay_Delay_sig_idx'],
+         Lex_idxes['Rep']['LexDelay_DelayOnly_sig_idx'],
+         Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx'],
+         Lex_idxes['Rep']['LexDelay_Motor_sig_idx']),
+        (Lex_idxes['Rep_WNW']['Aud_epoc'],
+         Lex_idxes['Rep_WNW']['Aud_epoc'],
+         Lex_idxes['Rep_WNW']['Aud_epoc'],
+         Lex_idxes['Rep_WNW']['Aud_epoc'],
+         Lex_idxes['Rep_WNW']['Resp_epoc'],
+         Lex_idxes['Rep_WNW']['Resp_epoc']),
+        (Lex_idxes['Rep_NWW']['Aud_epoc'],
+         Lex_idxes['Rep_NWW']['Aud_epoc'],
+         Lex_idxes['Rep_NWW']['Aud_epoc'],
+         Lex_idxes['Rep_NWW']['Aud_epoc'],
+         Lex_idxes['Rep_NWW']['Resp_epoc'],
+         Lex_idxes['Rep_NWW']['Resp_epoc'])
+):
+    # electrodes overlaped with the same set of electrodes (e.g., Auditory in Repeat with Auditory in Yes_No)
+    plt.figure(figsize=(6, 6))
+    venn3([bslcomp_ele,taskcomp_ele1,taskcomp_ele2], (f'BSLcontrast_inRep', f'Word-Nonword_inRep', f'Nonword-Word_inRep'))
+    plt.tight_layout()
+    plt.savefig(os.path.join(sf_dir, f'{tag}_inRep_WNW_NWW.tif'), dpi=300)
     plt.close()
