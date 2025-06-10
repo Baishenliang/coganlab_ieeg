@@ -522,22 +522,10 @@ for subject, processing_type in subject_processing_dict.items():
             if Task_Tag == "LexicalDecRepDelay":
                 if Select_trials=='Rep_only':
                     gamma_epoc_zip=zip(
-                        ('Auditory_stim/Repeat/Nonword/CORRECT','Resp/Repeat/Nonword/CORRECT',
-                         'Auditory_stim/Repeat/Word/CORRECT', 'Resp/Repeat/Word/CORRECT',
-                         'Auditory_stim/Yes_No/Nonword/CORRECT', 'Resp/Yes_No/Nonword/CORRECT',
-                         'Auditory_stim/Yes_No/Word/CORRECT', 'Resp/Yes_No/Word/CORRECT'),
-                        ('Auditory_stim/Repeat/Word/CORRECT', 'Resp/Repeat/Word/CORRECT',
-                         'Auditory_stim/Repeat/Nonword/CORRECT', 'Resp/Repeat/Nonword/CORRECT',
-                         'Auditory_stim/Yes_No/Word/CORRECT', 'Resp/Yes_No/Word/CORRECT',
-                         'Auditory_stim/Yes_No/Nonword/CORRECT', 'Resp/Yes_No/Nonword/CORRECT'),
-                        ((-0.5, 3), (-0.5, 1),
-                         (-0.5, 3), (-0.5, 1),
-                         (-0.5, 3), (-0.5, 1),
-                         (-0.5, 3), (-0.5, 1)),
-                        ('Auditory_inRep_NWW','Resp_inRep_NWW',
-                         'Auditory_inRep_WNW', 'Resp_inRep_WNW',
-                         'Auditory_inYN_NWW','Resp_inYN_NWW',
-                         'Auditory_inYN_WNW', 'Resp_inYN_WNW')
+                        ('Auditory_stim/Yes_No/CORRECT','Resp/Yes_No/CORRECT'),
+                        ('Auditory_stim/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                        ((-0.5, 3), (-0.5, 1)),
+                        ('Auditory_inYN_inRep','Resp_inYN_inRep')
                      )
                 elif Select_trials=='All':
                     gamma_epoc_zip=zip(
