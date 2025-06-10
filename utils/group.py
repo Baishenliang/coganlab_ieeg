@@ -360,12 +360,13 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False):
     plt.close()
 
 
-def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,transparency=0.3,**kwargs):
+def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,transparency=0.3,hemi: str='split',save_img: bool=False,**kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
-    fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi='split',
+    fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi=hemi,
                             label_every=label_every, size=dotsize,transparency=transparency, **kwargs)
-    #fig3d.save_image(fig_save_dir_f)
+    if save_img:
+        fig3d.save_image(fig_save_dir_f)
 
 def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,25]):
     label2atlas={ch_sel: label2atlas_raw[ch_sel] for ch_sel in chs_sel}
