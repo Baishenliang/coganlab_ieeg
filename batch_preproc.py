@@ -69,19 +69,10 @@ subject_processing_dict_org = {
 }
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 # %% define task
-Task_Tag="LexicalDecRepDelay" # ![RUN TWICE, one for Select_trials='Rep_only', another one for 'All']
+Task_Tag="LexicalDecRepDelay"
 #Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
-
-if Task_Tag=="LexicalDecRepDelay":
-    # %% fir HG processing, select trials or not
-    # This only works for LEXICAL DELAY TASK currently
-    # - All: don't select trials
-    # -Rep_only: select "Repeat" trials only
-    Select_trials='Rep_only'
-else:
-    Select_trials='All'
 
 # %% check if currently running a slurm job
 HOME = os.path.expanduser("~")
@@ -520,26 +511,20 @@ for subject, processing_type in subject_processing_dict.items():
 
             # gamma and permutation
             if Task_Tag == "LexicalDecRepDelay":
-                if Select_trials=='Rep_only':
-                    gamma_epoc_zip=zip(
-                        ('Auditory_stim/Yes_No/CORRECT','Resp/Yes_No/CORRECT'),
-                        ('Auditory_stim/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                        ((-0.5, 3), (-0.5, 1)),
-                        ('Auditory_inYN_inRep','Resp_inYN_inRep')
-                     )
-                elif Select_trials=='All':
-                    gamma_epoc_zip=zip(
-                        ('Cue/CORRECT', 'Auditory_stim/CORRECT', 'Go/CORRECT','Resp/CORRECT'),
-                        ('Cue/CORRECT','Cue/CORRECT','Cue/CORRECT','Cue/CORRECT'),
-                        ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                        ('Cue', 'Auditory','Go','Resp')
-                     )
+                gamma_epoc_zip=zip(
+                    ('Auditory_stim/Yes_No/CORRECT','Resp/Yes_No/CORRECT','Auditory_stim/Repeat/Word/CORRECT','Auditory_stim/Repeat/Nonword/CORRECT','Resp/Repeat/Word/CORRECT','Resp/Repeat/Nonword/CORRECT'),
+                    ('Auditory_stim/Repeat/CORRECT', 'Resp/Repeat/CORRECT','Auditory_stim/Repeat/Nonword/CORRECT','Auditory_stim/Repeat/Word/CORRECT','Resp/Repeat/Nonword/CORRECT','Resp/Repeat/Word/CORRECT'),
+                    ((-0.5, 3), (-0.5, 1),(-0.5, 3),(-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                    ('Auditory_inYN_inRep','Resp_inYN_inRep','Auditory_inRep_WNW','Auditory_inRep_NWW','Resp_inRep_WNW','Resp_inRep_NWW'),
+                    (False,False,False,False,False,False)
+                 )
             elif Task_Tag == "LexicalDecRepNoDelay":
                 gamma_epoc_zip=zip(
                     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT','Cue/Yes_No/CORRECT','Auditory_stim/Yes_No/CORRECT'),
                     ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/:=:/CORRECT','Cue/:=:/CORRECT','Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT'),
                     ((-0.5, 1.5), (-0.5, 2), (-0.5, 1),(-0.5, 1.5), (-0.5, 2),(-0.5, 1.5), (-0.5, 2)),
-                    ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inSilence','Auditory_inSilence','Cue_inYN','Auditory_inYN')
+                    ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inSilence','Auditory_inSilence','Cue_inYN','Auditory_inYN'),
+                    (True, False, False,True, False,True, False)
                  )
             elif Task_Tag == "RetroCue":
                 gamma_epoc_zip = zip(
@@ -564,17 +549,22 @@ for subject, processing_type in subject_processing_dict.items():
                      'Auditory1_in_REP_BTH', 'Auditory2_in_REP_BTH', 'Cue_in_REP_BTH', 'Go_in_REP_BTH', 'Resp_in_REP_BTH',
                      'Auditory1_in_REV_BTH', 'Auditory2_in_REV_BTH', 'Cue_in_REV_BTH', 'Go_in_REV_BTH', 'Resp_in_REV_BTH'))
 
-            for epoch_phase, baseline_tag, t_phase, tag_phase in gamma_epoc_zip:
+            for epoch_phase, baseline_tag, t_phase, tag_phase, is_bsl_correct in gamma_epoc_zip:
 
-                if Task_Tag == "LexicalDecRepDelay" and Select_trials == 'All' and subject=="D0115":
-                    break # Patient D0115 has no wrong YesNo task responses, so skip it
+                if (Task_Tag == "LexicalDecRepDelay") and ("Repeat" not in epoch_phase) and (subject=="D0115"):
+                    break # Patient D0115 has wrong YesNo task responses, so skip it
 
                 out = []
-                
+                # If it is baseline correction, the sig2 only contains the first 0.5s of the baseline epoch (marked as baseline_tag).
+                if is_bsl_correct:
+                    bsl_t=(-0.5, 0)
+                else:
+                    bsl_t=t_phase
+
                 # extract gamma
                 for epoch, t, tag in zip(
                         (baseline_tag, epoch_phase),
-                        ((-0.5, 0), t_phase),
+                        (bsl_t, t_phase),
                         ('Baseline',tag_phase)):
 
                     # Get the spectras
@@ -638,80 +628,10 @@ for subject, processing_type in subject_processing_dict.items():
                     z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
                     epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave.fif", overwrite=True)
                     p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
-                
-                base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
+
+                if is_bsl_correct:
+                    base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
                 del data, sig1, sig2, base, mask
-
-                if 1==0:
-                    # run permutation: contrast gamma (e.g., YesNo vs. Repeat, Word vs. Nonword)
-                    #####!!!!!!!!!!!!!!!!!!!!! Don't need this in the future. Just merge the contrast to the upper baseline correction lines and set one signal as baseline
-                    if Task_Tag == "LexicalDecRepDelay":
-                        if Select_trials == 'Rep_only':
-                            gamma_contrast_zip=zip(
-                                ('Word','Nonword'),
-                                ('Nonword','Word'),
-                                ('W_NW','NW_W')
-                            )
-                        elif Select_trials == 'All':
-                            gamma_contrast_zip=zip(
-                                ('Yes_No','Repeat'),
-                                ('Repeat','Yes_No'),
-                                ('YN_Rep','Rep_YN')
-                            )
-                    elif Task_Tag == "LexicalDecRepNoDelay":
-                        gamma_contrast_zip=zip(
-                            ('Word','Nonword'),
-                            ('Nonword','Word'),
-                            ('W_NW','NW_W')
-                        )
-                    elif Task_Tag == "RetroCue": # wait for future setting
-                        gamma_contrast_zip=zip(
-                            ('ree','ga'),
-                            ('ga','ree'),
-                            ('ree_ga','ga_ree')
-                        )
-                    for sig1_tag, sig2_tag, contrast_Tag in gamma_contrast_zip:
-
-                        if Task_Tag == "RetroCue":
-                            break  # wait for future setting
-
-                        mask = dict()
-                        data = []
-
-                        sig1 = epoch[sig1_tag].get_data(tmin=t[0], tmax=t[1], copy=True) # as signal
-                        sig2 = epoch[sig2_tag].get_data(tmin=t[0], tmax=t[1], copy=True) # as baseline
-
-                        # time-perm (test whether signal is greater than baseline, p=0.025 as it is a two-tailed test)
-                        mask[tag], p_act = stats.time_perm_cluster(
-                            sig1, sig2, p_thresh=0.025, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
-                            ignore_adjacency=1)
-                        epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
-                                                    tmin=t[0])
-
-                        # plot mask
-                        plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}_{contrast_Tag}.jpg')
-
-                        # baseline correction
-                        # not knowing if this one is correct but just made it (!!!! waiting for Aaron to solve !!!!)
-                        # sig2_rshape = make_data_same(sig2, sig1.shape, 0)
-                        power = scaling.rescale(epoch[sig1_tag], epoch[sig2_tag], 'mean', copy=True)
-                        z_score = scaling.rescale(epoch[sig1_tag], epoch[sig2_tag], 'zscore', copy=True)
-
-                        # Calculate the p-value
-                        p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
-
-                        data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
-
-                        for tag, epoch_mask, power, z_score, p_vals in data:
-
-                            power.save(subj_gamma_stats_dir + f"/{tag}_power-epo_{contrast_Tag}.fif", overwrite=True,fmt='double')
-                            z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo_{contrast_Tag}.fif", overwrite=True,fmt='double')
-                            epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave_{contrast_Tag}.fif", overwrite=True)
-                            p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave_{contrast_Tag}.fif", overwrite=True)
-
-                        del data, sig1, sig2, mask
-
-                    del out
 
             log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation  %%% completed %%% \n")
 
