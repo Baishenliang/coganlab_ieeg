@@ -512,11 +512,11 @@ for subject, processing_type in subject_processing_dict.items():
             # gamma and permutation
             if Task_Tag == "LexicalDecRepDelay":
                 gamma_epoc_zip=zip(
-                    ('Auditory_stim/Yes_No/CORRECT','Resp/Yes_No/CORRECT','Auditory_stim/Repeat/Word/CORRECT','Auditory_stim/Repeat/Nonword/CORRECT','Resp/Repeat/Word/CORRECT','Resp/Repeat/Nonword/CORRECT'),
-                    ('Auditory_stim/Repeat/CORRECT', 'Resp/Repeat/CORRECT','Auditory_stim/Repeat/Nonword/CORRECT','Auditory_stim/Repeat/Word/CORRECT','Resp/Repeat/Nonword/CORRECT','Resp/Repeat/Word/CORRECT'),
-                    ((-0.5, 3), (-0.5, 1),(-0.5, 3),(-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                    ('Auditory_inYN_inRep','Resp_inYN_inRep','Auditory_inRep_WNW','Auditory_inRep_NWW','Resp_inRep_WNW','Resp_inRep_NWW'),
-                    (False,False,False,False,False,False)
+                    ('Auditory_stim/Yes_No/Word/CORRECT','Auditory_stim/Yes_No/Nonword/CORRECT','Resp/Yes_No/Word/CORRECT','Resp/Yes_No/Nonword/CORRECT'),
+                    ('Auditory_stim/Yes_No/Nonword/CORRECT','Auditory_stim/Yes_No/Word/CORRECT','Resp/Yes_No/Nonword/CORRECT','Resp/Yes_No/Word/CORRECT'),
+                    ((-0.5, 3),(-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                    ('Auditory_inYN_WNW','Auditory_inYN_NWW','Resp_inYN_WNW','Resp_inYN_NWW'),
+                    (False,False,False,False)
                  )
             elif Task_Tag == "LexicalDecRepNoDelay":
                 gamma_epoc_zip=zip(
