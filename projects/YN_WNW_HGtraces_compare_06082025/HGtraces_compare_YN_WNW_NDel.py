@@ -82,6 +82,13 @@ if groupsTag=="LexDelay":
     data_LexDelayYN_WNW_Resp, _ = gp.load_stats('mask', 'Resp_inYN_WNW', 'ave', stats_root_delay, stats_root_delay)
     epoc_LexDelayYN_WNW_Resp, _ = gp.load_stats('zscore', 'Resp_inYN_WNW', 'epo', stats_root_delay, stats_root_delay)
 
+    data_LexDelayYN_Rep_Aud,_=gp.load_stats('mask','Auditory_inYN_inRep','ave',stats_root_delay,stats_root_delay)
+    epoc_LexDelayYN_Rep_Aud,_=gp.load_stats('zscore','Auditory_inYN_inRep','epo',stats_root_delay,stats_root_delay)
+
+    data_LexDelayYN_Rep_Resp, _ = gp.load_stats('mask', 'Resp_inYN_inRep', 'ave', stats_root_delay, stats_root_delay)
+    epoc_LexDelayYN_Rep_Resp, _ = gp.load_stats('zscore', 'Resp_inYN_inRep', 'epo', stats_root_delay, stats_root_delay)
+
+
 elif groupsTag=="LexDelay&LexNoDelay":
 
     # first get the patient inform from no delay tasks and then extract the corresponding
@@ -211,13 +218,31 @@ for tag,masks,epocs in zip(
 
     Lex_idxes[tag]=Lex_idx
 
+# YesNo - Repeat
+_, _, _, LexDelay_Aud_YN_Rep_sig_idx = gp.sort_chs_by_actonset(data_LexDelayYN_Rep_Aud, epoc_LexDelayYN_Rep_Aud,cluster_twin,[-0.1, 10])
+_, _, _, LexDelay_Resp_YN_Rep_sig_idx = gp.sort_chs_by_actonset(data_LexDelayYN_Rep_Resp, epoc_LexDelayYN_Rep_Resp,cluster_twin,[-0.1, 10])
+Lex_idx = dict()
+Lex_idx['Aud_epoc'] = LexDelay_Aud_YN_Rep_sig_idx
+Lex_idx['Resp_epoc'] = LexDelay_Resp_YN_Rep_sig_idx
+Lex_idxes['YN_Rep'] = Lex_idx
+
 # %% Plot 3d brain surfaces for each group of sig electrodes：
 len_d = len(data_LexDelayRep_Aud.labels[0])
 for Lex_idx_tag,Lex_idx in Lex_idxes.items():
+    if Lex_idx_tag=='Rep' or Lex_idx_tag=='YN':
+        continue
+    hickok_roi_all = pd.DataFrame()
     for ele_subgrp_tag,ele_subgrp in Lex_idx.items():
         chs_cols_picked = [[1,0,0] for i in range(len(ele_subgrp))]
         gp.plot_brain(subjs, list(ele_subgrp), chs_cols_picked,None,os.path.join(sf_dir,f'{Lex_idx_tag}_{ele_subgrp_tag}_lh.jpg'),hemi='lh',save_img=True)
         gp.plot_brain(subjs, list(ele_subgrp), chs_cols_picked,None,os.path.join(sf_dir,f'{Lex_idx_tag}_{ele_subgrp_tag}_rh.jpg'),hemi='rh',save_img=True)
+        gp.atlas2_hist(ch_labels_roi, data_LexDelayRep_Aud.labels[0][list(ele_subgrp)], chs_cols_picked[0],
+                    os.path.join(sf_dir, f'Atlas histogram {Lex_idx_tag} {ele_subgrp_tag}.tif'),ylim=[0,50])
+        gp.plot_sig_roi_counts(hickok_roi_labels, chs_cols_picked[0], gp.set2arr(ele_subgrp,len_d),
+                            os.path.join(sf_dir, f'Hickok ROI histogram {Lex_idx_tag} {ele_subgrp_tag}.tif'))
+        hickok_roi_all[f'{Lex_idx_tag}_{ele_subgrp_tag}'] = gp.get_sig_roi_counts(hickok_roi_labels,ele_subgrp)
+
+    gp.plot_roi_counts_comparison(hickok_roi_all,os.path.join(sf_dir, f'Hickok ROI his {Lex_idx_tag} {ele_subgrp_tag}'))
 
 # %% Plot venn plots for overlapping between Repeat and YN：
 from matplotlib_venn import venn3,venn2
@@ -297,22 +322,36 @@ for tag, epoc in zip(
 
 # %% Plot venn plots for overlapping between Repeat and Word：
 
-# Plot traces for NWW and WNW:
+# Plot traces for NWW and WNW (aligned to Auditory onset):
 plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
 plt.title('Word>Nonword and Nonword>Word electrodes (aligned to stim onset)', fontsize=20)
 plt.xlim([-0.25, 2.5])
-gp.plot_wave(epoc_LexDelayRep_WNW_Aud, Lex_idxes['Rep_WNW']['Aud_epoc'] & Lex_idxes['Rep_NWW']['Aud_epoc'], f'W-NW & NW-W in W-NW epoc', [1,0,0], '-', False,ylim=[0,1.5])
-gp.plot_wave(epoc_LexDelayRep_NWW_Aud, Lex_idxes['Rep_WNW']['Aud_epoc'] & Lex_idxes['Rep_NWW']['Aud_epoc'], f'W-NW & NW-W in NW-W epoc', [0,1,0], '-', False,ylim=[0,1.5])
-gp.plot_wave(epoc_LexDelayRep_WNW_Aud, Lex_idxes['Rep_WNW']['Aud_epoc'] - Lex_idxes['Rep_NWW']['Aud_epoc'], f'W-NW - NW-W in W-NW epoc', [0,0,1], '-', False,ylim=[0,1.5])
-gp.plot_wave(epoc_LexDelayRep_NWW_Aud, Lex_idxes['Rep_NWW']['Aud_epoc'] - Lex_idxes['Rep_WNW']['Aud_epoc'], f'NW-W - W-NW in NW-W epoc', [1,1,0], '-', False,ylim=[0,1.5])
-gp.plot_wave(epoc_LexDelayRep_WNW_Aud, Lex_idxes['Rep_WNW']['Aud_epoc'], f'W-NW epoc', [0,1,1], '-', False,ylim=[0,1.5])
-gp.plot_wave(epoc_LexDelayRep_NWW_Aud, Lex_idxes['Rep_NWW']['Aud_epoc'], f'NW-W epoc', [0.5,0.5,0.5], '-', False,ylim=[0,1.5])
+gp.plot_wave(epoc_LexDelayRep_WNW_Aud, Lex_idxes['Rep_WNW']['Aud_epoc'], f'Repeat W-NW epoc N={len(Lex_idxes['Rep_WNW']['Aud_epoc'])}', [233/255,181/255,193/255], '-', False,ylim=[-0.25,0.5])
+gp.plot_wave(epoc_LexDelayRep_NWW_Aud, Lex_idxes['Rep_NWW']['Aud_epoc'], f'Repeat NW-W epoc N={len(Lex_idxes['Rep_NWW']['Aud_epoc'])}', [180/255,197/255,217/255], '-', False,ylim=[-0.25,0.5])
+gp.plot_wave(epoc_LexDelayYN_WNW_Aud, Lex_idxes['YN_WNW']['Aud_epoc'], f'YesNo W-NW epoc N={len(Lex_idxes['YN_WNW']['Aud_epoc'])}', [233/255,181/255,193/255], '--', False,ylim=[-0.25,0.5])
+gp.plot_wave(epoc_LexDelayYN_NWW_Aud, Lex_idxes['YN_NWW']['Aud_epoc'], f'YesNo NW-W epoc N={len(Lex_idxes['YN_NWW']['Aud_epoc'])}', [180/255,197/255,217/255], '--', False,ylim=[-0.25,0.5])
 plt.axvline(x=0, linestyle='--', color='k')
 plt.axhline(y=0, linestyle='--', color='k')
 plt.legend(loc='upper right', fontsize=15)
 plt.gca().spines[['top', 'right']].set_visible(False)
 plt.tight_layout()
 plt.savefig(os.path.join(sf_dir,f'NWW and WNW.tif'), dpi=300)
+plt.close()
+
+# Plot traces for NWW and WNW (aligned to Motor onset):
+plt.figure(figsize=(Waveplot_wth * (150 / 350), Waveplot_hgt))
+plt.title('Word>Nonword and Nonword>Word electrodes (aligned to motor onset)', fontsize=20)
+plt.xlim([-0.25, 1])
+gp.plot_wave(epoc_LexDelayRep_WNW_Resp, Lex_idxes['Rep_WNW']['Resp_epoc'], f'Repeat W-NW epoc N={len(Lex_idxes['Rep_WNW']['Resp_epoc'])}', [233/255,181/255,193/255], '-', False,ylim=[-0.25,0.5])
+gp.plot_wave(epoc_LexDelayRep_NWW_Resp, Lex_idxes['Rep_NWW']['Resp_epoc'], f'Repeat NW-W epoc N={len(Lex_idxes['Rep_NWW']['Resp_epoc'])}', [180/255,197/255,217/255], '-', False,ylim=[-0.25,0.5])
+gp.plot_wave(epoc_LexDelayYN_WNW_Resp, Lex_idxes['YN_WNW']['Resp_epoc'], f'YesNo W-NW epoc N={len(Lex_idxes['YN_WNW']['Resp_epoc'])}', [233/255,181/255,193/255], '--', False,ylim=[-0.25,0.5])
+gp.plot_wave(epoc_LexDelayYN_NWW_Resp, Lex_idxes['YN_NWW']['Resp_epoc'], f'YesNo NW-W epoc N={len(Lex_idxes['YN_NWW']['Resp_epoc'])}', [180/255,197/255,217/255], '--', False,ylim=[-0.25,0.5])
+plt.axvline(x=0, linestyle='--', color='k')
+plt.axhline(y=0, linestyle='--', color='k')
+plt.legend(loc='upper right', fontsize=15).set_visible(False)
+plt.gca().spines[['top', 'right']].set_visible(False)
+plt.tight_layout()
+plt.savefig(os.path.join(sf_dir,f'NWW and WNW Resp.tif'), dpi=300)
 plt.close()
 
 for tag,bslcomp_ele,taskcomp_ele1,taskcomp_ele2 in zip(
@@ -341,4 +380,147 @@ for tag,bslcomp_ele,taskcomp_ele1,taskcomp_ele2 in zip(
     venn3([bslcomp_ele,taskcomp_ele1,taskcomp_ele2], (f'BSLcontrast_inRep', f'Word-Nonword_inRep', f'Nonword-Word_inRep'))
     plt.tight_layout()
     plt.savefig(os.path.join(sf_dir, f'{tag}_inRep_WNW_NWW.tif'), dpi=300)
+    plt.close()
+
+#%% YN vs Repeat
+# Sensory-motor & Nonword-Word:
+plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+plt.title('YN vs. Repeat', fontsize=20)
+plt.xlim([-0.25, 2.5])
+gp.plot_wave(epoc_LexDelayRep_Aud, Lex_idxes['Rep']['LexDelay_Aud_all_sig_idx'], f'Repeat epoc N={len(Lex_idxes['Rep']['LexDelay_Aud_all_sig_idx'])}', [233/255,181/255,193/255], '-', False,ylim=[-0.25,1.5])
+gp.plot_wave(epoc_LexDelayYN_Aud, Lex_idxes['YN']['LexDelay_Aud_all_sig_idx'], f'YesNo epoc N={len(Lex_idxes['YN']['LexDelay_Aud_all_sig_idx'])}', [180/255,197/255,217/255], '-', False,ylim=[-0.25,1.5])
+gp.plot_wave(epoc_LexDelayYN_Rep_Aud, Lex_idxes['YN_Rep']['Aud_epoc'], f'YesNo-Repeat epoc N={len(Lex_idxes['YN_Rep']['Aud_epoc'])}', [180/255,197/255,217/255], '--', False,ylim=[-0.25,1.5])
+plt.axvline(x=0, linestyle='--', color='k')
+plt.axhline(y=0, linestyle='--', color='k')
+plt.legend(loc='upper right', fontsize=15)
+plt.gca().spines[['top', 'right']].set_visible(False)
+plt.tight_layout()
+plt.savefig(os.path.join(sf_dir,f'YN_Rep.tif'), dpi=300)
+plt.close()
+
+
+#%% Specific for Auditory & Nonword-Word, and Sensory-motor & Nonword-Word, and Word-Nonword & Sensorymotor
+
+# Auditory & Nonword-Word:
+plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+plt.title('Auditory electrodes and Nonword-word', fontsize=20)
+plt.xlim([-0.25, 2.5])
+gp.plot_wave(epoc_LexDelayRep_Aud, Lex_idxes['Rep']['LexDelay_Aud_NoMotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc'], f'Aud epoc N={len(Lex_idxes['Rep']['LexDelay_Aud_NoMotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc'])}', [233/255,181/255,193/255], '-', False,ylim=[-0.25,1.5])
+gp.plot_wave(epoc_LexDelayRep_NWW_Aud, Lex_idxes['Rep']['LexDelay_Aud_NoMotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc'], f'NW-W epoc N={len(Lex_idxes['Rep']['LexDelay_Aud_NoMotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc'])}', [180/255,197/255,217/255], '-', False,ylim=[-0.25,1.5])
+plt.axvline(x=0, linestyle='--', color='k')
+plt.axhline(y=0, linestyle='--', color='k')
+plt.legend(loc='upper right', fontsize=15)
+plt.gca().spines[['top', 'right']].set_visible(False)
+plt.tight_layout()
+plt.savefig(os.path.join(sf_dir,f'Auditory electrodes and NWW.tif'), dpi=300)
+plt.close()
+
+gp.plot_brain(subjs, list(Lex_idxes['Rep']['LexDelay_Aud_NoMotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc']), chs_cols_picked, None,
+              os.path.join(sf_dir, f'Auditory electrodes and NWW _lh.jpg'), hemi='lh', save_img=True)
+gp.plot_brain(subjs, list(Lex_idxes['Rep']['LexDelay_Aud_NoMotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc']), chs_cols_picked, None,
+              os.path.join(sf_dir, f'Auditory electrodes and NWW _rh.jpg'), hemi='rh', save_img=True)
+
+# Sensory-motor & Nonword-Word:
+plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+plt.title('Sensorymotor electrodes and Nonword-word', fontsize=20)
+plt.xlim([-0.25, 2.5])
+gp.plot_wave(epoc_LexDelayRep_Aud, Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc'], f'SM epoc N={len(Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc'])}', [233/255,181/255,193/255], '-', False,ylim=[-0.25,1.5])
+gp.plot_wave(epoc_LexDelayRep_NWW_Aud, Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc'], f'NW-W epoc N={len(Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc'])}', [180/255,197/255,217/255], '-', False,ylim=[-0.25,1.5])
+plt.axvline(x=0, linestyle='--', color='k')
+plt.axhline(y=0, linestyle='--', color='k')
+plt.legend(loc='upper right', fontsize=15)
+plt.gca().spines[['top', 'right']].set_visible(False)
+plt.tight_layout()
+plt.savefig(os.path.join(sf_dir,f'SM electrodes and NWW.tif'), dpi=300)
+plt.close()
+
+gp.plot_brain(subjs, list(Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc']), chs_cols_picked, None,
+              os.path.join(sf_dir, f'Sensorimotor electrodes and NWW _lh.jpg'), hemi='lh', save_img=True)
+gp.plot_brain(subjs, list(Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_NWW']['Aud_epoc']), chs_cols_picked, None,
+              os.path.join(sf_dir, f'Sensorimotor electrodes and NWW _rh.jpg'), hemi='rh', save_img=True)
+
+# Motor & Nonword-Word:
+plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+plt.title('Motor and Word-Nonword', fontsize=20)
+plt.xlim([-0.25, 2.5])
+gp.plot_wave(epoc_LexDelayRep_Aud, Lex_idxes['Rep']['LexDelay_Motor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc'], f'Motor epoc N={len(Lex_idxes['Rep']['LexDelay_Motor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc'])}', [233/255,181/255,193/255], '-', False,ylim=[-0.25,1.5])
+gp.plot_wave(epoc_LexDelayRep_WNW_Aud, Lex_idxes['Rep']['LexDelay_Motor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc'], f'W-NW epoc N={len(Lex_idxes['Rep']['LexDelay_Motor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc'])}', [180/255,197/255,217/255], '-', False,ylim=[-0.25,1.5])
+plt.axvline(x=0, linestyle='--', color='k')
+plt.axhline(y=0, linestyle='--', color='k')
+plt.legend(loc='upper right', fontsize=15)
+plt.gca().spines[['top', 'right']].set_visible(False)
+plt.tight_layout()
+plt.savefig(os.path.join(sf_dir,f'Motor electrodes and WNW.tif'), dpi=300)
+plt.close()
+
+gp.plot_brain(subjs, list(Lex_idxes['Rep']['LexDelay_Motor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc']), chs_cols_picked, None,
+              os.path.join(sf_dir, f'Motor electrodes and WNW _lh.jpg'), hemi='lh', save_img=True)
+gp.plot_brain(subjs, list(Lex_idxes['Rep']['LexDelay_Motor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc']), chs_cols_picked, None,
+              os.path.join(sf_dir, f'Motor electrodes and WNW _rh.jpg'), hemi='rh', save_img=True)
+
+# Sensory-motor & Nonword-Word:
+plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+plt.title('Sensorymotor electrodes and Word-Nonword', fontsize=20)
+plt.xlim([-0.25, 2.5])
+gp.plot_wave(epoc_LexDelayRep_Aud, Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc'], f'SM epoc N={len(Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc'])}', [233/255,181/255,193/255], '-', False,ylim=[-0.25,1.5])
+gp.plot_wave(epoc_LexDelayRep_WNW_Aud, Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc'], f'W-NW epoc N={len(Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc'])}', [180/255,197/255,217/255], '-', False,ylim=[-0.25,1.5])
+plt.axvline(x=0, linestyle='--', color='k')
+plt.axhline(y=0, linestyle='--', color='k')
+plt.legend(loc='upper right', fontsize=15)
+plt.gca().spines[['top', 'right']].set_visible(False)
+plt.tight_layout()
+plt.savefig(os.path.join(sf_dir,f'SM electrodes and WNW.tif'), dpi=300)
+plt.close()
+
+gp.plot_brain(subjs, list(Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc']), chs_cols_picked, None,
+              os.path.join(sf_dir, f'Sensorimotor electrodes and WNW _lh.jpg'), hemi='lh', save_img=True)
+gp.plot_brain(subjs, list(Lex_idxes['Rep']['LexDelay_Sensorimotor_sig_idx']&Lex_idxes['Rep_WNW']['Aud_epoc']), chs_cols_picked, None,
+              os.path.join(sf_dir, f'Sensorimotor electrodes and WNW _rh.jpg'), hemi='rh', save_img=True)
+
+#%% Hickok ROIs
+# Plot the Hickok ROI traces
+Sensorimotor_col = [1, 0, 0]  # Sensorimotor
+Auditory_col = [0, 1, 0]  # Auditory
+Delay_col = [1, 0.65, 0]  # Delay
+Motor_col = [0, 0, 1]  # Motor
+for tag, epoc1,sig1,epoc2,sig2 in zip(
+        ('YN_Rep','NWW','WNW'),
+        (epoc_LexDelayYN_Rep_Aud,epoc_LexDelayRep_NWW_Aud,epoc_LexDelayRep_WNW_Aud),
+        (Lex_idxes['YN_Rep']['Aud_epoc'],Lex_idxes['Rep_NWW']['Aud_epoc'],Lex_idxes['Rep_WNW']['Aud_epoc']),
+        (epoc_LexDelayYN_Rep_Aud,epoc_LexDelayYN_NWW_Aud,epoc_LexDelayYN_WNW_Aud),
+        (Lex_idxes['YN_Rep']['Aud_epoc'],Lex_idxes['YN_NWW']['Aud_epoc'],Lex_idxes['YN_WNW']['Aud_epoc'])
+):
+    # Aligned to Auditory
+    plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+    plt.title(f'Z-scores in {tag}', fontsize=20)
+    wav_bsl_corr = False
+    plt.xlim([-0.25, 2.5])
+    gp.plot_wave(epoc1, sig1 & hickok_roi_sig_idx['Spt'],
+              f'Spt n={len(sig1 & hickok_roi_sig_idx['Spt'])}',
+              Auditory_col, '-', wav_bsl_corr)
+    gp.plot_wave(epoc1, sig1 & hickok_roi_sig_idx['lPMC'],
+              f'lPMC n={len(sig1 & hickok_roi_sig_idx['lPMC'])}', Sensorimotor_col, '-', wav_bsl_corr)
+    gp.plot_wave(epoc1, sig1 & hickok_roi_sig_idx['lIFG'],
+              f'lIFG n={len(sig1 & hickok_roi_sig_idx['lIFG'])}', Motor_col, '-', wav_bsl_corr)
+    gp.plot_wave(epoc1, sig1 & hickok_roi_sig_idx['lIPL'],
+              f'lIPL n={len(sig1 & hickok_roi_sig_idx['lIPL'])}', Delay_col, '-', wav_bsl_corr)
+    if tag != 'YN_Rep':
+        gp.plot_wave(epoc2, sig2 & hickok_roi_sig_idx['Spt'],
+                  f'Spt (Yes_No) n={len(sig2 & hickok_roi_sig_idx['Spt'])}',
+                  Auditory_col, '--', wav_bsl_corr)
+        gp.plot_wave(epoc2, sig2 & hickok_roi_sig_idx['lPMC'],
+                  f'lPMC (Yes_No) n={len(sig2 & hickok_roi_sig_idx['lPMC'])}', Sensorimotor_col, '--',
+                  wav_bsl_corr)
+        gp.plot_wave(epoc2, sig2 & hickok_roi_sig_idx['lIFG'],
+                  f'lIFG (Yes_No) n={len(sig2 & hickok_roi_sig_idx['lIFG'])}', Motor_col, '--',
+                  wav_bsl_corr)
+        gp.plot_wave(epoc2, sig2 & hickok_roi_sig_idx['lIPL'],
+                  f'lIPL (Yes_No) n={len(sig2 & hickok_roi_sig_idx['lIPL'])}', Delay_col, '--',
+                  wav_bsl_corr)
+    plt.axvline(x=0, linestyle='--', color='k')
+    # plt.axhline(y=0, linestyle='--', color='k')
+    plt.legend(loc='upper right', fontsize=15)
+    plt.gca().spines[['top', 'right']].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(sf_dir, f'{tag}_Aud_Hikcok_ROI.tif'), dpi=300)
     plt.close()

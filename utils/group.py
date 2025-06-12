@@ -1,6 +1,6 @@
 from pyqtgraph.util.cprint import color
 
-def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0,trial_labels: str='CORRECT'):
+def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0,trial_labels: str='CORRECT',keeptrials: bool=False):
     """
     Load patient level stats files (e.g., *.fif) for further group level analysis
     output is an ieeg LabeledArray
@@ -15,6 +15,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
     import mne
     import glob
     from ieeg.arrays.label import LabeledArray
+    from ieeg.arrays.label import combine as cb_dict
 
     match stat_type:
         case "zscore":
@@ -47,7 +48,6 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
         subj_gamma_stats_dir = os.path.join(stats_root_readdata, subject)
 
-
         subj_gamma_clean_dir = os.path.join(clean_root_readdata, f"sub-{subject}", "ieeg")
 
         if stat_type == 'glm':
@@ -70,29 +70,35 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
             case "zscore":
                 subj_dataset = subj_dataset[trial_labels]
                 subj_data_epo = subj_dataset._data
-                match split_half:
-                    case 0:
-                        subj_data = np.mean(subj_data_epo, axis=0)
-                    case 1:
-                        half = subj_data_epo.shape[0] // 2
-                        subj_data = np.std(subj_data_epo[:half], axis=0)
-                    case 2:
-                        half = subj_data_epo.shape[0] // 2
-                        subj_data = np.std(subj_data_epo[half:], axis=0)
+                if keeptrials:
+                    subj_data = subj_data_epo
+                else:
+                    match split_half:
+                        case 0:
+                            subj_data = np.mean(subj_data_epo, axis=0)
+                        case 1:
+                            half = subj_data_epo.shape[0] // 2
+                            subj_data = np.std(subj_data_epo[:half], axis=0)
+                        case 2:
+                            half = subj_data_epo.shape[0] // 2
+                            subj_data = np.std(subj_data_epo[half:], axis=0)
                 subj_chs = subj_dataset.ch_names
                 times = subj_dataset.times
             case "power":
                 subj_dataset = subj_dataset[trial_labels]
                 subj_data_epo = subj_dataset._data
-                match split_half:
-                    case 0:
-                        subj_data = np.mean(subj_data_epo, axis=0)
-                    case 1:
-                        half = subj_data_epo.shape[0] // 2
-                        subj_data = np.std(subj_data_epo[:half], axis=0)
-                    case 2:
-                        half = subj_data_epo.shape[0] // 2
-                        subj_data = np.std(subj_data_epo[half:], axis=0)
+                if keeptrials:
+                    subj_data = subj_data_epo
+                else:
+                    match split_half:
+                        case 0:
+                            subj_data = np.mean(subj_data_epo, axis=0)
+                        case 1:
+                            half = subj_data_epo.shape[0] // 2
+                            subj_data = np.std(subj_data_epo[:half], axis=0)
+                        case 2:
+                            half = subj_data_epo.shape[0] // 2
+                            subj_data = np.std(subj_data_epo[half:], axis=0)
                 subj_chs = subj_dataset.ch_names
                 times = subj_dataset.times
             case "significance":
@@ -116,6 +122,11 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
                 subj_chs = chs_time_dataset_forglm[0].ch_names
                 times = chs_time_dataset_forglm[0].times
 
+        if keeptrials:
+            arr = LabeledArray.from_signal(subj_dataset)
+            trial_annoate = arr.labels[0]
+            del arr
+            # trial_annoate = make_array_unique(trial_annoate,'/')
         del subj_dataset # clear up memory
 
         # read original channel labels (before outlier and muscle channel removals)
@@ -136,9 +147,16 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
             # Some awkard channels in D0026 lexical no delay
             org_labeled_chs = [ch for ch in org_labeled_chs if 'RPF' not in ch]
 
+        # May try this:
+        # arr.labels[1]=Labels(['D' + subject[1:].lstrip('0')]) @ Labels(arr.labels[1])
+
         good_labeled_chs = [f"{subject} {ch}" for ch in subj_chs]
 
-        aligned_data,aligned_chs = align_channel_data(subj_data, good_labeled_chs, org_labeled_chs)
+        if keeptrials:
+            add_subj_labels=False
+        else:
+            add_subj_labels=True
+        aligned_data,aligned_chs = align_channel_data(subj_data, good_labeled_chs, org_labeled_chs,add_subj_labels=add_subj_labels)
 
         data_lst.append(aligned_data)
         chs.extend(aligned_chs)
@@ -150,11 +168,67 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
         # data_lst.append(subj_data)
         # chs.extend(good_labeled_chs_reformat)
 
+        if keeptrials:
+            labels=[trial_annoate,aligned_chs,times]
+            subj_arr = LabeledArray(aligned_data, labels)
+            subj_dict = subj_arr.to_dict()
+            del subj_arr,aligned_data
+            subject = 'D' + subject[1:].lstrip('0')
+            if i==0:
+                data=dict()
+            data[subject]=subj_dict
+            del subj_dict
 
-    data_raw = np.concatenate(data_lst, axis=0)
-    labels = [chs, times]
-    data=LabeledArray(data_raw, labels)
+    if keeptrials:
+        data_dict=cb_dict(data,(0,2),'-')
+        del data
+        data=LabeledArray.from_dict(data_dict)
+        del data_dict
+    else:
+        data_raw = np.concatenate(data_lst, axis=0)
+        labels = [chs, times]
+        data=LabeledArray(data_raw, labels)
     return data,valid_subjs
+
+import numpy as np
+def make_array_unique(arr: np.ndarray, delimiter: str) -> np.ndarray:
+    """Make an array unique by appending a number to duplicate values.
+
+    Parameters
+    ----------
+    arr : np.ndarray
+        The array to make unique.
+    delimiter : str
+        The delimiter to use when appending a number to duplicate values.
+
+    Returns
+    -------
+    np.ndarray
+        The unique array.
+
+    Examples
+    --------
+    # >>> arr = np.array(['a', 'b', 'c', 'a', 'b', 'c'])
+    # >>> _make_array_unique(arr, '-')
+    array(['a-0', 'b-0', 'c-0', 'a-1', 'b-1', 'c-1'], dtype='<U3')
+    # >>> arr = np.array(['a', 'b', 'c', 'd', 'e', 'f'])
+    # >>> _make_array_unique(arr, '-')
+    array(['a', 'b', 'c', 'd', 'e', 'f'], dtype='<U1')
+    """
+    unique, inverse = np.unique(arr, return_inverse=True)
+    if len(unique) == len(arr):
+        return arr
+    counts = np.bincount(inverse)
+    max_dtype = np.max([len(u) for u in unique]) + 1 + len(str(max(counts)))
+    out = np.empty_like(arr, dtype=f'<U{max_dtype}')
+    for i, (u, c) in enumerate(zip(unique, counts)):
+        if c == 1:
+            out[inverse == i] = u
+        else:
+            indices = np.where(arr == u)[0]
+            for j, index in enumerate(indices):
+                out[index] = f"{u}{delimiter}{j}"
+    return out
 
 def sel_subj_data(data_in,chs_idx):
     from ieeg.arrays.label import LabeledArray
@@ -394,59 +468,100 @@ def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,25]):
     plt.savefig(fig_save_dir_fm, dpi=300)
     plt.close()
 
-def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs,glm_out: str='beta'):
+def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs, glm_out: str='beta',add_subj_labels: bool=True):
     """
     Aligns channel data by adding missing channels with NaN values.
+
+    This function now supports subject data with either 2 dimensions (channels, timepoints)
+    or 3 dimensions (trials, channels, timepoints). It aligns the channels to a
+    predefined list of original channel labels, filling in NaN for any channels
+    present in the `org_labeled_chs` but not in the `subj_data`.
 
     Parameters:
     -----------
     subj_data : numpy.ndarray
-        Original subject data array with shape (n_channels, n_timepoints)
+        Original subject data array.
+        Expected shapes:
+        - (n_channels, n_timepoints) for 2D data (e.g., 'beta' output without trials).
+        - (n_trials, n_channels, n_timepoints) for 3D data (e.g., 'beta' output with trials).
+        - If `glm_out` is 'r2', `n_timepoints` will typically be 1.
     good_labeled_chs : list
-        List of current channel labels in the data
+        List of current channel labels present in the `subj_data` array.
+        Each label is expected to include a subject prefix (e.g., ['D001 ch1', 'D001 ch2']).
     org_labeled_chs : list
-        List of all original channel labels
+        List of all original/reference channel labels that the data should be aligned to.
+        These should be just the channel names (e.g., ['ch1', 'ch2', 'ch3']).
+    glm_out : str, optional
+        Type of GLM output. This parameter primarily influences the interpretation
+        of the last dimension of `subj_data`.
+        - 'beta': Assumes the last dimension represents timepoints.
+        - 'r2': Assumes the last dimension represents a single value (e.g., R-squared).
+        Default is 'beta'.
 
     Returns:
     --------
     numpy.ndarray
-        Aligned data array with all original channels
+        Aligned data array with all original channels, filled with NaNs where channels were missing.
+        The shape will match the input `subj_data` dimensionality but with the number of
+        channels expanded to `len(org_labeled_chs)`.
     list
-        Updated channel labels
+        Updated channel labels for the aligned data, including the subject prefix.
     """
     import numpy as np
+    # Get the number of dimensions of the input subject data
+    ndim = subj_data.ndim
 
-    if len(subj_data.shape) != 2:
-        raise ValueError("Subject data must be 2-dimensional (channels x timepoints)")
+    # Validate input data dimensions
+    if ndim not in [2, 3]:
+        raise ValueError(
+            "Subject data must be 2-dimensional (channels x timepoints) "
+            "or 3-dimensional (trials x channels x timepoints)"
+        )
 
-    # Extract just the channel names from good_labeled_chs (removing subject prefix)
+    # Extract just the channel names from good_labeled_chs by removing the subject prefix.
+    # Assumes channel labels are in the format "SubjectID ChannelName"
     current_chs = [ch.split()[-1] for ch in good_labeled_chs]
 
-    if glm_out=='beta':
-        # Get the number of timepoints from the original data
-        n_timepoints = subj_data.shape[1]
-        # Initialize the new data array with NaNs
-        aligned_data = np.full((len(org_labeled_chs), n_timepoints), np.nan)
-    if glm_out == 'r2':
-        aligned_data = np.full((len(org_labeled_chs), 1), np.nan)
+    # Determine the shape for the initialized aligned_data array based on input dimensions
+    if ndim == 2:
+        # For 2D data: (n_channels_in_input_data, n_timepoints_or_single_value)
+        n_timepoints_or_single_value = subj_data.shape[1]
+        output_shape = (len(org_labeled_chs), n_timepoints_or_single_value)
+    else: # ndim == 3
+        # For 3D data: (n_trials, n_channels_in_input_data, n_timepoints_or_single_value)
+        n_trials = subj_data.shape[0]
+        n_timepoints_or_single_value = subj_data.shape[2]
+        output_shape = (n_trials, len(org_labeled_chs), n_timepoints_or_single_value)
 
-    # Create a mapping of current channels to their indices
+    # Initialize the new data array with NaN values. This array will store the aligned data.
+    aligned_data = np.full(output_shape, np.nan)
+
+    # Create a dictionary mapping channel names from the `current_chs` list to their
+    # corresponding row/slice index in the input `subj_data`.
     current_ch_indices = {ch: idx for idx, ch in enumerate(current_chs)}
 
-    # Fill in the data for existing channels
+    # Iterate through the `org_labeled_chs` (the desired full list of channels).
+    # For each channel, if it exists in the input `subj_data`, copy its data into the
+    # correct position in the `aligned_data` array.
     for new_idx, org_ch in enumerate(org_labeled_chs):
         if org_ch in current_ch_indices:
-            aligned_data[new_idx] = subj_data[current_ch_indices[org_ch]]
+            # Get the index of the current channel in the original subj_data
+            source_idx = current_ch_indices[org_ch]
+            if ndim == 2:
+                # If 2D, copy the entire row (channel data) from subj_data to aligned_data
+                aligned_data[new_idx] = subj_data[source_idx]
+            else: # If 3D, copy the entire slice for that channel across all trials and timepoints
+                aligned_data[:, new_idx, :] = subj_data[:, source_idx, :]
 
     # Create new channel labels with subject prefix
     subject = good_labeled_chs[0].split()[0]  # Extract subject from first channel
     subject = 'D' + subject[1:].lstrip('0')
-    aligned_chs = [f"{subject}-{ch}" for ch in org_labeled_chs]
-
-    # print missing channels
-    for curr_chs in current_ch_indices.keys():
-        if curr_chs not in org_labeled_chs:
-            print(f"Lost channel: {subject}-{curr_chs}, found in stats but not found in channels.tsv")
+    # May try this:
+    # arr.labels[1]=Labels(['D' + subject[1:].lstrip('0')]) @ Labels(arr.labels[1])
+    if add_subj_labels:
+        aligned_chs = [f"{subject}-{ch}" for ch in org_labeled_chs]
+    else:
+        aligned_chs = org_labeled_chs
 
     return aligned_data, aligned_chs
 
