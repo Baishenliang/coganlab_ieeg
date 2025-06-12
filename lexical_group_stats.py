@@ -16,7 +16,7 @@ contrast='ave' # average, not contrasting different conditions
 
 # For lexical delay task, whether run the data only with repeat tasks
 #Delayseleted=''
-Delayseleted = '_inRep_NWW'
+Delayseleted = '_inRep'
 trial_labels='CORRECT'
 
 # Parameters from the lexical delay task
