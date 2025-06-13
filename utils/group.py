@@ -75,13 +75,13 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
                 else:
                     match split_half:
                         case 0:
-                            subj_data = np.mean(subj_data_epo, axis=0)
+                            subj_data = np.nanmean(subj_data_epo, axis=0)
                         case 1:
                             half = subj_data_epo.shape[0] // 2
-                            subj_data = np.std(subj_data_epo[:half], axis=0)
+                            subj_data = np.nanstd(subj_data_epo[:half], axis=0)
                         case 2:
                             half = subj_data_epo.shape[0] // 2
-                            subj_data = np.std(subj_data_epo[half:], axis=0)
+                            subj_data = np.nanstd(subj_data_epo[half:], axis=0)
                 subj_chs = subj_dataset.ch_names
                 times = subj_dataset.times
             case "power":
@@ -92,13 +92,13 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
                 else:
                     match split_half:
                         case 0:
-                            subj_data = np.mean(subj_data_epo, axis=0)
+                            subj_data = np.nanmean(subj_data_epo, axis=0)
                         case 1:
                             half = subj_data_epo.shape[0] // 2
-                            subj_data = np.std(subj_data_epo[:half], axis=0)
+                            subj_data = np.nanstd(subj_data_epo[:half], axis=0)
                         case 2:
                             half = subj_data_epo.shape[0] // 2
-                            subj_data = np.std(subj_data_epo[half:], axis=0)
+                            subj_data = np.nanstd(subj_data_epo[half:], axis=0)
                 subj_chs = subj_dataset.ch_names
                 times = subj_dataset.times
             case "significance":

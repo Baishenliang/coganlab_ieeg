@@ -7,7 +7,12 @@ import utils.group as gp
 
 # %% groups of patients
 from pickle import FALSE
-
+# Relocate the working directory if needed
+# Only need it if run it in an editor. If run in terminal, use cd.
+script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\GLM\\step1_glm_permute.py')
+current_dir = os.getcwd()
+if current_dir != script_dir:
+    os.chdir(script_dir)
 datasource='hg' # 'glm_(Feature)' or 'hg'
 groupsTag="LexDelay"
 sf_dir = 'D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\YN_WNW_HGtraces_compare_06082025\\plots'
@@ -44,49 +49,49 @@ if not os.path.exists(os.path.join(stats_save_root)):
 if groupsTag=="LexDelay":
 
     data_LexDelayRep_Aud,subjs=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay)
-    epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
+    epoc_LexDelayRep_Aud,_=gp.load_stats('pval','Auditory_inRep','ave',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
 
     # Get the ROI of labels
     ch_labels_roi,ch_labels=gp.chs2atlas(subjs,data_LexDelayRep_Aud.labels[0])
 
     data_LexDelayRep_Resp, _ = gp.load_stats('mask', 'Resp_inRep', 'ave', stats_root_delay, stats_root_delay)
-    epoc_LexDelayRep_Resp, _ = gp.load_stats('zscore', 'Resp_inRep', 'epo', stats_root_delay, stats_root_delay)
+    epoc_LexDelayRep_Resp, _ = gp.load_stats('pval', 'Resp_inRep', 'ave', stats_root_delay, stats_root_delay)
 
     data_LexDelayRep_NWW_Aud,_=gp.load_stats('mask','Auditory_inRep_NWW','ave',stats_root_delay,stats_root_delay)
-    epoc_LexDelayRep_NWW_Aud,_=gp.load_stats('zscore','Auditory_inRep_NWW','epo',stats_root_delay,stats_root_delay)
+    epoc_LexDelayRep_NWW_Aud,_=gp.load_stats('pval','Auditory_inRep_NWW','ave',stats_root_delay,stats_root_delay)
 
     data_LexDelayRep_NWW_Resp, _ = gp.load_stats('mask', 'Resp_inRep_NWW', 'ave', stats_root_delay, stats_root_delay)
-    epoc_LexDelayRep_NWW_Resp, _ = gp.load_stats('zscore', 'Resp_inRep_NWW', 'epo', stats_root_delay, stats_root_delay)
+    epoc_LexDelayRep_NWW_Resp, _ = gp.load_stats('pval', 'Resp_inRep_NWW', 'ave', stats_root_delay, stats_root_delay)
 
     data_LexDelayRep_WNW_Aud,_=gp.load_stats('mask','Auditory_inRep_WNW','ave',stats_root_delay,stats_root_delay)
-    epoc_LexDelayRep_WNW_Aud,_=gp.load_stats('zscore','Auditory_inRep_WNW','epo',stats_root_delay,stats_root_delay)
+    epoc_LexDelayRep_WNW_Aud,_=gp.load_stats('pval','Auditory_inRep_WNW','ave',stats_root_delay,stats_root_delay)
 
     data_LexDelayRep_WNW_Resp, _ = gp.load_stats('mask', 'Resp_inRep_WNW', 'ave', stats_root_delay, stats_root_delay)
-    epoc_LexDelayRep_WNW_Resp, _ = gp.load_stats('zscore', 'Resp_inRep_WNW', 'epo', stats_root_delay, stats_root_delay)
+    epoc_LexDelayRep_WNW_Resp, _ = gp.load_stats('pval', 'Resp_inRep_WNW', 'ave', stats_root_delay, stats_root_delay)
 
     data_LexDelayYN_Aud,_=gp.load_stats('mask','Auditory_inYN','ave',stats_root_delay,stats_root_delay)
-    epoc_LexDelayYN_Aud,_=gp.load_stats('zscore','Auditory_inYN','epo',stats_root_delay,stats_root_delay)
+    epoc_LexDelayYN_Aud,_=gp.load_stats('pval','Auditory_inYN','ave',stats_root_delay,stats_root_delay)
 
     data_LexDelayYN_Resp, _ = gp.load_stats('mask', 'Resp_inYN', 'ave', stats_root_delay, stats_root_delay)
-    epoc_LexDelayYN_Resp, _ = gp.load_stats('zscore', 'Resp_inYN', 'epo', stats_root_delay, stats_root_delay)
+    epoc_LexDelayYN_Resp, _ = gp.load_stats('pval', 'Resp_inYN', 'ave', stats_root_delay, stats_root_delay)
 
     data_LexDelayYN_NWW_Aud,_=gp.load_stats('mask','Auditory_inYN_NWW','ave',stats_root_delay,stats_root_delay)
-    epoc_LexDelayYN_NWW_Aud,_=gp.load_stats('zscore','Auditory_inYN_NWW','epo',stats_root_delay,stats_root_delay)
+    epoc_LexDelayYN_NWW_Aud,_=gp.load_stats('pval','Auditory_inYN_NWW','ave',stats_root_delay,stats_root_delay)
 
     data_LexDelayYN_NWW_Resp, _ = gp.load_stats('mask', 'Resp_inYN_NWW', 'ave', stats_root_delay, stats_root_delay)
-    epoc_LexDelayYN_NWW_Resp, _ = gp.load_stats('zscore', 'Resp_inYN_NWW', 'epo', stats_root_delay, stats_root_delay)
+    epoc_LexDelayYN_NWW_Resp, _ = gp.load_stats('pval', 'Resp_inYN_NWW', 'ave', stats_root_delay, stats_root_delay)
 
     data_LexDelayYN_WNW_Aud,_=gp.load_stats('mask','Auditory_inYN_WNW','ave',stats_root_delay,stats_root_delay)
-    epoc_LexDelayYN_WNW_Aud,_=gp.load_stats('zscore','Auditory_inYN_WNW','epo',stats_root_delay,stats_root_delay)
+    epoc_LexDelayYN_WNW_Aud,_=gp.load_stats('pval','Auditory_inYN_WNW','ave',stats_root_delay,stats_root_delay)
 
     data_LexDelayYN_WNW_Resp, _ = gp.load_stats('mask', 'Resp_inYN_WNW', 'ave', stats_root_delay, stats_root_delay)
-    epoc_LexDelayYN_WNW_Resp, _ = gp.load_stats('zscore', 'Resp_inYN_WNW', 'epo', stats_root_delay, stats_root_delay)
+    epoc_LexDelayYN_WNW_Resp, _ = gp.load_stats('pval', 'Resp_inYN_WNW', 'ave', stats_root_delay, stats_root_delay)
 
     data_LexDelayYN_Rep_Aud,_=gp.load_stats('mask','Auditory_inYN_inRep','ave',stats_root_delay,stats_root_delay)
-    epoc_LexDelayYN_Rep_Aud,_=gp.load_stats('zscore','Auditory_inYN_inRep','epo',stats_root_delay,stats_root_delay)
+    epoc_LexDelayYN_Rep_Aud,_=gp.load_stats('pval','Auditory_inYN_inRep','ave',stats_root_delay,stats_root_delay)
 
     data_LexDelayYN_Rep_Resp, _ = gp.load_stats('mask', 'Resp_inYN_inRep', 'ave', stats_root_delay, stats_root_delay)
-    epoc_LexDelayYN_Rep_Resp, _ = gp.load_stats('zscore', 'Resp_inYN_inRep', 'epo', stats_root_delay, stats_root_delay)
+    epoc_LexDelayYN_Rep_Resp, _ = gp.load_stats('pval', 'Resp_inYN_inRep', 'ave', stats_root_delay, stats_root_delay)
 
 
 elif groupsTag=="LexDelay&LexNoDelay":
@@ -102,12 +107,12 @@ elif groupsTag=="LexDelay&LexNoDelay":
     data_LexDelayRep_Resp, _ = gp.load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_delay)
     data_LexNoDelayRep_Resp, _ = gp.load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
 
-    epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels)
-    epoc_LexNoDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
-    epoc_LexNoDelayJL_Aud,_=gp.load_stats('zscore','Auditory_inSilence','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
+    epoc_LexDelayRep_Aud,_=gp.load_stats('pval','Auditory_inRep','ave',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels)
+    epoc_LexNoDelayRep_Aud,_=gp.load_stats('pval','Auditory_inRep','ave',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
+    epoc_LexNoDelayJL_Aud,_=gp.load_stats('pval','Auditory_inSilence','ave',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
-    epoc_LexDelayRep_Resp,_=gp.load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels)
-    epoc_LexNoDelayRep_Resp,_=gp.load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
+    epoc_LexDelayRep_Resp,_=gp.load_stats('pval','Resp_inRep','ave',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels)
+    epoc_LexNoDelayRep_Resp,_=gp.load_stats('pval','Resp_inRep','ave',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
 chs_coor=gp.get_coor(data_LexDelayRep_Aud.labels[0],'group')
 hickok_roi_labels, hickok_roi_sig_idx=gp.hickok_roi_sphere(chs_coor)
@@ -229,14 +234,15 @@ Lex_idxes['YN_Rep'] = Lex_idx
 # %% Plot 3d brain surfaces for each group of sig electrodes：
 len_d = len(data_LexDelayRep_Aud.labels[0])
 for Lex_idx_tag,Lex_idx in Lex_idxes.items():
-    if Lex_idx_tag=='Rep' or Lex_idx_tag=='YN':
-        continue
+    # if Lex_idx_tag=='Rep' or Lex_idx_tag=='YN':
+    #     continue
     hickok_roi_all = pd.DataFrame()
     for ele_subgrp_tag,ele_subgrp in Lex_idx.items():
         chs_cols_picked = [[1,0,0] for i in range(len(ele_subgrp))]
-        gp.plot_brain(subjs, list(ele_subgrp), chs_cols_picked,None,os.path.join(sf_dir,f'{Lex_idx_tag}_{ele_subgrp_tag}_lh.jpg'),hemi='lh',save_img=True)
-        gp.plot_brain(subjs, list(ele_subgrp), chs_cols_picked,None,os.path.join(sf_dir,f'{Lex_idx_tag}_{ele_subgrp_tag}_rh.jpg'),hemi='rh',save_img=True)
-        gp.atlas2_hist(ch_labels_roi, data_LexDelayRep_Aud.labels[0][list(ele_subgrp)], chs_cols_picked[0],
+        pick_labels = [data_LexDelayRep_Aud.labels[0][i] for i in list(ele_subgrp)]
+        gp.plot_brain(subjs, pick_labels, chs_cols_picked,None,os.path.join(sf_dir,f'{Lex_idx_tag}_{ele_subgrp_tag}_lh.jpg'),hemi='lh',save_img=True)
+        gp.plot_brain(subjs, pick_labels, chs_cols_picked,None,os.path.join(sf_dir,f'{Lex_idx_tag}_{ele_subgrp_tag}_rh.jpg'),hemi='rh',save_img=True)
+        gp.atlas2_hist(ch_labels_roi, pick_labels, chs_cols_picked[0],
                     os.path.join(sf_dir, f'Atlas histogram {Lex_idx_tag} {ele_subgrp_tag}.tif'),ylim=[0,50])
         gp.plot_sig_roi_counts(hickok_roi_labels, chs_cols_picked[0], gp.set2arr(ele_subgrp,len_d),
                             os.path.join(sf_dir, f'Hickok ROI histogram {Lex_idx_tag} {ele_subgrp_tag}.tif'))

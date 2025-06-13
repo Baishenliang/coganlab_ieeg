@@ -56,8 +56,8 @@ if groupsTag=="LexDelay":
     if datasource=='hg':
 
         data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
-        if Delayseleted=='_inRep':
-            data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
+        # if Delayseleted=='_inRep':
+        #     data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
         data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
         # Get the ROI of labels
