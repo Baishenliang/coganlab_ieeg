@@ -31,7 +31,7 @@ Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
 stat = "zscore"
-glm_feas = ["Acoustic","Phonemic","Lexical"]
+glm_feas = ["Acoustic","Phonemic","Nonword"]
 wordnesses = ["ALL"]#["ALL", "Word", "Nonword"]
 cluster_twin=0.011
 mean_word_len=0.62
@@ -56,18 +56,18 @@ for wordness in wordnesses:
     chs_all = masks.labels[0]
     chs_coor = gp.get_coor(chs_all, 'group')
     ch_labels_roi, _ = gp.chs2atlas(subjs,chs_all)
-    hickok_roi_labels = gp.hickok_roi_sphere(chs_coor)
+    hickok_roi_labels,_ = gp.hickok_roi_sphere(chs_coor)
     if wordness == 'ALL':
         keys_of_interest = [
             "Auditory_inRep/Repeat/ALL/Acoustic/aud",
             "Auditory_inRep/Repeat/ALL/Phonemic/aud",
-            "Auditory_inRep/Repeat/ALL/Lexical/aud",
+            "Auditory_inRep/Repeat/ALL/Word/aud",
             "Auditory_inRep/Repeat/ALL/Acoustic/del",
             "Auditory_inRep/Repeat/ALL/Phonemic/del",
-            "Auditory_inRep/Repeat/ALL/Lexical/del",
+            "Auditory_inRep/Repeat/ALL/Word/del",
             "Resp_inRep/Repeat/ALL/Acoustic/resp",
             "Resp_inRep/Repeat/ALL/Phonemic/resp",
-            "Resp_inRep/Repeat/ALL/Lexical/resp"
+            "Resp_inRep/Repeat/ALL/Word/resp"
         ]
     else:
         keys_of_interest = [
@@ -86,13 +86,13 @@ for wordness in wordnesses:
             col = Acoustic_col
         elif 'Phonemic' in TypeLabel:
             col = Phonemic_col
-        elif 'Lexical' in TypeLabel:
+        elif 'Word' in TypeLabel:
             col = Lexical_col
         chs_sel=chs_all[list(sig)].tolist()
         cols=[col]*len(chs_sel)
         gp.plot_brain(subjs, chs_sel, cols, None,
                    os.path.join('plot', f'GLM electrode loc {TypeLabel}.jpg'))
-        gp.atlas2_hist(ch_labels_roi,chs_sel,col,os.path.join('plot',f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'))
+        gp.atlas2_hist(ch_labels_roi,chs_sel,col,os.path.join('plot',f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'),ylim=[0,100])
         gp.plot_sig_roi_counts(hickok_roi_labels, col, sig, os.path.join('plot',f'Hickok ROI histogram {TypeLabel.replace('/', ' ')}.tif'))
         hickok_roi_all[TypeLabel] = gp.get_sig_roi_counts(hickok_roi_labels, sig)
 

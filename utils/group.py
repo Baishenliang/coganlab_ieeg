@@ -401,6 +401,11 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False):
     vmin = np.percentile(data, 25)
     vmax = np.percentile(data, 75)
     im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax)
+    # Add the colorbar to the plot
+    cbar = fig.colorbar(im, ax=ax, ticks=[vmin, vmax])
+    # Label the ticks
+    cbar.ax.set_yticklabels([f'Min: {vmin:.2f}', f'Max: {vmax:.2f}'])
+    cbar.set_label('Data Range') # Add a label for the colorbar
     # fig.colorbar(im, ax=ax)
     ax.set_title(title)
 

@@ -37,7 +37,7 @@ events = ["Auditory_inRep","Resp_inRep"]
 stat = "zscore"
 task_Tags = ["Repeat"]#,"Yes_No"]
 wordnesses = ["ALL"]#, "Word", "Nonword"]
-glm_feas = ["Acoustic","Phonemic","Lexical"]
+glm_feas = ["Acoustic","Phonemic","Word","Nonword"]#["Acoustic","Phonemic","Lexical"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
@@ -117,7 +117,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                     hgmask_resp=masks
 
             if plot_wave_type=='stat':
-                stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats
+                stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*1e4
             elif plot_wave_type=='mask':
                 stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=masks*100
             del masks,stats
@@ -170,7 +170,7 @@ if mask_type=='glm':
 
         ytitles = ['Peak latency from stim onset (ms)']
         subtitles = [f'GLM R-squared peak latency in {peak_Tag}']
-        x_order = ['Acoustic', 'Phonemic', 'Lexical']
+        x_order = ['Acoustic', 'Phonemic', 'Word']
 
         y_limits = [(0,1.5)]
         # y_ticks = [range(0, 1.5, 0.1)]
@@ -258,14 +258,14 @@ for wordness in wordnesses[:2]:
                          'Acoustic', Acoustic_col, '-',True)
             gp.plot_wave(stass[f'Auditory_inRep/Repeat/{wordness}/Phonemic'], sig_idx[f"Auditory_inRep/Repeat/{wordness}/Phonemic/{md}"],
                          'Phonemic', Phonemic_col, '-',True)
-            gp.plot_wave(stass[f'Auditory_inRep/Repeat/{wordness}/Lexical'], sig_idx[f"Auditory_inRep/Repeat/{wordness}/Lexical/{md}"],
+            gp.plot_wave(stass[f'Auditory_inRep/Repeat/{wordness}/Word'], sig_idx[f"Auditory_inRep/Repeat/{wordness}/Word/{md}"],
                          'Lexical status', Lexical_col, '-',True)
             if 'Yes_No' in task_Tags:
                 gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Acoustic'], sig_idx[f"Auditory/Yes_No/{wordness}/Acoustic/{md}"],
                          'Acoustic YN', Acoustic_col, '--',True)
                 gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Phonemic'], sig_idx[f"Auditory/Yes_No/{wordness}/Phonemic/{md}"],
                          'Phonemic YN', Phonemic_col, '--',True)
-                gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Lexical'], sig_idx[f"Auditory/Yes_No/{wordness}/Lexical/{md}"],
+                gp.plot_wave(stass[f'Auditory/Yes_No/{wordness}/Word'], sig_idx[f"Auditory/Yes_No/{wordness}/Word/{md}"],
                          'Lexical status YN', Lexical_col, '--',True)
         elif wordness == 'Word':
             gp.plot_wave(stass[f'Auditory_inRep/Repeat/Word/Acoustic'], sig_idx[f"Auditory_inRep/Repeat/Word/Acoustic/{md}"],
@@ -334,7 +334,7 @@ for wordness in wordnesses[:2]:
         plt.ylabel(r'Perc. of sig. elec. (%)', fontsize=20)
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.legend(fontsize=15)
-    plt.xlim(xlim_l, xlim_r)
+    # plt.xlim(xlim_l, xlim_r)
     plt.xlabel('Time from motor onset (s)')
     plt.tight_layout()
     plt.savefig(os.path.join('plot', f'wave motor onset in {wordness} {plot_wave_type}.tif'),dpi=300)
