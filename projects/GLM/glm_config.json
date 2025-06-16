@@ -1,20 +1,24 @@
 {
     "model": "partial",
-    "alpha": 0.05,
+    "alpha": 0.025,
     "alpha_clus": 0.05,
     "n_perms": 5000,
     "stat": "zscore",
     "feature_ranges": {
         "BSL_correct": [1],
         "Lexical": [1],
-        "Phonemic": [2, 34],
-        "Acoustic": [34, 50]
+        "Word": [1],
+        "Nonword": [2],
+        "Phonemic": [3, 35],
+        "Acoustic": [35, 51]
     },
     "control_feature_ranges": {
         "BSL_correct": [],
         "Acoustic": [],
-        "Phonemic": [34, 50],
-        "Lexical": [2, 50]
+        "Phonemic": [35, 51],
+        "Lexical": [3, 51],
+        "Word": [3, 51],
+        "Nonword": [3, 51]
     },
     "Acoustic_col": [1, 0.549, 0],
     "Phonemic_col": [0.541, 0.169, 0.886],

@@ -139,13 +139,14 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False):
 
         else:
             # Feature matrix
-            wordness_dummy = (filtered_events_i.Wordness == "Word").astype(float)
+            word_dummy = (filtered_events_i.Wordness == "Word").astype(float)
+            nonword_dummy = (filtered_events_i.Wordness == "Nonword").astype(float)
             phoneme_vectors = []
             acoustic_vectors = []
             for stim in filtered_events_i.Stim:
                 phoneme_vectors.append(phoneme_codes[stim])
                 acoustic_vectors.append(acoustic_codes[stim])
-            X_i = np.column_stack([np.ones(np.shape(data_i)[0]), wordness_dummy, phoneme_vectors, acoustic_vectors])
+            X_i = np.column_stack([np.ones(np.shape(data_i)[0]), word_dummy, nonword_dummy, phoneme_vectors, acoustic_vectors])
 
             # Test Multicollinearity
             # if i == 0:
@@ -235,7 +236,7 @@ def ridge_cv_alpha2score(X_clean, y_clean, alphas_to_test, n_splits=5, random_st
 
     return r2s
 
-def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual,glm_out: str='beta',alpha: float=np.nan):
+def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual,glm_out: str='beta_abs',alpha: float=np.nan):
     """
     Computes the global R^2 score using Ridge regression with Leave-One-Out
     cross-validation across all time points simultaneously.
@@ -262,11 +263,15 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual,glm_out: str='beta',alp
     else:
         y_res = np.full_like(y, np.nan)
 
-    if glm_out=='beta':
+    if glm_out=='beta_abs':
         # output beta values: as a function of times
         # sum of abs betas
         coef = np.nanmean(np.abs(ridge_model.coef_[:,perm_feature_idx]), axis=1)
-    if glm_out=='r2_series':
+    elif glm_out=='beta':
+        # output beta values: as a function of times
+        # sum of betas
+        coef = np.nanmean(ridge_model.coef_[:,perm_feature_idx], axis=1)
+    elif glm_out=='r2_series':
         # r2 time-resolved
         residual = np.nansum(y_clean_res ** 2, axis=0)
         coef = 1 - residual / (np.nansum((y_clean - np.nanmean(y_clean, axis=0)) ** 2, axis=0))
@@ -293,7 +298,7 @@ def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas,isresid
     # return
     #   beta_i: r2 matrix, channels * times
     n_trials, n_channels_i, n_times = data_i.shape
-    if glm_out == 'beta' or glm_out == 'r2_series':
+    if glm_out == 'beta_abs' or glm_out == 'beta' or glm_out == 'r2_series':
         coef_i = np.full((n_channels_i, n_times), np.nan)
     elif glm_out == 'cv_r2':
         coef_i = np.full((n_channels_i, 10), np.nan)
@@ -303,7 +308,7 @@ def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas,isresid
     for ch in range(n_channels_i):
         x = feature_mat_i[:, ch, :]
         y = data_i[:, ch, :]
-        if glm_out == 'beta' or glm_out == 'r2' or glm_out == 'r2_series':
+        if glm_out == 'beta_abs' or glm_out == 'beta' or glm_out == 'r2' or glm_out == 'r2_series':
             alpha = alphas[ch]
         elif glm_out == 'alpha' or glm_out == 'cv_r2':
             alpha = np.nan
@@ -349,7 +354,7 @@ def aaron_perm_gt_1d(diff, axis=0):
     # Rearrange to match original order
     return proportions[sorted_indices.argsort(axis=axis)]
 
-def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness,glm_out: str='beta'):
+def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness,glm_out: str='beta_abs'):
 
     print(subjs)
 
@@ -397,7 +402,7 @@ def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness,glm
     stat_raw = np.concatenate(stat_lst, axis=0)
     chs_lst = np.concatenate(chs_lst, axis=0)
 
-    if glm_out == 'beta':
+    if glm_out == 'beta_abs' or glm_out == 'beta':
         labels = [chs_lst, times]
         masks=LabeledArray(mask_raw, labels)
         stats=LabeledArray(stat_raw, labels)
