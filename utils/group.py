@@ -570,7 +570,7 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs, glm_out: st
 
     return aligned_data, aligned_chs
 
-def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normalize=False,ylim: list=[0,3.5]):
+def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normalize=False,ylim: list=[-0.5,3.5]):
 
     import numpy as np
     import matplotlib.pyplot as plt

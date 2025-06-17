@@ -31,7 +31,7 @@ Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
 stat = "zscore"
-glm_feas = ["Acoustic","Phonemic","Nonword"]
+glm_feas = ["Acoustic","Phonemic","Nonword","Word"]
 wordnesses = ["ALL"]#["ALL", "Word", "Nonword"]
 cluster_twin=0.011
 mean_word_len=0.62
@@ -42,9 +42,13 @@ delay_len=0.5
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
 mask_corr_type='cluster_mask' #cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
+event_suffix='inRep'
+if event_suffix=='inYN':
+    task_Tag='Yes_No'
+elif event_suffix=='inRep':
+    task_Tag='Repeat'
 
-
-subjs, _, _, chs, times = glm.fifread("Auditory_inYN", 'zscore', 'Yes_No', wordnesses[0])
+subjs, _, _, chs, times = glm.fifread(f"Auditory_{event_suffix}", 'zscore', task_Tag, wordnesses[0])
 with open(os.path.join('data', f'sig_idx_{mask_corr_type}.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
 
@@ -52,31 +56,34 @@ with open(os.path.join('data', f'sig_idx_{mask_corr_type}.npy'), "rb") as f:
 hickok_roi_all=pd.DataFrame()
 for wordness in wordnesses:
     # Just get the electrodes
-    masks, _, _ = glm.load_stats('Auditory_inYN', 'mask', 'Yes_No', 'cluster_mask', 'Acoustic', subjs, chs, times, wordness)
+    masks, _, _ = glm.load_stats(f'Auditory_{event_suffix}', 'mask', task_Tag, 'cluster_mask', 'Acoustic', subjs, chs, times, wordness)
     chs_all = masks.labels[0]
     chs_coor = gp.get_coor(chs_all, 'group')
     ch_labels_roi, _ = gp.chs2atlas(subjs,chs_all)
     hickok_roi_labels,_ = gp.hickok_roi_sphere(chs_coor)
     if wordness == 'ALL':
         keys_of_interest = [
-            "Auditory_inRep/Yes_No/ALL/Acoustic/aud",
-            "Auditory_inRep/Yes_No/ALL/Phonemic/aud",
-            "Auditory_inRep/Yes_No/ALL/Word/aud",
-            "Auditory_inRep/Yes_No/ALL/Acoustic/del",
-            "Auditory_inRep/Yes_No/ALL/Phonemic/del",
-            "Auditory_inRep/Yes_No/ALL/Word/del",
-            "Resp_inRep/Yes_No/ALL/Acoustic/resp",
-            "Resp_inRep/Yes_No/ALL/Phonemic/resp",
-            "Resp_inRep/Yes_No/ALL/Word/resp"
+            f"Auditory_{event_suffix}/{task_Tag}/ALL/Acoustic/aud",
+            f"Auditory_{event_suffix}/{task_Tag}/ALL/Phonemic/aud",
+            f"Auditory_{event_suffix}/{task_Tag}/ALL/Word/aud",
+            f"Auditory_{event_suffix}/{task_Tag}/ALL/Nonword/aud",
+            f"Auditory_{event_suffix}/{task_Tag}/ALL/Acoustic/del",
+            f"Auditory_{event_suffix}/{task_Tag}/ALL/Phonemic/del",
+            f"Auditory_{event_suffix}/{task_Tag}/ALL/Word/del",
+            f"Auditory_{event_suffix}/{task_Tag}/ALL/Nonword/del",
+            f"Resp_{event_suffix}/{task_Tag}/ALL/Acoustic/resp",
+            f"Resp_{event_suffix}/{task_Tag}/ALL/Phonemic/resp",
+            f"Resp_{event_suffix}/{task_Tag}/ALL/Word/resp",
+            f"Resp_{event_suffix}/{task_Tag}/ALL/Nonword/resp"
         ]
     else:
         keys_of_interest = [
-            f"Auditory_inRep/Yes_No/{wordness}/Acoustic/aud",
-            f"Auditory_inRep/Yes_No/{wordness}/Phonemic/aud",
-            f"Auditory_inRep/Yes_No/{wordness}/Acoustic/del",
-            f"Auditory_inRep/Yes_No/{wordness}/Phonemic/del",
-            f"Resp_inRep/Yes_No/{wordness}/Acoustic/resp",
-            f"Resp_inRep/Yes_No/{wordness}/Phonemic/resp"
+            f"Auditory_{event_suffix}/{task_Tag}/{wordness}/Acoustic/aud",
+            f"Auditory_{event_suffix}/{task_Tag}/{wordness}/Phonemic/aud",
+            f"Auditory_{event_suffix}/{task_Tag}/{wordness}/Acoustic/del",
+            f"Auditory_{event_suffix}/{task_Tag}/{wordness}/Phonemic/del",
+            f"Resp_{event_suffix}/{task_Tag}/{wordness}/Acoustic/resp",
+            f"Resp_{event_suffix}/{task_Tag}/{wordness}/Phonemic/resp"
          ]
 
     for TypeLabel in keys_of_interest:
@@ -88,6 +95,8 @@ for wordness in wordnesses:
             col = Phonemic_col
         elif 'Word' in TypeLabel:
             col = Lexical_col
+        elif 'Nonword' in TypeLabel:
+            col = [0,1,0]
         chs_sel=chs_all[list(sig)].tolist()
         cols=[col]*len(chs_sel)
         gp.plot_brain(subjs, chs_sel, cols, None,
@@ -111,12 +120,12 @@ for wordness in wordnesses:
     for TypeLabel, chs_ov, base_sig, spec_sig in zip(
             ('Auditory', 'Delay', 'Response'),
             ([100, 10, 1], [100, 10, 1], [100, 10, 1]),
-            (gp.set2arr(LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Acoustic/aud"] | LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Phonemic/aud"] | LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Lexical/aud"],len(chs_all)),
-            gp.set2arr(LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Acoustic/del"] | LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Phonemic/del"] | LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Lexical/del"],len(chs_all)),
-            gp.set2arr(LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Acoustic/resp"] | LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Phonemic/resp"] | LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Lexical/resp"],len(chs_all))),
-            ([LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Acoustic/aud"],LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Phonemic/aud"],LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Lexical/aud"]],
-             [LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Acoustic/del"],LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Phonemic/del"],LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Lexical/del"]],
-             [LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Acoustic/resp"],LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Phonemic/resp"],LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Lexical/resp"]])
+            (gp.set2arr(LexDelay_glm_idxes[f"Auditory_{event_suffix}/Yes_No/{wordness}/Acoustic/aud"] | LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Phonemic/aud"] | LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Lexical/aud"],len(chs_all)),
+            gp.set2arr(LexDelay_glm_idxes[f"Auditory_{event_suffix}/Yes_No/{wordness}/Acoustic/del"] | LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Phonemic/del"] | LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Lexical/del"],len(chs_all)),
+            gp.set2arr(LexDelay_glm_idxes[f"Resp_{event_suffix}/Yes_No/{wordness}/Acoustic/resp"] | LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Phonemic/resp"] | LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Lexical/resp"],len(chs_all))),
+            ([LexDelay_glm_idxes[f"Auditory_{event_suffix}/Yes_No/{wordness}/Acoustic/aud"],LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Phonemic/aud"],LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Lexical/aud"]],
+             [LexDelay_glm_idxes[f"Auditory_{event_suffix}/Yes_No/{wordness}/Acoustic/del"],LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Phonemic/del"],LexDelay_glm_idxes[f"Auditory_inRep/Yes_No/{wordness}/Lexical/del"]],
+             [LexDelay_glm_idxes[f"Resp_{event_suffix}/Yes_No/{wordness}/Acoustic/resp"],LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Phonemic/resp"],LexDelay_glm_idxes[f"Resp_inRep/Yes_No/{wordness}/Lexical/resp"]])
     ):
 
         color_map = {
