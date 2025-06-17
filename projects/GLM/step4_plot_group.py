@@ -33,11 +33,11 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Auditory_inRep","Resp_inRep"]
+events = ["Auditory_inYN","Resp_inYN"]
 stat = "zscore"
-task_Tags = ["Repeat"]#,"Yes_No"]
+task_Tags = ["Yes_No"]
 wordnesses = ["ALL"]#, "Word", "Nonword"]
-glm_feas = ["Acoustic","Phonemic","Word","Nonword"]#["Acoustic","Phonemic","Lexical"]
+glm_feas = ["Word","Nonword"]#["Acoustic","Phonemic","Lexical"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
