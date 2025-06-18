@@ -42,7 +42,7 @@ delay_len=0.5
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
 mask_corr_type='cluster_mask' #cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
-event_suffix='inRep'
+event_suffix='inYN'
 if event_suffix=='inYN':
     task_Tag='Yes_No'
 elif event_suffix=='inRep':
