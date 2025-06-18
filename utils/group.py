@@ -447,6 +447,17 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,tran
     if save_img:
         fig3d.save_image(fig_save_dir_f)
 
+def adjust_saturation(rgb_color, avg_value):
+    gray_color = np.array([0.5, 0.5, 0.5])
+    white = np.array([1.0, 1.0, 1.0])
+    if avg_value <= 0.5:
+        t = avg_value / 0.5
+        adjusted_col = (1 - t) * gray_color + t * rgb_color
+    else:
+        t = (avg_value - 0.5) / 0.5
+        adjusted_col = (1 - t) * rgb_color + t * white
+    return np.clip(adjusted_col, 0, 1).tolist()
+
 def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,25]):
     label2atlas={ch_sel: label2atlas_raw[ch_sel] for ch_sel in chs_sel}
     import matplotlib.pyplot as plt
@@ -626,13 +637,22 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normaliz
     plt.ylim(ylim)
     plt.xticks(tick_labels)
 
-def time_avg_select(data_in,sig_idx_lst):
+def time_avg_select(data_in,sig_idx_lst,normalize:bool=False):
 
     import numpy as np
     import matplotlib.pyplot as plt
+    def min_max_normalize_ignore_nan(arr):
+        not_nan_mask = ~np.isnan(arr)
+        min_val = np.min(arr[not_nan_mask])
+        max_val = np.max(arr[not_nan_mask])
+        normalized_arr = np.copy(arr)
+        normalized_arr[not_nan_mask] = (arr[not_nan_mask] - min_val) / (max_val - min_val)
+        return normalized_arr
     chs=data_in.labels[0]
     data=data_in.__array__()
     data_avg=np.nanmean(data,axis=1)
+    if normalize:
+        data_avg=min_max_normalize_ignore_nan(data_avg)
     data_avg_select_final=[]
     chs_select_final=[]
     for sig_idx in sig_idx_lst:

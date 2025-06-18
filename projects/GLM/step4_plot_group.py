@@ -96,6 +96,7 @@ if mask_type == 'hg':
 # sig_idx_lab=tuple(tuple(item) for item in (events,task_Tags,glm_feas,('all','aud','del','resp')))
 # sig_idx=LabeledArray(sig_idx_arr,sig_idx_lab)
 sig_idx=dict()
+avg=dict()
 stass=dict()
 peaks_all=dict()
 peaks_aud=dict()
@@ -132,15 +133,19 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                     # auditory window
                     aud_masks_sorted,aud_masks_raw,_,aud_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.1,mean_word_len+auditory_decay])
                     _,aud_masks_peak=gp.get_latency(aud_masks_raw,'clustermid')
+                    aud_masks_avg,_,_=gp.time_avg_select(aud_masks_raw, [aud_masks_sig],normalize=True)
                     gp.plot_chs(aud_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_aud.jpg'),f"N chs = {len(aud_masks_sig)}")
                     sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_sig
                     peaks_aud[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_peak
+                    avg[f"{event}/{task_Tag}/{wordness}/{glm_fea}/aud"] = aud_masks_avg
                     # delay window
                     del_masks_sorted,del_masks_raw,_,del_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[mean_word_len+auditory_decay-0.1,mean_word_len+auditory_decay+delay_len+0.1])
                     _,del_masks_peak=gp.get_latency(del_masks_raw,'clustermid')
+                    del_masks_avg,_,_=gp.time_avg_select(del_masks_raw, [del_masks_sig],normalize=True)
                     gp.plot_chs(del_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_del.jpg'),f"N chs = {len(del_masks_sig)}")
                     sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_sig
                     peaks_del[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_peak
+                    avg[f"{event}/{task_Tag}/{wordness}/{glm_fea}/del"] = del_masks_avg
                     # aud_delay window (before motor)
                     _,aud_del_masks_raw,_,_=gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[0.1,mean_word_len+auditory_decay+delay_len+0.1])
                     _,aud_del_masks_peak=gp.get_latency(aud_del_masks_raw,'clustermid')
@@ -148,10 +153,12 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
 
             elif event.split('_')[0]=="Resp":
                 # response window
-                resp_masks_sorted, _, _, resp_masks_sig = gp.sort_chs_by_actonset(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
+                resp_masks_sorted, resp_masks_raw, _, resp_masks_sig = gp.sort_chs_by_actonset(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
+                resp_masks_avg, _, _ = gp.time_avg_select(resp_masks_raw, [resp_masks_sig],normalize=True)
                 gp.plot_chs(resp_masks_sorted, os.path.join('plot', f'{event}_{task_Tag}_{wordness}_{glm_fea}_resp.jpg'),
                             f"N chs = {len(resp_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/resp"] = resp_masks_sig
+                avg[f"{event}/{task_Tag}/{wordness}/{glm_fea}/resp"] = resp_masks_avg
 
 #%% Plot peaks and do stats
 if mask_type=='glm':
@@ -338,6 +345,8 @@ for wordness in wordnesses[:2]:
 
     with open(os.path.join('data', f'sig_idx_{mask_corr_type}.npy'), "wb") as f:
         pickle.dump(sig_idx, f)
+    with open(os.path.join('data', f'avg_{mask_corr_type}.npy'), "wb") as f:
+        pickle.dump(avg, f)
 
 #%% Get confusion matrix of glm sig electrode sets
 if 1==0:

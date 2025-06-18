@@ -51,6 +51,8 @@ elif event_suffix=='inRep':
 subjs, _, _, chs, times = glm.fifread(f"Auditory_{event_suffix}", 'zscore', task_Tag, wordnesses[0])
 with open(os.path.join('data', f'sig_idx_{mask_corr_type}.npy'), "rb") as f:
     LexDelay_glm_idxes = pickle.load(f)
+with open(os.path.join('data', f'avg_{mask_corr_type}.npy'), "rb") as f:
+    LexDelay_glm_avgs = pickle.load(f)
 
 #%% Plot brain
 hickok_roi_all=pd.DataFrame()
@@ -89,6 +91,7 @@ for wordness in wordnesses:
     for TypeLabel in keys_of_interest:
         chs_ov=[100,10,1]
         sig=LexDelay_glm_idxes[TypeLabel]
+        avg=LexDelay_glm_avgs[TypeLabel]
         if 'Acoustic' in TypeLabel:
             col = Acoustic_col
         elif 'Phonemic' in TypeLabel:
@@ -98,9 +101,10 @@ for wordness in wordnesses:
         elif 'Nonword' in TypeLabel:
             col = [0,1,0]
         chs_sel=chs_all[list(sig)].tolist()
-        cols=[col]*len(chs_sel)
-        gp.plot_brain(subjs, chs_sel, cols, None,
-                   os.path.join('plot', f'GLM electrode loc {TypeLabel}.jpg'))
+        avg=avg[list(sig)]
+        cols = [gp.adjust_saturation(np.array(col),val) for val in avg]
+        gp.plot_brain(subjs, chs_sel, cols, None,dotsize=0.6,
+                   fig_save_dir_f=os.path.join('plot', f'GLM electrode loc {TypeLabel}.jpg'))
         gp.atlas2_hist(ch_labels_roi,chs_sel,col,os.path.join('plot',f'Atlas histogram {TypeLabel.replace('/', ' ')}.tif'),ylim=[0,100])
         gp.plot_sig_roi_counts(hickok_roi_labels, col, sig, os.path.join('plot',f'Hickok ROI histogram {TypeLabel.replace('/', ' ')}.tif'))
         hickok_roi_all[TypeLabel] = gp.get_sig_roi_counts(hickok_roi_labels, sig)
