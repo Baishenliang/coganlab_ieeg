@@ -442,10 +442,72 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False):
 def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,transparency=0.3,hemi: str='split',save_img: bool=False,**kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
+    if save_img:
+        show=False
+    else:
+        show=True
     fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi=hemi,
-                            label_every=label_every, size=dotsize,transparency=transparency, **kwargs)
+                            label_every=label_every, size=dotsize,transparency=transparency, show=show,**kwargs)
     if save_img:
         fig3d.save_image(fig_save_dir_f)
+        fig3d.close()
+
+
+def plot_brain_window(mask, data, cluster_twin, cut_wins, save_dir, col: list = [0, 0, 1],
+                      save_region_hist:bool=False,save_hickok_roi:bool=False):
+    import os
+    import numpy as np
+    from ieeg.viz.mri import plot_on_average
+
+    # Plot sig electrodes at a time window
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir, exist_ok=True)
+
+    avgs=np.empty((np.shape(mask.__array__())[0], len(cut_wins)))
+    sigs=[]
+    for i, cut_win in enumerate(cut_wins):
+        # window raw
+        _, raw, _, sig = sort_chs_by_actonset(mask, data, cluster_twin, cut_win)
+        if i==0:
+            chs_all = raw.labels[0]
+            subjs = [item.split('-')[0] for item in raw.labels[0]]
+        avg, _, _ = time_avg_select(raw, [sig], normalize=False)
+        avgs[:,i] = avg
+        sigs.append(sig)
+        del avg,sig
+
+    #normalize:
+    avgs=min_max_normalize_ignore_nan(avgs)
+
+    for i, cut_win in enumerate(cut_wins):
+
+        # make data
+        sig=sigs[i]
+        avg=avgs[:,i]
+        chs_sel = chs_all[list(sig)].tolist()
+        avg_sel = avg[list(sig)]
+
+        # plot brain
+        for hemi in ['lh', 'rh']:
+            cols = [adjust_saturation(np.array(col), val) for val in avg_sel]
+            fig3d = plot_on_average(subjs, picks=chs_sel,color=cols,hemi=hemi,
+                                    label_every=None, size=0.4,transparency=0.4)
+            fig3d.save_image(os.path.join(save_dir, f'{hemi} {cut_win[0]}  {cut_win[1]}.jpg'))
+            fig3d.close()
+            # del fig3d
+
+        # save region hist
+        if save_region_hist:
+            ch_labels_roi, _ = chs2atlas(subjs, chs_all)
+            atlas2_hist(ch_labels_roi, chs_sel, col,
+                        os.path.join(save_dir, f'Atlas {cut_win[0]}  {cut_win[1]}.jpg'), ylim=[0, 100])
+
+        # save hickok roi hist
+        if save_hickok_roi:
+            chs_coor = get_coor(chs_all, 'group')
+            hickok_roi_labels, _ = hickok_roi_sphere(chs_coor)
+            plot_sig_roi_counts(hickok_roi_labels, col, sig,
+                                os.path.join(save_dir, f'Hickok ROI  {cut_win[0]}  {cut_win[1]}.jpg'))
 
 def adjust_saturation(rgb_color, avg_value):
     gray_color = np.array([0.5, 0.5, 0.5])
@@ -637,17 +699,19 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normaliz
     plt.ylim(ylim)
     plt.xticks(tick_labels)
 
+def min_max_normalize_ignore_nan(arr):
+    import numpy as np
+    not_nan_mask = ~np.isnan(arr)
+    min_val = np.min(arr[not_nan_mask])
+    max_val = np.max(arr[not_nan_mask])
+    normalized_arr = np.copy(arr)
+    normalized_arr[not_nan_mask] = (arr[not_nan_mask] - min_val) / (max_val - min_val)
+    return normalized_arr
+
 def time_avg_select(data_in,sig_idx_lst,normalize:bool=False):
 
     import numpy as np
     import matplotlib.pyplot as plt
-    def min_max_normalize_ignore_nan(arr):
-        not_nan_mask = ~np.isnan(arr)
-        min_val = np.min(arr[not_nan_mask])
-        max_val = np.max(arr[not_nan_mask])
-        normalized_arr = np.copy(arr)
-        normalized_arr[not_nan_mask] = (arr[not_nan_mask] - min_val) / (max_val - min_val)
-        return normalized_arr
     chs=data_in.labels[0]
     data=data_in.__array__()
     data_avg=np.nanmean(data,axis=1)

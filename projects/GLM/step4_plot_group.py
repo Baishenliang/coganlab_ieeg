@@ -33,9 +33,9 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-events = ["Auditory_inYN","Resp_inYN"]
+events = ["Auditory_inRep","Resp_inRep"]
 stat = "zscore"
-task_Tags = ["Yes_No"]
+task_Tags = ["Repeat"]
 wordnesses = ["ALL"]#, "Word", "Nonword"]
 glm_feas = ["Acoustic","Phonemic","Word","Nonword"]#["Acoustic","Phonemic","Lexical"]
 cluster_twin=0.011
@@ -125,6 +125,10 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             if event.split('_')[0]=='Auditory':
                 # whole trial
                 all_masks_sorted,all_masks_raw,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.1,5])
+                # plot time slices
+                gp.plot_brain_window(hgmask_aud, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,
+                                     [[0, 0.1], [0.1, 0.2], [0.2, 0.3], [0.3, 0.4], [0.4, 0.5], [0.5, 0.6], [0.7, 0.8], [0.8, 0.9], [0.9, 1], [1, 1.1],[1.1, 1.2],[1.2, 1.3],[1.3, 1.4],[1.4, 1.5],[1.5, 1.6]],
+                                     os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'))
                 _, all_masks_peak = gp.get_latency(all_masks_raw,'clustermid')
                 gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}")
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/all"] = all_masks_sig
@@ -154,6 +158,9 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             elif event.split('_')[0]=="Resp":
                 # response window
                 resp_masks_sorted, resp_masks_raw, _, resp_masks_sig = gp.sort_chs_by_actonset(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.1, 5])
+                gp.plot_brain_window(hgmask_resp, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,
+                                     [[0, 0.1], [0.1, 0.2], [0.2, 0.3], [0.3, 0.4], [0.4, 0.5], [0.5, 0.6], [0.7, 0.8], [0.8, 0.9], [0.9, 1]],
+                                     os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'))
                 resp_masks_avg, _, _ = gp.time_avg_select(resp_masks_raw, [resp_masks_sig],normalize=True)
                 gp.plot_chs(resp_masks_sorted, os.path.join('plot', f'{event}_{task_Tag}_{wordness}_{glm_fea}_resp.jpg'),
                             f"N chs = {len(resp_masks_sig)}")
