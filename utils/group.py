@@ -454,7 +454,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,tran
 
 
 def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list = [0, 0, 1],
-                      save_region_hist:bool=False,save_hickok_roi:bool=False):
+                      save_region_hist:bool=False,save_hickok_roi:bool=False,label_every=None):
     import os
     import numpy as np
     from ieeg.viz.mri import plot_on_average
@@ -468,7 +468,7 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
     cut_wins=[]
     for win_start in np.arange(wins_para[0],wins_para[1],wins_para[2]):
         win_start=np.round(win_start,3).item()
-        cut_wins.append([win_start,win_start+wins_para[3]])
+        cut_wins.append([win_start,np.round(win_start+wins_para[3],3).item()])
 
     avgs=np.empty((np.shape(mask.__array__())[0], len(cut_wins)))
     sigs=[]
@@ -498,7 +498,7 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
         for hemi in ['lh', 'rh']:
             cols = [adjust_saturation(np.array(col), val) for val in avg_sel]
             fig3d = plot_on_average(subjs, picks=chs_sel,color=cols,hemi=hemi,
-                                    label_every=None, size=0.4,transparency=0.4)
+                                    label_every=label_every, size=0.4,transparency=0.4)
             fig3d.save_image(os.path.join(save_dir, f'{hemi}_{i:03d}_{cut_win[0]}_{cut_win[1]}.jpg'))
             fig3d.close()
             # del fig3d
@@ -515,6 +515,73 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
             hickok_roi_labels, _ = hickok_roi_sphere(chs_coor)
             plot_sig_roi_counts(hickok_roi_labels, col, sig,
                                 os.path.join(save_dir, f'Hickok ROI  {cut_win[0]}  {cut_win[1]}.jpg'))
+
+    return cut_wins
+
+
+def create_video_from_images(base_path, event, task_Tag, wordness, glm_fea, hemi, cut_win_list, fps: float=4):
+    """
+    Reads images from a specified path and compiles them into a video.
+
+    Args:
+        base_path (str): The base path where images are stored (e.g., 'plot').
+        event (str): The event name.
+        task_Tag (str): The task tag.
+        wordness (str): Wordness information.
+        glm_fea (str): GLM feature.
+        hemi (str): Hemisphere ('lh' or 'rh').
+        cut_win_list (list): A list containing all time windows [start, end].
+                             Example: [[0.075, 0.175], [0.1, 0.2], ...]
+        fps (int, optional): Frames per second for the output video. Defaults to 4.
+    """
+    import cv2
+    import os
+
+    image_folder = os.path.join(base_path, event, task_Tag, wordness, glm_fea)
+
+    # Ensure the output directory exists
+    output_dir = os.path.join(base_path, event, task_Tag, wordness, glm_fea)
+    os.makedirs(output_dir, exist_ok=True)  # Create directory if it doesn't exist
+
+    # Get all matching image files and sort them naturally
+    image_files = []
+    for i in range(len(cut_win_list)):
+        cut_win = cut_win_list[i]
+        # Format cut_win values to 3 decimal places for consistent filename matching
+        filename = f'{hemi}_{i:03d}_{cut_win[0]:.3f}_{cut_win[1]:.3f}.jpg'
+        full_path = os.path.join(image_folder, filename)
+        if os.path.exists(full_path):
+            image_files.append(full_path)
+
+    # Read the first image to get dimensions
+    first_image = cv2.imread(image_files[0])
+
+    height, width, _ = first_image.shape  # Ignore channels
+    video_name = os.path.join(output_dir, f'{hemi}.mp4')  # Output video filename
+
+    # Define the video codec and create a VideoWriter object
+    # 'mp4v' is a common and widely compatible video codec
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(video_name, fourcc, fps, (width, height))
+
+    print(f"Starting video generation: {video_name}")
+    for idx, image_file in enumerate(image_files):
+        img = cv2.imread(image_file)
+
+        # Extract cut_win from the filename for robustness
+        parts = os.path.basename(image_file).replace('.jpg', '').split('_')
+        start_time = float(parts[2])
+        end_time = float(parts[3])
+        time_text = f"Time: [{start_time:.3f}, {end_time:.3f}]"
+
+        # Add time window text to the image
+        # Parameters: image, text, bottom-left corner coordinates, font, font scale, color (BGR), thickness, line type
+        cv2.putText(img, time_text, (50, height - 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3, cv2.LINE_AA)
+
+        out.write(img)  # Write the processed image to the video
+
+    out.release()  # Release the VideoWriter object
+    print(f"Video generation complete: {video_name}")
 
 def adjust_saturation(rgb_color, avg_value):
     gray_color = np.array([0.5, 0.5, 0.5])
