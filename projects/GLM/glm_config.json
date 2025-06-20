@@ -1,5 +1,5 @@
 {
-    "model": "partial",
+    "model": "full",
     "alpha": 0.05,
     "alpha_clus": 0.05,
     "n_perms": 3000,

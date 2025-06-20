@@ -453,7 +453,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,tran
         fig3d.close()
 
 
-def plot_brain_window(mask, data, cluster_twin, cut_wins, save_dir, col: list = [0, 0, 1],
+def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list = [0, 0, 1],
                       save_region_hist:bool=False,save_hickok_roi:bool=False):
     import os
     import numpy as np
@@ -462,6 +462,13 @@ def plot_brain_window(mask, data, cluster_twin, cut_wins, save_dir, col: list = 
     # Plot sig electrodes at a time window
     if not os.path.exists(save_dir):
         os.makedirs(save_dir, exist_ok=True)
+
+    # make sliding windows
+    #wins_para [starting_time, ending_time, gap, win_len], in seconds
+    cut_wins=[]
+    for win_start in np.arange(wins_para[0],wins_para[1],wins_para[2]):
+        win_start=np.round(win_start,3).item()
+        cut_wins.append([win_start,win_start+wins_para[3]])
 
     avgs=np.empty((np.shape(mask.__array__())[0], len(cut_wins)))
     sigs=[]
@@ -492,7 +499,7 @@ def plot_brain_window(mask, data, cluster_twin, cut_wins, save_dir, col: list = 
             cols = [adjust_saturation(np.array(col), val) for val in avg_sel]
             fig3d = plot_on_average(subjs, picks=chs_sel,color=cols,hemi=hemi,
                                     label_every=None, size=0.4,transparency=0.4)
-            fig3d.save_image(os.path.join(save_dir, f'{hemi} {cut_win[0]}  {cut_win[1]}.jpg'))
+            fig3d.save_image(os.path.join(save_dir, f'{hemi}_{i:03d}_{cut_win[0]}_{cut_win[1]}.jpg'))
             fig3d.close()
             # del fig3d
 
