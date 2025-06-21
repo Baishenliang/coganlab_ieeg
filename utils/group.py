@@ -398,8 +398,8 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False):
     # Create the plot
     plt.figure(figsize=(15, 15))  # Make the figure size large enough for labeling
     fig, ax = plt.subplots()
-    vmin = np.percentile(data, 25)
-    vmax = np.percentile(data, 75)
+    vmin = np.percentile(data, 0)
+    vmax = np.percentile(data, 100)
     im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax)
     # Add the colorbar to the plot
     cbar = fig.colorbar(im, ax=ax, ticks=[vmin, vmax])

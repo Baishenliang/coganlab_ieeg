@@ -285,10 +285,81 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual,glm_out: str='beta_abs'
         coef = 2.15443469e+03
     return coef, y_res
 
+
+def remove_and_impute_outliers_3d(data_matrix):
+    """
+    Independently performs outlier removal and mean imputation for each channel
+    and time point in a 3D data matrix (observations * channels * times).
+
+    Outliers are detected using the 3 * IQR (Interquartile Range) method.
+    Imputation is done using the mean of the non-outlier observations for that
+    specific channel and time point.
+
+    Args:
+        data_matrix (np.ndarray): The input 3D data matrix with shape
+                                  (observations, channels, times).
+
+    Returns:
+        np.ndarray: The processed data matrix where outliers have been
+                    imputed with the mean.
+    """
+
+    # Create a copy of the data to avoid modifying the original input matrix
+    processed_data = data_matrix.copy()
+
+    n_observations, n_channels, n_times = data_matrix.shape
+
+    print(f"Removing outlier of data with shape: {data_matrix.shape}")
+
+    # Iterate through each channel
+    for ch_idx in range(n_channels):
+        # Iterate through each time point
+        for time_idx in range(n_times):
+            # Extract all observations for the current channel and time point
+            # This will be a 1D array containing values from all observations
+            # at this specific ch_idx and time_idx
+            observations_at_point = data_matrix[:, ch_idx, time_idx]
+
+            # Ensure there are enough data points for IQR calculation (at least 4 for Q1, Q3)
+            if len(observations_at_point) < 4:
+                # print(f"Warning: Not enough observations ({len(observations_at_point)}) for IQR calculation at channel {ch_idx}, time {time_idx}. Skipping outlier detection for this point.")
+                continue  # Skip current point if not enough data
+
+            # Calculate Q1 (25th percentile), Q3 (75th percentile), and IQR
+            Q1 = np.percentile(observations_at_point, 25)
+            Q3 = np.percentile(observations_at_point, 75)
+            IQR = Q3 - Q1
+
+            # Define the lower and upper bounds for outlier detection using 3 * IQR
+            lower_bound = Q1 - (3 * IQR)
+            upper_bound = Q3 + (3 * IQR)
+
+            # Identify outliers
+            # is_outlier is a boolean array: True for outliers, False otherwise
+            is_outlier = (observations_at_point < lower_bound) | \
+                         (observations_at_point > upper_bound)
+
+            # Get the non-outlier observations
+            non_outliers = observations_at_point[~is_outlier]
+
+            # Calculate the mean of the non-outlier observations to use as the imputation value
+            imputation_value = np.mean(non_outliers)
+
+            # Replace the identified outliers in the processed_data matrix with the calculated mean
+            processed_data[is_outlier, ch_idx, time_idx] = imputation_value
+
+            # Optional: Print how many outliers were processed at this point
+            if np.sum(is_outlier) > 0:
+                print(f"Channel {ch_idx}, Time {time_idx}: Replaced {np.sum(is_outlier)} outliers with mean {imputation_value:.3f}")
+
+    print("Outlier removal and imputation complete.")
+    return processed_data
+
 def temporal_smoothing(data_i, window_size=5):
     from scipy.ndimage import uniform_filter1d
     #data_i: eeg data matrix, observations * channels * times
     smoothed_data = uniform_filter1d(data_i, size=window_size, axis=2, mode='nearest')
+    print(f'Temporal smoothing with {window_size*10} ms completed.')
     return smoothed_data
 
 def compute_r2_loop(feature_mat_i,perm_feature_idx,data_i,glm_out,alphas,isresidual=False):

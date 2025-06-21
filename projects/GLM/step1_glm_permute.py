@@ -53,11 +53,14 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
     else:
         subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
 
-    #%% Smooth data
+    #%% Smooth data and remove outliers (using 3IQR)
     data_list=[]
     alpha_list=[]
     cv_r_list=[]
     for i, data_i_raw in enumerate(data_list_raw):
+        # data_i_raw: eeg data matrix, observations * channels * times
+        print(f'Processing {subjs[i]}')
+        data_i_outrm=glm.remove_and_impute_outliers_3d(data_i_raw)
         data_i=glm.temporal_smoothing(data_i_raw, window_size=5) #smoothing window: 1=10ms
         data_list.append(data_i)
 
