@@ -286,7 +286,7 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual,glm_out: str='beta_abs'
     return coef, y_res
 
 
-def remove_and_impute_outliers_3d(data_matrix):
+def remove_and_impute_outliers_3d(data_matrix,subjtag):
     """
     Independently performs outlier removal and mean imputation for each channel
     and time point in a 3D data matrix (observations * channels * times).
@@ -346,11 +346,11 @@ def remove_and_impute_outliers_3d(data_matrix):
             processed_data[positions_to_impute, ch_idx, time_idx] = imputation_value
 
             if np.sum(positions_to_impute) > 0:
-                print(f"Channel {ch_idx}, Time {time_idx}: Replaced {np.sum(positions_to_impute)} statistical outliers with mean {imputation_value:.3f}")
+                print(f"{subjtag} Channel {ch_idx}, Time {time_idx}: Replaced {np.sum(positions_to_impute)} statistical outliers {data_matrix[positions_to_impute, ch_idx, time_idx]} with mean {imputation_value:.3f}")
 
-        print("Outlier removal and imputation complete. Original NaNs preserved.")
-        del data_matrix
-        return processed_data
+    print("Outlier removal and imputation complete. Original NaNs preserved.")
+    del data_matrix
+    return processed_data
 
 def temporal_smoothing(data_i, window_size=5):
     from scipy.ndimage import uniform_filter1d
