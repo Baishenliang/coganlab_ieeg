@@ -315,45 +315,42 @@ def remove_and_impute_outliers_3d(data_matrix):
     for ch_idx in range(n_channels):
         # Iterate through each time point
         for time_idx in range(n_times):
-            # Extract all observations for the current channel and time point
-            # This will be a 1D array containing values from all observations
-            # at this specific ch_idx and time_idx
+
             observations_at_point = data_matrix[:, ch_idx, time_idx]
+            valid_obs_for_iqr = observations_at_point[~np.isnan(observations_at_point)]
+            if len(valid_obs_for_iqr) < 4:
+                 continue
 
-            # Ensure there are enough data points for IQR calculation (at least 4 for Q1, Q3)
-            if len(observations_at_point) < 4:
-                # print(f"Warning: Not enough observations ({len(observations_at_point)}) for IQR calculation at channel {ch_idx}, time {time_idx}. Skipping outlier detection for this point.")
-                continue  # Skip current point if not enough data
-
-            # Calculate Q1 (25th percentile), Q3 (75th percentile), and IQR
-            Q1 = np.percentile(observations_at_point, 25)
-            Q3 = np.percentile(observations_at_point, 75)
+            Q1 = np.percentile(valid_obs_for_iqr, 25)
+            Q3 = np.percentile(valid_obs_for_iqr, 75)
             IQR = Q3 - Q1
 
-            # Define the lower and upper bounds for outlier detection using 3 * IQR
             lower_bound = Q1 - (3 * IQR)
             upper_bound = Q3 + (3 * IQR)
 
-            # Identify outliers
-            # is_outlier is a boolean array: True for outliers, False otherwise
-            is_outlier = (observations_at_point < lower_bound) | \
-                         (observations_at_point > upper_bound)
+            is_not_nan = ~np.isnan(observations_at_point)
+            is_within_bounds = (observations_at_point >= lower_bound) & \
+                               (observations_at_point <= upper_bound)
 
-            # Get the non-outlier observations
-            non_outliers = observations_at_point[~is_outlier]
+            is_good_value = is_not_nan & is_within_bounds
 
-            # Calculate the mean of the non-outlier observations to use as the imputation value
-            imputation_value = np.mean(non_outliers)
+            good_values = observations_at_point[is_good_value]
 
-            # Replace the identified outliers in the processed_data matrix with the calculated mean
-            processed_data[is_outlier, ch_idx, time_idx] = imputation_value
+            if len(good_values) == 0:
+                continue
 
-            # Optional: Print how many outliers were processed at this point
-            if np.sum(is_outlier) > 0:
-                print(f"Channel {ch_idx}, Time {time_idx}: Replaced {np.sum(is_outlier)} outliers with mean {imputation_value:.3f}")
+            imputation_value = np.mean(good_values)
 
-    print("Outlier removal and imputation complete.")
-    return processed_data
+            positions_to_impute = is_not_nan & (~is_within_bounds)
+
+            processed_data[positions_to_impute, ch_idx, time_idx] = imputation_value
+
+            if np.sum(positions_to_impute) > 0:
+                print(f"Channel {ch_idx}, Time {time_idx}: Replaced {np.sum(positions_to_impute)} statistical outliers with mean {imputation_value:.3f}")
+
+        print("Outlier removal and imputation complete. Original NaNs preserved.")
+        del data_matrix
+        return processed_data
 
 def temporal_smoothing(data_i, window_size=5):
     from scipy.ndimage import uniform_filter1d
