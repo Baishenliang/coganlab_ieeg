@@ -1,5 +1,5 @@
 {
-    "model": "full",
+    "model": "partial",
     "alpha": 0.05,
     "alpha_clus": 0.05,
     "n_perms": 20000,
@@ -10,15 +10,15 @@
         "Word": [1],
         "Nonword": [2],
         "Phonemic": [3, 35],
-        "Acoustic": [35, 51]
+        "Acoustic": [35, 44]
     },
     "control_feature_ranges": {
         "BSL_correct": [],
         "Acoustic": [],
-        "Phonemic": [35, 51],
-        "Lexical": [3, 51],
-        "Word": [3, 51],
-        "Nonword": [3, 51]
+        "Phonemic": [35, 44],
+        "Lexical": [3, 44],
+        "Word": [3, 44],
+        "Nonword": [3, 44]
     },
     "Acoustic_col": [1, 0.549, 0],
     "Phonemic_col": [0.541, 0.169, 0.886],
