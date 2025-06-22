@@ -472,13 +472,19 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
 
     avgs=np.empty((np.shape(mask.__array__())[0], len(cut_wins)))
     sigs=[]
+    _, raw_all, _, _ = sort_chs_by_actonset(mask, data, cluster_twin, [cut_wins[0][0],cut_wins[-1][-1]])
     for i, cut_win in enumerate(cut_wins):
-        # window raw
-        _, raw, _, sig = sort_chs_by_actonset(mask, data, cluster_twin, cut_win)
         if i==0:
-            chs_all = raw.labels[0]
-            subjs = [item.split('-')[0] for item in raw.labels[0]]
-        avg, _, _ = time_avg_select(raw, [sig], normalize=False)
+            chs_all = raw_all.labels[0]
+            subjs = [item.split('-')[0] for item in raw_all.labels[0]]
+        # window raw
+        try:
+            _, raw, _, sig = sort_chs_by_actonset(mask, data, cluster_twin, cut_win)
+            avg, _, _ = time_avg_select(raw, [sig], normalize=False)
+        except Exception as e:
+            # if no sig electrodes
+            avg = [np.nan]*len(raw_all.labels[0])
+            sig = set()
         avgs[:,i] = avg
         sigs.append(sig)
         del avg,sig
@@ -497,8 +503,13 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
         # plot brain
         for hemi in ['lh', 'rh']:
             cols = [adjust_saturation(np.array(col), val) for val in avg_sel]
-            fig3d = plot_on_average(subjs, picks=chs_sel,color=cols,hemi=hemi,
-                                    label_every=label_every, size=0.4,transparency=0.4)
+            if len(chs_sel)>0:
+                # if some electrodes sig
+                fig3d = plot_on_average(subjs, picks=chs_sel,color=cols,hemi=hemi,
+                                        label_every=label_every, size=0.4,transparency=0.4)
+            else:
+                fig3d = plot_on_average(subjs, picks=[1,2],color=[[0.5,0.5,0.5],[0.5,0.5,0.5]],hemi=hemi,
+                                        label_every=None, size=0,transparency=0.4)
             fig3d.save_image(os.path.join(save_dir, f'{hemi}_{i:03d}_{cut_win[0]}_{cut_win[1]}.jpg'))
             fig3d.close()
             # del fig3d
