@@ -270,7 +270,7 @@ def compute_r2_ch_ridge(x, y,perm_feature_idx,isresidual,glm_out: str='beta_abs'
     elif glm_out=='beta':
         # output beta values: as a function of times
         # sum of betas
-        coef = np.nanmean(ridge_model.coef_[:,perm_feature_idx], axis=1)
+        coef = np.nanmean(np.maximum(0, ridge_model.coef_[:, perm_feature_idx]), axis=1)
     elif glm_out=='r2_series':
         # r2 time-resolved
         residual = np.nansum(y_clean_res ** 2, axis=0)
