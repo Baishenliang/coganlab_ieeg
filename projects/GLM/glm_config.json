@@ -1,9 +1,10 @@
 {
-    "model": "partial",
+    "model": "full",
     "alpha": 0.05,
     "alpha_clus": 0.05,
-    "n_perms": 50000,
+    "n_perms": 5000,
     "stat": "zscore",
+    "rm_outlier": 0,
     "feature_ranges": {
         "BSL_correct": [1],
         "Lexical": [1],
