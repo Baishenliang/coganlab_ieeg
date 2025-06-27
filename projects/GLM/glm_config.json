@@ -7,6 +7,8 @@
     "rm_outlier": 0,
     "feature_ranges": {
         "BSL_correct": [1],
+        "Rep_YN": [1],
+        "YN_Rep": [1],
         "Lexical": [1],
         "Word": [1],
         "Nonword": [2],
@@ -15,6 +17,8 @@
     },
     "control_feature_ranges": {
         "BSL_correct": [],
+        "Rep_YN": [],
+        "YN_Rep": [],
         "Acoustic": [],
         "Phonemic": [35, 44],
         "Lexical": [3, 44],

@@ -26,7 +26,7 @@ stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "deri
 
 #%% Functions
 
-def fifread(event,stat,task_Tag,wordness,bsl_contrast=False):
+def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN=''):
 
     fif_name=f'{event}_{stat}-epo.fif'
 
@@ -64,6 +64,11 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False):
             file_dir = os.path.join(subj_gamma_stats_dir, fif_name_cue)
             epochs_bsl = mne.read_epochs(file_dir, False, preload=True)
             epochs_bsl_crop = epochs_bsl.copy().crop(tmin=-0.5, tmax=0)
+
+        if RepYN=='Rep_YN' or RepYN=='YN_Rep':
+            fif_name_YN = f'Auditory_inYN_{stat}-epo.fif'
+            file_dir = os.path.join(subj_gamma_stats_dir, fif_name_YN)
+            epochs_YN = mne.read_epochs(file_dir, False, preload=True)
 
         if not bsl_contrast:
             # Load events
@@ -104,6 +109,8 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False):
                 times = epochs.times
             if bsl_contrast:
                 data_i_bsl = epochs_bsl_crop[f'Cue/{task_Tag}/CORRECT'].get_data()
+            if RepYN=='Rep_YN' or RepYN=='YN_Rep':
+                data_i_YN = epochs_YN[f'Auditory_stim/Yes_No/CORRECT'].get_data()
         else:
             if event.split('_')[0] == 'Auditory':
                 data_i = epochs[f'Auditory_stim/{task_Tag}/{wordness}/CORRECT'].get_data()
@@ -122,7 +129,7 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False):
 
         # Handle the case of D0102
         # D0102 has a different number of trials for the last trial
-        if subject == 'sub-D0102' and task_Tag == 'Repeat' and event.split('_')[0] == 'Auditory' and wordness != 'Nonword':
+        if subject == 'sub-D0102' and (task_Tag == 'Repeat' or RepYN == 'Rep_YN' or RepYN == 'YN_Rep') and event.split('_')[0] == 'Auditory' and wordness != 'Nonword':
             if not bsl_contrast:
                 filtered_events_i = filtered_events_i[:-1]
             else:
@@ -136,7 +143,15 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False):
             data_i = np.concatenate([data_i, data_i_bsl_mean_repeated], axis=0)
             bsl_dummy = np.concatenate([np.ones(np.shape(data_i_bsl_mean_repeated)[0]), np.zeros(np.shape(data_i_bsl_mean_repeated)[0])]).astype(int)#.reshape(-1, 1)
             X_i = np.column_stack([np.ones(np.shape(data_i)[0]), bsl_dummy])
-
+        elif RepYN=='Rep_YN' or RepYN=='YN_Rep':
+            # Feature matrix
+            len_rep=np.shape(data_i)[0]
+            data_i = np.concatenate([data_i, data_i_YN], axis=0)
+            if RepYN=='Rep_YN':
+                Rep_YN_dummy = np.concatenate([np.ones(len_rep), np.zeros(np.shape(data_i_YN)[0])]).astype(int)#.reshape(-1, 1)
+            elif RepYN=='YN_Rep':
+                Rep_YN_dummy = np.concatenate([np.zeros(len_rep), np.ones(np.shape(data_i_YN)[0])]).astype(int)#.reshape(-1, 1)
+            X_i = np.column_stack([np.ones(np.shape(data_i)[0]), Rep_YN_dummy])
         else:
             # Feature matrix
             word_dummy = (filtered_events_i.Wordness == "Word").astype(float)
