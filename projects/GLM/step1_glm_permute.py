@@ -29,6 +29,9 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
     if glm_fea=='BSL_correct':
         model = glm_fea
         stat = 'power'
+    elif glm_fea == 'Rep_YN' or glm_fea == 'YN_Rep':
+        model = 'full'
+        stat = 'power'
     else:
         model = config['model']
         stat = config['stat'] # zscore, power
@@ -51,6 +54,8 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
 
     if glm_fea=='BSL_correct':
         subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness, bsl_contrast=True)
+    elif glm_fea == 'Rep_YN' or glm_fea == 'YN_Rep':
+        subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness, RepYN=glm_fea)
     else:
         subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
 
