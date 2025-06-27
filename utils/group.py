@@ -769,7 +769,7 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normaliz
 
     # Baseline correction (should remove this)
     if bsl_crr:
-        mean_waveform = mean_waveform - np.nanmean(mean_waveform[:51])
+        mean_waveform = mean_waveform - np.nanmin(mean_waveform[:51])
     if errtype == 'std':
         sem_waveform = np.nanstd(data_selected, axis=0)
     elif errtype == 'se':
