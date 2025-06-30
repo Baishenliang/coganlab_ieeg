@@ -40,8 +40,8 @@ if event_suffix=='inYN':
     task_Tags = ["Yes_No"]
 elif event_suffix=='inRep':
     task_Tags = ["Repeat"]
-wordnesses = ["ALL"]#, "Word", "Nonword"]
-glm_feas = ["Phonemic"]
+wordnesses = ["ALL"]
+glm_feas = ["Rep_YN","YN_Rep"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
@@ -122,7 +122,10 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                     hgmask_resp=masks
 
             if plot_wave_type=='stat':
-                stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*5e3
+                if glm_feas[0]=='Rep_YN' or glm_feas[0]=='YN_Rep':
+                    stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*5e8
+                else:
+                    stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*5e3
             elif plot_wave_type=='mask':
                 stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=masks*100
             del masks,stats
@@ -132,7 +135,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 # plot time slices
                 cut_wins=gp.plot_brain_window(hgmask_aud, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,
                                      [-0.5,1.6,0.025,0.1],
-                                     os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'),label_every=1)
+                                     os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'),label_every=None)
                 for hemi in ['lh','rh']:
                     gp.create_video_from_images('plot', event, task_Tag, wordness, glm_fea, hemi, cut_wins)
                 _, all_masks_peak = gp.get_latency(all_masks_raw,'clustermid')
@@ -277,20 +280,26 @@ for wordness in wordnesses[:2]:
             wid_scale = (xlim_r - xlim_l)*100/350
         plt.figure(figsize=(Waveplot_wth*wid_scale, Waveplot_hgt))
         if wordness == 'ALL':
-            gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Acoustic'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Acoustic/{md}"],
-                         'Acoustic', Acoustic_col, '-',True)
-            gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Phonemic'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Phonemic/{md}"],
-                         'Phonemic', Phonemic_col, '-',True)
-            gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Lexical'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Lexical/{md}"],
-                         'Lexical', Lexical_col, '-',True)
+            if glm_feas[0]=='Rep_YN' or glm_feas[0]=='YN_Rep':
+                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Rep_YN'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Rep_YN/{md}"],
+                             'Repeat - Yes_No', [117/255, 139/255, 95/255], '-',True)
+                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/YN_Rep'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/YN_Rep/{md}"],
+                             'Yes_No - Repeat', [64/255, 100/255, 98/255], '-',True)
+            else:
+                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Acoustic'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Acoustic/{md}"],
+                             'Acoustic', Acoustic_col, '-',True)
+                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Phonemic'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Phonemic/{md}"],
+                             'Phonemic', Phonemic_col, '-',True)
+                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Lexical'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Lexical/{md}"],
+                             'Lexical', Lexical_col, '-',True)
         elif wordness == 'Word':
-            gp.plot_wave(stass[f'{events[0]}/Repeat/Word/Acoustic'], sig_idx[f"{events[0]}/Repeat/Word/Acoustic/{md}"],
+            gp.plot_wave(stass[f'{events[0]}/Yes_No/Word/Acoustic'], sig_idx[f"{events[0]}/Yes_No/Word/Acoustic/{md}"],
                          'Acoustic_Word', Acoustic_col, '-',True)
-            gp.plot_wave(stass[f'{events[0]}/Repeat/Word/Phonemic'], sig_idx[f"{events[0]}/Repeat/Word/Phonemic/{md}"],
+            gp.plot_wave(stass[f'{events[0]}/Yes_No/Word/Phonemic'], sig_idx[f"{events[0]}/Yes_No/Word/Phonemic/{md}"],
                          'Phonemic_Word', Phonemic_col, '-',True)
-            gp.plot_wave(stass[f'{events[0]}/Repeat/Nonword/Acoustic'], sig_idx[f"{events[0]}/Repeat/Nonword/Acoustic/{md}"],
+            gp.plot_wave(stass[f'{events[0]}/Yes_No/Nonword/Acoustic'], sig_idx[f"{events[0]}/Yes_No/Nonword/Acoustic/{md}"],
                          'Acoustic_Nonword', Acoustic_col, '--',True)
-            gp.plot_wave(stass[f'{events[0]}/Repeat/Nonword/Phonemic'], sig_idx[f"{events[0]}/Repeat/Nonword/Phonemic/{md}"],
+            gp.plot_wave(stass[f'{events[0]}/Yes_No/Nonword/Phonemic'], sig_idx[f"{events[0]}/Yes_No/Nonword/Phonemic/{md}"],
                          'Phonemic_Nonword', Phonemic_col, '--',True)
         plt.axvline(x=0, linestyle='--', color='k')
         plt.axhline(y=0, linestyle='--', color='k')
@@ -311,7 +320,7 @@ for wordness in wordnesses[:2]:
         plt.tight_layout()
         if md=='all' or md == 'aud':
             plt.legend(fontsize=20)
-        plt.savefig(os.path.join('plot',f'wave auditory onset {wordness} {md} {plot_wave_type}.tif'),dpi=300)
+        plt.savefig(os.path.join('plot',f'wave auditory onset {event_suffix} {wordness} {md} {plot_wave_type}.tif'),dpi=300)
         plt.close()
 
     xlim_l = -0.2

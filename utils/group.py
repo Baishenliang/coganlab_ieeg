@@ -596,13 +596,13 @@ def create_video_from_images(base_path, event, task_Tag, wordness, glm_fea, hemi
 
 def adjust_saturation(rgb_color, avg_value):
     gray_color = np.array([0.5, 0.5, 0.5])
-    white = np.array([1.0, 1.0, 1.0])
+    red = np.array([1.0, 0, 0])
     if avg_value <= 0.5:
         t = avg_value / 0.5
         adjusted_col = (1 - t) * gray_color + t * rgb_color
     else:
         t = (avg_value - 0.5) / 0.5
-        adjusted_col = (1 - t) * rgb_color + t * white
+        adjusted_col = (1 - t) * rgb_color + t * red
     return np.clip(adjusted_col, 0, 1).tolist()
 
 def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,25]):
