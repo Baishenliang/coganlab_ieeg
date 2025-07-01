@@ -24,9 +24,11 @@ LAB_root = os.path.join(HOME, "Box", "CoganLab")
 clean_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "clean")
 stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
 
+bin_wins=[(-0.5, -0.2), (-0.2, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1.0)]
+
 #%% Functions
 
-def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN=''):
+def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=False):
 
     fif_name=f'{event}_{stat}-epo.fif'
 
@@ -58,6 +60,9 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN=''):
         subj_gamma_stats_dir = os.path.join(stats_root, subject_No)
         file_dir = os.path.join(subj_gamma_stats_dir, fif_name)
         epochs = mne.read_epochs(file_dir, False, preload=True)
+
+        if bin:
+            epochs=get_windowed_epoch_data(epochs)
 
         if bsl_contrast:
             fif_name_cue = f'Cue_inRep_{stat}-epo.fif'
@@ -176,6 +181,69 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN=''):
         chs.append(chs_i)
 
     return subjs, data_list, filtered_events_list, chs, times
+
+
+def get_windowed_epoch_data(epochs, window_definitions: list=bin_wins):
+    """
+    Segments MNE Epochs data into specified time windows, calculates the mean
+    of the data within each window, and returns the midpoints of those windows.
+    """
+
+    # Get the actual time points from the MNE Epochs object
+    epoch_times = epochs.times
+
+    # Get the raw data from the MNE Epochs object
+    # Shape: (n_epochs, n_channels, n_times)
+    epoch_data_raw = epochs.get_data()
+
+    # Pre-allocate array for efficiency
+    n_epochs, n_channels, _ = epoch_data_raw.shape
+    n_windows = len(window_definitions)
+
+    # Initialize the output array for means
+    # It will store (n_epochs, n_channels, n_windows)
+    window_means_final = np.full((n_epochs, n_channels, n_windows), np.nan)
+    window_midpoints = np.array([(start + end) / 2 for start, end in window_definitions])
+
+    # Iterate through each epoch
+    for i_epoch in range(n_epochs):
+        # Iterate through each channel
+        for i_channel in range(n_channels):
+            # Get the 1D time series data for the current epoch and channel
+            channel_data = epoch_data_raw[i_epoch, i_channel, :]
+
+            # Iterate through each defined time window
+            for i_window, (start_time, end_time) in enumerate(window_definitions):
+                # Find indices corresponding to the start and end times in epoch_times
+                start_idx = np.searchsorted(epoch_times, start_time, side='left')
+                end_idx = np.searchsorted(epoch_times, end_time, side='right')
+
+                # Ensure indices are within valid bounds
+                start_idx = max(0, start_idx)
+                end_idx = min(len(epoch_times), end_idx)
+
+                # Extract data for the current window
+                data_in_window = channel_data[start_idx:end_idx]
+
+                # Calculate mean if there's data, otherwise store NaN
+                if data_in_window.size > 0:
+                    window_means_final[i_epoch, i_channel, i_window] = np.mean(data_in_window)
+                # If data_in_window is empty, it remains np.nan due to initialization
+
+    new_events = np.column_stack((np.arange(n_epochs),
+                                  np.zeros(n_epochs, dtype=int),
+                                  epochs.events[:, 2])).astype(int)
+
+    windowed_epochs = mne.EpochsArray(
+        data=window_means_final,
+        info=epochs.info,
+        events=new_events,
+        tmin=window_midpoints[0],
+        event_id=epochs.event_id, # Keep original event_ids
+        verbose=False
+    )
+
+    return windowed_epochs
 
 def bsl_t_fdr(epc,bsl):
     import numpy as np
@@ -437,9 +505,12 @@ def aaron_perm_gt_1d(diff, axis=0):
     # Rearrange to match original order
     return proportions[sorted_indices.argsort(axis=axis)]
 
-def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness,glm_out: str='beta_abs'):
+def load_stats(event,stat,task_Tag,masktype,glm_fea,subjs,chs,times,wordness,glm_out: str='beta_abs',bin: bool=False):
 
     print(subjs)
+
+    if bin:
+        times = np.array([(start + end) / 2 for start, end in bin_wins])
 
     from ieeg.arrays.label import LabeledArray
     mask_lst = []

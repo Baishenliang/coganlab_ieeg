@@ -25,6 +25,7 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
     with open('glm_config.json', 'r') as f:
         config = json.load(f)
 
+    bin=True
     # Extract parameters from config
     if glm_fea=='BSL_correct':
         model = glm_fea
@@ -53,11 +54,11 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
         feature_seleted = np.r_[0,f_ranges[0]:f_ranges[1]]
 
     if glm_fea=='BSL_correct':
-        subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness, bsl_contrast=True)
+        subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness, bsl_contrast=True,bin=bin)
     elif glm_fea == 'Rep_YN' or glm_fea == 'YN_Rep':
-        subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness, RepYN=glm_fea)
+        subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness, RepYN=glm_fea,bin=bin)
     else:
-        subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness)
+        subjs, data_list_raw, filtered_events_list, chs, times = glm.fifread(event,stat,task_Tag,wordness,bin=bin)
 
     #%% Smooth data and remove outliers (using 3IQR)
     data_list=[]
@@ -65,12 +66,15 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
     cv_r_list=[]
     for i, data_i_raw in enumerate(data_list_raw):
         # data_i_raw: eeg data matrix, observations * channels * times
-        print(f'Processing {subjs[i]}')
-        if rm_outlier:
-            data_i_outrm=glm.remove_and_impute_outliers_3d(data_i_raw,subjs[i])
+        if not bin:
+            print(f'Processing {subjs[i]}')
+            if rm_outlier:
+                data_i_outrm=glm.remove_and_impute_outliers_3d(data_i_raw,subjs[i])
+            else:
+                data_i_outrm=data_i_raw
+            data_i=glm.temporal_smoothing(data_i_outrm, window_size=5) #smoothing window: 1=10ms
         else:
-            data_i_outrm=data_i_raw
-        data_i=glm.temporal_smoothing(data_i_outrm, window_size=5) #smoothing window: 1=10ms
+            data_i=data_i_raw
         data_list.append(data_i)
 
     #%% Get the electrode wise alpha-r^2 plots

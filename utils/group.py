@@ -241,7 +241,7 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False):
+def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     Sort the significant channels according to the onset.
@@ -262,25 +262,42 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False):
     mask=mask_in.__array__()
 
     spf = 1 / (times[1] - times[0])  # Calculate the sampling frequency
-    win = int(win_len * spf)  # Number of samples in 0.1 seconds
+    if bin:
+        win = 1
+    else:
+        win = int(win_len * spf)  # Number of samples in 0.1 seconds
 
     onsets = {}
 
-    search_start = np.argmin(np.abs(np.array(times) - time_range[0]))
-    search_stop = np.argmin(np.abs(np.array(times) - time_range[1]))
+    if bin:
+        search_start = np.searchsorted(times, time_range[0], side='left')
+        search_stop = np.searchsorted(times, time_range[1], side='right') - 1
+    else:
+        search_start = np.argmin(np.abs(np.array(times) - time_range[0]))
+        search_stop = np.argmin(np.abs(np.array(times) - time_range[1]))
 
     for ch_idx, ch_name in enumerate(chs):
         ch_mask = mask[ch_idx]
         found = False
 
-        for start_idx in range(int(search_start),int(search_stop) - win + 1):
-            win_mask = ch_mask[start_idx:start_idx + win]
+        if bin:
+            for start_idx in range(int(search_start),int(search_stop)+1):
+                win_mask = ch_mask[start_idx]
 
-            if np.all(win_mask == 1):
-                starting_time = times[start_idx]
-                onsets[ch_name] = starting_time
-                found = True
-                break
+                if np.all(win_mask == 1):
+                    starting_time = times[start_idx]
+                    onsets[ch_name] = starting_time
+                    found = True
+                    break
+        else:
+            for start_idx in range(int(search_start),int(search_stop) - win + 1):
+                win_mask = ch_mask[start_idx:start_idx + win]
+
+                if np.all(win_mask == 1):
+                    starting_time = times[start_idx]
+                    onsets[ch_name] = starting_time
+                    found = True
+                    break
 
         if not found:
             onsets[ch_name] = None  # No significant window found
@@ -374,13 +391,14 @@ def get_sig_elecs_keyword(data_in,sig_idx,keyword):
             out.append(chs[i])
     return out
 
-def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False):
+def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False):
     """
     plot the significant channels in a sorted order
     """
     import os
     import numpy as np
     import matplotlib.pyplot as plt
+    import seaborn as sns
 
     times = data_in.labels[1]
     times = [float(i) for i in times]
@@ -398,14 +416,24 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False):
     # Create the plot
     plt.figure(figsize=(15, 15))  # Make the figure size large enough for labeling
     fig, ax = plt.subplots()
-    vmin = np.percentile(data, 0)
-    vmax = np.percentile(data, 100)
-    im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax)
-    # Add the colorbar to the plot
-    cbar = fig.colorbar(im, ax=ax, ticks=[vmin, vmax])
-    # Label the ticks
-    cbar.ax.set_yticklabels([f'Min: {vmin:.2f}', f'Max: {vmax:.2f}'])
-    cbar.set_label('Data Range') # Add a label for the colorbar
+    vmin = np.nanpercentile(data, 0)
+    vmax = np.nanpercentile(data, 100)
+    if bin:
+        im = sns.heatmap(
+            data,
+            cmap='viridis',
+            vmin=vmin,
+            vmax=vmax,
+            ax=ax,
+            cbar_kws={'label': 'Data Value'}
+        )
+    else:
+        im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax)
+        # Add the colorbar to the plot
+        cbar = fig.colorbar(im, ax=ax, ticks=[vmin, vmax])
+        # Label the ticks
+        cbar.ax.set_yticklabels([f'Min: {vmin:.2f}', f'Max: {vmax:.2f}'])
+        cbar.set_label('Data Range') # Add a label for the colorbar
     # fig.colorbar(im, ax=ax)
     ax.set_title(title)
 
@@ -454,7 +482,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,tran
 
 
 def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list = [0, 0, 1],
-                      save_region_hist:bool=False,save_hickok_roi:bool=False,label_every=None):
+                      save_region_hist:bool=False,save_hickok_roi:bool=False,label_every=None,bin:bool=False):
     import os
     import numpy as np
     from ieeg.viz.mri import plot_on_average
@@ -466,20 +494,23 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
     # make sliding windows
     #wins_para [starting_time, ending_time, gap, win_len], in seconds
     cut_wins=[]
-    for win_start in np.arange(wins_para[0],wins_para[1],wins_para[2]):
-        win_start=np.round(win_start,3).item()
-        cut_wins.append([win_start,np.round(win_start+wins_para[3],3).item()])
+    if bin:
+        cut_wins = [[-0.5, -0.2], [-0.2, 0.25], [0.25, 0.5], [0.5, 0.75], [0.75, 1.0], [1.0, 1.5]]
+    else:
+        for win_start in np.arange(wins_para[0],wins_para[1],wins_para[2]):
+            win_start=np.round(win_start,3).item()
+            cut_wins.append([win_start,np.round(win_start+wins_para[3],3).item()])
 
     avgs=np.empty((np.shape(mask.__array__())[0], len(cut_wins)))
     sigs=[]
-    _, raw_all, _, _ = sort_chs_by_actonset(mask, data, cluster_twin, [cut_wins[0][0],cut_wins[-1][-1]])
+    _, raw_all, _, _ = sort_chs_by_actonset(mask, data, cluster_twin, [cut_wins[0][0],cut_wins[-1][-1]],bin=bin)
     for i, cut_win in enumerate(cut_wins):
         if i==0:
             chs_all = raw_all.labels[0]
             subjs = [item.split('-')[0] for item in raw_all.labels[0]]
         # window raw
         try:
-            _, raw, _, sig = sort_chs_by_actonset(mask, data, cluster_twin, cut_win)
+            _, raw, _, sig = sort_chs_by_actonset(mask, data, cluster_twin, cut_win,bin=bin)
             avg, _, _ = time_avg_select(raw, [sig], normalize=False)
         except Exception as e:
             # if no sig electrodes
@@ -502,7 +533,7 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
 
         # plot brain
         for hemi in ['lh', 'rh']:
-            cols = [adjust_saturation(np.array(col), val) for val in avg_sel]
+            cols = [adjust_saturation(np.array(col), val,map='jet') for val in avg_sel]
             if len(chs_sel)>0:
                 # if some electrodes sig
                 fig3d = plot_on_average(subjs, picks=chs_sel,color=cols,hemi=hemi,
@@ -594,16 +625,30 @@ def create_video_from_images(base_path, event, task_Tag, wordness, glm_fea, hemi
     out.release()  # Release the VideoWriter object
     print(f"Video generation complete: {video_name}")
 
-def adjust_saturation(rgb_color, avg_value):
-    gray_color = np.array([0.5, 0.5, 0.5])
-    red = np.array([1.0, 0, 0])
-    if avg_value <= 0.5:
-        t = avg_value / 0.5
-        adjusted_col = (1 - t) * gray_color + t * rgb_color
+def adjust_saturation(rgb_color, avg_value,map:str='none'):
+    import numpy as np
+    import matplotlib.cm as cm
+    import matplotlib.colors as mcolors
+    if map == 'none':
+        gray_color = np.array([0.5, 0.5, 0.5])
+        red = np.array([1.0, 0, 0])
+        if avg_value <= 0.5:
+            t = avg_value / 0.5
+            adjusted_col = (1 - t) * gray_color + t * rgb_color
+        else:
+            t = (avg_value - 0.5) / 0.5
+            adjusted_col = (1 - t) * rgb_color + t * red
+        return np.clip(adjusted_col, 0, 1).tolist()
     else:
-        t = (avg_value - 0.5) / 0.5
-        adjusted_col = (1 - t) * rgb_color + t * red
-    return np.clip(adjusted_col, 0, 1).tolist()
+        # Clip the value to ensure it's within [0, 1] for colormap mapping
+        clipped_val = np.clip(avg_value, 0, 1)
+        # Get the colormap object
+        colormap = cm.get_cmap(map)
+        # Get the RGBA color from the colormap for the given value
+        # The output is (R, G, B, A), where A is alpha (transparency)
+        rgba_color = colormap(clipped_val)
+        # Return only the RGB components as a list
+        return np.array(rgba_color[:3]).tolist()
 
 def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,25]):
     label2atlas={ch_sel: label2atlas_raw[ch_sel] for ch_sel in chs_sel}

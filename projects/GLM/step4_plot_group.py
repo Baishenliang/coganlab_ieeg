@@ -23,7 +23,12 @@ import pickle
 #%% Set parameters
 mask_type='glm' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
 plot_wave_type='stat' #stat: plot the HG stat in wave plots; mask: plot the HG significant mask in wave plots.
-mask_corr_type='cluster_mask' #cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
+mask_corr_type = 'cluster_mask'  # cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
+bin=True
+if bin:
+    mask_corr_type = 'org_mask'  # cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
+else:
+    mask_corr_type='cluster_mask' #cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
 
 with open('glm_config.json', 'r') as f:
     config = json.load(f)
@@ -40,8 +45,8 @@ if event_suffix=='inYN':
     task_Tags = ["Yes_No"]
 elif event_suffix=='inRep':
     task_Tags = ["Repeat"]
-wordnesses = ["ALL"]
-glm_feas = ["Rep_YN","YN_Rep"]
+wordnesses = ["Word","Nonword"]
+glm_feas = ["Acoustic", "Phonemic"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
@@ -114,7 +119,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
         if wordness != "ALL" and glm_fea == "Lexical":
             continue
         else:
-            masks,stats,_=glm.load_stats(event,stat,task_Tag,mask_corr_type,glm_fea,subjs,chs,times,wordness)
+            masks,stats,_=glm.load_stats(event,stat,task_Tag,mask_corr_type,glm_fea,subjs,chs,times,wordness,bin=bin)
             if mask_type == 'glm':
                 if event.split('_')[0]=='Auditory' or event.split('_')[0]=='Cue':
                     hgmask_aud=masks
@@ -131,18 +136,18 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             del masks,stats
             if event.split('_')[0]=='Auditory':
                 # whole trial
-                all_masks_sorted,all_masks_raw,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.5,5],mask_data=True)
+                all_masks_sorted,all_masks_raw,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.5,5],mask_data=True,bin=bin)
                 # plot time slices
                 cut_wins=gp.plot_brain_window(hgmask_aud, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,
                                      [-0.5,1.6,0.025,0.1],
-                                     os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'),label_every=None)
-                for hemi in ['lh','rh']:
-                    gp.create_video_from_images('plot', event, task_Tag, wordness, glm_fea, hemi, cut_wins)
+                                     os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'),label_every=None,bin=bin)
+                # for hemi in ['lh','rh']:
+                #     gp.create_video_from_images('plot', event, task_Tag, wordness, glm_fea, hemi, cut_wins)
                 _, all_masks_peak = gp.get_latency(all_masks_raw,'clustermid')
-                gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}")
+                gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}",bin=bin)
                 sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/all"] = all_masks_sig
                 peaks_all[f"{event}/{task_Tag}/{wordness}/{glm_fea}/all"] = all_masks_peak
-                if mask_type=='glm':
+                if mask_type=='glm' and bin==False:
                     # preonset window
                     _,_,_,preonset_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,[-0.5,0])
                     sig_idx[f"{event}/{task_Tag}/{wordness}/{glm_fea}/preonset"] = preonset_masks_sig
