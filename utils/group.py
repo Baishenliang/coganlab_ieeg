@@ -495,7 +495,7 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
     #wins_para [starting_time, ending_time, gap, win_len], in seconds
     cut_wins=[]
     if bin:
-        cut_wins = [[-0.5, -0.2], [-0.2, 0.25], [0.25, 0.5], [0.5, 0.75], [0.75, 1.0], [1.0, 1.5]]
+        cut_wins = [[-0.5, -0.2],[-0.2, 0.25], [0.25, 0.5], [0.5, 0.75], [0.75, 1.0], [1.0, 1.5]]
     else:
         for win_start in np.arange(wins_para[0],wins_para[1],wins_para[2]):
             win_start=np.round(win_start,3).item()
@@ -537,7 +537,7 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
             if len(chs_sel)>0:
                 # if some electrodes sig
                 fig3d = plot_on_average(subjs, picks=chs_sel,color=cols,hemi=hemi,
-                                        label_every=label_every, size=0.4,transparency=0.4)
+                                        label_every=label_every, size=0.2,transparency=0.4)
             else:
                 fig3d = plot_on_average(subjs, picks=[1,2],color=[[0.5,0.5,0.5],[0.5,0.5,0.5]],hemi=hemi,
                                         label_every=None, size=0,transparency=0.4)

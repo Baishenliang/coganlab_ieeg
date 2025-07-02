@@ -38,7 +38,7 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-event_suffix=('inRep')
+event_suffix=('inYN')
 events = [f"Auditory_{event_suffix}",f"Resp_{event_suffix}"]
 stat = "zscore"
 if event_suffix=='inYN':
@@ -46,7 +46,7 @@ if event_suffix=='inYN':
 elif event_suffix=='inRep':
     task_Tags = ["Repeat"]
 wordnesses = ["Word","Nonword"]
-glm_feas = ["Acoustic", "Phonemic"]
+glm_feas = ["Acoustic","Phonemic"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
