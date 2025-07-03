@@ -24,11 +24,13 @@ LAB_root = os.path.join(HOME, "Box", "CoganLab")
 clean_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "clean")
 stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
 
-bin_wins=[(-0.5, -0.2), (-0.2, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1.0)]
+bin_wins=[(-0.5, -0.2), (-0.2, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1.0),(1.0, 1.5)]
 
 #%% Functions
 
-def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=False):
+def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=False,preonset_bsl_correct:bool=False):
+
+    from ieeg.calc import scaling
 
     fif_name=f'{event}_{stat}-epo.fif'
 
@@ -61,8 +63,35 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=Fa
         file_dir = os.path.join(subj_gamma_stats_dir, fif_name)
         epochs = mne.read_epochs(file_dir, False, preload=True)
 
+        if preonset_bsl_correct:
+            base_fif_name = f'Cue_inRep_{stat}-epo.fif'
+            base_file_dir = os.path.join(subj_gamma_stats_dir, base_fif_name)
+            base_epochs = mne.read_epochs(base_file_dir, False, preload=True)
+            base = base_epochs.crop(tmin=-0.5, tmax=0)
+            # If I input the mne epochs to scaling.rescalre,
+            # It will run this instead:
+            # def _(line: BaseEpochs, baseline: BaseEpochs,
+            #       mode: str = 'mean', copy: bool = False, picks: list = 'data',
+            #       verbose=None) -> Epochs:
+            # The thing is that the axes will become (0,2), that is get the baseline across trials and time points
+            # (one baseline for each electrode)
+            # So I choose to use the np.array version:
+            base_data=base.get_data()
+            if subject == 'sub-D0102' and (task_Tag == 'Repeat' or RepYN == 'Rep_YN' or RepYN == 'YN_Rep') and event.split('_')[0] == 'Auditory' and wordness != 'Nonword':
+                base_data=base_data[:-1]
+            bsl_corr_epoch_data = scaling.rescale(epochs.get_data(), base_data, 'zscore', copy=True)
+            epochs_bsl_corr = mne.EpochsArray(
+                data=bsl_corr_epoch_data,
+                info=epochs.info,
+                events=epochs.events,
+                tmin=epochs.tmin,
+                event_id=epochs.event_id,  # Keep original event_ids
+                verbose=False)
+            epochs=epochs_bsl_corr
+
         if bin:
-            epochs=get_windowed_epoch_data(epochs)
+            epochs=get_windowed_epoch_data(epochs,preonset_bsl_correct=True)
+
 
         if bsl_contrast:
             fif_name_cue = f'Cue_inRep_{stat}-epo.fif'
@@ -183,7 +212,7 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=Fa
     return subjs, data_list, filtered_events_list, chs, times
 
 
-def get_windowed_epoch_data(epochs, window_definitions: list=bin_wins):
+def get_windowed_epoch_data(epochs, window_definitions: list=bin_wins,preonset_bsl_correct:bool=False):
     """
     Segments MNE Epochs data into specified time windows, calculates the mean
     of the data within each window, and returns the midpoints of those windows.
@@ -203,6 +232,7 @@ def get_windowed_epoch_data(epochs, window_definitions: list=bin_wins):
     # Initialize the output array for means
     # It will store (n_epochs, n_channels, n_windows)
     window_means_final = np.full((n_epochs, n_channels, n_windows), np.nan)
+    window_stds_final = np.full((n_epochs, n_channels, n_windows), np.nan)
     window_midpoints = np.array([(start + end) / 2 for start, end in window_definitions])
 
     # Iterate through each epoch
@@ -227,8 +257,14 @@ def get_windowed_epoch_data(epochs, window_definitions: list=bin_wins):
 
                 # Calculate mean if there's data, otherwise store NaN
                 if data_in_window.size > 0:
-                    window_means_final[i_epoch, i_channel, i_window] = np.mean(data_in_window)
+                    window_means_final[i_epoch, i_channel, i_window] = np.nanmean(data_in_window)
+                    window_stds_final[i_epoch, i_channel, i_window] = np.nanstd(data_in_window)
+
                 # If data_in_window is empty, it remains np.nan due to initialization
+
+    if preonset_bsl_correct:
+        window_means_final -= window_means_final[:,:,0,np.newaxis]
+        window_means_final /= window_stds_final[:,:,0,np.newaxis]
 
     new_events = np.column_stack((np.arange(n_epochs),
                                   np.zeros(n_epochs, dtype=int),

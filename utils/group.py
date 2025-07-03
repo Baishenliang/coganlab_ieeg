@@ -482,7 +482,7 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,tran
 
 
 def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list = [0, 0, 1],
-                      save_region_hist:bool=False,save_hickok_roi:bool=False,label_every=None,bin:bool=False):
+                      mode:str="save_brain_plot",label_every=None,bin:bool=False):
     import os
     import numpy as np
     from ieeg.viz.mri import plot_on_average
@@ -495,7 +495,7 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
     #wins_para [starting_time, ending_time, gap, win_len], in seconds
     cut_wins=[]
     if bin:
-        cut_wins = [[-0.5, -0.2],[-0.2, 0.25], [0.25, 0.5], [0.5, 0.75], [0.75, 1.0], [1.0, 1.5]]
+        cut_wins = [[-0.2, 0.25], [0.25, 0.5], [0.5, 0.75], [0.75, 1.0], [1.0, 1.5]]
     else:
         for win_start in np.arange(wins_para[0],wins_para[1],wins_para[2]):
             win_start=np.round(win_start,3).item()
@@ -523,42 +523,48 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
     #normalize:
     avgs=min_max_normalize_ignore_nan(avgs)
 
-    for i, cut_win in enumerate(cut_wins):
+    if mode == "save_brain_plot":
+        for i, cut_win in enumerate(cut_wins):
 
-        # make data
-        sig=sigs[i]
-        avg=avgs[:,i]
-        chs_sel = chs_all[list(sig)].tolist()
-        avg_sel = avg[list(sig)]
+            # make data
+            sig=sigs[i]
+            avg=avgs[:,i]
+            chs_sel = chs_all[list(sig)].tolist()
+            avg_sel = avg[list(sig)]
 
-        # plot brain
-        for hemi in ['lh', 'rh']:
-            cols = [adjust_saturation(np.array(col), val,map='jet') for val in avg_sel]
-            if len(chs_sel)>0:
-                # if some electrodes sig
-                fig3d = plot_on_average(subjs, picks=chs_sel,color=cols,hemi=hemi,
-                                        label_every=label_every, size=0.2,transparency=0.4)
-            else:
-                fig3d = plot_on_average(subjs, picks=[1,2],color=[[0.5,0.5,0.5],[0.5,0.5,0.5]],hemi=hemi,
-                                        label_every=None, size=0,transparency=0.4)
-            fig3d.save_image(os.path.join(save_dir, f'{hemi}_{i:03d}_{cut_win[0]}_{cut_win[1]}.jpg'))
-            fig3d.close()
-            # del fig3d
+            # plot brain
+            for hemi in ['lh', 'rh']:
+                cols = [adjust_saturation(np.array(col), val,map='jet') for val in avg_sel]
+                if len(chs_sel)>0:
+                    # if some electrodes sig
+                    fig3d = plot_on_average(subjs, picks=chs_sel,color=cols,hemi=hemi,
+                                            label_every=label_every, size=0.4,transparency=0.4)
+                else:
+                    fig3d = plot_on_average(subjs, picks=[1,2],color=[[0.5,0.5,0.5],[0.5,0.5,0.5]],hemi=hemi,
+                                            label_every=None, size=0,transparency=0.4)
+                fig3d.save_image(os.path.join(save_dir, f'{hemi}_{i:03d}_{cut_win[0]}_{cut_win[1]}.jpg'))
+                fig3d.close()
+                # del fig3d
 
-        # save region hist
-        if save_region_hist:
+    # save region hist
+    if mode=="save_region_hist":
+        for i, cut_win in enumerate(cut_wins):
+            sig = sigs[i]
+            chs_sel = chs_all[list(sig)].tolist()
             ch_labels_roi, _ = chs2atlas(subjs, chs_all)
             atlas2_hist(ch_labels_roi, chs_sel, col,
-                        os.path.join(save_dir, f'Atlas {cut_win[0]}  {cut_win[1]}.jpg'), ylim=[0, 100])
+                        os.path.join(save_dir, f'Atlas_{cut_win[0]}_{cut_win[1]}.jpg'), ylim=[0, 100])
 
-        # save hickok roi hist
-        if save_hickok_roi:
+    # save hickok roi hist
+    if mode=="save_hickok_roi":
+        for i, cut_win in enumerate(cut_wins):
+            sig = sigs[i]
             chs_coor = get_coor(chs_all, 'group')
             hickok_roi_labels, _ = hickok_roi_sphere(chs_coor)
             plot_sig_roi_counts(hickok_roi_labels, col, sig,
-                                os.path.join(save_dir, f'Hickok ROI  {cut_win[0]}  {cut_win[1]}.jpg'))
+                                os.path.join(save_dir, f'Hickok_ROI_{cut_win[0]}_{cut_win[1]}.jpg'))
 
-    return cut_wins
+    return cut_wins,sigs,chs_all
 
 
 def create_video_from_images(base_path, event, task_Tag, wordness, glm_fea, hemi, cut_win_list, fps: float=4):
@@ -832,10 +838,32 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normaliz
 def min_max_normalize_ignore_nan(arr):
     import numpy as np
     not_nan_mask = ~np.isnan(arr)
-    min_val = np.min(arr[not_nan_mask])
-    max_val = np.max(arr[not_nan_mask])
-    normalized_arr = np.copy(arr)
-    normalized_arr[not_nan_mask] = (arr[not_nan_mask] - min_val) / (max_val - min_val)
+    valid_data = arr[not_nan_mask]
+    # Calculate Q1, Q3, and IQR
+    Q1 = np.percentile(valid_data, 25)
+    Q3 = np.percentile(valid_data, 75)
+    IQR = Q3 - Q1
+    # Define outlier bounds (3 * IQR)
+    upper_bound = Q3 + 3 * IQR
+    lower_bound = Q1 - 3 * IQR
+    # Create a copy to avoid modifying the original array
+    winsorized_arr = np.copy(arr)
+    # Winsorize outliers
+    winsorized_arr[not_nan_mask & (arr > upper_bound)] = upper_bound
+    winsorized_arr[not_nan_mask & (arr < lower_bound)] = lower_bound
+    # Perform min-max normalization on the winsorized data
+    winsorized_valid_data = winsorized_arr[not_nan_mask]
+    min_val = np.min(winsorized_valid_data)
+    max_val = np.max(winsorized_valid_data)
+
+    if (max_val - min_val) == 0:
+        # Avoid division by zero if all non-NaN winsorized values are the same
+        normalized_arr = np.full_like(arr, 0.0, dtype=float)
+        normalized_arr[not_nan_mask] = 0.5 if min_val == max_val else 0.0 # Or 0.0 if you prefer
+    else:
+        normalized_arr = np.copy(arr).astype(float) # Ensure float type for division
+        normalized_arr[not_nan_mask] = (winsorized_arr[not_nan_mask] - min_val) / (max_val - min_val)
+
     return normalized_arr
 
 def time_avg_select(data_in,sig_idx_lst,normalize:bool=False):
