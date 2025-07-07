@@ -45,8 +45,8 @@ if event_suffix=='inYN':
     task_Tags = ["Yes_No"]
 elif event_suffix=='inRep':
     task_Tags = ["Repeat"]
-wordnesses = ["Word","Nonword"]
-glm_feas = ["Acoustic","Phonemic"]
+wordnesses = ["ALL"]
+glm_feas = ["Nonword"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
@@ -301,6 +301,11 @@ for wordness in wordnesses[:2]:
                              'Repeat - Yes_No', [117/255, 139/255, 95/255], '-',True)
                 gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/YN_Rep'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/YN_Rep/{md}"],
                              'Yes_No - Repeat', [64/255, 100/255, 98/255], '-',True)
+            if glm_feas[0]=='Word' or glm_feas[0]=='Nonword':
+                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Word'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Word/{md}"],
+                             'Word-Nonword', [117/255, 139/255, 95/255], '-',True)
+                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Nonword'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Nonword/{md}"],
+                             'Nonword-Word', [64/255, 100/255, 98/255], '-',True)
             else:
                 gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Acoustic'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Acoustic/{md}"],
                              'Acoustic', Acoustic_col, '-',True)
