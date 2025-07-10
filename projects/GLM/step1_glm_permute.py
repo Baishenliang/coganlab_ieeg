@@ -25,7 +25,7 @@ def main(event, task_Tag, glm_fea, wordness,glm_out):
     with open('glm_config.json', 'r') as f:
         config = json.load(f)
 
-    bin=True
+    bin=False
     # Extract parameters from config
     if glm_fea=='BSL_correct':
         model = glm_fea

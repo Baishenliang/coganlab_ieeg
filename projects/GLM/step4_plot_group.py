@@ -24,7 +24,7 @@ import pickle
 mask_type='glm' #hg: used high-gamma permutation time-cluster masks; glm: use glm permutation time-cluster masks
 plot_wave_type='stat' #stat: plot the HG stat in wave plots; mask: plot the HG significant mask in wave plots.
 mask_corr_type = 'cluster_mask'  # cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
-bin=True
+bin=False
 if bin:
     mask_corr_type = 'org_mask'  # cluster_mask: mask from glm time perm cluster; # org_mask: mask from permutation (original R2 ranked in null distribution) # fdr_mask: after fdr correction.
 else:
@@ -38,7 +38,7 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-event_suffix=('inRep')
+event_suffix=('inYN')
 events = [f"Auditory_{event_suffix}",f"Resp_{event_suffix}"]
 stat = "zscore"
 if event_suffix=='inYN':
@@ -46,7 +46,7 @@ if event_suffix=='inYN':
 elif event_suffix=='inRep':
     task_Tags = ["Repeat"]
 wordnesses = ["ALL"]
-glm_feas = ["Nonword"]
+glm_feas = ["Word","Nonword"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
@@ -143,7 +143,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 #                      os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'),mode="save_region_hist",label_every=None,bin=bin)
 
                 cut_wins,plot_brain_sigs,plot_brain_chs_all=gp.plot_brain_window(hgmask_aud, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,
-                                     [-0.5,1.6,0.025,0.1],
+                                     [-0.25,1.6,0.025,0.1],
                                      os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'),mode="save_brain_plot",label_every=None,bin=bin)
                 for i, cut_win in enumerate(cut_wins):
                     sig = plot_brain_sigs[i]
@@ -302,9 +302,9 @@ for wordness in wordnesses[:2]:
                 gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/YN_Rep'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/YN_Rep/{md}"],
                              'Yes_No - Repeat', [64/255, 100/255, 98/255], '-',True)
             if glm_feas[0]=='Word' or glm_feas[0]=='Nonword':
-                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Word'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Word/{md}"],
+                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Word']*10e4, sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Word/{md}"],
                              'Word-Nonword', [117/255, 139/255, 95/255], '-',True)
-                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Nonword'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Nonword/{md}"],
+                gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Nonword']*10e4, sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Nonword/{md}"],
                              'Nonword-Word', [64/255, 100/255, 98/255], '-',True)
             else:
                 gp.plot_wave(stass[f'{events[0]}/{task_Tag}/{wordness}/Acoustic'], sig_idx[f"{events[0]}/{task_Tag}/{wordness}/Acoustic/{md}"],
