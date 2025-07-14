@@ -38,7 +38,7 @@ Acoustic_col = config['Acoustic_col']
 Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
-event_suffix=('inYN')
+event_suffix=('inRep')
 events = [f"Auditory_{event_suffix}",f"Resp_{event_suffix}"]
 stat = "zscore"
 if event_suffix=='inYN':
@@ -46,7 +46,7 @@ if event_suffix=='inYN':
 elif event_suffix=='inRep':
     task_Tags = ["Repeat"]
 wordnesses = ["ALL"]
-glm_feas = ["Word","Nonword"]
+glm_feas = ["Acoustic"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
@@ -130,7 +130,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 if glm_feas[0]=='Rep_YN' or glm_feas[0]=='YN_Rep':
                     stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*5e8
                 else:
-                    stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*5e3
+                    stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*5e8
             elif plot_wave_type=='mask':
                 stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=masks*100
             del masks,stats
@@ -142,15 +142,15 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
                 #                      [-0.5,1.6,0.025,0.1],
                 #                      os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'),mode="save_region_hist",label_every=None,bin=bin)
 
-                cut_wins,plot_brain_sigs,plot_brain_chs_all=gp.plot_brain_window(hgmask_aud, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,
-                                     [-0.25,1.6,0.025,0.1],
-                                     os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'),mode="save_brain_plot",label_every=None,bin=bin)
-                for i, cut_win in enumerate(cut_wins):
-                    sig = plot_brain_sigs[i]
-                    chs_sel = plot_brain_chs_all[list(sig)].tolist()
-                    ch_labels_roi, _ = gp.chs2atlas(subjs, plot_brain_chs_all)
-                    gp.atlas2_hist(ch_labels_roi, chs_sel, [0,0,1],
-                                os.path.join(os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'), f'Atlas_{cut_win[0]}_{cut_win[1]}.jpg'), ylim=[0, 20])
+                # cut_wins,plot_brain_sigs,plot_brain_chs_all=gp.plot_brain_window(hgmask_aud, stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin,
+                #                      [-0.25,1.6,0.025,0.1],
+                #                      os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'),mode="save_brain_plot",label_every=None,bin=bin)
+                # for i, cut_win in enumerate(cut_wins):
+                #     sig = plot_brain_sigs[i]
+                #     chs_sel = plot_brain_chs_all[list(sig)].tolist()
+                #     ch_labels_roi, _ = gp.chs2atlas(subjs, plot_brain_chs_all)
+                #     gp.atlas2_hist(ch_labels_roi, chs_sel, [0,0,1],
+                #                 os.path.join(os.path.join('plot', f'{event}/{task_Tag}/{wordness}/{glm_fea}'), f'Atlas_{cut_win[0]}_{cut_win[1]}.jpg'), ylim=[0, 20])
 
                 # for hemi in ['lh','rh']:
                 #     gp.create_video_from_images('plot', event, task_Tag, wordness, glm_fea, hemi, cut_wins)
