@@ -1,7 +1,7 @@
 {
     "model": "full",
     "alpha": 0.05,
-    "alpha_clus": 0.05,
+    "alpha_clus": 0.01,
     "n_perms": 50000,
     "stat": "power",
     "rm_outlier": 0,
