@@ -2,9 +2,9 @@
 from pickle import FALSE
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
+#groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -20,8 +20,8 @@ Delayseleted = '_inRep'
 trial_labels='CORRECT'
 
 # Parameters from the lexical delay task
-mean_word_len=0.5#0.62 # from utils/lexdelay_get_stim_length.m
-auditory_decay=0.0 # a short period of time that we may assume auditory decay takes
+mean_word_len=0.65#0.62 # from utils/lexdelay_get_stim_length.m
+auditory_decay=0 # a short period of time that we may assume auditory decay takes
 delay_len=1 # from task script
 motor_prep_win=[-0.25,-0.1] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
 motor_resp_win=[-0.1,0.75] # get windows for motor response (0.75s to avoid too much auditory feedback)
@@ -56,14 +56,16 @@ if groupsTag=="LexDelay":
     if datasource=='hg':
 
         data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
-        # if Delayseleted=='_inRep':
-        #     data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
+        if Delayseleted=='_inRep':
+            data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
         data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
         # Get the ROI of labels
         ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
 
         epoc_LexDelay_Aud,_=load_stats('zscore','Auditory'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
+        if Delayseleted=='_inRep':
+            epoc_LexDelay_Go,_=load_stats('zscore','Go'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         epoc_LexDelay_Resp,_=load_stats('zscore','Resp'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
 
         if trial_labels == 'Word':
@@ -118,6 +120,11 @@ elif groupsTag=="LexDelay&LexNoDelay":
     epoc_LexNoDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
     epoc_LexNoDelay_Silence_Aud,_=load_stats('zscore','Auditory_inSilence','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
+    if Delayseleted == '_inRep':
+        data_LexDelay_Go, _ = load_stats(stat_type, 'Go' + Delayseleted, contrast, stats_root_nodelay, stats_root_delay)
+        epoc_LexDelay_Go, _ = load_stats('zscore', 'Go' + Delayseleted, 'epo', stats_root_nodelay, stats_root_delay,
+                                         trial_labels=trial_labels)
+
     epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels)
     epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
@@ -149,13 +156,14 @@ if "LexDelay" in groupsTag:
     plot_chs(data_LexDelay_Delay_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-Delay_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Delay_sig_idx)}")
 
     # (Go)
-    # data_LexDelay_Go_sorted, _, LexDelay_Go_sig_idx = sort_chs_by_actonset(data_LexDelay_Go, cluster_twin, [0.25, 0.75])
-    # plot_chs(data_LexDelay_Go_sorted, os.path.join(fig_save_dir, f'{'Go_inRep'}_{stat_type}-{contrast}.jpg'))
+    data_LexDelay_Go_sorted, _,_, LexDelay_Go_sig_idx = sort_chs_by_actonset(data_LexDelay_Go, epoc_LexDelay_Go, cluster_twin, [0.25, 0.75])
+    plot_chs(data_LexDelay_Go_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexDelay-Go_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Go_sig_idx)}")
 
     # (Motor prepare)
     # !!!!!!!!!!In the future use **set** to replace the list indexing!!!!!!!!!!!!!!!!!
 
     data_LexDelay_Motor_Prep_sorted, _, _, LexDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp,epoc_LexDelay_Resp, cluster_twin, motor_prep_win)
+    LexDelay_Motor_Prep_sig_idx = LexDelay_Go_sig_idx & LexDelay_Motor_Prep_sig_idx
     plot_chs(data_LexDelay_Motor_Prep_sorted, os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{'Motor_Prep'+Delayseleted}_{stat_type}-{contrast}.jpg'),f"N chs = {len(LexDelay_Motor_Prep_sig_idx)}")
 
     # (Motor response)
@@ -464,7 +472,7 @@ if groupsTag == "LexDelay":
         plt.xlim([-0.25,1])
         plt.gca().spines[['top', 'right']].set_visible(False)
         plt.tight_layout()
-        plt.savefig(os.path.join(fig_save_dir, f'LexDelay_Delay_sig_zscore_Resp_{ROI_tag}.tif'), dpi=300)
+        plt.savefig(os.path.join(fig_save_dir, f'Le2xDelay_Delay_sig_zscore_Resp_{ROI_tag}.tif'), dpi=300)
         plt.close()
 
     TypeLabel='Hickok_ROIs'
@@ -623,6 +631,26 @@ elif groupsTag == "LexNoDelay":
     plt.savefig(os.path.join(fig_save_dir,'LexNoDelay_sig_zscore_Aud.tif'),dpi=300)
     plt.close()
 
+    # Plot NoDelay Silence trials electrodes (Encoding + Delay)
+    plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+    plot_wave(epoc_LexNoDelay_Silence_Aud, LexNoDelay_Silence_Encode_sig_idx & LexNoDelay_Silence_Del_sig_idx, f'Nodelay Silence n={len(LexNoDelay_Silence_Encode_sig_idx & LexNoDelay_Silence_Del_sig_idx)}', Sensorimotor_col,'-',False)
+    plt.axvline(x=0, linestyle='--', color='k')
+    plt.axhline(y=0, linestyle='--', color='k')
+    if datasource == 'hg':
+        plt.title('Z-scores in lexical nodelay silent (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr = False
+    elif datasource.split('_')[0]=='glm':
+        plt.title('GLM Sum|β| in lexical nodelay silent (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr = True
+    if datasource=='glm_Phonemic':
+        plt.xlim([2.5, 3.5])
+    plt.legend(loc='upper right',fontsize=15)
+    plt.xlim([-0.25,1.6])
+    plt.gca().spines[['top', 'right']].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_save_dir,'LexNoDelay_sig_zscore_Aud_silence.tif'),dpi=300)
+    plt.close()
+
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
     plt.figure(figsize=(Waveplot_wth*(150/350), Waveplot_hgt))
     plot_wave(epoc_LexNoDelay_Resp, LexNoDelay_Sensorimotor_sig_idx, f'Sensorimotor n={len(LexNoDelay_Sensorimotor_sig_idx)}', Sensorimotor_col,'-',wav_bsl_corr)
@@ -731,6 +759,31 @@ elif groupsTag=="LexDelay&LexNoDelay":
     plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_rep.tif'), dpi=300)
     plt.close()
 
+    # Plot NoDelay Silence trials electrodes (Encoding + Delay)
+    plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
+    plot_wave(epoc_LexDelay_Aud,del_aud, f'Delay auditory n={len(del_aud)}', Auditory_col,'-',True)
+    plot_wave(epoc_LexDelay_Aud,del_sm, f'Delay sensory-motor n={len(del_sm)}', Sensorimotor_col,'-',True)
+    plot_wave(epoc_LexDelay_Aud,del_mtr, f'Delay motor n={len(del_mtr)}', Motor_col,'-',True)
+    plot_wave(epoc_LexDelay_Aud,del_delol, f'Delay only n={len(del_delol)}', Delay_col,'-',True)
+    plot_wave(epoc_LexNoDelay_Silence_Aud, Ndel_S_all, f'NoDelay Silence all n={len(Ndel_S_all)}', [0.5,0.5,0.5],'--',True)
+    plt.axvline(x=0, linestyle='--', color='k')
+    plt.axhline(y=0, linestyle='--', color='k')
+    plt.ylim([-0.1,0.9])
+    if datasource == 'hg':
+        plt.title('Z-scores in lexical nodelay silent (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr = False
+    elif datasource.split('_')[0]=='glm':
+        plt.title('GLM Sum|β| in lexical nodelay silent (aligned to stim onset)',fontsize=20)
+        wav_bsl_corr = True
+    if datasource=='glm_Phonemic':
+        plt.xlim([2.5, 3.5])
+    plt.legend(loc='upper right',fontsize=15)
+    plt.xlim([-0.25,1.6])
+    plt.gca().spines[['top', 'right']].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_save_dir,'LexNoDelay_sig_zscore_Aud_delay_silence.tif'),dpi=300)
+    plt.close()
+
     data = {
         "Aud responses": [len(del_del & (del_aud | del_sm) & (Ndel_aud | Ndel_sm))/len(del_del & (del_aud | del_sm))*100,
                        len(del_del & (del_aud | del_sm) & Ndel_mtr)/len(del_del & (del_aud | del_sm))*100,
@@ -752,21 +805,37 @@ elif groupsTag=="LexDelay&LexNoDelay":
     plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_rep_A_M.tif'), dpi=300)
     plt.close()
 
+    # Auditory, SM, Motor, and Delay-only electrodes in NoDelay-Silent
     data = {
-        "Auditory": [len(del_del & del_aud & Ndel_S_encode_only)/len(del_del & del_aud)*100,
-                       len(del_del & del_aud & Ndel_S_del)/len(del_del & del_aud)*100,
-                       len((del_del & del_aud).difference(Ndel_S_all))/len(del_del & del_aud)*100],
-        "Sensory-motor": [len(del_del & del_sm & Ndel_S_encode_only)/len(del_del & del_sm)*100,
-                        len(del_del & del_sm & Ndel_S_del)/len(del_del & del_sm)*100,
-                        len((del_del & del_sm).difference(Ndel_S_all))/len(del_del & del_sm)*100],
-        "Motor": [len(del_del & del_mtr & Ndel_S_encode_only)/len(del_del & del_mtr)*100,
-                       len(del_del & del_mtr & Ndel_S_del)/len(del_del & del_mtr)*100,
-                       len((del_del & del_mtr).difference(Ndel_S_all))/len(del_del & del_mtr)*100],
-        "Delay Only": [len(del_delol & Ndel_S_encode_only) / len(del_delol) * 100,
-                       len(del_delol & Ndel_S_del) / len(del_delol) * 100,
+        "Aud responses": [len(del_del & (del_aud | del_sm) & Ndel_S_all)/len(del_del & (del_aud | del_sm))*100,
+                       len((del_del & (del_aud | del_sm)).difference(Ndel_S_all))/len(del_del & (del_aud | del_sm))*100],
+        "Mot responses": [len(del_del & (del_mtr | del_sm) & Ndel_S_all)/len(del_del & (del_mtr | del_sm))*100,
+                        len((del_del & (del_mtr | del_sm)).difference(Ndel_S_all))/len(del_del & (del_mtr | del_sm))*100],
+        "Delay Only": [len(del_delol & Ndel_S_all) / len(del_delol) * 100,
                        len(del_delol.difference(Ndel_S_all)) / len(del_delol) * 100]
     }
-    df_cm = pd.DataFrame(data, index=["Encode Only", "Delay", "Silent"]).transpose()
+    df_cm = pd.DataFrame(data, index=["Active", "Silent"]).transpose()
+    plt.figure(figsize=(4, 5))
+    sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=80, cbar=False)
+    plt.title(f"NoDelay Just Listen (% in Delay)")
+    plt.ylabel("Delay electrodes in LexDelay Silent")
+    plt.xlabel("LexNoDelay Just Listen")
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_rep_A_M_JL.tif'), dpi=300)
+    plt.close()
+
+    # Auditory and Motor responses Delay-only electrodes in NoDelay-Silent
+    data = {
+        "Auditory": [len(del_del & del_aud & Ndel_S_all)/len(del_del & del_aud)*100,
+                       len((del_del & del_aud).difference(Ndel_S_all))/len(del_del & del_aud)*100],
+        "Sensory-motor": [len(del_del & del_sm & Ndel_S_all)/len(del_del & del_sm)*100,
+                        len((del_del & del_sm).difference(Ndel_S_all))/len(del_del & del_sm)*100],
+        "Motor": [len(del_del & del_mtr & Ndel_S_all)/len(del_del & del_mtr)*100,
+                       len((del_del & del_mtr).difference(Ndel_S_all))/len(del_del & del_mtr)*100],
+        "Delay Only": [len(del_delol & Ndel_S_all) / len(del_delol) * 100,
+                       len(del_delol.difference(Ndel_S_all)) / len(del_delol) * 100]
+    }
+    df_cm = pd.DataFrame(data, index=["Active", "Silent"]).transpose()
     plt.figure(figsize=(4, 5))
     sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=80, cbar=False)
     plt.title(f"NoDelay Just Listen (% in Delay)")
