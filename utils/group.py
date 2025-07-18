@@ -348,6 +348,162 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
     # onset_out=LabeledArray(np.array(onsets_s_sorted), chs_s_sorted)
     return data_out,data_us_out,sorted_indices,chs_s_all_idx
 
+
+def sort_chs_by_actonset_combined(mask_in1, mask_in2, win_len, time_range, bin: bool = False,sortonset_base=2):
+    """
+    Select channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
+    The masks are combined as follows:
+    - mask_in1 and mask_in2 both 0: Combined mask is 0
+    - mask_in1 and mask_in2 both 1: Combined mask is 1 (considered for onset sorting)
+    - mask_in1 = 1, mask_in2 = 0: Combined mask is 2
+    - mask_in1 = 0, mask_in2 = 1: Combined mask is 3
+
+    Sort the significant channels according to the onset of the '1' state in the combined mask.
+
+    Args:
+        mask_in1 (LabeledArray): First input mask data.
+        mask_in2 (LabeledArray): Second input mask data.
+        win_len (float): The shortest significant cluster duration to consider effective (in seconds).
+        time_range (list): A list [start_time, end_time] defining the time window for searching.
+        bin (bool): If True, treats the window as a single bin.
+
+    Returns:
+        tuple: A tuple containing:
+            - combined_mask_out (LabeledArray): Sorted LabeledArray of combined masks for significant channels.
+            - combined_mask_all_chs_out (LabeledArray): LabeledArray of combined masks for all channels (inactive marked as NaN).
+            - sorted_indices (numpy.ndarray): Indices that would sort the original channels by onset.
+            - chs_s_all_idx (set): Set of indices of channels found to have significant '1' clusters.
+    """
+    import numpy as np
+    from ieeg.arrays.label import LabeledArray
+
+    times1 = mask_in1.labels[1]
+    times1 = [float(i) for i in times1]
+    times2 = mask_in2.labels[1]
+    times2 = [float(i) for i in times2]
+    chs = mask_in1.labels[0]
+    mask1_raw = mask_in1.__array__()
+    mask2_raw = mask_in2.__array__()
+
+    # --- Time Synchronization ---
+    # Find the common start and end times
+    start_time_common = max(times1[0], times2[0])
+    end_time_common = min(times1[-1], times2[-1])
+
+    # Get indices for mask1
+    idx1_start = np.searchsorted(times1, start_time_common, side='left')
+    idx1_end = np.searchsorted(times1, end_time_common, side='right') - 1
+
+    # Get indices for mask2
+    idx2_start = np.searchsorted(times2, start_time_common, side='left')
+    idx2_end = np.searchsorted(times2, end_time_common, side='right') - 1
+
+    # Slice masks and update times
+    mask1 = mask1_raw[:, idx1_start:idx1_end + 1]
+    mask2 = mask2_raw[:, idx2_start:idx2_end + 1]
+    times = times1[idx1_start:idx1_end + 1] # Use times1 as the reference for the new common times
+
+    # Combine masks
+    # Resulting combined mask values:
+    # 0: mask1=0, mask2=0
+    # 1: mask1=1, mask2=1 (considered for onset)
+    # 2: mask1=1, mask2=0
+    # 3: mask1=0, mask2=1
+    combined_mask = np.zeros_like(mask1, dtype=int)
+    combined_mask[(mask1 == 0) & (mask2 == 0)] = 0
+    combined_mask[(mask1 == 1) & (mask2 == 1)] = 1
+    combined_mask[(mask1 == 1) & (mask2 == 0)] = 2
+    combined_mask[(mask1 == 0) & (mask2 == 1)] = 3
+
+    spf = 1 / (times[1] - times[0])  # Calculate the sampling frequency
+    if bin:
+        win = 1
+    else:
+        win = int(win_len * spf)  # Number of samples in win_len seconds
+
+    onsets = {}
+
+    if bin:
+        search_start = np.searchsorted(times, time_range[0], side='left')
+        search_stop = np.searchsorted(times, time_range[1], side='right') - 1
+    else:
+        search_start = np.argmin(np.abs(np.array(times) - time_range[0]))
+        search_stop = np.argmin(np.abs(np.array(times) - time_range[1]))
+
+    for ch_idx, ch_name in enumerate(chs):
+        ch_combined_mask = combined_mask[ch_idx]
+        found = False
+
+        if bin:
+            for start_idx in range(int(search_start), int(search_stop) + 1):
+                win_mask = ch_combined_mask[start_idx]
+
+                # We are looking for onset of '2' in the combined mask
+                if np.all(win_mask == sortonset_base):
+                    starting_time = times[start_idx]
+                    onsets[ch_name] = starting_time
+                    found = True
+                    break
+        else:
+            for start_idx in range(int(search_start), int(search_stop) - win + 1):
+                win_mask = ch_combined_mask[start_idx:start_idx + win]
+
+                # We are looking for onset of '1' in the combined mask
+                if np.all(win_mask == sortonset_base):
+                    starting_time = times[start_idx]
+                    onsets[ch_name] = starting_time
+                    found = True
+                    break
+
+        if not found:
+            onsets[ch_name] = None  # No significant window found for '1'
+
+    # %% Select channels with significant activation clusters (where combined_mask == 1)
+    combined_mask_s = []
+    combined_mask_all_chs = np.full([np.shape(combined_mask)[0], np.shape(combined_mask)[1]], np.nan)
+    chs_s = []
+    chs_s_idx = []  # significant channels selected
+    chs_s_all_idx = set()  # Use a set to store selected channel indices
+    onsets_s = []
+
+    for ch_idx, ch_name in enumerate(chs):
+        onset = onsets.get(ch_name)  # Get the onset, avoiding repeated dictionary lookups
+        if onset is not None:  # Check if the channel has a valid onset (i.e., a '1' cluster was found)
+            combined_mask_s.append(combined_mask[ch_idx])
+            chs_s.append(ch_name)
+            chs_s_idx.append(ch_idx)
+            onsets_s.append(onset)
+            chs_s_all_idx.add(ch_idx)  # Add index to the set
+            combined_mask_all_chs[ch_idx, :] = combined_mask[ch_idx]  # Fill for selected channels
+        else:
+            # For channels without a '1' cluster, fill with NaN or an appropriate placeholder
+            combined_mask_all_chs[ch_idx,
+            :] = np.nan  # Or you could decide to keep original combined_mask values for non-selected
+
+    combined_mask_s = np.array(combined_mask_s)
+
+    # %% Do the ranking
+    sorted_indices = np.argsort(np.array(onsets_s))  # Get the indices that would sort the array
+    combined_mask_s_sorted = combined_mask_s[sorted_indices]
+    chs_s_sorted = [chs_s[i] for i in sorted_indices]
+    onsets_s_sorted = [onsets_s[i] for i in sorted_indices]
+
+    # %% Cut times
+    tw_idx = np.r_[search_start:search_stop + 1]
+    times = np.array(times)[tw_idx]
+    combined_mask_s_sorted = combined_mask_s_sorted[:, tw_idx]
+    combined_mask_all_chs = combined_mask_all_chs[:, tw_idx]
+
+    # %% Return the data
+    labels_significant = [chs_s_sorted, times.tolist()]
+    combined_mask_out = LabeledArray(combined_mask_s_sorted, labels_significant)
+
+    labels_all = [chs, times.tolist()]
+    combined_mask_all_chs_out = LabeledArray(combined_mask_all_chs, labels_all)
+
+    return combined_mask_out, combined_mask_all_chs_out, sorted_indices, chs_s_all_idx
+
+
 def get_latency(data_in,mode:str='peak'):
     import numpy as np
     from ieeg.arrays.label import LabeledArray
@@ -391,7 +547,7 @@ def get_sig_elecs_keyword(data_in,sig_idx,keyword):
             out.append(chs[i])
     return out
 
-def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False):
+def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discrete_y:bool=False,discrete_y_lables:list=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only']):
     """
     plot the significant channels in a sorted order
     """
@@ -399,6 +555,7 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False):
     import numpy as np
     import matplotlib.pyplot as plt
     import seaborn as sns
+    import matplotlib.colors as mcolors
 
     times = data_in.labels[1]
     times = [float(i) for i in times]
@@ -428,12 +585,27 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False):
             cbar_kws={'label': 'Data Value'}
         )
     else:
-        im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax)
-        # Add the colorbar to the plot
-        cbar = fig.colorbar(im, ax=ax, ticks=[vmin, vmax])
-        # Label the ticks
-        cbar.ax.set_yticklabels([f'Min: {vmin:.2f}', f'Max: {vmax:.2f}'])
-        cbar.set_label('Data Range') # Add a label for the colorbar
+        if not discrete_y:
+            im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax)
+            # Add the colorbar to the plot
+            cbar = fig.colorbar(im, ax=ax, ticks=[vmin, vmax])
+            # Label the ticks
+            cbar.ax.set_yticklabels([f'Min: {vmin:.2f}', f'Max: {vmax:.2f}'])
+            cbar.set_label('Data Range') # Add a label for the colorbar
+        else:
+            colors = ['lightgray', 'skyblue', 'mediumseagreen', 'salmon']  # Custom colors for 0, 1, 2, 3
+            custom_cmap = mcolors.ListedColormap(colors)
+            # Define boundaries for the discrete values
+            bounds = [-0.5, 0.5, 1.5, 2.5, 3.5]
+            norm = mcolors.BoundaryNorm(bounds, custom_cmap.N)
+            im = ax.imshow(data, cmap=custom_cmap, norm=norm,
+                           interpolation='nearest')  # 'nearest' is good for discrete data
+            # Create the colorbar
+            cbar = fig.colorbar(im, cmap=custom_cmap, norm=norm, boundaries=bounds, ticks=[0, 1, 2, 3],
+                                orientation='vertical', shrink=0.8)
+            cbar.set_ticklabels(discrete_y_lables)
+            cbar.set_label('Shared significance')
+
     # fig.colorbar(im, ax=ax)
     ax.set_title(title)
 

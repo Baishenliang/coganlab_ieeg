@@ -33,7 +33,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison
+from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined
 import matplotlib.pyplot as plt
 import projects.GLM.glm_utils as glm
 
@@ -244,6 +244,43 @@ if "LexNoDelay" in groupsTag:
     # (NoDelay Silence trials Whole win: Delay)
     data_LexNoDelay_Silence_Del_sorted,_,_,LexNoDelay_Silence_Del_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Silence_Aud,epoc_LexNoDelay_Silence_Aud, cluster_twin,[mean_word_len+auditory_decay,10])
     plot_chs(data_LexNoDelay_Silence_Del_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexNoDelay-{'Auditory_inSilence_Delay'}.jpg'),f"N chs = {len(LexNoDelay_Silence_Del_sig_idx)}")
+
+    if "LexDelay" in groupsTag:
+        # With Nodelay Repeat: Overlapped electrodes
+        data_LexNoDelay_Repeat_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Aud, cluster_twin,[-0.05,mean_word_len+auditory_decay],sortonset_base=1)
+        plot_chs(data_LexNoDelay_Repeat_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_Rep_Shared.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay Rep only'])
+
+        # With Nodelay Repeat: Delay only sig electrodes
+        data_LexNoDelay_Repeat_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Aud, cluster_twin,[-0.05,mean_word_len+auditory_decay],sortonset_base=2)
+        plot_chs(data_LexNoDelay_Repeat_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_Rep_Delay.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay Rep only'])
+
+        # With Nodelay Repeat: Nodelay only sig electrodes
+        data_LexNoDelay_Repeat_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Aud, cluster_twin,[-0.05,mean_word_len+auditory_decay],sortonset_base=3)
+        plot_chs(data_LexNoDelay_Repeat_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_Rep_NoDelay.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay Rep only'])
+
+        # With Nodelay JL: Overlapped electrodes
+        data_LexNoDelay_Silence_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Silence_Aud, cluster_twin,[-0.05,mean_word_len+auditory_decay],sortonset_base=1)
+        plot_chs(data_LexNoDelay_Silence_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_JL_Shared.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'])
+
+        # With Nodelay JL: Delay only sig electrodes
+        data_LexNoDelay_Silence_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Silence_Aud, cluster_twin,[-0.05,mean_word_len+auditory_decay],sortonset_base=2)
+        plot_chs(data_LexNoDelay_Silence_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_JL_Delay.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'])
+
+        # With Nodelay JL: Nodelay only sig electrodes
+        data_LexNoDelay_Silence_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Silence_Aud, cluster_twin,[-0.05,mean_word_len+auditory_decay],sortonset_base=3)
+        plot_chs(data_LexNoDelay_Silence_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_JL_NoDelay.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'])
+
+        # With Nodelay JL: Overlapped electrodes (Delay)
+        data_LexNoDelay_Silence_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Silence_Aud, cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len],sortonset_base=1)
+        plot_chs(data_LexNoDelay_Silence_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_JL_Shared_Delay.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'])
+
+        # With Nodelay JL: Delay only sig electrodes (Delay)
+        data_LexNoDelay_Silence_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Silence_Aud, cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len],sortonset_base=2)
+        plot_chs(data_LexNoDelay_Silence_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_JL_Delay_Delay.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'])
+
+        # With Nodelay JL: Nodelay only sig electrodes (Delay)
+        data_LexNoDelay_Silence_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Silence_Aud, cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len],sortonset_base=3)
+        plot_chs(data_LexNoDelay_Silence_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_JL_NoDelay_Delay.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'])
 
     # (Encoding electrodes without Delay)
     LexNoDelay_Silence_Encode_Only_sig_idx = LexNoDelay_Silence_Encode_sig_idx.difference(LexNoDelay_Silence_Del_sig_idx)

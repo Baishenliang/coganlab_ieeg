@@ -46,7 +46,7 @@ if event_suffix=='inYN':
 elif event_suffix=='inRep':
     task_Tags = ["Repeat"]
 wordnesses = ["ALL"]
-glm_feas = ["Acoustic"]
+glm_feas = ["Phonemic"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
