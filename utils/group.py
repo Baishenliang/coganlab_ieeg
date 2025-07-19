@@ -1058,6 +1058,31 @@ def time_avg_select(data_in,sig_idx_lst,normalize:bool=False):
     chs_select_final=np.concatenate(chs_select_final,axis=0)
     return data_avg, data_avg_select_final,chs_select_final
 
+def select_electrodes(data_in, sig_idx_lst):
+    """
+    Selects specific electrodes from the input data (trials, channels, time_points)
+    without performing a time average.
+    """
+    from ieeg.arrays.label import LabeledArray
+
+    chs = data_in.labels[0]
+    times = data_in.labels[1]
+
+    data = data_in.__array__() # Original data, shape: (trials, channels, time_points)
+
+    data_selected_final_groups = []
+    chs_selected_final = []
+
+    sig_idx_lst = list(sig_idx_lst)
+    data_selected_final = data[sig_idx_lst, :]
+    chs_selected_final = chs[sig_idx_lst]
+    # Concatenate results along the channel axis (axis=1 in the new shape)
+    # The shape will be (trials, total_selected_channels, time_points)
+    labels_all = [chs_selected_final, times]
+    data_out = LabeledArray(data_selected_final, labels_all)
+
+    return data_out
+
 def set2arr(set,arr_len):
     """
     Change set to one-zero array
