@@ -198,7 +198,7 @@ if "LexDelay" in groupsTag:
     LexDelay_Motor_in_Delay_sig_idx = LexDelay_Delay_sig_idx & LexDelay_Motor_sig_idx
 
     # Motor_prep only
-    LexDelay_Motorprep_Only_sig_idx = (LexDelay_Motor_Prep_sig_idx - (LexDelay_Aud_NoMotor_sig_idx | LexDelay_Sensorimotor_sig_idx | LexDelay_Motor_sig_idx | LexDelay_DelayOnly_sig_idx))
+    LexDelay_Motorprep_Only_sig_idx = (LexDelay_Motor_Prep_sig_idx - (LexDelay_Aud_NoMotor_sig_idx | LexDelay_Sensorimotor_sig_idx | LexDelay_Motor_sig_idx))
 
     # Others
     # LexDelay_Other_sig_idx = ((LexDelay_Aud_sig_idx | LexDelay_Delay_sig_idx | LexDelay_Motor_Prep_sig_idx | LexDelay_Motor_Resp_sig_idx)
@@ -245,6 +245,36 @@ if "LexNoDelay" in groupsTag:
     data_LexNoDelay_Silence_Del_sorted,_,_,LexNoDelay_Silence_Del_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Silence_Aud,epoc_LexNoDelay_Silence_Aud, cluster_twin,[mean_word_len+auditory_decay,10])
     plot_chs(data_LexNoDelay_Silence_Del_sorted,os.path.join(fig_save_dir,f'{groupsTag}-LexNoDelay-{'Auditory_inSilence_Delay'}.jpg'),f"N chs = {len(LexNoDelay_Silence_Del_sig_idx)}")
 
+    # (Encoding electrodes without Delay)
+    LexNoDelay_Silence_Encode_Only_sig_idx = LexNoDelay_Silence_Encode_sig_idx.difference(LexNoDelay_Silence_Del_sig_idx)
+
+    # Channel selection: Auditory nomotor electrodes (auditory window:1, motor prep: 0)
+    LexNoDelay_Aud_NoMotor_sig_idx = LexNoDelay_Aud_sig_idx - LexNoDelay_Motor_Prep_sig_idx
+
+    # Channel selection: Sensorimotor electrodes (auditory window:1, motor prep: 1)
+    LexNoDelay_Sensorimotor_sig_idx = LexNoDelay_Aud_sig_idx & LexNoDelay_Motor_Prep_sig_idx
+
+    # Channel selection: Sensory OR motor electrodes (auditory window:1 or motor prep: 1 or motor resp: 1)
+    LexNoDelay_Sensory_OR_Motor_sig_idx = LexNoDelay_Aud_sig_idx | LexNoDelay_Motor_Prep_sig_idx | LexNoDelay_Motor_Resp_sig_idx
+
+    # Channel selection: All sig electrodes (auditory window:1 or delay: 1 or motor prep: 1 or motor resp: 1)
+    LexNoDelay_all_sig_idx = LexNoDelay_Aud_sig_idx | LexNoDelay_Motor_Prep_sig_idx | LexNoDelay_Motor_Resp_sig_idx
+
+    # Channel selection: Motor electrodes (auditory window:0, motor resp: 1)
+    LexNoDelay_Motor_sig_idx = LexNoDelay_Motor_Resp_sig_idx - LexNoDelay_Aud_sig_idx
+
+    # (Motor prep only)
+    LexNoDelay_Motor_Prep_Only_sig_idx = LexNoDelay_Motor_Prep_sig_idx - (LexNoDelay_Aud_sig_idx | LexNoDelay_Motor_sig_idx)
+
+    Lex_idxes['LexNoDelay_Aud_NoMotor_sig_idx'] = LexNoDelay_Aud_NoMotor_sig_idx
+    Lex_idxes['LexNoDelay_Sensorimotor_sig_idx'] = LexNoDelay_Sensorimotor_sig_idx
+    Lex_idxes['LexNoDelay_Sensory_OR_Motor_sig_idx'] = LexNoDelay_Sensory_OR_Motor_sig_idx
+    Lex_idxes['LexNoDelay_all_sig_idx'] = LexNoDelay_all_sig_idx
+    Lex_idxes['LexNoDelay_Motor_sig_idx'] = LexNoDelay_Motor_sig_idx
+    Lex_idxes['LexNoDelay_Silence_Encode_sig_idx'] = LexNoDelay_Silence_Encode_sig_idx
+    Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx'] = LexNoDelay_Silence_Encode_Only_sig_idx
+    Lex_idxes['LexNoDelay_Silence_Del_sig_idx'] = LexNoDelay_Silence_Del_sig_idx
+
     if "LexDelay" in groupsTag:
         # With Nodelay Repeat: Overlapped electrodes
         data_LexNoDelay_Repeat_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Aud, cluster_twin,[-0.05,mean_word_len+auditory_decay],sortonset_base=1)
@@ -282,66 +312,45 @@ if "LexNoDelay" in groupsTag:
         data_LexNoDelay_Silence_LexDelay_sorted,_,_,LexNoDelay_Repeat_LexDelay_sig_idx = sort_chs_by_actonset_combined(data_LexDelay_Aud,data_LexNoDelay_Silence_Aud, cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len],sortonset_base=3)
         plot_chs(data_LexNoDelay_Silence_LexDelay_sorted,os.path.join(fig_save_dir,'del_ndel_overlap',f'NoDelay_JL_NoDelay_Delay.jpg'),f"N chs = {len(LexNoDelay_Repeat_LexDelay_sig_idx)}",discrete_y=True,discrete_y_lables=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'])
 
-        # Get Aud,SM, and M delay electrodes in No Delay Repeat tasks:
+        # Get all significant electrodes in Delay Repeat tasks:
+        print(f'Auditory resp elec. in all sig electrodes in Delay Rep {len(LexDelay_Aud_sig_idx)}, {len(LexDelay_Aud_sig_idx)/len(LexDelay_all_sig_idx)}')
+        print(f'MotorPrep only resp elec. in all sig electrodes in Delay Rep {len(LexDelay_Motorprep_Only_sig_idx)}, {len(LexDelay_Motorprep_Only_sig_idx)/len(LexDelay_all_sig_idx)}')
+        print(f'Motor resp elec. in all sig electrodes in Delay Rep {len(LexDelay_Motor_sig_idx)}, {len(LexDelay_Motor_sig_idx)/len(LexDelay_all_sig_idx)}')
+
+        # Get all significant electrodes in NoDelay Repeat tasks:
+        print(f'Auditory resp elec. in all sig electrodes in NoDelay Rep {len(LexNoDelay_Aud_sig_idx)}, {len(LexNoDelay_Aud_sig_idx)/len(LexNoDelay_all_sig_idx)}')
+        print(f'MotorPrep only resp elec. in all sig electrodes in NoDelay Rep {len(LexNoDelay_Motor_Prep_Only_sig_idx)}, {len(LexNoDelay_Motor_Prep_Only_sig_idx)/len(LexNoDelay_all_sig_idx)}')
+        print(f'Motor resp elec. in all sig electrodes in NoDelay Rep {len(LexNoDelay_Motor_sig_idx)}, {len(LexNoDelay_Motor_sig_idx)/len(LexNoDelay_all_sig_idx)}')
+
+        # Get Delay electrodes in Delay Repeat tasks (as baseline):
+        print(f'Auditory resp elec. in Delay Rep {len(LexDelay_Aud_sig_idx & LexDelay_Delay_sig_idx)}, {len(LexDelay_Aud_sig_idx & LexDelay_Delay_sig_idx) / len(LexDelay_Delay_sig_idx)}')
+        print(f'MotorPrep resp elec. in Delay Rep {len(LexDelay_Motorprep_Only_sig_idx & LexDelay_Delay_sig_idx)}, {len(LexDelay_Motorprep_Only_sig_idx & LexDelay_Delay_sig_idx) / len(LexDelay_Delay_sig_idx)}')
+        print(f'Motor resp elec. Delay Rep {len(LexDelay_Motor_sig_idx & LexDelay_Delay_sig_idx)}, {len(LexDelay_Motor_sig_idx & LexDelay_Delay_sig_idx) / len(LexDelay_Delay_sig_idx)}')
+
+        # Get Delay electrodes in No Delay Repeat tasks:
         data_LexNoDelay_Aud_DelDel=select_electrodes(data_LexNoDelay_Aud,LexDelay_Delay_sig_idx)
         data_LexNoDelay_Resp_DelDel=select_electrodes(data_LexNoDelay_Resp,LexDelay_Delay_sig_idx)
         epoc_LexNoDelay_Aud_DelDel=select_electrodes(epoc_LexNoDelay_Aud,LexDelay_Delay_sig_idx)
         epoc_LexNoDelay_Resp_DelDel=select_electrodes(epoc_LexNoDelay_Resp,LexDelay_Delay_sig_idx)
+        _, _, _, LexNoDelay_Aud_DelDel_all = sort_chs_by_actonset(data_LexNoDelay_Aud_DelDel,epoc_LexNoDelay_Aud_DelDel,cluster_twin, [-0.1,10])
         _, _, _, LexNoDelay_Aud_DelDel_aud = sort_chs_by_actonset(data_LexNoDelay_Aud_DelDel,epoc_LexNoDelay_Aud_DelDel,cluster_twin, [-0.1,mean_word_len + auditory_decay])
         _, _, _, LexNoDelay_Aud_DelDel_mtrprep = sort_chs_by_actonset(data_LexNoDelay_Resp_DelDel, epoc_LexNoDelay_Resp_DelDel, cluster_twin, motor_prep_win)
         _, _, _, LexNoDelay_Aud_DelDel_mtr = sort_chs_by_actonset(data_LexNoDelay_Resp_DelDel, epoc_LexNoDelay_Resp_DelDel, cluster_twin, motor_resp_win)
         delsm_full=set(range(1, len(LexDelay_Delay_sig_idx)+1))
-        print(f'Prob. Auditory resp elec. in SM Delay {len(LexNoDelay_Aud_DelDel_aud) / len(delsm_full)}')
-        print(f'Prob. Motorprep resp elec. in SM Delay {len(LexNoDelay_Aud_DelDel_mtrprep - LexNoDelay_Aud_DelDel_aud) / len(delsm_full)}')
-        print(f'Prob. Motor resp elec. in SM Delay {len(LexNoDelay_Aud_DelDel_mtr - LexNoDelay_Aud_DelDel_aud) / len(delsm_full)}')
-        print(f'Prob. Silent elec. in SM Delay {len(delsm_full-(LexNoDelay_Aud_DelDel_aud | LexNoDelay_Aud_DelDel_aud | LexNoDelay_Aud_DelDel_mtr)) / len(delsm_full)}')
+        print(f'Auditory resp elec. in NoDelay Rep {len(LexNoDelay_Aud_DelDel_aud)}, {len(LexNoDelay_Aud_DelDel_aud) / len(delsm_full)}')
+        print(f'Prob. Motorprep resp elec. NoDelay Rep {len(LexNoDelay_Aud_DelDel_mtrprep - (LexNoDelay_Aud_DelDel_aud | LexNoDelay_Aud_DelDel_mtr))}, {len(LexNoDelay_Aud_DelDel_mtrprep - (LexNoDelay_Aud_DelDel_aud | LexNoDelay_Aud_DelDel_mtr)) / len(delsm_full)}')
+        print(f'Motor resp elec. NoDelay Rep {len(LexNoDelay_Aud_DelDel_mtr - LexNoDelay_Aud_DelDel_aud)}, {len(LexNoDelay_Aud_DelDel_mtr - LexNoDelay_Aud_DelDel_aud) / len(delsm_full)}')
+        print(f'Silent elec. in NoDelay Rep {len(delsm_full-LexNoDelay_Aud_DelDel_all)}, {len(delsm_full-LexNoDelay_Aud_DelDel_all) / len(delsm_full)}')
 
-        # Get Aud,SM, and M delay electrodes in No Delay Repeat tasks:
-        data_LexNoDelay_Aud_DelSM=select_electrodes(data_LexNoDelay_Aud,LexDelay_Sensorimotor_sig_idx)
-        data_LexNoDelay_Resp_DelSM=select_electrodes(data_LexNoDelay_Resp,LexDelay_Sensorimotor_sig_idx)
-        epoc_LexNoDelay_Aud_DelSM=select_electrodes(epoc_LexNoDelay_Aud,LexDelay_Sensorimotor_sig_idx)
-        epoc_LexNoDelay_Resp_DelSM=select_electrodes(epoc_LexNoDelay_Resp,LexDelay_Sensorimotor_sig_idx)
-        _, _, _, LexNoDelay_Aud_DelSM_aud = sort_chs_by_actonset(data_LexNoDelay_Aud_DelSM,epoc_LexNoDelay_Aud_DelSM,cluster_twin, [-0.1,mean_word_len + auditory_decay])
-        _, _, _, LexNoDelay_Aud_DelSM_mtrprep = sort_chs_by_actonset(data_LexNoDelay_Resp_DelSM, epoc_LexNoDelay_Resp_DelSM, cluster_twin, motor_prep_win)
-        _, _, _, LexNoDelay_Aud_DelSM_mtr = sort_chs_by_actonset(data_LexNoDelay_Resp_DelSM, epoc_LexNoDelay_Resp_DelSM, cluster_twin, motor_resp_win)
-        delsm_full=set(range(1, len(LexDelay_Sensorimotor_sig_idx)+1))
-        print(f'Prob. Auditory resp elec. in SM Delay {len(LexNoDelay_Aud_DelSM_aud) / len(delsm_full)}')
-        print(f'Prob. Motorprep resp elec. in SM Delay {len(LexNoDelay_Aud_DelSM_mtrprep - LexNoDelay_Aud_DelSM_aud) / len(delsm_full)}')
-        print(f'Prob. Motor resp elec. in SM Delay {len(LexNoDelay_Aud_DelSM_mtr - LexNoDelay_Aud_DelSM_aud) / len(delsm_full)}')
-        print(f'Prob. Silent elec. in SM Delay {len(delsm_full-(LexNoDelay_Aud_DelSM_aud | LexNoDelay_Aud_DelSM_aud | LexNoDelay_Aud_DelSM_mtr)) / len(delsm_full)}')
-
-        data_LexNoDelay_Aud_DelAud=select_electrodes(data_LexNoDelay_Aud,LexDelay_Aud_NoMotor_sig_idx)
-        epoc_LexNoDelay_Aud_DelAud=select_electrodes(epoc_LexNoDelay_Aud,LexDelay_Aud_NoMotor_sig_idx)
-        _, _, _, LexNoDelay_Aud_DelAud_aud = sort_chs_by_actonset(data_LexNoDelay_Aud_DelAud,epoc_LexNoDelay_Aud_DelAud,cluster_twin, [-0.1,mean_word_len + auditory_decay])
-        delaud_full=set(range(1, len(data_LexNoDelay_Aud_DelAud)+1))
-        print(f'Prob. Aud Nodelay elec. in Aud Delay {len(LexNoDelay_Aud_DelAud_aud) / len(delaud_full)}')
-
-    # (Encoding electrodes without Delay)
-    LexNoDelay_Silence_Encode_Only_sig_idx = LexNoDelay_Silence_Encode_sig_idx.difference(LexNoDelay_Silence_Del_sig_idx)
-
-    # Channel selection: Auditory nomotor electrodes (auditory window:1, motor prep: 0)
-    LexNoDelay_Aud_NoMotor_sig_idx = LexNoDelay_Aud_sig_idx - LexNoDelay_Motor_Prep_sig_idx
-
-    # Channel selection: Sensorimotor electrodes (auditory window:1, motor prep: 1)
-    LexNoDelay_Sensorimotor_sig_idx = LexNoDelay_Aud_sig_idx & LexNoDelay_Motor_Prep_sig_idx
-
-    # Channel selection: Sensory OR motor electrodes (auditory window:1 or motor prep: 1 or motor resp: 1)
-    LexNoDelay_Sensory_OR_Motor_sig_idx = LexNoDelay_Aud_sig_idx | LexNoDelay_Motor_Prep_sig_idx | LexNoDelay_Motor_Resp_sig_idx
-
-    # Channel selection: All sig electrodes (auditory window:1 or delay: 1 or motor prep: 1 or motor resp: 1)
-    LexNoDelay_all_sig_idx = LexNoDelay_Aud_sig_idx | LexNoDelay_Motor_Prep_sig_idx | LexNoDelay_Motor_Resp_sig_idx
-
-    # Channel selection: Motor electrodes (auditory window:0, motor resp: 1)
-    LexNoDelay_Motor_sig_idx = LexNoDelay_Motor_Resp_sig_idx - LexNoDelay_Aud_sig_idx
-
-    Lex_idxes['LexNoDelay_Aud_NoMotor_sig_idx'] = LexNoDelay_Aud_NoMotor_sig_idx
-    Lex_idxes['LexNoDelay_Sensorimotor_sig_idx'] = LexNoDelay_Sensorimotor_sig_idx
-    Lex_idxes['LexNoDelay_Sensory_OR_Motor_sig_idx'] = LexNoDelay_Sensory_OR_Motor_sig_idx
-    Lex_idxes['LexNoDelay_all_sig_idx'] = LexNoDelay_all_sig_idx
-    Lex_idxes['LexNoDelay_Motor_sig_idx'] = LexNoDelay_Motor_sig_idx
-    Lex_idxes['LexNoDelay_Silence_Encode_sig_idx'] = LexNoDelay_Silence_Encode_sig_idx
-    Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx'] = LexNoDelay_Silence_Encode_Only_sig_idx
-    Lex_idxes['LexNoDelay_Silence_Del_sig_idx'] = LexNoDelay_Silence_Del_sig_idx
+       # Get Delay electrodes in No Delay JL tasks:
+        data_LexNoDelay_JL_Aud_DelDel=select_electrodes(data_LexNoDelay_Silence_Aud,LexDelay_Delay_sig_idx)
+        epoc_LexNoDelay_JL_Aud_DelDel=select_electrodes(epoc_LexNoDelay_Silence_Aud,LexDelay_Delay_sig_idx)
+        _, _, _, LexNoDelay_JL_Aud_DelDel_aud = sort_chs_by_actonset(data_LexNoDelay_JL_Aud_DelDel,epoc_LexNoDelay_JL_Aud_DelDel,cluster_twin, [-0.1,mean_word_len + auditory_decay])
+        _, _, _, LexNoDelay_JL_Aud_DelDel_del = sort_chs_by_actonset(data_LexNoDelay_JL_Aud_DelDel,epoc_LexNoDelay_JL_Aud_DelDel,cluster_twin, [mean_word_len + auditory_decay,mean_word_len + auditory_decay + delay_len])
+        delsm_full=set(range(1, len(LexDelay_Delay_sig_idx)+1))
+        print(f'Prob. Auditory resp elec. in NoDelay JL {len(LexNoDelay_JL_Aud_DelDel_aud) / len(delsm_full)}')
+        print(f'Prob. Delay-only resp elec. in NoDelay JL {len(LexNoDelay_JL_Aud_DelDel_del - LexNoDelay_JL_Aud_DelDel_aud) / len(delsm_full)}')
+        print(f'Prob. Silent elec. in NoDelay JL {len(delsm_full-(LexNoDelay_JL_Aud_DelDel_aud | LexNoDelay_JL_Aud_DelDel_del)) / len(delsm_full)}')
 
     # May do in_Silence electrodes later
 Lex_idxes['groupsTag']=groupsTag
