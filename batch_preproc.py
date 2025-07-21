@@ -518,11 +518,11 @@ for subject, processing_type in subject_processing_dict.items():
                 #     ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep')
                 # )
                 gamma_epoc_zip = zip(
-                    ('Cue/Repeat/CORRECT',),
-                    ('Cue/Repeat/CORRECT',),
-                    ((-0.5, 3),),
-                    ('Cue_inRep',),
-                    (True,)
+                    ('Cue/Repeat/CORRECT','Empt'),
+                    ('Cue/Repeat/CORRECT','Empt'),
+                    ((-0.5, 3),(0,0)),
+                    ('Cue_inRep','Empt'),
+                    (True,False)
                 )
             elif Task_Tag == "LexicalDecRepNoDelay":
                 # gamma_epoc_zip=zip(
@@ -566,7 +566,8 @@ for subject, processing_type in subject_processing_dict.items():
 
                 if (Task_Tag == "LexicalDecRepDelay") and ("Repeat" not in epoch_phase) and (subject=="D0115"):
                     break # Patient D0115 has wrong YesNo task responses, so skip it
-
+                if epoch_phase == 'Empt':
+                    break
                 out = []
                 # If it is baseline correction, the sig2 only contains the first 0.5s of the baseline epoch (marked as baseline_tag).
                 if is_bsl_correct:
