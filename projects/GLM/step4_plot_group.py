@@ -39,14 +39,14 @@ Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
 event_suffix=('inRep')
-events = [f"Auditory_{event_suffix}",f"Resp_{event_suffix}"]
+events = [f"Auditory_{event_suffix}"]
 stat = "zscore"
 if event_suffix=='inYN':
     task_Tags = ["Yes_No"]
 elif event_suffix=='inRep':
     task_Tags = ["Repeat"]
 wordnesses = ["ALL"]
-glm_feas = ["Phonemic"]
+glm_feas = ["Del_selective"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
@@ -112,7 +112,10 @@ peaks_aud=dict()
 peaks_del=dict()
 peaks_aud_del=dict()
 for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
-    subjs, _, _, chs, times = glm.fifread(event, 'zscore', task_Tag,wordness,preonset_bsl_correct=False)
+    if ('Rep_selective' in glm_feas) or ('Del_selective' in glm_feas):
+        subjs, _, _, chs, times = glm.fifread(event,stat,task_Tag,wordness, Comp_task=glm_feas[0],preonset_bsl_correct=False)
+    else:
+        subjs, _, _, chs, times = glm.fifread(event,stat,task_Tag,wordness,preonset_bsl_correct=False)
     for glm_fea in glm_feas:
         # if task_Tag == "Yes_No" and ((event=='Auditory' and glm_fea=='Acoustic') or glm_fea=='Acoustic'):# (event != "Resp" or glm_fea != "Lexical"):
         #     continue
@@ -129,12 +132,21 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             if plot_wave_type=='stat':
                 if glm_feas[0]=='Rep_YN' or glm_feas[0]=='YN_Rep':
                     stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*5e8
+                elif glm_feas[0] == 'Del_selective' or glm_feas[0] == 'Rep_selective':
+                    stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*3e8
                 else:
                     stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=stats*5e8
             elif plot_wave_type=='mask':
                 stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}']=masks*100
             del masks,stats
-            if event.split('_')[0]=='Auditory':
+            if ('Rep_selective' in glm_feas) or ('Del_selective' in glm_feas):
+                # whole trial
+                all_masks_sorted, all_masks_raw, _, all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud, stass[
+                    f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.5, -0.4], mask_data=True, bin=bin)
+                gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}",bin=bin)
+                with open(os.path.join('data', f'sig_idx_{glm_fea}.npy'), "wb") as f:
+                    pickle.dump(all_masks_sig, f)
+            elif event.split('_')[0]=='Auditory':
                 # whole trial
                 all_masks_sorted,all_masks_raw,_,all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud,stass[f'{event}/{task_Tag}/{wordness}/{glm_fea}'],cluster_twin,[-0.5,5],mask_data=True,bin=bin)
                 # plot time slices

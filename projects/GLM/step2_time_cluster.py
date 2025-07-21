@@ -25,7 +25,10 @@ def main(event, task_Tag, glm_fea, wordness):
     alpha_clus = config['alpha_clus']
     stat = config['stat']
 
-    subjs, _, _, chs, _ = glm.fifread(event,stat,task_Tag,wordness)
+    if glm_fea=='Rep_selective' or glm_fea=='Del_selective':
+        subjs, _, _, chs, _ = glm.fifread(event,stat,task_Tag,wordness, Comp_task=glm_fea)
+    else:
+        subjs, _, _, chs, _ = glm.fifread(event,stat,task_Tag,wordness)
 
     for i, _ in enumerate(subjs):
         print(f"Time cluster: Patient {subjs[i]} in {event} {task_Tag} {wordness} {glm_fea}")

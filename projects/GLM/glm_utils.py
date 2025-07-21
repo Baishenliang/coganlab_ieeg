@@ -23,20 +23,26 @@ HOME = os.path.expanduser("~")
 LAB_root = os.path.join(HOME, "Box", "CoganLab")
 clean_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "clean")
 stats_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
+stats_root_nodelay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BIDS', "derivatives", "stats")
 
 bin_wins=[(-0.5, -0.2), (-0.2, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1.0),(1.0, 1.5)]
 
 #%% Functions
 
-def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=False,preonset_bsl_correct:bool=False):
+def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,Comp_task='',bin:bool=False,preonset_bsl_correct:bool=False):
 
     from ieeg.calc import scaling
 
     fif_name=f'{event}_{stat}-epo.fif'
 
     # Read single patient stats
-    subjs = [name for name in os.listdir(stats_root) if
-            os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
+    if Comp_task=='Rep_selective' or Comp_task=='Del_selective':
+        subjs = [name for name in os.listdir(stats_root_nodelay) if
+                os.path.isdir(os.path.join(stats_root_nodelay, name)) and name.startswith('D')]
+    else:
+        subjs = [name for name in os.listdir(stats_root) if
+                os.path.isdir(os.path.join(stats_root, name)) and name.startswith('D')]
+
     import warnings
     subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']  # always exclude D0115 now but not in ther future to keep the repeat
     if task_Tag=='Yes_No':
@@ -77,7 +83,7 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=Fa
             # (one baseline for each electrode)
             # So I choose to use the np.array version:
             base_data=base.get_data()
-            if subject == 'sub-D0102' and (task_Tag == 'Repeat' or RepYN == 'Rep_YN' or RepYN == 'YN_Rep') and event.split('_')[0] == 'Auditory' and wordness != 'Nonword':
+            if subject == 'sub-D0102' and (task_Tag == 'Repeat' or Comp_task == 'Rep_YN' or Comp_task == 'YN_Rep') and event.split('_')[0] == 'Auditory' and wordness != 'Nonword':
                 base_data=base_data[:-1]
             bsl_corr_epoch_data = scaling.rescale(epochs.get_data(), base_data, 'zscore', copy=True)
             epochs_bsl_corr = mne.EpochsArray(
@@ -92,17 +98,25 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=Fa
         if bin:
             epochs=get_windowed_epoch_data(epochs,preonset_bsl_correct=True)
 
-
         if bsl_contrast:
             fif_name_cue = f'Cue_inRep_{stat}-epo.fif'
             file_dir = os.path.join(subj_gamma_stats_dir, fif_name_cue)
             epochs_bsl = mne.read_epochs(file_dir, False, preload=True)
             epochs_bsl_crop = epochs_bsl.copy().crop(tmin=-0.5, tmax=0)
 
-        if RepYN=='Rep_YN' or RepYN=='YN_Rep':
+        if Comp_task=='Rep_YN' or Comp_task=='YN_Rep':
             fif_name_YN = f'Auditory_inYN_{stat}-epo.fif'
             file_dir = os.path.join(subj_gamma_stats_dir, fif_name_YN)
             epochs_YN = mne.read_epochs(file_dir, False, preload=True)
+
+        if Comp_task == 'Rep_selective' or Comp_task == 'Del_selective':
+            fif_name_Ndel_inRep = f'{event.split('_')[0]}_inRep_{stat}-epo.fif'
+            fif_name_Ndel_inSilence = f'{event.split('_')[0]}_inSilence_{stat}-epo.fif'
+            subj_gamma_stats_dir_Ndel = os.path.join(stats_root_nodelay, subject_No)
+            fif_dir_Ndel_inRep = os.path.join(subj_gamma_stats_dir_Ndel, fif_name_Ndel_inRep)
+            epochs_Ndel_inRep = mne.read_epochs(fif_dir_Ndel_inRep, False, preload=True)
+            fif_dir_Ndel_inSilence = os.path.join(subj_gamma_stats_dir_Ndel, fif_name_Ndel_inSilence)
+            epochs_Ndel_inSilence = mne.read_epochs(fif_dir_Ndel_inSilence, False, preload=True)
 
         if not bsl_contrast:
             # Load events
@@ -143,8 +157,36 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=Fa
                 times = epochs.times
             if bsl_contrast:
                 data_i_bsl = epochs_bsl_crop[f'Cue/{task_Tag}/CORRECT'].get_data()
-            if RepYN=='Rep_YN' or RepYN=='YN_Rep':
+            if Comp_task=='Rep_YN' or Comp_task=='YN_Rep':
                 data_i_YN = epochs_YN[f'Auditory_stim/Yes_No/CORRECT'].get_data()
+            elif Comp_task == 'Rep_selective' or Comp_task == 'Del_selective':
+                channels_epochs_set = set(epochs.ch_names)
+                channels_rep_set = set(epochs_Ndel_inRep.ch_names)
+                channels_silence_set = set(epochs_Ndel_inSilence.ch_names)
+                common_channels = channels_epochs_set.intersection(channels_rep_set, channels_silence_set)
+                epochs_list = [epochs, epochs_Ndel_inRep, epochs_Ndel_inSilence]
+                for k, current_epochs in enumerate(epochs_list):
+                    channels_to_drop = [ch for ch in current_epochs.ch_names if ch not in common_channels]
+                    if channels_to_drop:
+                        current_epochs.drop_channels(channels_to_drop)
+                iscrop=True
+                if iscrop:
+                    t_min_comp_task = -0.5
+                    t_max_comp_task = 1.5
+                    epochs.crop(t_min_comp_task,t_max_comp_task)
+                    if i == 0:
+                        times = epochs.times
+                    epochs_Ndel_inRep.crop(t_min_comp_task,t_max_comp_task)
+                    epochs_Ndel_inSilence.crop(t_min_comp_task,t_max_comp_task)
+                if event.split('_')[0] == 'Auditory':
+                    data_i = epochs[f'Auditory_stim/{task_Tag}/CORRECT'].get_data()
+                    data_i_Ndel_inRep = epochs_Ndel_inRep[f'Auditory_stim/Repeat/CORRECT'].get_data()
+                    data_i_Ndel_inSilence = epochs_Ndel_inSilence[f'Auditory_stim/:=:/CORRECT'].get_data()
+                else:
+                    data_i = epochs[f'{event.split('_')[0]}/{task_Tag}/CORRECT'].get_data()
+                    data_i_Ndel_inRep = epochs_Ndel_inRep[f'{event.split('_')[0]}/Repeat/CORRECT'].get_data()
+                    data_i_Ndel_inSilence = epochs_Ndel_inSilence[f'{event.split('_')[0]}/:=:/CORRECT'].get_data()
+
         else:
             if event.split('_')[0] == 'Auditory':
                 data_i = epochs[f'Auditory_stim/{task_Tag}/{wordness}/CORRECT'].get_data()
@@ -163,7 +205,7 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=Fa
 
         # Handle the case of D0102
         # D0102 has a different number of trials for the last trial
-        if subject == 'sub-D0102' and (task_Tag == 'Repeat' or RepYN == 'Rep_YN' or RepYN == 'YN_Rep') and event.split('_')[0] == 'Auditory' and wordness != 'Nonword':
+        if subject == 'sub-D0102' and (task_Tag == 'Repeat' or Comp_task == 'Rep_YN' or Comp_task == 'YN_Rep') and event.split('_')[0] == 'Auditory' and wordness != 'Nonword':
             if not bsl_contrast:
                 filtered_events_i = filtered_events_i[:-1]
             else:
@@ -177,15 +219,28 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,RepYN='',bin:bool=Fa
             data_i = np.concatenate([data_i, data_i_bsl_mean_repeated], axis=0)
             bsl_dummy = np.concatenate([np.ones(np.shape(data_i_bsl_mean_repeated)[0]), np.zeros(np.shape(data_i_bsl_mean_repeated)[0])]).astype(int)#.reshape(-1, 1)
             X_i = np.column_stack([np.ones(np.shape(data_i)[0]), bsl_dummy])
-        elif RepYN=='Rep_YN' or RepYN=='YN_Rep':
+        elif Comp_task=='Rep_YN' or Comp_task=='YN_Rep':
             # Feature matrix
             len_rep=np.shape(data_i)[0]
             data_i = np.concatenate([data_i, data_i_YN], axis=0)
-            if RepYN=='Rep_YN':
+            if Comp_task=='Rep_YN':
                 Rep_YN_dummy = np.concatenate([np.ones(len_rep), np.zeros(np.shape(data_i_YN)[0])]).astype(int)#.reshape(-1, 1)
-            elif RepYN=='YN_Rep':
+            elif Comp_task=='YN_Rep':
                 Rep_YN_dummy = np.concatenate([np.zeros(len_rep), np.ones(np.shape(data_i_YN)[0])]).astype(int)#.reshape(-1, 1)
             X_i = np.column_stack([np.ones(np.shape(data_i)[0]), Rep_YN_dummy])
+        elif Comp_task=='Rep_selective' or Comp_task=='Del_selective':
+            # Feature matrix
+            len_del_rep=np.shape(data_i)[0]
+            len_ndel_rep=np.shape(data_i_Ndel_inRep)[0]
+            len_ndel_jl=np.shape(data_i_Ndel_inSilence)[0]
+            data_i = np.concatenate([data_i, data_i_Ndel_inRep,data_i_Ndel_inSilence], axis=0)
+            if Comp_task=='Rep_selective':
+                Rep_NRep_dummy = np.concatenate([np.ones(len_del_rep), np.ones(len_ndel_rep), np.zeros(len_ndel_jl)]).astype(int)#.reshape(-1, 1)
+                X_i = np.column_stack([np.ones(np.shape(data_i)[0]), Rep_NRep_dummy])
+            elif Comp_task=='Del_selective':
+                Del_NDel_dummy = np.concatenate([np.ones(len_del_rep), np.zeros(len_ndel_rep), np.zeros(len_ndel_jl)]).astype(int)#.reshape(-1, 1)
+                X_i = np.column_stack([np.ones(np.shape(data_i)[0]), Del_NDel_dummy])
+
         else:
             # Feature matrix
             word_dummy = (filtered_events_i.Wordness == "Word").astype(float)
