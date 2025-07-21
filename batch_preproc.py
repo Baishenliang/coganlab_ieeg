@@ -237,12 +237,12 @@ for subject, processing_type in subject_processing_dict.items():
             if Task_Tag=="LexicalDecRepDelay":
                 wavelet_eventzip=zip(
                     ('Cue/CORRECT', 'Auditory_stim/CORRECT','Go/CORRECT','Resp/CORRECT'),
-                    ((-0.5, 1.5), (-0.5, 3),  (-0.5, 1), (-0.5, 1)),
+                    ((-0.5, 3), (-0.5, 3),  (-0.5, 1), (-0.5, 1)),
                     ('Cue', 'Auditory','Go','Resp'))
             elif Task_Tag=="LexicalDecRepNoDelay":
                 wavelet_eventzip=zip(
                     ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                    ((-0.5, 1.5), (-0.5, 1), (-0.5, 1)),
+                    ((-0.5, 3), (-0.5, 1), (-0.5, 1)),
                     ('Cue', 'Auditory', 'Resp')
                 )
             elif Task_Tag=="RetroCue":
@@ -362,7 +362,7 @@ for subject, processing_type in subject_processing_dict.items():
                              'Auditory_stim/' + task + '/' + word + '/CORRECT',
                              'Go/' + task + '/' + word + '/CORRECT',
                              'Resp/' + task + '/' + word + '/CORRECT'),
-                            ((-0.5, 1.5), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                            ((-0.5, 3), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
                             ('Cue-' + task_Tag_multitap + '-' + word_Tag,
                              'Auditory-' + task_Tag_multitap + '-' + word_Tag,
                              'Go-' + task_Tag_multitap + '-' + word_Tag,
@@ -374,7 +374,7 @@ for subject, processing_type in subject_processing_dict.items():
                                 ('Cue/' + task + '/' + word + '/CORRECT',
                                  'Auditory_stim/' + task + '/' + word + '/CORRECT',
                                  'Resp/' + task + '/' + word + '/CORRECT'),
-                                ((-0.5, 1.5), (-0.5, 2), (-0.5, 1)),
+                                ((-0.5, 3), (-0.5, 2), (-0.5, 1)),
                                 ('Cue-' + task_Tag_multitap + '-' + word_Tag,
                                  'Auditory-' + task_Tag_multitap + '-' + word_Tag,
                                  'Resp-' + task_Tag_multitap + '-' + word_Tag)
@@ -383,7 +383,7 @@ for subject, processing_type in subject_processing_dict.items():
                             multitap_evnt_zip = zip(
                                 ('Cue/' + task + '/' + word + '/CORRECT',
                                  'Auditory_stim/' + task + '/' + word + '/CORRECT'),
-                                ((-0.5, 1.5), (-0.5, 2)),
+                                ((-0.5, 3), (-0.5, 2)),
                                 ('Cue-' + task_Tag_multitap + '-' + word_Tag,
                                  'Auditory-' + task_Tag_multitap + '-' + word_Tag))
                     elif Task_Tag == "RetroCue" and word_Tag == 'nwrd':
@@ -511,20 +511,33 @@ for subject, processing_type in subject_processing_dict.items():
 
             # gamma and permutation
             if Task_Tag == "LexicalDecRepDelay":
-                gamma_epoc_zip=zip(
-                    ('Auditory_stim/Yes_No/Word/CORRECT','Auditory_stim/Yes_No/Nonword/CORRECT','Resp/Yes_No/Word/CORRECT','Resp/Yes_No/Nonword/CORRECT'),
-                    ('Auditory_stim/Yes_No/Nonword/CORRECT','Auditory_stim/Yes_No/Word/CORRECT','Resp/Yes_No/Nonword/CORRECT','Resp/Yes_No/Word/CORRECT'),
-                    ((-0.5, 3),(-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                    ('Auditory_inYN_WNW','Auditory_inYN_NWW','Resp_inYN_WNW','Resp_inYN_NWW'),
-                    (False,False,False,False)
-                 )
+                # gamma_epoc_zip = zip(
+                #     ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                #     ((-0.5, 3), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
+                #     ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep')
+                # )
+                gamma_epoc_zip = zip(
+                    ('Cue/Repeat/CORRECT'),
+                    ('Cue/Repeat/CORRECT'),
+                    ((-0.5, 3)),
+                    ('Cue_inRep'),
+                    (True, True)
+                )
             elif Task_Tag == "LexicalDecRepNoDelay":
+                # gamma_epoc_zip=zip(
+                #     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT','Cue/Yes_No/CORRECT','Auditory_stim/Yes_No/CORRECT'),
+                #     ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/:=:/CORRECT','Cue/:=:/CORRECT','Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT'),
+                #     ((-0.5, 3), (-0.5, 2), (-0.5, 1),(-0.5, 1.5), (-0.5, 2),(-0.5, 1.5), (-0.5, 2)),
+                #     ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inSilence','Auditory_inSilence','Cue_inYN','Auditory_inYN'),
+                #     (True, False, False,True, False,True, False)
+                #  )
                 gamma_epoc_zip=zip(
-                    ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT','Cue/Yes_No/CORRECT','Auditory_stim/Yes_No/CORRECT'),
-                    ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/:=:/CORRECT','Cue/:=:/CORRECT','Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT'),
-                    ((-0.5, 1.5), (-0.5, 2), (-0.5, 1),(-0.5, 1.5), (-0.5, 2),(-0.5, 1.5), (-0.5, 2)),
-                    ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inSilence','Auditory_inSilence','Cue_inYN','Auditory_inYN'),
-                    (True, False, False,True, False,True, False)
+                    ('Cue/Repeat/CORRECT','Cue/:=:/CORRECT'),
+                    ('Cue/Repeat/CORRECT','Cue/:=:/CORRECT'),
+                    ((-0.5, 3),(-0.5, 3)),
+                    ('Cue_inRep','Cue_inSilence'),
+                    (True, True)
                  )
             elif Task_Tag == "RetroCue":
                 gamma_epoc_zip = zip(
