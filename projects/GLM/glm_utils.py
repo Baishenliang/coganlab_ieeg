@@ -172,7 +172,7 @@ def fifread(event,stat,task_Tag,wordness,bsl_contrast=False,Comp_task='',bin:boo
                 iscrop=True
                 if iscrop:
                     t_min_comp_task = -0.5
-                    t_max_comp_task = 1.5
+                    t_max_comp_task = 3
                     epochs.crop(t_min_comp_task,t_max_comp_task)
                     if i == 0:
                         times = epochs.times

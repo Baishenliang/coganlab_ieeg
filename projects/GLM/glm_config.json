@@ -1,8 +1,8 @@
 {
     "model": "full",
     "alpha": 0.05,
-    "alpha_clus": 0.001,
-    "n_perms": 10000,
+    "alpha_clus": 0.01,
+    "n_perms": 5000,
     "stat": "zscore",
     "rm_outlier": 0,
     "feature_ranges": {
