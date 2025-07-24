@@ -39,14 +39,14 @@ Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
 event_suffix=('inRep')
-events = [f"Cue_{event_suffix}"]
+events = [f"Auditory_{event_suffix}"]
 stat = "zscore"
 if event_suffix=='inYN':
     task_Tags = ["Yes_No"]
 elif event_suffix=='inRep':
     task_Tags = ["Repeat"]
 wordnesses = ["ALL"]
-glm_feas = ["Del_selective"]
+glm_feas = ["Acoustic","Phonemic","Lexical"]
 cluster_twin=0.011
 mean_word_len=0.5
 auditory_decay=0
