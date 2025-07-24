@@ -39,7 +39,7 @@ Phonemic_col = config['Phonemic_col']
 Lexical_col = config['Lexical_col']
 
 event_suffix=('inRep')
-events = [f"Auditory_{event_suffix}"]
+events = [f"Cue_{event_suffix}"]
 stat = "zscore"
 if event_suffix=='inYN':
     task_Tags = ["Yes_No"]
@@ -142,7 +142,7 @@ for event, task_Tag, wordness in itertools.product(events,task_Tags,wordnesses):
             if ('Rep_selective' in glm_feas) or ('Del_selective' in glm_feas):
                 # whole trial
                 all_masks_sorted, all_masks_raw, _, all_masks_sig = gp.sort_chs_by_actonset(hgmask_aud, stass[
-                    f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [-0.5, -0.4], mask_data=True, bin=bin)
+                    f'{event}/{task_Tag}/{wordness}/{glm_fea}'], cluster_twin, [1.42, 2], mask_data=True, bin=bin)
                 gp.plot_chs(all_masks_sorted,os.path.join('plot',f'{event}_{task_Tag}_{wordness}_{glm_fea}_all.jpg'),f"N chs = {len(all_masks_sig)}",bin=bin)
                 with open(os.path.join('data', f'sig_idx_{glm_fea}.npy'), "wb") as f:
                     pickle.dump(all_masks_sig, f)
