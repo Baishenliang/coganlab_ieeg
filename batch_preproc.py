@@ -511,33 +511,19 @@ for subject, processing_type in subject_processing_dict.items():
 
             # gamma and permutation
             if Task_Tag == "LexicalDecRepDelay":
-                # gamma_epoc_zip = zip(
-                #     ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                #     ((-0.5, 3), (-0.5, 3), (-0.5, 1), (-0.5, 1)),
-                #     ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep')
-                # )
                 gamma_epoc_zip = zip(
-                    ('Cue/Repeat/CORRECT',),
-                    ('Cue/Repeat/CORRECT',),
-                    ((-0.5, 3),),
-                    ('Cue_inRep',),
-                    (True,)
+                    ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                    ((-0.5, 3), (-2, 3), (-2, 1), (-2, 1)),
+                    ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep')
                 )
             elif Task_Tag == "LexicalDecRepNoDelay":
-                # gamma_epoc_zip=zip(
-                #     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT','Cue/Yes_No/CORRECT','Auditory_stim/Yes_No/CORRECT'),
-                #     ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/:=:/CORRECT','Cue/:=:/CORRECT','Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT'),
-                #     ((-0.5, 3), (-0.5, 2), (-0.5, 1),(-0.5, 1.5), (-0.5, 2),(-0.5, 1.5), (-0.5, 2)),
-                #     ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inSilence','Auditory_inSilence','Cue_inYN','Auditory_inYN'),
-                #     (True, False, False,True, False,True, False)
-                #  )
                 gamma_epoc_zip=zip(
-                    ('Cue/Repeat/CORRECT','Cue/:=:/CORRECT'),
-                    ('Cue/Repeat/CORRECT','Cue/:=:/CORRECT'),
-                    ((-0.5, 3),(-0.5, 3)),
-                    ('Cue_inRep','Cue_inSilence'),
-                    (True, True)
+                    ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT','Cue/Yes_No/CORRECT','Auditory_stim/Yes_No/CORRECT'),
+                    ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/Repeat/CORRECT','Cue/:=:/CORRECT','Cue/:=:/CORRECT','Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT'),
+                    ((-0.5, 3), (-2, 2), (-2, 1),(-0.5, 3), (-2, 2),(-0.5, 3), (-2, 2)),
+                    ('Cue_inRep', 'Auditory_inRep','Resp_inRep','Cue_inSilence','Auditory_inSilence','Cue_inYN','Auditory_inYN'),
+                    (True, False, False,True, False,True, False)
                  )
             elif Task_Tag == "RetroCue":
                 gamma_epoc_zip = zip(
