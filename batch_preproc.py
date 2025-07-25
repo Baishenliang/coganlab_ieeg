@@ -515,7 +515,8 @@ for subject, processing_type in subject_processing_dict.items():
                     ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
                     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
                     ((-0.5, 3), (-2, 3), (-2, 1), (-2, 1)),
-                    ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep')
+                    ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep'),
+                    (True, False, False, False)
                 )
             elif Task_Tag == "LexicalDecRepNoDelay":
                 gamma_epoc_zip=zip(
