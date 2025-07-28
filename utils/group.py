@@ -33,7 +33,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
     subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
     import warnings
-    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     # else:
     #     subjs = [subj for subj in subjs if subj != 'D0023' and subj != 'D0032' and subj != 'D0035'  and subj != 'D0038' and subj != 'D0042' and subj != 'D0044' and subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
 
@@ -241,7 +241,7 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False):
+def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False,chs_s_all_idx=None,sorted_indices=None):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     Sort the significant channels according to the onset.
@@ -253,6 +253,9 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
     """
     import numpy as np
     from ieeg.arrays.label import LabeledArray
+
+    if (chs_s_all_idx is not None) and (sorted_indices is None):
+        raise ValueError("sorted_indices cannot be None if chs_s_all_idx is provided")
 
     # %% get the onsets of the activation (an effective cluster is defined as 0.2s)
     times=data_in.labels[1]
@@ -307,27 +310,36 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
     data_s = []
     data_us = np.full([np.shape(data)[0],np.shape(data)[1]],np.nan)
     chs_s = []
-    chs_s_idx = []  # significant channels selected
-    chs_s_all_idx = set()  # Use a set to store selected channel indices
     onsets_s = []
 
-    for ch_idx, ch_name in enumerate(chs):
-        onset = onsets.get(ch_name)  # Get the onset, avoiding repeated dictionary lookups
-        if onset is not None:  # Check if the channel has a valid onset
-            mask_s.append(mask[ch_idx])
-            data_s.append(data[ch_idx])  # Add the channel data to the selected data list
-            chs_s.append(ch_name)  # Add the channel name to the selected channel names list
-            chs_s_idx.append(ch_idx)
-            onsets_s.append(onset)
-            chs_s_all_idx.add(ch_idx)  # Add index to the set
-            data_us[ch_idx,:]=np.where(mask[ch_idx], data[ch_idx], np.nan) # the data_us contained all the channels and makred the inactive channels as nan
+    if chs_s_all_idx is not None:
+        for ch_idx, ch_name in enumerate(chs):
+            onset = onsets.get(ch_name)  # Get the onset, avoiding repeated dictionary lookups
+            if ch_idx in chs_s_all_idx:  # Check if the channel has a valid onset
+                mask_s.append(mask[ch_idx])
+                data_s.append(data[ch_idx])  # Add the channel data to the selected data list
+                chs_s.append(ch_name)  # Add the channel name to the selected channel names list
+                onsets_s.append(onset)
+                data_us[ch_idx, :] = np.where(mask[ch_idx], data[ch_idx],np.nan)
+    else:
+        chs_s_all_idx = set()  # Use a set to store selected channel indices
+        for ch_idx, ch_name in enumerate(chs):
+            onset = onsets.get(ch_name)  # Get the onset, avoiding repeated dictionary lookups
+            if onset is not None:  # Check if the channel has a valid onset
+                mask_s.append(mask[ch_idx])
+                data_s.append(data[ch_idx])  # Add the channel data to the selected data list
+                chs_s.append(ch_name)  # Add the channel name to the selected channel names list
+                onsets_s.append(onset)
+                chs_s_all_idx.add(ch_idx)  # Add index to the set
+                data_us[ch_idx,:]=np.where(mask[ch_idx], data[ch_idx], np.nan) # the data_us contained all the channels and makred the inactive channels as nan
 
     # Convert the selected data list to a numpy array
     mask_s = np.array(mask_s)
     data_s = np.array(data_s)
 
     # %% do the ranking
-    sorted_indices = np.argsort(np.array(onsets_s))  # Get the indices that would sort the array
+    if sorted_indices is None:
+        sorted_indices = np.argsort(np.array(onsets_s))  # Get the indices that would sort the array
     mask_s_sorted = mask_s[sorted_indices]
     data_s_sorted = data_s[sorted_indices]
     if mask_data:
@@ -547,7 +559,7 @@ def get_sig_elecs_keyword(data_in,sig_idx,keyword):
             out.append(chs[i])
     return out
 
-def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discrete_y:bool=False,discrete_y_lables:list=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only']):
+def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discrete_y:bool=False,discrete_y_lables:list=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'],percentage_vscale=True,vmin=0,vmax=100,is_colbar=True,fig_size:list=[4,10]):
     """
     plot the significant channels in a sorted order
     """
@@ -571,10 +583,10 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
     time_gap = max(1, num_times // 3)  # Adjust time gap based on the total number of time points
 
     # Create the plot
-    plt.figure(figsize=(15, 15))  # Make the figure size large enough for labeling
-    fig, ax = plt.subplots()
-    vmin = np.nanpercentile(data, 0)
-    vmax = np.nanpercentile(data, 100)
+    fig, ax = plt.subplots(figsize=(fig_size[0], fig_size[1]))
+    if percentage_vscale:
+        vmin = np.nanpercentile(data, vmin)
+        vmax = np.nanpercentile(data, vmax)
     if bin:
         im = sns.heatmap(
             data,
@@ -586,12 +598,16 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
         )
     else:
         if not discrete_y:
-            im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax)
-            # Add the colorbar to the plot
-            cbar = fig.colorbar(im, ax=ax, ticks=[vmin, vmax])
-            # Label the ticks
-            cbar.ax.set_yticklabels([f'Min: {vmin:.2f}', f'Max: {vmax:.2f}'])
-            cbar.set_label('Data Range') # Add a label for the colorbar
+            im=ax.imshow(data, cmap='Blues',vmin=vmin, vmax=vmax,interpolation='none')
+            # sns.heatmap(data, cmap='Blues', vmin=vmin, vmax=vmax, ax=ax,
+            #             linewidths=0.5, linecolor='lightgrey',
+            #             mask=np.isnan(data))  #
+            if is_colbar:
+                # Add the colorbar to the plot
+                cbar = fig.colorbar(im, ax=ax, ticks=[vmin, vmax])
+                # Label the ticks
+                cbar.ax.set_yticklabels([f'Min: {vmin:.2f}', f'Max: {vmax:.2f}'])
+                cbar.set_label('Data Range') # Add a label for the colorbar
         else:
             colors = ['lightgray', 'skyblue', 'mediumseagreen', 'salmon']  # Custom colors for 0, 1, 2, 3
             custom_cmap = mcolors.ListedColormap(colors)
@@ -600,11 +616,12 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
             norm = mcolors.BoundaryNorm(bounds, custom_cmap.N)
             im = ax.imshow(data, cmap=custom_cmap, norm=norm,
                            interpolation='nearest')  # 'nearest' is good for discrete data
-            # Create the colorbar
-            cbar = fig.colorbar(im, cmap=custom_cmap, norm=norm, boundaries=bounds, ticks=[0, 1, 2, 3],
-                                orientation='vertical', shrink=0.8)
-            cbar.set_ticklabels(discrete_y_lables)
-            cbar.set_label('Shared significance')
+            if is_colbar:
+                # Create the colorbar
+                cbar = fig.colorbar(im, cmap=custom_cmap, norm=norm, boundaries=bounds, ticks=[0, 1, 2, 3],
+                                    orientation='vertical', shrink=0.8)
+                cbar.set_ticklabels(discrete_y_lables)
+                cbar.set_label('Shared significance')
 
     # fig.colorbar(im, ax=ax)
     ax.set_title(title)
@@ -634,6 +651,8 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
     ax.axvline(x=zero_time_index, color='black', linestyle='--', linewidth=1)
 
     # Save the figure
+    ax.set_aspect('auto')
+    plt.tight_layout()
     fig.savefig(fig_save_dir_fm, dpi=300)
     del fig
     plt.close()
@@ -828,16 +847,23 @@ def adjust_saturation(rgb_color, avg_value,map:str='none'):
         # Return only the RGB components as a list
         return np.array(rgba_color[:3]).tolist()
 
-def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,25]):
+def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,25],is_percentage: bool = False):
     label2atlas={ch_sel: label2atlas_raw[ch_sel] for ch_sel in chs_sel}
     import matplotlib.pyplot as plt
     # Count the number of keys for each value
     value_counts = {}
+    total_electrodes = len(chs_sel)
     for key, value in label2atlas.items():
-        if value in value_counts:
-            value_counts[value] += 1
+        if is_percentage:
+            if value in value_counts:
+                value_counts[value] += 100/total_electrodes
+            else:
+                value_counts[value] = 100/total_electrodes
         else:
-            value_counts[value] = 1
+            if value in value_counts:
+                value_counts[value] += 1
+            else:
+                value_counts[value] = 1
 
     # Create the bar plot
     plt.figure(figsize=(15, 6))  # Make the figure size large enough for labeling
@@ -846,7 +872,10 @@ def atlas2_hist(label2atlas_raw,chs_sel,col,fig_save_dir_fm,ylim: list=[0,25]):
     # Create the bar plot
     plt.bar([item[0] for item in sorted_values], [item[1] for item in sorted_values],color=col)
     plt.xlabel('Atlas', fontsize=20)
-    plt.ylabel('Number of Electrodes', fontsize=20)
+    if is_percentage:
+        plt.ylabel('Percentage of Electrodes', fontsize=20)
+    else:
+        plt.ylabel('Number of Electrodes', fontsize=20)
     plt.xticks(fontsize=30, rotation=45, ha='right')
     plt.yticks(fontsize=30)
     plt.ylim(ylim)
