@@ -3,9 +3,9 @@ from pickle import FALSE
 from matplotlib_venn import venn3
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
+#groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -35,7 +35,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes
+from utils.group import load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col
 import matplotlib.pyplot as plt
 import projects.GLM.glm_utils as glm
 
@@ -87,7 +87,7 @@ elif groupsTag=="LexNoDelay":
     data_LexNoDelay_Cue, _ = load_stats(stat_type, 'Cue_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
     data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
 
-    data_LexNoDelay_Silence_Aud,_=load_stats(stat_type,'Auditory_inSilence',contrast,stats_root_nodelay,stats_root_nodelay)
+    # data_LexNoDelay_Silence_Aud,_=load_stats(stat_type,'Auditory_inSilence',contrast,stats_root_nodelay,stats_root_nodelay)
 
     # Get the ROI of labels
     ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexNoDelay_Aud.labels[0])
@@ -96,7 +96,7 @@ elif groupsTag=="LexNoDelay":
     epoc_LexNoDelay_Cue,_=load_stats('zscore','Cue_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
     epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
-    epoc_LexNoDelay_Silence_Aud,_=load_stats('zscore','Auditory_inSilence','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
+    # epoc_LexNoDelay_Silence_Aud,_=load_stats('zscore','Auditory_inSilence','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
     epoc_LexNoDelay_Aud_nonword, _ = load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,
                                               trial_labels='Nonword')
@@ -112,7 +112,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
     # first get the patient inform from no delay tasks and then extract the corresponding
     data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_nodelay,stats_root_delay)
     data_LexNoDelay_Aud,_=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay)
-    data_LexNoDelay_Silence_Aud,_=load_stats(stat_type,'Auditory_inSilence',contrast,stats_root_nodelay,stats_root_nodelay)
+    # data_LexNoDelay_Silence_Aud,_=load_stats(stat_type,'Auditory_inSilence',contrast,stats_root_nodelay,stats_root_nodelay)
 
     # Get the ROI of labels
     ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
@@ -122,7 +122,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
 
     epoc_LexDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels)
     epoc_LexNoDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
-    epoc_LexNoDelay_Silence_Aud,_=load_stats('zscore','Auditory_inSilence','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
+    # epoc_LexNoDelay_Silence_Aud,_=load_stats('zscore','Auditory_inSilence','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
     data_LexDelay_Go, _ = load_stats(stat_type, 'Go' + Delayseleted, contrast, stats_root_nodelay, stats_root_delay)
     epoc_LexDelay_Go, _ = load_stats('zscore', 'Go' + Delayseleted, 'epo', stats_root_nodelay, stats_root_delay,
@@ -149,25 +149,25 @@ Lex_idxes = dict()
 if "LexDelay" in groupsTag:
 
     # sort the data according to the onset within a time range (Full)
-    data_LexDelay_sorted,_,_,LexDelay_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[-10,10])
+    data_LexDelay_sorted,_,_,LexDelay_sig_idx,*_ = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[-10,10])
 
     # Get pre-onset activations:
-    data_LexDelay_sorted_preonset,_,_,LexDelay_sig_idx_preonset = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,pre_stimonset_win)
+    data_LexDelay_sorted_preonset,_,_,LexDelay_sig_idx_preonset,*_ = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,pre_stimonset_win)
 
     # (Auditory)
-    data_LexDelay_Aud_sorted,_,_,LexDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[0,mean_word_len+auditory_decay])
+    data_LexDelay_Aud_sorted,_,_,LexDelay_Aud_sig_idx,*_ = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[0,mean_word_len+auditory_decay])
 
     # (Delay)
-    data_LexDelay_Delay_sorted,_,_,LexDelay_Delay_sig_idx=sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len+0.1])
+    data_LexDelay_Delay_sorted,_,_,LexDelay_Delay_sig_idx,*_=sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len+0.1])
 
     # (Go)
-    data_LexDelay_Go_sorted, _,_, LexDelay_Go_sig_idx = sort_chs_by_actonset(data_LexDelay_Go, epoc_LexDelay_Go, cluster_twin, go_resp_win)
+    data_LexDelay_Go_sorted, _,_, LexDelay_Go_sig_idx,*_ = sort_chs_by_actonset(data_LexDelay_Go, epoc_LexDelay_Go, cluster_twin, go_resp_win)
 
     # (Motor response)
-    data_LexDelay_Motor_Resp_sorted, _, _, LexDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp, epoc_LexDelay_Resp, cluster_twin, motor_resp_win)
+    data_LexDelay_Motor_Resp_sorted, _, _, LexDelay_Motor_Resp_sig_idx,*_ = sort_chs_by_actonset(data_LexDelay_Resp, epoc_LexDelay_Resp, cluster_twin, motor_resp_win)
 
     # (Motor prepare)
-    data_LexDelay_Motor_Prep_sorted, _, _, LexDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexDelay_Resp,epoc_LexDelay_Resp, cluster_twin, motor_prep_win)
+    data_LexDelay_Motor_Prep_sorted, _, _, LexDelay_Motor_Prep_sig_idx,*_ = sort_chs_by_actonset(data_LexDelay_Resp,epoc_LexDelay_Resp, cluster_twin, motor_prep_win)
     LexDelay_Motor_Prep_sig_idx = LexDelay_Go_sig_idx & LexDelay_Motor_Prep_sig_idx
 
     # Channel selection: Auditory nomotor electrodes (auditory window:1, motor prep: 0)
@@ -199,57 +199,6 @@ if "LexDelay" in groupsTag:
 
     # Channel selection: Sensorimotor electrodes in Delay electrodes
     LexDelay_Sensorimotor_in_Delay_sig_idx = LexDelay_Delay_sig_idx & LexDelay_Sensorimotor_sig_idx
-    for sig_idx, sig_tag,align_data,align_epoc in zip(
-            (LexDelay_all_sig_idx,LexDelay_Delay_sig_idx,LexDelay_DelayOnly_sig_idx, LexDelay_Auditory_in_Delay_sig_idx, LexDelay_Sensorimotor_in_Delay_sig_idx,
-             LexDelay_Motor_in_Delay_sig_idx, LexDelay_Motorprep_Only_sig_idx),
-            ('all_sig','Delay_all','DelOnly', 'Auditory', 'SM', 'Motor', 'Motorpreponly'),
-            (data_LexDelay_Cue,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud),
-            (epoc_LexDelay_Cue,epoc_LexDelay_Aud,epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud)
-    ):
-
-        # Get sorted indexs (sorted by onsets aligned to xx)
-        data_LexDelay_in_Delay = select_electrodes(align_data, sig_idx)
-        epoc_LexDelay_in_Delay = select_electrodes(align_epoc, sig_idx)
-        _, _, LexDelay_in_Delay_sorted_indices, LexDelay_in_Delay_chs_s_all_idx = sort_chs_by_actonset(data_LexDelay_in_Delay, epoc_LexDelay_in_Delay,
-                                                                 cluster_twin, [-0.1, 10], mask_data=True)
-
-        # Aud alinged
-        data_LexDelay_in_Delay_Aud = select_electrodes(data_LexDelay_Aud, sig_idx)
-        epoc_LexDelay_in_Delay_Aud = select_electrodes(epoc_LexDelay_Aud, sig_idx)
-        LexDelay_in_Delay_sorted_Aud, _, _, _ = sort_chs_by_actonset(data_LexDelay_in_Delay_Aud, epoc_LexDelay_in_Delay_Aud,
-                                                                 cluster_twin, [-2, 3], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx)
-        plot_chs(LexDelay_in_Delay_sorted_Aud, os.path.join(fig_save_dir,
-                                                        f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-                 f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
-
-        # Cue alinged
-        data_LexDelay_in_Delay_Cue = select_electrodes(data_LexDelay_Cue, sig_idx)
-        epoc_LexDelay_in_Delay_Cue = select_electrodes(epoc_LexDelay_Cue, sig_idx)
-        LexDelay_in_Delay_sorted_Cue, _, _, _ = sort_chs_by_actonset(data_LexDelay_in_Delay_Cue, epoc_LexDelay_in_Delay_Cue,
-                                                                 cluster_twin, [-0.5, 3], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx)
-        plot_chs(LexDelay_in_Delay_sorted_Cue, os.path.join(fig_save_dir,
-                                                        f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Cue_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-                 f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
-
-        # Go aligned
-        data_LexDelay_in_Delay_Go = select_electrodes(data_LexDelay_Go, sig_idx)
-        epoc_LexDelay_in_Delay_Go = select_electrodes(epoc_LexDelay_Go, sig_idx)
-        LexDelay_in_Delay_Go_sorted, _, _, _ = sort_chs_by_actonset(data_LexDelay_in_Delay_Go,
-                                                                    epoc_LexDelay_in_Delay_Go,
-                                                                    cluster_twin, [-2, 1], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx)
-        plot_chs(LexDelay_in_Delay_Go_sorted, os.path.join(fig_save_dir,
-                                                           f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Go_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-                 f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
-
-        # Motor aligned
-        data_LexDelay_in_Delay_Resp = select_electrodes(data_LexDelay_Resp, sig_idx)
-        epoc_LexDelay_in_Delay_Resp = select_electrodes(epoc_LexDelay_Resp, sig_idx)
-        LexDelay_in_Delay_Resp_sorted, _, _, _ = sort_chs_by_actonset(data_LexDelay_in_Delay_Resp,
-                                                                      epoc_LexDelay_in_Delay_Resp,
-                                                                      cluster_twin, [-2, 1], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx)
-        plot_chs(LexDelay_in_Delay_Resp_sorted, os.path.join(fig_save_dir,
-                                                             f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-                 f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
 
     # Others
     # LexDelay_Other_sig_idx = ((LexDelay_Aud_sig_idx | LexDelay_Delay_sig_idx | LexDelay_Motor_Prep_sig_idx | LexDelay_Motor_Resp_sig_idx)
@@ -273,22 +222,22 @@ if "LexDelay" in groupsTag:
 if "LexNoDelay" in groupsTag:
 
     # (Auditory)
-    data_LexNoDelay_Aud_sorted,_,_,LexNoDelay_Aud_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Aud,epoc_LexNoDelay_Aud, cluster_twin,[0,mean_word_len+auditory_decay])
+    data_LexNoDelay_Aud_sorted,_,_,LexNoDelay_Aud_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud,epoc_LexNoDelay_Aud, cluster_twin,[0,mean_word_len+auditory_decay])
 
     # (Motor prepare)
-    data_LexNoDelay_Motor_Prep_sorted,_,_,LexNoDelay_Motor_Prep_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_prep_win)
+    data_LexNoDelay_Motor_Prep_sorted,_,_,LexNoDelay_Motor_Prep_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_prep_win)
 
     # (Motor response)
-    data_LexNoDelay_Motor_Resp_sorted,_,_,LexNoDelay_Motor_Resp_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_resp_win)
+    data_LexNoDelay_Motor_Resp_sorted,_,_,LexNoDelay_Motor_Resp_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_resp_win)
 
     # (NoDelay Silence trials Whole win: Encoding)
-    data_LexNoDelay_Silence_Encode_sorted,_,_,LexNoDelay_Silence_Encode_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Silence_Aud,epoc_LexNoDelay_Silence_Aud, cluster_twin,[0,mean_word_len+auditory_decay])
+    # data_LexNoDelay_Silence_Encode_sorted,_,_,LexNoDelay_Silence_Encode_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Silence_Aud,epoc_LexNoDelay_Silence_Aud, cluster_twin,[0,mean_word_len+auditory_decay])
 
     # (NoDelay Silence trials Whole win: Delay)
-    data_LexNoDelay_Silence_Del_sorted,_,_,LexNoDelay_Silence_Del_sig_idx = sort_chs_by_actonset(data_LexNoDelay_Silence_Aud,epoc_LexNoDelay_Silence_Aud, cluster_twin,[mean_word_len+auditory_decay,10])
+    # data_LexNoDelay_Silence_Del_sorted,_,_,LexNoDelay_Silence_Del_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Silence_Aud,epoc_LexNoDelay_Silence_Aud, cluster_twin,[mean_word_len+auditory_decay,10])
 
     # (Encoding electrodes without Delay)
-    LexNoDelay_Silence_Encode_Only_sig_idx = LexNoDelay_Silence_Encode_sig_idx.difference(LexNoDelay_Silence_Del_sig_idx)
+    # LexNoDelay_Silence_Encode_Only_sig_idx = LexNoDelay_Silence_Encode_sig_idx.difference(LexNoDelay_Silence_Del_sig_idx)
 
     # Channel selection: Auditory nomotor electrodes (auditory window:1, motor prep: 0)
     LexNoDelay_Aud_NoMotor_sig_idx = LexNoDelay_Aud_sig_idx - LexNoDelay_Motor_Prep_sig_idx
@@ -313,9 +262,9 @@ if "LexNoDelay" in groupsTag:
     Lex_idxes['LexNoDelay_Sensory_OR_Motor_sig_idx'] = LexNoDelay_Sensory_OR_Motor_sig_idx
     Lex_idxes['LexNoDelay_all_sig_idx'] = LexNoDelay_all_sig_idx
     Lex_idxes['LexNoDelay_Motor_sig_idx'] = LexNoDelay_Motor_sig_idx
-    Lex_idxes['LexNoDelay_Silence_Encode_sig_idx'] = LexNoDelay_Silence_Encode_sig_idx
-    Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx'] = LexNoDelay_Silence_Encode_Only_sig_idx
-    Lex_idxes['LexNoDelay_Silence_Del_sig_idx'] = LexNoDelay_Silence_Del_sig_idx
+    # Lex_idxes['LexNoDelay_Silence_Encode_sig_idx'] = LexNoDelay_Silence_Encode_sig_idx
+    # Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx'] = LexNoDelay_Silence_Encode_Only_sig_idx
+    # Lex_idxes['LexNoDelay_Silence_Del_sig_idx'] = LexNoDelay_Silence_Del_sig_idx
 
     if "LexDelay" in groupsTag:
 
@@ -324,10 +273,10 @@ if "LexNoDelay" in groupsTag:
         data_LexNoDelay_Resp_DelDel=select_electrodes(data_LexNoDelay_Resp,LexDelay_Delay_sig_idx)
         epoc_LexNoDelay_Aud_DelDel=select_electrodes(epoc_LexNoDelay_Aud,LexDelay_Delay_sig_idx)
         epoc_LexNoDelay_Resp_DelDel=select_electrodes(epoc_LexNoDelay_Resp,LexDelay_Delay_sig_idx)
-        _, _, _, LexNoDelay_Aud_DelDel_all = sort_chs_by_actonset(data_LexNoDelay_Aud_DelDel,epoc_LexNoDelay_Aud_DelDel,cluster_twin, [-0.1,10])
-        _, _, _, LexNoDelay_Aud_DelDel_aud = sort_chs_by_actonset(data_LexNoDelay_Aud_DelDel,epoc_LexNoDelay_Aud_DelDel,cluster_twin, [-0.1,mean_word_len + auditory_decay])
-        _, _, _, LexNoDelay_Aud_DelDel_mtrprep = sort_chs_by_actonset(data_LexNoDelay_Resp_DelDel, epoc_LexNoDelay_Resp_DelDel, cluster_twin, motor_prep_win)
-        _, _, _, LexNoDelay_Aud_DelDel_mtr = sort_chs_by_actonset(data_LexNoDelay_Resp_DelDel, epoc_LexNoDelay_Resp_DelDel, cluster_twin, motor_resp_win)
+        _, _, _, LexNoDelay_Aud_DelDel_all,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud_DelDel,epoc_LexNoDelay_Aud_DelDel,cluster_twin, [-0.1,10])
+        _, _, _, LexNoDelay_Aud_DelDel_aud,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud_DelDel,epoc_LexNoDelay_Aud_DelDel,cluster_twin, [-0.1,mean_word_len + auditory_decay])
+        _, _, _, LexNoDelay_Aud_DelDel_mtrprep,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp_DelDel, epoc_LexNoDelay_Resp_DelDel, cluster_twin, motor_prep_win)
+        _, _, _, LexNoDelay_Aud_DelDel_mtr,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp_DelDel, epoc_LexNoDelay_Resp_DelDel, cluster_twin, motor_resp_win)
         delsm_full=set(range(1, len(LexDelay_Delay_sig_idx)+1))
         print(f'Auditory resp elec. in NoDelay Rep {len(LexNoDelay_Aud_DelDel_aud)}, {len(LexNoDelay_Aud_DelDel_aud) / len(delsm_full)}')
         print(f'Prob. Motorprep resp elec. NoDelay Rep {len(LexNoDelay_Aud_DelDel_mtrprep - (LexNoDelay_Aud_DelDel_aud | LexNoDelay_Aud_DelDel_mtr))}, {len(LexNoDelay_Aud_DelDel_mtrprep - (LexNoDelay_Aud_DelDel_aud | LexNoDelay_Aud_DelDel_mtr)) / len(delsm_full)}')
@@ -348,6 +297,125 @@ Lex_idxes['groupsTag']=groupsTag
 with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.npy'), "wb") as f:
     pickle.dump(Lex_idxes, f)
 
+# %% brain plot and electrode plot for HG time traces
+for sig_idx, sig_tag,align_data,align_epoc in zip(
+        (LexDelay_all_sig_idx,LexDelay_Delay_sig_idx,LexDelay_DelayOnly_sig_idx, LexDelay_Auditory_in_Delay_sig_idx, LexDelay_Sensorimotor_in_Delay_sig_idx,
+         LexDelay_Motor_in_Delay_sig_idx, LexDelay_Motorprep_Only_sig_idx),
+        ('all_sig','Delay_all','DelOnly', 'Auditory', 'SM', 'Motor', 'Motorpreponly'),
+        (data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud),
+        (epoc_LexDelay_Aud,epoc_LexDelay_Aud,epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud)
+):
+    # Debug:
+    sig_idx=LexDelay_DelayOnly_sig_idx
+    sig_tag='DelOnly'
+    align_data=data_LexDelay_Aud
+    align_epoc=epoc_LexDelay_Aud
+
+    # Get sorted indexs (sorted by onsets aligned to xx)
+    data_LexDelay_in_Delay = select_electrodes(align_data, sig_idx)
+    epoc_LexDelay_in_Delay = select_electrodes(align_epoc, sig_idx)
+    _, _, LexDelay_in_Delay_sorted_indices, LexDelay_in_Delay_chs_s_all_idx,onsets_aud,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay, epoc_LexDelay_in_Delay,
+                                                             cluster_twin, [-0.1, 10], mask_data=True,select_electrodes=False)
+    chs_sel = data_LexDelay_Aud.labels[0][list(sig_idx)].tolist()
+    # if sig_tag=='all_sig':
+    cols = onsets2col(onsets_aud, chs_sel)
+    plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
+
+    # Aud alinged
+    data_LexDelay_in_Delay_Aud = select_electrodes(data_LexDelay_Aud, sig_idx)
+    epoc_LexDelay_in_Delay_Aud = select_electrodes(epoc_LexDelay_Aud, sig_idx)
+    LexDelay_in_Delay_sorted_Aud,_,_,_,_,LexDelay_in_Delay_Aud_paras,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Aud, epoc_LexDelay_in_Delay_Aud,
+                                                             cluster_twin, [-2, 3], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,select_electrodes=False)
+    plot_chs(LexDelay_in_Delay_sorted_Aud, os.path.join(fig_save_dir,
+                                                    f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}.jpg'),
+             f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
+
+    # Cue alinged
+    data_LexDelay_in_Delay_Cue = select_electrodes(data_LexDelay_Cue, sig_idx)
+    epoc_LexDelay_in_Delay_Cue = select_electrodes(epoc_LexDelay_Cue, sig_idx)
+    LexDelay_in_Delay_sorted_Cue,_,_,_,onsets_cue,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Cue, epoc_LexDelay_in_Delay_Cue,
+                                                             cluster_twin, [-0.5, 3], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,select_electrodes=False)
+    plot_chs(LexDelay_in_Delay_sorted_Cue, os.path.join(fig_save_dir,
+                                                    f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Cue_{Delayseleted}_{stat_type}-{contrast}.jpg'),
+             f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
+
+    # if sig_tag=='all_sig':
+    #     cols = onsets2col(onsets_cue, chs_sel)
+    #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
+
+    # Go aligned
+    data_LexDelay_in_Delay_Go = select_electrodes(data_LexDelay_Go, sig_idx)
+    epoc_LexDelay_in_Delay_Go = select_electrodes(epoc_LexDelay_Go, sig_idx)
+    LexDelay_in_Delay_Go_sorted,_,_,_,onsets_go,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Go,
+                                                                epoc_LexDelay_in_Delay_Go,
+                                                                cluster_twin, [-2, 1], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,select_electrodes=False)
+    plot_chs(LexDelay_in_Delay_Go_sorted, os.path.join(fig_save_dir,
+                                                       f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Go_{Delayseleted}_{stat_type}-{contrast}.jpg'),
+             f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
+
+    # if sig_tag=='all_sig':
+    #     cols = onsets2col(onsets_go, chs_sel)
+    #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
+
+    # Motor aligned
+    data_LexDelay_in_Delay_Resp = select_electrodes(data_LexDelay_Resp, sig_idx)
+    epoc_LexDelay_in_Delay_Resp = select_electrodes(epoc_LexDelay_Resp, sig_idx)
+    LexDelay_in_Delay_Resp_sorted,_,_,_,onsets_mot,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Resp,
+                                                                  epoc_LexDelay_in_Delay_Resp,
+                                                                  cluster_twin, [-2, 1], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,select_electrodes=False)
+    plot_chs(LexDelay_in_Delay_Resp_sorted, os.path.join(fig_save_dir,
+                                                         f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}.jpg'),
+             f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
+
+    # if sig_tag=='all_sig':
+    #     cols = onsets2col(onsets_mot, chs_sel)
+    #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
+
+    if "LexNoDelay" in groupsTag:
+        # Cue alinged
+        data_LexNoDelay_in_Delay_Cue = select_electrodes(data_LexNoDelay_Cue, sig_idx)
+        epoc_LexNoDelay_in_Delay_Cue = select_electrodes(epoc_LexNoDelay_Cue, sig_idx)
+        LexNoDelay_in_Delay_sorted_Cue, _, _, _, onsets_cue, *_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Cue,
+                                                                                     epoc_LexNoDelay_in_Delay_Cue,
+                                                                                     cluster_twin, [-0.5, 3],
+                                                                                     mask_data=True,
+                                                                                     sorted_indices=LexDelay_in_Delay_sorted_indices,
+                                                                                     chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
+                                                                                     select_electrodes=False)
+        plot_chs(LexNoDelay_in_Delay_sorted_Cue, os.path.join(fig_save_dir,
+                                                            f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Cue_{Delayseleted}_{stat_type}-{contrast}.jpg'),
+                 f"N chs = {len(sig_idx)}", percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
+                 fig_size=[4*(3/5), 10 * (len(sig_idx) / 250)])
+
+        # NoDelayAud
+        data_LexNoDelay_in_Delay_Aud = select_electrodes(data_LexNoDelay_Aud, sig_idx)
+        epoc_LexNoDelay_in_Delay_Aud = select_electrodes(epoc_LexNoDelay_Aud, sig_idx)
+        LexNoDelay_in_Delay_sorted_Aud, _, _, _, _,LexNoDelay_in_Delay_Aud_paras,*_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Aud,
+                                                                         epoc_LexNoDelay_in_Delay_Aud,
+                                                                         cluster_twin, [-2, 3], mask_data=True,
+                                                                         sorted_indices=LexDelay_in_Delay_sorted_indices,
+                                                                         chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
+                                                                         select_electrodes=False)
+        plot_chs(LexNoDelay_in_Delay_sorted_Aud, os.path.join(fig_save_dir,
+                                                            f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}.jpg'),
+                 f"N chs = {len(sig_idx)}", percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
+                 fig_size=[4*(4/5), 10 * (len(sig_idx) / 250)])
+
+        # Motor aligned
+        data_LexNoDelay_in_Delay_Resp = select_electrodes(data_LexNoDelay_Resp, sig_idx)
+        epoc_LexNoDelay_in_Delay_Resp = select_electrodes(epoc_LexNoDelay_Resp, sig_idx)
+        LexNoDelay_in_Delay_Resp_sorted, _, _, _, onsets_mot, *_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Resp,
+                                                                                      epoc_LexNoDelay_in_Delay_Resp,
+                                                                                      cluster_twin, [-2, 1],
+                                                                                      mask_data=True,
+                                                                                      sorted_indices=LexDelay_in_Delay_sorted_indices,
+                                                                                      chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
+                                                                                      select_electrodes=False)
+        plot_chs(LexNoDelay_in_Delay_Resp_sorted, os.path.join(fig_save_dir,
+                                                             f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}.jpg'),
+                 f"N chs = {len(sig_idx)}", percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
+                 fig_size=[4*(3/5), 10 * (len(sig_idx) / 250)])
+
 # %% reassign electrode indices by conditions
 MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
 Sensorimotor_col = [1, 0, 0]  # Sensorimotor
@@ -362,11 +430,12 @@ Waveplot_hgt=4 # Height of wave plots
 
 if groupsTag == "LexDelay":
     ## Original electrode groups
+
     # Plot the spatial locations of original groups of electrodes
     len_d=len(data_LexDelay_Aud.labels[0])
 
     for roi_idx,roi_idx_tag in zip(
-            (LexDelay_sig_idx,LexDelay_Delay_sig_idx),
+            (LexDelay_all_sig_idx,LexDelay_Delay_sig_idx),
             ('All','Delay')):
 
         for TypeLabel, sig, atlas_hist_ylim,col in zip(

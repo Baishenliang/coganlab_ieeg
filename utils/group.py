@@ -241,7 +241,7 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False,chs_s_all_idx=None,sorted_indices=None):
+def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False,chs_s_all_idx=None,sorted_indices=None,select_electrodes:bool=True):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     Sort the significant channels according to the onset.
@@ -252,6 +252,7 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
     time_range = [-0.2, 1]
     """
     import numpy as np
+    import pandas as pd
     from ieeg.arrays.label import LabeledArray
 
     if (chs_s_all_idx is not None) and (sorted_indices is None):
@@ -303,7 +304,10 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
                     break
 
         if not found:
-            onsets[ch_name] = None  # No significant window found
+            if select_electrodes:
+                onsets[ch_name] = None  # No significant window found for '1'
+            else:
+                onsets[ch_name] = 1e3
 
     # %% select channels with significant activation clusters
     mask_s = []
@@ -358,10 +362,46 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
     labes_all = [chs, times.tolist()]
     data_us_out=LabeledArray(data_us, labes_all)
     # onset_out=LabeledArray(np.array(onsets_s_sorted), chs_s_sorted)
-    return data_out,data_us_out,sorted_indices,chs_s_all_idx
+    # %% get the parameters
+    num_channels = data_s_sorted.shape[0]
+    data_s_sorted_paras = {}
+
+    for channel_idx in range(num_channels):
+
+        channel_data = data_s_sorted[channel_idx]
+
+        not_nan_values = channel_data[~np.isnan(channel_data)]
+        activity_length = (len(not_nan_values)/np.shape(channel_data)[0])*(times[-1]-times[0])
+
+        # Initialize values for peak, peak location, first non-NaN location and mean
+        peak_value = 0
+        peak_location = np.nan
+        first_non_nan_location = np.nan
+        mean_value = 0
+
+        if activity_length > 0:
+
+            peak_value = np.max(not_nan_values)
+            peak_location = times[np.where(channel_data == peak_value)[0][0]]
+
+            first_non_nan_location = times[np.where(~np.isnan(channel_data))[0][0]]
+
+            mean_value = np.mean(not_nan_values)
+
+        data_s_sorted_paras[chs_s_sorted[channel_idx]]={
+            "activity_length": activity_length,
+            "peak_value": peak_value,
+            "peak_location": peak_location,
+            "first_non_nan_location": first_non_nan_location,
+            "mean_value": mean_value
+        }
+
+    data_s_sorted_paras_tab = pd.DataFrame.from_dict(data_s_sorted_paras, orient='index')
+
+    return data_out,data_us_out,sorted_indices,chs_s_all_idx,onsets,data_s_sorted_paras_tab
 
 
-def sort_chs_by_actonset_combined(mask_in1, mask_in2, win_len, time_range, bin: bool = False,sortonset_base=2):
+def sort_chs_by_actonset_combined(mask_in1, mask_in2, win_len, time_range, bin: bool = False,sortonset_base=2,select_electrodes:bool=True):
     """
     Select channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     The masks are combined as follows:
@@ -468,9 +508,12 @@ def sort_chs_by_actonset_combined(mask_in1, mask_in2, win_len, time_range, bin: 
                     break
 
         if not found:
-            onsets[ch_name] = None  # No significant window found for '1'
+            if select_electrodes:
+                onsets[ch_name] = None  # No significant window found for '1'
+            else:
+                onsets[ch_name] = 1e3
 
-    # %% Select channels with significant activation clusters (where combined_mask == 1)
+                # %% Select channels with significant activation clusters (where combined_mask == 1)
     combined_mask_s = []
     combined_mask_all_chs = np.full([np.shape(combined_mask)[0], np.shape(combined_mask)[1]], np.nan)
     chs_s = []
@@ -658,7 +701,43 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
     plt.close()
 
 
-def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f, dotsize=0.3,transparency=0.3,hemi: str='split',save_img: bool=False,**kwargs):
+def onsets2col(onsets, chs_sel, colormap_type: str = 'jet'):
+
+    import numpy as np
+    import matplotlib.cm as cm
+
+    valid_onsets = []
+    for ch in chs_sel:
+        if ch in onsets and onsets[ch] is not None:
+            valid_onsets.append(onsets[ch])
+        else:
+            raise ValueError("ch not in valid onset index or have no onset")
+
+    onset_values = np.array(valid_onsets)
+    mask = onset_values <= 100
+    onsets_for_normalization = onset_values[mask]
+    normalized_onsets = np.full(onset_values.shape, np.nan, dtype=float)
+    min_onset = np.min(onsets_for_normalization)
+    max_onset = np.max(onsets_for_normalization)
+    if max_onset == min_onset:
+        normalized_onsets[mask] = 0.0
+    else:
+        normalized_onsets[mask] = (onsets_for_normalization - min_onset) / (max_onset - min_onset)
+    colormap = cm.get_cmap(colormap_type)
+
+    cols = []
+    onset_idx = 0
+    for ch in chs_sel:
+        norm_val = normalized_onsets[onset_idx]
+        if ~np.isnan(norm_val):
+            rgb_color = [float(colormap(norm_val)[0]),float(colormap(norm_val)[1]),float(colormap(norm_val)[2])]
+        else:
+            rgb_color = [0.5,0.5,0.5]
+        cols.append(rgb_color)
+        onset_idx += 1
+    return cols
+
+def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f='x', dotsize=0.3,transparency=0.3,hemi: str='split',save_img: bool=False,**kwargs):
     subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
     from ieeg.viz.mri import plot_on_average
     if save_img:
