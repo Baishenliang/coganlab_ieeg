@@ -298,6 +298,7 @@ with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.np
     pickle.dump(Lex_idxes, f)
 
 # %% brain plot and electrode plot for HG time traces
+DelNoDel_Aud_paras={}
 for sig_idx, sig_tag,align_data,align_epoc in zip(
         (LexDelay_all_sig_idx,LexDelay_Delay_sig_idx,LexDelay_DelayOnly_sig_idx, LexDelay_Auditory_in_Delay_sig_idx, LexDelay_Sensorimotor_in_Delay_sig_idx,
          LexDelay_Motor_in_Delay_sig_idx, LexDelay_Motorprep_Only_sig_idx),
@@ -306,10 +307,11 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
         (epoc_LexDelay_Aud,epoc_LexDelay_Aud,epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud)
 ):
     # Debug:
-    sig_idx=LexDelay_DelayOnly_sig_idx
-    sig_tag='DelOnly'
-    align_data=data_LexDelay_Aud
-    align_epoc=epoc_LexDelay_Aud
+    # sig_idx=LexDelay_Delay_sig_idx
+    # sig_tag='Delay_all'
+    # align_data=data_LexDelay_Aud
+    # align_epoc=epoc_LexDelay_Aud
+
 
     # Get sorted indexs (sorted by onsets aligned to xx)
     data_LexDelay_in_Delay = select_electrodes(align_data, sig_idx)
@@ -317,18 +319,28 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
     _, _, LexDelay_in_Delay_sorted_indices, LexDelay_in_Delay_chs_s_all_idx,onsets_aud,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay, epoc_LexDelay_in_Delay,
                                                              cluster_twin, [-0.1, 10], mask_data=True,select_electrodes=False)
     chs_sel = data_LexDelay_Aud.labels[0][list(sig_idx)].tolist()
-    # if sig_tag=='all_sig':
-    cols = onsets2col(onsets_aud, chs_sel)
-    plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
+    # # if sig_tag=='all_sig':
+    # cols = onsets2col(onsets_aud, chs_sel)
+    # plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
 
     # Aud alinged
     data_LexDelay_in_Delay_Aud = select_electrodes(data_LexDelay_Aud, sig_idx)
     epoc_LexDelay_in_Delay_Aud = select_electrodes(epoc_LexDelay_Aud, sig_idx)
-    LexDelay_in_Delay_sorted_Aud,_,_,_,_,LexDelay_in_Delay_Aud_paras,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Aud, epoc_LexDelay_in_Delay_Aud,
+    LexDelay_in_Delay_sorted_Aud,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Aud, epoc_LexDelay_in_Delay_Aud,
                                                              cluster_twin, [-2, 3], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,select_electrodes=False)
     plot_chs(LexDelay_in_Delay_sorted_Aud, os.path.join(fig_save_dir,
                                                     f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}.jpg'),
              f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
+    _, _, _, _, _, paras,*_ = sort_chs_by_actonset(
+        data_LexDelay_in_Delay_Aud, epoc_LexDelay_in_Delay_Aud,
+        cluster_twin, [0, mean_word_len+auditory_decay+delay_len], mask_data=True, sorted_indices=LexDelay_in_Delay_sorted_indices,
+        chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx, select_electrodes=False)
+    DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']=paras
+    # if sig_tag=='Delay_all':
+    #     for column_name in paras.columns:
+    #         paras_col=paras[column_name]
+    #         cols = onsets2col(paras_col, chs_sel)
+    #         plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
 
     # Cue alinged
     data_LexDelay_in_Delay_Cue = select_electrodes(data_LexDelay_Cue, sig_idx)
@@ -366,6 +378,16 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
     plot_chs(LexDelay_in_Delay_Resp_sorted, os.path.join(fig_save_dir,
                                                          f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}.jpg'),
              f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
+    _, _, _, _, _, paras,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Resp,
+                                                                  epoc_LexDelay_in_Delay_Resp,
+        cluster_twin, [-1*(mean_word_len+auditory_decay+delay_len),-0.1], mask_data=True, sorted_indices=LexDelay_in_Delay_sorted_indices,
+        chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx, select_electrodes=False)
+    DelNoDel_Aud_paras[f'{sig_tag}_Delay_motaligned']=paras
+    if sig_tag=='Delay_all':
+        for column_name in ['activity_length', 'peak_location']:
+            paras_col=paras[column_name]
+            cols = onsets2col(paras_col, chs_sel)
+            plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
 
     # if sig_tag=='all_sig':
     #     cols = onsets2col(onsets_mot, chs_sel)
@@ -390,7 +412,7 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
         # NoDelayAud
         data_LexNoDelay_in_Delay_Aud = select_electrodes(data_LexNoDelay_Aud, sig_idx)
         epoc_LexNoDelay_in_Delay_Aud = select_electrodes(epoc_LexNoDelay_Aud, sig_idx)
-        LexNoDelay_in_Delay_sorted_Aud, _, _, _, _,LexNoDelay_in_Delay_Aud_paras,*_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Aud,
+        LexNoDelay_in_Delay_sorted_Aud,*_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Aud,
                                                                          epoc_LexNoDelay_in_Delay_Aud,
                                                                          cluster_twin, [-2, 3], mask_data=True,
                                                                          sorted_indices=LexDelay_in_Delay_sorted_indices,
@@ -400,6 +422,13 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
                                                             f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}.jpg'),
                  f"N chs = {len(sig_idx)}", percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
                  fig_size=[4*(4/5), 10 * (len(sig_idx) / 250)])
+        _, _, _, _, _, paras, *_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Aud,
+                                                                         epoc_LexNoDelay_in_Delay_Aud,
+                                                                         cluster_twin, [0, mean_word_len+auditory_decay+delay_len], mask_data=True,
+                                                                         sorted_indices=LexDelay_in_Delay_sorted_indices,
+                                                                         chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
+                                                                         select_electrodes=False)
+        DelNoDel_Aud_paras[f'{sig_tag}_NoDelay_stimaligned'] = paras
 
         # Motor aligned
         data_LexNoDelay_in_Delay_Resp = select_electrodes(data_LexNoDelay_Resp, sig_idx)
@@ -415,6 +444,14 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
                                                              f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}.jpg'),
                  f"N chs = {len(sig_idx)}", percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
                  fig_size=[4*(3/5), 10 * (len(sig_idx) / 250)])
+        _, _, _, _, _, paras, *_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Resp,
+                                                                                      epoc_LexNoDelay_in_Delay_Resp,
+                                                                                      cluster_twin, [-1*(mean_word_len+auditory_decay+delay_len),-0.1],
+                                                                                      mask_data=True,
+                                                                                      sorted_indices=LexDelay_in_Delay_sorted_indices,
+                                                                                      chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
+                                                                                      select_electrodes=False)
+        DelNoDel_Aud_paras[f'{sig_tag}_NoDelay_motaligned'] = paras
 
 # %% reassign electrode indices by conditions
 MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare

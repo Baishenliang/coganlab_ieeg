@@ -701,14 +701,18 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
     plt.close()
 
 
-def onsets2col(onsets, chs_sel, colormap_type: str = 'jet'):
+def onsets2col(onsets, chs_sel, colormap_type: str = 'jet',treat_zero_as_nan:bool=False):
 
     import numpy as np
     import matplotlib.cm as cm
 
     valid_onsets = []
     for ch in chs_sel:
-        if ch in onsets and onsets[ch] is not None:
+        if ch in onsets and np.isnan(onsets[ch]):
+            valid_onsets.append(1000)
+        elif ch in onsets and onsets[ch]==0 and treat_zero_as_nan:
+            valid_onsets.append(1000)
+        elif ch in onsets and onsets[ch] is not None:
             valid_onsets.append(onsets[ch])
         else:
             raise ValueError("ch not in valid onset index or have no onset")
