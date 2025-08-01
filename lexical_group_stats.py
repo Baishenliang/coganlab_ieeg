@@ -307,6 +307,7 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
         (epoc_LexDelay_Aud,epoc_LexDelay_Aud,epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud)
 ):
     # Debug:
+    # DelNoDel_Aud_paras = {}
     # sig_idx=LexDelay_Delay_sig_idx
     # sig_tag='Delay_all'
     # align_data=data_LexDelay_Aud
@@ -336,11 +337,13 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
         cluster_twin, [0, mean_word_len+auditory_decay+delay_len], mask_data=True, sorted_indices=LexDelay_in_Delay_sorted_indices,
         chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx, select_electrodes=False)
     DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']=paras
-    # if sig_tag=='Delay_all':
-    #     for column_name in paras.columns:
-    #         paras_col=paras[column_name]
-    #         cols = onsets2col(paras_col, chs_sel)
-    #         plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
+    for column_name in ['activity_length', 'peak_location']:
+        paras_col=paras[column_name]
+        cols = onsets2col(paras_col, chs_sel)
+        plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
+    atlas2_hist(ch_labels_roi, chs_sel, [0.5,0.5,0.5,0.4],
+                os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
+                ylim=[0,100],electrode_latency_df = paras[['first_non_nan_location']], electrode_colors=onsets2col(paras['activity_length'],chs_sel),sort_ROI_by='latency',reverse_sort=False)
 
     # Cue alinged
     data_LexDelay_in_Delay_Cue = select_electrodes(data_LexDelay_Cue, sig_idx)
@@ -383,11 +386,13 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
         cluster_twin, [-1*(mean_word_len+auditory_decay+delay_len),-0.1], mask_data=True, sorted_indices=LexDelay_in_Delay_sorted_indices,
         chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx, select_electrodes=False)
     DelNoDel_Aud_paras[f'{sig_tag}_Delay_motaligned']=paras
-    if sig_tag=='Delay_all':
-        for column_name in ['activity_length', 'peak_location']:
-            paras_col=paras[column_name]
-            cols = onsets2col(paras_col, chs_sel)
-            plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
+    for column_name in ['activity_length', 'peak_location']:
+        paras_col=paras[column_name]
+        cols = onsets2col(paras_col, chs_sel)
+        plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
+    atlas2_hist(ch_labels_roi, chs_sel, [0.5,0.5,0.5,0.4],
+                os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
+                ylim=[0,100],electrode_latency_df = paras[['first_non_nan_location']], electrode_colors=onsets2col(paras['activity_length'],chs_sel),sort_ROI_by='latency',reverse_sort=True)
 
     # if sig_tag=='all_sig':
     #     cols = onsets2col(onsets_mot, chs_sel)
@@ -429,6 +434,16 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
                                                                          chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
                                                                          select_electrodes=False)
         DelNoDel_Aud_paras[f'{sig_tag}_NoDelay_stimaligned'] = paras
+        for column_name in ['activity_length', 'peak_location']:
+            paras_col = paras[column_name]
+            cols = onsets2col(paras_col, chs_sel)
+            plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
+        atlas2_hist(ch_labels_roi, chs_sel, [0.5, 0.5, 0.5, 0.4],
+                    os.path.join(fig_save_dir,
+                                 f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
+                    ylim=[0, 100], electrode_latency_df=paras[['first_non_nan_location']],
+                    electrode_colors=onsets2col(paras['activity_length'], chs_sel), sort_ROI_by='latency',
+                    reverse_sort=False)
 
         # Motor aligned
         data_LexNoDelay_in_Delay_Resp = select_electrodes(data_LexNoDelay_Resp, sig_idx)
@@ -452,6 +467,16 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
                                                                                       chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
                                                                                       select_electrodes=False)
         DelNoDel_Aud_paras[f'{sig_tag}_NoDelay_motaligned'] = paras
+        for column_name in ['activity_length', 'peak_location']:
+            paras_col = paras[column_name]
+            cols = onsets2col(paras_col, chs_sel)
+            plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
+        atlas2_hist(ch_labels_roi, chs_sel, [0.5, 0.5, 0.5, 0.4],
+                    os.path.join(fig_save_dir,
+                                 f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
+                    ylim=[0, 100], electrode_latency_df=paras[['first_non_nan_location']],
+                    electrode_colors=onsets2col(paras['activity_length'], chs_sel), sort_ROI_by='latency',
+                    reverse_sort=True)
 
 # %% reassign electrode indices by conditions
 MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
