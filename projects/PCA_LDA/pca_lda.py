@@ -1,6 +1,9 @@
 #%% Introduction
 # This script is made for the comparison in HG traces among Repeat vs. YesNo, Delay vs. NoDelay, and Word vs. Nonword
 import os
+
+from practice_codes.Dec_2024_group_level.step5_compare_multitaper_4cons import font_size
+
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\PCA_LDA\\pca_lda.py')
 current_dir = os.getcwd()
 if current_dir != script_dir:
@@ -14,15 +17,6 @@ from ieeg.calc.fast import mixup
 from sklearn.metrics import ConfusionMatrixDisplay
 
 # %% function block
-def check_non_nan_rows(arr):
-    non_nan_rows_count = 0
-    for i in range(arr.shape[0]):
-        if not np.isnan(arr[i]).any():
-            non_nan_rows_count += 1
-            if non_nan_rows_count >= 3:
-                return True
-    return False
-
 delay_len=1.125 # average length from sound offset to Go onset
 def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
     start_idx = np.searchsorted(time_str, start_float, side='left')
@@ -34,7 +28,7 @@ from pickle import FALSE
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
 groupsTag="LexDelay"
-sf_dir = 'D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\PCA_LDA\\results'
+sf_dir = '..\\results'
 #groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
@@ -76,37 +70,31 @@ if groupsTag=="LexDelay":
 with open(os.path.join('..','GLM','data', f'Lex_twin_idxes_hg.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
 
-m_chs=epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes['LexDelay_DelayOnly_sig_idx']),axis=1)
-m=m_chs.take(get_time_indexs(m_chs.labels[2]),axis=2)
+for t_tag,t_range in zip(
+        ('full','0_250ms','250_500ms','500_750ms','750_112ms'),
+        ([0,delay_len],[0,0.25],[0.25,0.5],[0.5,0.75],[0.75,delay_len])
+):
+    for elec_grp,elec_idx in zip(
+            ('Delay','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
+            ('LexDelay_Delay_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+    ):
+        m_chs=epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]),axis=1)
+        m=m_chs.take(get_time_indexs(m_chs.labels[2],t_range[0],t_range[1]),axis=2)
 
-cats, labels = classes_from_labels(m.labels[0],'/',2)
-zero_indices = []
-one_indices = []
-for index, value in enumerate(labels):
-    if value == 1:
-        one_indices.append(index)
-    else:
-        zero_indices.append(index)
-good_chs=[]
-for i in range(0,len(m.labels[1])):
-    ch=m.take([i], axis=1)
-    a=ch.take(one_indices,axis=0).__array__()
-    if not check_non_nan_rows(a):
-        print(f'bad for word in chs {m.labels[1][i]}')
-    b=ch.take(zero_indices,axis=0).__array__()
-    if not check_non_nan_rows(b):
-        print('bad for nonword in chs {m.labels[1][i]')
-    if check_non_nan_rows(a) and check_non_nan_rows(b):
-        good_chs.append(i)
+        cats, labels = classes_from_labels(m.labels[0],'/',2)
+        mixup(m,0)
+        # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
+        decoder = Decoder(cats, n_splits=5, n_repeats=100)
+        cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true')
+        del m
 
-m=m.take(good_chs,axis=1)
-cats, labels = classes_from_labels(m.labels[0],'/',2)
-mixup(m,0)
-# decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
-decoder = Decoder(cats, n_splits=5, n_repeats=100)
-cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true')
-cm = np.mean(cm, axis=0)
-
-fig, ax = plt.subplots()
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=cats.keys())
-disp.plot(ax=ax)
+        fig, ax = plt.subplots(figsize=(7,5))
+        plt.rcParams['font.size'] = 20
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=cats.keys())
+        cm_plot=disp.plot(colorbar=False, ax=ax)
+        im = cm_plot.im_
+        im.set_clim(vmin=0.44, vmax=0.56)
+        plt.title(f'{elec_grp}_{t_tag}')
+        plt.tight_layout()
+        plt.savefig(os.path.join(sf_dir,f'{elec_grp}_{t_tag}.tif'), dpi=300)
+        plt.close()
