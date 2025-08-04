@@ -381,12 +381,12 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
 
         if activity_length > 0:
 
-            peak_value = np.max(not_nan_values)
+            peak_value = np.nanmax(not_nan_values)
             peak_location = times[np.where(channel_data == peak_value)[0][0]]
 
             first_non_nan_location = times[np.where(~np.isnan(channel_data))[0][0]]
 
-            mean_value = np.mean(not_nan_values)
+            mean_value = np.nanmean(not_nan_values)
 
         data_s_sorted_paras[chs_s_sorted[channel_idx]]={
             "activity_length": activity_length,
@@ -1061,6 +1061,117 @@ def atlas2_hist(label2atlas_raw, chs_sel, col, fig_save_dir_fm, ylim: list=[0,25
     plt.tight_layout()
     plt.savefig(fig_save_dir_fm, dpi=300)
     plt.close()
+
+
+def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = None):
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import seaborn as sns
+
+    stripplot_data = []
+    custom_palette = {}
+
+    barplot_data = {'GRP': [], 'Mean_Latency': [], 'SEM_Latency': []}
+
+    c = 0
+
+    for k, electrode_latency_df in enumerate(electrode_latency_dfs):
+        if electrode_colorss is not None:
+            electrode_colors = electrode_colorss[k]
+        else:
+            default_color = [0.5, 0.5, 0.5]
+            electrode_colors = [default_color] * len(electrode_latency_df)
+
+        ele_grp = ele_grps[k]
+
+        if 'latency' not in electrode_latency_df.columns:
+            if electrode_latency_df.shape[1] == 1:
+                electrode_latency_df.columns = ['latency']
+            else:
+                raise ValueError("electrode_latency_df must have a 'latency' column or be a single-column DataFrame.")
+
+        valid_latencies = electrode_latency_df['latency'].dropna()
+
+        if not valid_latencies.empty:
+            barplot_data['GRP'].append(ele_grp)
+            barplot_data['Mean_Latency'].append(valid_latencies.mean())
+            barplot_data['SEM_Latency'].append(valid_latencies.sem())
+
+        for i, latency_value in enumerate(electrode_latency_df['latency']):
+            if pd.notna(latency_value):
+                electrode_id = f'Ele_{c}'
+                stripplot_data.append({'GRP': ele_grp, 'Latency': latency_value, 'Electrode': electrode_id})
+                custom_palette[electrode_id] = electrode_colors[i]
+                c += 1
+
+    df_stripplot = pd.DataFrame(stripplot_data)
+    df_barplot = pd.DataFrame(barplot_data)
+
+    #stats
+    from scipy.stats import f_oneway
+
+    # Separate the Latency data by GRP group
+    data_for_anova = [df_stripplot['Latency'][df_stripplot['GRP'] == g] for g in df_stripplot['GRP'].unique()]
+
+    # Perform the one-way ANOVA
+    f_statistic, p_value = f_oneway(*data_for_anova)
+
+    print("--- One-way ANOVA Results ---")
+    print(f"F-statistic: {f_statistic:.4f}")
+    print(f"P-value: {p_value:.4f}")
+
+    from statsmodels.stats.multicomp import pairwise_tukeyhsd
+    # Perform Tukey's HSD post-hoc test
+    print("\n\n--- Tukey's HSD Post-Hoc Test Results ---")
+    tukey_result = pairwise_tukeyhsd(endog=df_stripplot['Latency'],
+                                     groups=df_stripplot['GRP'],
+                                     alpha=0.05)
+
+    print(tukey_result)
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+
+    group_order = ele_grps
+
+    sns.barplot(
+        data=df_barplot,
+        x='GRP',
+        y='Mean_Latency',
+        yerr=df_barplot['SEM_Latency'],
+        capsize=0.1,
+        ax=ax,
+        order=group_order,
+        color='lightgray',
+        zorder=1
+    )
+
+    if not df_stripplot.empty:
+        sns.stripplot(
+            data=df_stripplot,
+            x='GRP',
+            y='Latency',
+            hue='Electrode',
+            palette=custom_palette,
+            jitter=0.2,
+            dodge=False,
+            ax=ax,
+            order=group_order,
+            s=6,
+            legend=False,
+            zorder=2,
+            alpha=0.7
+        )
+
+    ax.set_ylabel('Latency', fontsize=20)
+    ax.tick_params(axis='y', labelsize=30)
+    ax.set_xlabel('')
+    current_labels = [label.get_text() for label in ax.get_xticklabels()]
+    ax.set_xticklabels(current_labels, fontsize=30, rotation=45, ha='right')
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    plt.tight_layout()
+
+    return fig, ax
 
 def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs, glm_out: str='beta',add_subj_labels: bool=True):
     """
