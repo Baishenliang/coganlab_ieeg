@@ -4,7 +4,7 @@ import os
 import pickle
 # check if currently running a slurm job
 
-N_cores=-3
+N_cores=-1
 HOME = os.path.expanduser("~")
 if HOME=='C:\\Users\\bl314':
     is_cluster=False
@@ -115,6 +115,7 @@ if not is_cluster:
 
 # %% Select electrodes
 read_mode=False
+run_decoder=True
 if read_mode:
     loaded_data={}
 for t_tag,t_range in zip(
@@ -137,7 +138,7 @@ for t_tag,t_range in zip(
                 m=m_chs.take(get_time_indexs(m_chs.labels[2],t_range[0],t_range[1]),axis=2)
                 m.tofile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
 
-            if is_cluster:
+            if run_decoder:
                 cats, labels = classes_from_labels(m.labels[0],'/',2)
                 mixup(m,0)
                 # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
