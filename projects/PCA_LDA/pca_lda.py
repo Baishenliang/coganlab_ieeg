@@ -1,7 +1,7 @@
 #%% Introduction
 # This script is made for the comparison in HG traces among Repeat vs. YesNo, Delay vs. NoDelay, and Word vs. Nonword
 import os
-
+import pickle
 # check if currently running a slurm job
 HOME = os.path.expanduser("~")
 if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
@@ -9,11 +9,15 @@ if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
     script_dir = os.path.dirname(os.path.join(LAB_root,'coganlab_ieeg\\projects\\PCA_LDA\\pca_lda.py'))
     is_plotting=False
     sf_dir = os.path.join(LAB_root,'PCA_LDA_results')
+    with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "rb") as f:
+        LexDelay_twin_idxes = pickle.load(f)
 else:
     LAB_root = os.path.join(HOME, "Box", "CoganLab")
     script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\PCA_LDA\\pca_lda.py')
     is_plotting=True
     sf_dir = 'results'
+    with open(os.path.join(sf_dir, f'Lex_twin_idxes_hg.npy'), "rb") as f:
+        LexDelay_twin_idxes = pickle.load(f)
 
 current_dir = os.getcwd()
 if current_dir != script_dir:
@@ -32,6 +36,7 @@ from scipy.stats import norm
 mean_word_len=0.65#0.62 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0 # a short period of time that we may assume auditory decay takes
 delay_len=1.125 # average length from sound offset to Go onset
+num_perm=100
 
 def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
     start_idx = np.searchsorted(time_str, start_float, side='left')
@@ -72,9 +77,9 @@ trial_labels='CORRECT'
 
 # %% Sort data and get significant electrode lists
 import os
-import pickle
 import numpy as np
-import matplotlib.pyplot as plt
+if is_plotting:
+    import matplotlib.pyplot as plt
 from ieeg.arrays.label import LabeledArray
 
 if os.path.exists(os.path.join(sf_dir,'epoc_LexDelayRep_Aud')):
@@ -99,16 +104,14 @@ else:
 
 
 # %% Select electrodes
-with open(os.path.join('..','GLM','data', f'Lex_twin_idxes_hg.npy'), "rb") as f:
-    LexDelay_twin_idxes = pickle.load(f)
 
 for t_tag,t_range in zip(
-        ('full','0_250ms','250_500ms','500_750ms','750_112ms'),
-        ([mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len],[0,0.25],[0.25,0.5],[0.5,0.75],[0.75,delay_len])
+        ('encode','delay'),
+        ([0,mean_word_len+auditory_decay],[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
 ):
     for elec_grp,elec_idx in zip(
-            ('Delay','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
-            ('LexDelay_Delay_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+            ('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
+            ('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
     ):
         m_chs=epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]),axis=1)
         m=m_chs.take(get_time_indexs(m_chs.labels[2],t_range[0],t_range[1]),axis=2)
@@ -118,41 +121,48 @@ for t_tag,t_range in zip(
         # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
         decoder = Decoder(cats, n_splits=80, n_repeats=100)
         cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=-3)
-        del m
+        cm_dprime = calculate_d_prime(cm)
 
-        fig, ax = plt.subplots(figsize=(7,5))
-        plt.rcParams['font.size'] = 20
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=cats.keys())
-        cm_plot=disp.plot(colorbar=False, ax=ax)
-        im = cm_plot.im_
-        im.set_clim(vmin=0.44, vmax=0.56)
-        plt.title(f'{elec_grp}_{t_tag}')
-        plt.tight_layout()
-        plt.savefig(os.path.join(sf_dir,f'{elec_grp}_{t_tag}.tif'), dpi=300)
-        plt.close()
+        if is_plotting:
+            fig, ax = plt.subplots(figsize=(7,5))
+            plt.rcParams['font.size'] = 20
+            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=cats.keys())
+            cm_plot=disp.plot(colorbar=False, ax=ax)
+            im = cm_plot.im_
+            im.set_clim(vmin=0.44, vmax=0.56)
+            plt.title(f'{elec_grp}_{t_tag}')
+            plt.tight_layout()
+            plt.savefig(os.path.join(sf_dir,f'{elec_grp}_{t_tag}.tif'), dpi=300)
+            plt.close()
 
-#%% Try to confirm one example decoder is significant:
-num_perm=100
-t_range=[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len]
-elec_idx='LexDelay_Sensorimotor_in_Delay_sig_idx'
-m_chs = epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
-m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
-mixup(m, 0)
+        # Shuffle
+        np.random.seed(42)
+        cm_perm_dist = []
+        cm_perm_dprime_dist = []
 
-# Org decoder
-decoder = Decoder(cats, n_splits=80, n_repeats=100)
-cm = decoder.cv_cm(m.__array__().swapaxes(0, 1), labels, normalize='true',n_jobs=-1)
-cm_dprime = calculate_d_prime(cm)
+        decoder_perm = Decoder(cats, n_splits=80, n_repeats=1)
+        for i in range(num_perm):
+            print(f'runing perm {i} in {num_perm}')
+            labels_shuffle = np.random.permutation(labels)
+            cm_perm = decoder_perm.cv_cm(m.__array__().swapaxes(0, 1), labels_shuffle, normalize='true', n_jobs=-1)
+            cm_perm_dist.append(cm_perm)
+            cm_perm_dprime_dist.append(calculate_d_prime(cm_perm))
 
-# Shuffle
-np.random.seed(42)
-cm_perm_dist=[]
-cm_perm_dprime_dist=[]
+        count_greater_equal = sum(1 for val in cm_perm_dprime_dist if val >= cm_dprime)
+        total_count = len(cm_perm_dprime_dist)
+        p_value = (count_greater_equal / total_count) * 100
 
-decoder_perm = Decoder(cats, n_splits=80, n_repeats=1)
-for i in range(num_perm):
-    print(f'runing perm {i} in {num_perm}')
-    labels_shuffle=np.random.permutation(labels)
-    cm_perm = decoder_perm.cv_cm(m.__array__().swapaxes(0, 1), labels_shuffle, normalize='true',n_jobs=-1)
-    cm_perm_dist.append(cm_perm)
-    cm_perm_dprime_dist.append(calculate_d_prime(cm_perm))
+        data_to_save = {
+            'cm': cm,
+            'cm_dprime': cm_dprime,
+            'cm_perm_dist': cm_perm_dist,
+            'cm_perm_dprime_dist': cm_perm_dprime_dist,
+            'p_value': p_value
+        }
+
+        filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.tif.pkl')
+        with open(filename, 'wb') as f:
+            pickle.dump(filename, f)
+
+        with open(filename, 'rb') as f:
+            loaded_data = pickle.load(f)
