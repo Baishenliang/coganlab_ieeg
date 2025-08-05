@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -e DCC_out/slurm_%a.err
 #SBATCH -a 1-10
-#SBATCH --mem=60G
-#SBATCH --cpus-per-task=10
+#SBATCH --mem=120G
+#SBATCH --cpus-per-task=20
 #SBATCH --partition=common,scavenger
 #SBATCH --output=DCC_out/test%a.out
 #conda init bash
