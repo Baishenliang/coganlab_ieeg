@@ -4,6 +4,7 @@ import os
 import pickle
 # check if currently running a slurm job
 is_cluster=True
+N_cores=12
 HOME = os.path.expanduser("~")
 if is_cluster:
     LAB_root = os.path.join(HOME, "workspace")
@@ -122,7 +123,7 @@ for t_tag,t_range in zip(
         mixup(m,0)
         # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
         decoder = Decoder(cats, n_splits=80, n_repeats=100)
-        cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=-3)
+        cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=N_cores)
         cm_dprime = calculate_d_prime(cm)
 
         if is_plotting:
@@ -146,7 +147,7 @@ for t_tag,t_range in zip(
         for i in range(num_perm):
             print(f'runing perm {i} in {num_perm}')
             labels_shuffle = np.random.permutation(labels)
-            cm_perm = decoder_perm.cv_cm(m.__array__().swapaxes(0, 1), labels_shuffle, normalize='true', n_jobs=-1)
+            cm_perm = decoder_perm.cv_cm(m.__array__().swapaxes(0, 1), labels_shuffle, normalize='true', n_jobs=N_cores)
             cm_perm_dist.append(cm_perm)
             cm_perm_dprime_dist.append(calculate_d_prime(cm_perm))
 
