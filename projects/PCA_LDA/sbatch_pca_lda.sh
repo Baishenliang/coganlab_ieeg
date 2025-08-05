@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH -e ~/workspace/PCA_LDA_results/slurm_%a.err
-#SBATCH -a 1-30%20
+#SBATCH -e DCC_out/slurm_%a.err
+#SBATCH -a 1-10
 #SBATCH --mem=10G
 #SBATCH --cpus-per-task=60
 #SBATCH --partition=common,scavenger
-#SBATCH --output=~/workspace/PCA_LDA_results/test%a.out
+#SBATCH --output=DCC_out/test%a.out
 #conda init bash
 #conda activate ieeg
 python pca_lda.py
