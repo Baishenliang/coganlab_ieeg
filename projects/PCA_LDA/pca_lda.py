@@ -8,8 +8,10 @@ N_cores=-1
 HOME = os.path.expanduser("~")
 if HOME=='C:\\Users\\bl314':
     is_cluster=False
+    task_ID=-1
 elif HOME=='/hpc/home/bl314':
     is_cluster = True
+    task_ID= int(os.environ['SLURM_ARRAY_TASK_ID'])
 else:
     raise ValueError('unrecognized home directory')
 if is_cluster:
@@ -47,7 +49,7 @@ from scipy.stats import norm
 mean_word_len=0.65#0.62 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0 # a short period of time that we may assume auditory decay takes
 delay_len=1.125 # average length from sound offset to Go onset
-num_perm=100
+num_perm=300
 
 def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
     start_idx = np.searchsorted(time_str, start_float, side='left')
@@ -116,8 +118,8 @@ if not is_cluster:
 # %% Select electrodes
 read_mode=False
 run_decoder=True
-if read_mode:
-    loaded_data={}
+loaded_data={}
+task_i=0
 for t_tag,t_range in zip(
         ('encode','delay'),
         ([0,mean_word_len+auditory_decay],[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
@@ -128,6 +130,11 @@ for t_tag,t_range in zip(
             ('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
             ('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
     ):
+        task_i+=1
+        if is_cluster and task_i!=task_ID:
+            break
+        else:
+            print(f'Now Doing {t_tag} {elec_grp}')
         if not read_mode:
             if os.path.exists(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}.npy')):
                 m = LabeledArray.fromfile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
