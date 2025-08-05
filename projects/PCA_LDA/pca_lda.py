@@ -25,8 +25,9 @@ if current_dir != script_dir:
     os.chdir(script_dir)
 
 import sys
-sys.path.append(os.path.abspath(os.path.join("..", "..")))
-import utils.group as gp
+if not is_cluster:
+    sys.path.append(os.path.abspath(os.path.join("..", "..")))
+    import utils.group as gp
 from ieeg.decoding.decode import classes_from_labels,Decoder
 from ieeg.calc.fast import mixup
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -85,7 +86,7 @@ from ieeg.arrays.label import LabeledArray
 
 if os.path.exists(os.path.join(sf_dir,'epoc_LexDelayRep_Aud.npy')):
     epoc_LexDelayRep_Aud = LabeledArray.fromfile(os.path.join(sf_dir,'epoc_LexDelayRep_Aud'))
-elif 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
+elif is_cluster:
     raise ValueError('No raw data found')
 else:
     stats_root_delay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
