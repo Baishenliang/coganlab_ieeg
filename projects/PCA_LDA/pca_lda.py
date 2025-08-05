@@ -4,7 +4,7 @@ import os
 import pickle
 # check if currently running a slurm job
 is_cluster=True
-N_cores=5
+N_cores=-3
 HOME = os.path.expanduser("~")
 if is_cluster:
     LAB_root = os.path.join(HOME, "workspace")
