@@ -3,20 +3,21 @@
 import os
 import pickle
 # check if currently running a slurm job
+is_cluster=True
 HOME = os.path.expanduser("~")
-if 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
+if is_cluster:
     LAB_root = os.path.join(HOME, "workspace")
     script_dir = os.path.dirname(os.path.join(LAB_root,'coganlab_ieeg\\projects\\PCA_LDA\\pca_lda.py'))
     is_plotting=False
     sf_dir = os.path.join(LAB_root,'PCA_LDA_results')
-    with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "rb") as f:
+    with open(os.path.join(sf_dir, f'Lex_twin_idxes_hg.npy'), "rb") as f:
         LexDelay_twin_idxes = pickle.load(f)
 else:
     LAB_root = os.path.join(HOME, "Box", "CoganLab")
     script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\PCA_LDA\\pca_lda.py')
     is_plotting=True
     sf_dir = 'results'
-    with open(os.path.join(sf_dir, f'Lex_twin_idxes_hg.npy'), "rb") as f:
+    with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "rb") as f:
         LexDelay_twin_idxes = pickle.load(f)
 
 current_dir = os.getcwd()
@@ -82,7 +83,7 @@ if is_plotting:
     import matplotlib.pyplot as plt
 from ieeg.arrays.label import LabeledArray
 
-if os.path.exists(os.path.join(sf_dir,'epoc_LexDelayRep_Aud')):
+if os.path.exists(os.path.join(sf_dir,'epoc_LexDelayRep_Aud.npy')):
     epoc_LexDelayRep_Aud = LabeledArray.fromfile(os.path.join(sf_dir,'epoc_LexDelayRep_Aud'))
 elif 'SLURM_ARRAY_TASK_ID' in os.environ.keys():
     raise ValueError('No raw data found')
