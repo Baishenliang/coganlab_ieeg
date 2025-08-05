@@ -133,7 +133,7 @@ for t_tag,t_range in zip(
         task_i+=1
         print(f'task_i {task_i}')
         if is_cluster and task_i!=task_ID:
-            break
+            continue
         else:
             print(f'Now Doing {t_tag} {elec_grp}')
         if not read_mode:
