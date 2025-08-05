@@ -131,6 +131,7 @@ for t_tag,t_range in zip(
             ('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
     ):
         task_i+=1
+        print(f'task_i {task_i}')
         if is_cluster and task_i!=task_ID:
             break
         else:
