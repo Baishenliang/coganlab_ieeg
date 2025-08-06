@@ -47,7 +47,7 @@ from scipy.stats import norm
 mean_word_len=0.65#0.62 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0 # a short period of time that we may assume auditory decay takes
 delay_len=1.125 # average length from sound offset to Go onset
-num_perm=10
+num_perm=500
 
 def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
     start_idx = np.searchsorted(time_str, start_float, side='left')
@@ -146,7 +146,7 @@ for t_tag,t_range in zip(
         if run_decoder:
             mixup(m,0)
             # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
-            decoder = Decoder(cats, n_splits=80, n_repeats=500)
+            decoder = Decoder(cats, n_splits=10, n_repeats=500)
             cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=N_cores)
             cm_dprime = calculate_d_prime(cm)
 
@@ -155,7 +155,7 @@ for t_tag,t_range in zip(
             cm_perm_dist = []
             cm_perm_dprime_dist = []
 
-            decoder_perm = Decoder(cats, n_splits=80, n_repeats=1)
+            decoder_perm = Decoder(cats, n_splits=10, n_repeats=1)
             for i in range(num_perm):
                 print(f'runing perm {i} in {num_perm}')
                 labels_shuffle = np.random.permutation(labels)
