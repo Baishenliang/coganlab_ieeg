@@ -20,7 +20,6 @@ if is_cluster:
     current_dir = os.getcwd()
     if current_dir != script_dir:
         os.chdir(script_dir)
-    is_plotting=False
     sf_dir = os.path.join(LAB_root,'PCA_LDA_results')
     with open(os.path.join(sf_dir, f'Lex_twin_idxes_hg.npy'), "rb") as f:
         LexDelay_twin_idxes = pickle.load(f)
@@ -30,7 +29,6 @@ else:
     current_dir = os.getcwd()
     if current_dir != script_dir:
         os.chdir(script_dir)
-    is_plotting=True
     sf_dir = 'results'
     with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "rb") as f:
         LexDelay_twin_idxes = pickle.load(f)
@@ -49,7 +47,7 @@ from scipy.stats import norm
 mean_word_len=0.65#0.62 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0 # a short period of time that we may assume auditory decay takes
 delay_len=1.125 # average length from sound offset to Go onset
-num_perm=300
+num_perm=10
 
 def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
     start_idx = np.searchsorted(time_str, start_float, side='left')
@@ -91,8 +89,7 @@ trial_labels='CORRECT'
 # %% Sort data and get significant electrode lists
 import os
 import numpy as np
-if is_plotting:
-    import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from ieeg.arrays.label import LabeledArray
 
 if not is_cluster:
@@ -136,66 +133,70 @@ for t_tag,t_range in zip(
             continue
         else:
             print(f'Now Doing {t_tag} {elec_grp}')
-        if not read_mode:
-            if os.path.exists(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}.npy')):
-                m = LabeledArray.fromfile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
-            elif is_cluster:
-                raise ValueError('Gao shen me a lian ge bian liang dou mei you!')
-            else:
-                m_chs=epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]),axis=1)
-                m=m_chs.take(get_time_indexs(m_chs.labels[2],t_range[0],t_range[1]),axis=2)
-                m.tofile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
-
-            if run_decoder:
-                cats, labels = classes_from_labels(m.labels[0],'/',2)
-                mixup(m,0)
-                # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
-                decoder = Decoder(cats, n_splits=80, n_repeats=100)
-                cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=N_cores)
-                cm_dprime = calculate_d_prime(cm)
-
-                if is_plotting:
-                    fig, ax = plt.subplots(figsize=(7,5))
-                    plt.rcParams['font.size'] = 20
-                    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=cats.keys())
-                    cm_plot=disp.plot(colorbar=False, ax=ax)
-                    im = cm_plot.im_
-                    im.set_clim(vmin=0.44, vmax=0.56)
-                    plt.title(f'{elec_grp}_{t_tag}')
-                    plt.tight_layout()
-                    plt.savefig(os.path.join(sf_dir,f'{elec_grp}_{t_tag}.tif'), dpi=300)
-                    plt.close()
-
-                # Shuffle
-                np.random.seed(42)
-                cm_perm_dist = []
-                cm_perm_dprime_dist = []
-
-                decoder_perm = Decoder(cats, n_splits=80, n_repeats=1)
-                for i in range(num_perm):
-                    print(f'runing perm {i} in {num_perm}')
-                    labels_shuffle = np.random.permutation(labels)
-                    cm_perm = decoder_perm.cv_cm(m.__array__().swapaxes(0, 1), labels_shuffle, normalize='true', n_jobs=N_cores)
-                    cm_perm_dist.append(cm_perm)
-                    cm_perm_dprime_dist.append(calculate_d_prime(cm_perm))
-
-                count_greater_equal = sum(1 for val in cm_perm_dprime_dist if val >= cm_dprime)
-                total_count = len(cm_perm_dprime_dist)
-                p_value = (count_greater_equal / total_count) * 100
-
-                data_to_save = {
-                    'cm': cm,
-                    'cm_dprime': cm_dprime,
-                    'cm_perm_dist': cm_perm_dist,
-                    'cm_perm_dprime_dist': cm_perm_dprime_dist,
-                    'p_value': p_value
-                }
-
-                filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.pkl')
-                with open(filename, 'wb') as f:
-                    pickle.dump(data_to_save, f)
+        if os.path.exists(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}.npy')):
+            m = LabeledArray.fromfile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
+        elif is_cluster:
+            raise ValueError('Gao shen me a lian ge bian liang dou mei you!')
         else:
-            filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.tif.pkl')
+            m_chs=epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]),axis=1)
+            m=m_chs.take(get_time_indexs(m_chs.labels[2],t_range[0],t_range[1]),axis=2)
+            m.tofile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
+
+        cats, labels = classes_from_labels(m.labels[0], '/', 2)
+        if run_decoder:
+            mixup(m,0)
+            # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
+            decoder = Decoder(cats, n_splits=80, n_repeats=500)
+            cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=N_cores)
+            cm_dprime = calculate_d_prime(cm)
+
+            # Shuffle
+            np.random.seed(42)
+            cm_perm_dist = []
+            cm_perm_dprime_dist = []
+
+            decoder_perm = Decoder(cats, n_splits=80, n_repeats=1)
+            for i in range(num_perm):
+                print(f'runing perm {i} in {num_perm}')
+                labels_shuffle = np.random.permutation(labels)
+                cm_perm = decoder_perm.cv_cm(m.__array__().swapaxes(0, 1), labels_shuffle, normalize='true', n_jobs=N_cores)
+                cm_perm_dist.append(cm_perm)
+                cm_perm_dprime_dist.append(calculate_d_prime(cm_perm))
+
+            count_greater_equal = sum(1 for val in cm_perm_dprime_dist if val >= cm_dprime)
+            total_count = len(cm_perm_dprime_dist)
+            p_value = (count_greater_equal / total_count) * 100
+
+            data_to_save = {
+                'cm': cm,
+                'cm_dprime': cm_dprime,
+                'cm_perm_dist': cm_perm_dist,
+                'cm_perm_dprime_dist': cm_perm_dprime_dist,
+                'p_value': p_value
+            }
+
+            filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.pkl')
+            with open(filename, 'wb') as f:
+                pickle.dump(data_to_save, f)
+        if read_mode:
+            filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.pkl')
             with open(filename, 'rb') as f:
                 ld=pickle.load(f)
                 loaded_data[t_tag][elec_grp] = ld
+                org_acc=np.mean([loaded_data[t_tag][elec_grp]['cm'][0,0],loaded_data[t_tag][elec_grp]['cm'][1,1]])
+                cm_perm_dist=loaded_data[t_tag][elec_grp]['cm_perm_dist']
+                perm_accs=[np.mean([cm_perm_dist[i][0,0],cm_perm_dist[i][1,1]]) for i in range(len(cm_perm_dist))]
+                print(loaded_data[t_tag][elec_grp]['cm'])
+                print(f'acc: {org_acc}, p: {sum(org_acc<perm_accs)/len(perm_accs)}')
+                print(f'dprime: {loaded_data[t_tag][elec_grp]['cm_dprime']},p: {loaded_data[t_tag][elec_grp]['p_value']/100}')
+
+                fig, ax = plt.subplots(figsize=(7,5))
+                plt.rcParams['font.size'] = 20
+                disp = ConfusionMatrixDisplay(confusion_matrix=loaded_data[t_tag][elec_grp]['cm'], display_labels=cats.keys())
+                cm_plot=disp.plot(colorbar=False, ax=ax)
+                im = cm_plot.im_
+                im.set_clim(vmin=0.44, vmax=0.56)
+                plt.title(f'{elec_grp}_{t_tag}')
+                plt.tight_layout()
+                plt.savefig(os.path.join(sf_dir,f'{elec_grp}_{t_tag}.tif'), dpi=300)
+                plt.close()
