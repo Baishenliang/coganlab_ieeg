@@ -152,15 +152,27 @@ for feature_tag in ('lexstus','pho1'):
                 if feature_tag=='lexstus':
                     cats, labels = classes_from_labels(m.labels[0], '/', 2)
                 elif feature_tag=='pho1':
+                    cats, labels = classes_from_labels(m.labels[0], '/', 3,crop=0)
+                    not_small_trials = np.where(~np.isin(labels, [2,7,16,17]))[0].tolist()
+                    m=m.take(not_small_trials,axis=0)
+                elif feature_tag=='pho2':
                     cats, labels = classes_from_labels(m.labels[0], '/', 3,crop=1)
-                    not_u_trials = np.where(labels!=4)[0].tolist()
-                    m=m.take(not_u_trials,axis=0)
+                    not_small_trials = np.where(labels!=4)[0].tolist()
+                    m=m.take(not_small_trials,axis=0)
                 mixup(m, 0)
                 m.tofile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{feature_tag}_{t_tag}_{elec_grp}'))
-            cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=1)
             if run_decoder:
                 # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
-                decoder = Decoder(cats, n_splits=10, n_repeats=500)
+                if feature_tag=='lexstus':
+                    cats, labels = classes_from_labels(m.labels[0], '/', 2)
+                    n_split=10
+                elif feature_tag=='pho1':
+                    cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=0)
+                    n_split=2
+                elif feature_tag=='pho2':
+                    cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=1)
+                    n_split=10
+                decoder = Decoder(cats, n_splits=n_split, n_repeats=500)
                 cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=N_cores)
                 cm_dprime = calculate_acc(cm)
     
@@ -169,7 +181,7 @@ for feature_tag in ('lexstus','pho1'):
                 cm_perm_dist = []
                 cm_perm_dprime_dist = []
     
-                decoder_perm = Decoder(cats, n_splits=10, n_repeats=1)
+                decoder_perm = Decoder(cats, n_splits=n_split, n_repeats=1)
                 for i in range(num_perm):
                     print(f'runing perm {i} in {num_perm}')
                     labels_shuffle = np.random.permutation(labels)
@@ -189,11 +201,11 @@ for feature_tag in ('lexstus','pho1'):
                     'p_value': p_value
                 }
     
-                filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.pkl')
+                filename = os.path.join(sf_dir, f'{feature_tag}_{elec_grp}_{t_tag}.pkl')
                 with open(filename, 'wb') as f:
                     pickle.dump(data_to_save, f)
             if read_mode:
-                filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.pkl')
+                filename = os.path.join(sf_dir, f'{feature_tag}_{elec_grp}_{t_tag}.pkl')
                 with open(filename, 'rb') as f:
                     ld=pickle.load(f)
                     loaded_data[t_tag][elec_grp] = ld
@@ -212,5 +224,5 @@ for feature_tag in ('lexstus','pho1'):
                     im.set_clim(vmin=0.44, vmax=0.56)
                     plt.title(f'{elec_grp}_{t_tag}')
                     plt.tight_layout()
-                    plt.savefig(os.path.join(sf_dir,f'{elec_grp}_{t_tag}.tif'), dpi=300)
+                    plt.savefig(os.path.join(sf_dir,f'{feature_tag}_{elec_grp}_{t_tag}.tif'), dpi=300)
                     plt.close()
