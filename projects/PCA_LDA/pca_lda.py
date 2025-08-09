@@ -55,6 +55,11 @@ def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
     indices = list(range(start_idx, end_idx))
     return indices
 
+def calculate_acc(conf_matrix_rates: np.ndarray):
+    conf_matrix_rates_np = np.array(conf_matrix_rates)
+    diagonal_array = np.diag(conf_matrix_rates_np)
+    return np.mean(diagonal_array)
+
 def calculate_d_prime(conf_matrix_rates: np.ndarray) -> float:
 
     hit_rate = conf_matrix_rates[0, 0]
@@ -115,88 +120,98 @@ if not is_cluster:
 # %% Select electrodes
 read_mode=False
 run_decoder=True
+debug_mode=True
 loaded_data={}
 task_i=0
-for t_tag,t_range in zip(
-        ('encode','delay'),
-        ([0,mean_word_len+auditory_decay],[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
-):
-    if read_mode:
-        loaded_data[t_tag] = {}
-    for elec_grp,elec_idx in zip(
-            ('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
-            ('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+for feature_tag in ('lexstus','pho1'):
+    for t_tag,t_range in zip(
+            ('encode','delay'),
+            ([0,mean_word_len+auditory_decay],[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
     ):
-        task_i+=1
-        print(f'task_i {task_i}')
-        if is_cluster and task_i!=task_ID:
-            continue
-        else:
-            print(f'Now Doing {t_tag} {elec_grp}')
-        if os.path.exists(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}.npy')):
-            m = LabeledArray.fromfile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
-        elif is_cluster:
-            raise ValueError('Gao shen me a lian ge bian liang dou mei you!')
-        else:
-            m_chs=epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]),axis=1)
-            m=m_chs.take(get_time_indexs(m_chs.labels[2],t_range[0],t_range[1]),axis=2)
-            m.tofile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
-
-        cats, labels = classes_from_labels(m.labels[0], '/', 3,crop=0)
-        if run_decoder:
-            mixup(m,0)
-            # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
-            decoder = Decoder(cats, n_splits=3, n_repeats=500)
-            cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=N_cores)
-            cm_dprime = calculate_d_prime(cm)
-
-            # Shuffle
-            np.random.seed(42)
-            cm_perm_dist = []
-            cm_perm_dprime_dist = []
-
-            decoder_perm = Decoder(cats, n_splits=10, n_repeats=1)
-            for i in range(num_perm):
-                print(f'runing perm {i} in {num_perm}')
-                labels_shuffle = np.random.permutation(labels)
-                cm_perm = decoder_perm.cv_cm(m.__array__().swapaxes(0, 1), labels_shuffle, normalize='true', n_jobs=N_cores)
-                cm_perm_dist.append(cm_perm)
-                cm_perm_dprime_dist.append(calculate_d_prime(cm_perm))
-
-            count_greater_equal = sum(1 for val in cm_perm_dprime_dist if val >= cm_dprime)
-            total_count = len(cm_perm_dprime_dist)
-            p_value = (count_greater_equal / total_count) * 100
-
-            data_to_save = {
-                'cm': cm,
-                'cm_dprime': cm_dprime,
-                'cm_perm_dist': cm_perm_dist,
-                'cm_perm_dprime_dist': cm_perm_dprime_dist,
-                'p_value': p_value
-            }
-
-            filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.pkl')
-            with open(filename, 'wb') as f:
-                pickle.dump(data_to_save, f)
         if read_mode:
-            filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.pkl')
-            with open(filename, 'rb') as f:
-                ld=pickle.load(f)
-                loaded_data[t_tag][elec_grp] = ld
-                org_acc=np.mean([loaded_data[t_tag][elec_grp]['cm'][0,0],loaded_data[t_tag][elec_grp]['cm'][1,1]])
-                cm_perm_dist=loaded_data[t_tag][elec_grp]['cm_perm_dist']
-                perm_accs=[np.mean([cm_perm_dist[i][0,0],cm_perm_dist[i][1,1]]) for i in range(len(cm_perm_dist))]
-                print(loaded_data[t_tag][elec_grp]['cm'])
-                print(f'acc: {org_acc}, p: {sum(org_acc<perm_accs)/len(perm_accs)}')
-                print(f'dprime: {loaded_data[t_tag][elec_grp]['cm_dprime']},p: {loaded_data[t_tag][elec_grp]['p_value']/100}')
+            loaded_data[t_tag] = {}
+        for elec_grp,elec_idx in zip(
+                ('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
+                ('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+        ):
+            if debug_mode and ((feature_tag!='pho1') or (t_tag!='encode') or (elec_grp!='Auditory_delay')):
+                continue
+            task_i+=1
+            print(f'task_i {task_i}')
+            if is_cluster and task_i!=task_ID:
+                continue
+            else:
+                print(f'Now Doing {t_tag} {elec_grp}')
+            if os.path.exists(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{feature_tag}_{t_tag}_{elec_grp}.npy')):
+                m = LabeledArray.fromfile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{feature_tag}_{t_tag}_{elec_grp}'))
+            elif is_cluster:
+                raise ValueError('Gao shen me a lian ge bian liang dou mei you!')
+            else:
+                m_chs=epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]),axis=1)
+                m=m_chs.take(get_time_indexs(m_chs.labels[2],t_range[0],t_range[1]),axis=2)
+                if feature_tag=='lexstus':
+                    cats, labels = classes_from_labels(m.labels[0], '/', 2)
+                elif feature_tag=='pho1':
+                    cats, labels = classes_from_labels(m.labels[0], '/', 3,crop=1)
+                    not_u_trials = np.where(labels!=4)[0].tolist()
+                    m=m.take(not_u_trials,axis=0)
+                    cats, labels = classes_from_labels(m.labels[0], '/', 3,crop=1)
+                mixup(m, 0)
+                m.tofile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{feature_tag}_{t_tag}_{elec_grp}'))
 
-                fig, ax = plt.subplots(figsize=(7,5))
-                plt.rcParams['font.size'] = 20
-                disp = ConfusionMatrixDisplay(confusion_matrix=loaded_data[t_tag][elec_grp]['cm'], display_labels=cats.keys())
-                cm_plot=disp.plot(colorbar=False, ax=ax)
-                im = cm_plot.im_
-                im.set_clim(vmin=0.44, vmax=0.56)
-                plt.title(f'{elec_grp}_{t_tag}')
-                plt.tight_layout()
-                plt.savefig(os.path.join(sf_dir,f'{elec_grp}_{t_tag}.tif'), dpi=300)
-                plt.close()
+            if run_decoder:
+                # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
+                decoder = Decoder(cats, n_splits=10, n_repeats=500)
+                cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=N_cores)
+                cm_dprime = calculate_acc(cm)
+    
+                # Shuffle
+                np.random.seed(42)
+                cm_perm_dist = []
+                cm_perm_dprime_dist = []
+    
+                decoder_perm = Decoder(cats, n_splits=10, n_repeats=1)
+                for i in range(num_perm):
+                    print(f'runing perm {i} in {num_perm}')
+                    labels_shuffle = np.random.permutation(labels)
+                    cm_perm = decoder_perm.cv_cm(m.__array__().swapaxes(0, 1), labels_shuffle, normalize='true', n_jobs=N_cores)
+                    cm_perm_dist.append(cm_perm)
+                    cm_perm_dprime_dist.append(calculate_acc(cm_perm))
+    
+                count_greater_equal = sum(1 for val in cm_perm_dprime_dist if val >= cm_dprime)
+                total_count = len(cm_perm_dprime_dist)
+                p_value = (count_greater_equal / total_count) * 100
+    
+                data_to_save = {
+                    'cm': cm,
+                    'cm_dprime': cm_dprime,
+                    'cm_perm_dist': cm_perm_dist,
+                    'cm_perm_dprime_dist': cm_perm_dprime_dist,
+                    'p_value': p_value
+                }
+    
+                filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.pkl')
+                with open(filename, 'wb') as f:
+                    pickle.dump(data_to_save, f)
+            if read_mode:
+                filename = os.path.join(sf_dir, f'{elec_grp}_{t_tag}.pkl')
+                with open(filename, 'rb') as f:
+                    ld=pickle.load(f)
+                    loaded_data[t_tag][elec_grp] = ld
+                    org_acc=np.mean([loaded_data[t_tag][elec_grp]['cm'][0,0],loaded_data[t_tag][elec_grp]['cm'][1,1]])
+                    cm_perm_dist=loaded_data[t_tag][elec_grp]['cm_perm_dist']
+                    perm_accs=[np.mean([cm_perm_dist[i][0,0],cm_perm_dist[i][1,1]]) for i in range(len(cm_perm_dist))]
+                    print(loaded_data[t_tag][elec_grp]['cm'])
+                    print(f'acc: {org_acc}, p: {sum(org_acc<perm_accs)/len(perm_accs)}')
+                    print(f'dprime: {loaded_data[t_tag][elec_grp]['cm_dprime']},p: {loaded_data[t_tag][elec_grp]['p_value']/100}')
+    
+                    fig, ax = plt.subplots(figsize=(7,5))
+                    plt.rcParams['font.size'] = 20
+                    disp = ConfusionMatrixDisplay(confusion_matrix=loaded_data[t_tag][elec_grp]['cm'], display_labels=cats.keys())
+                    cm_plot=disp.plot(colorbar=False, ax=ax)
+                    im = cm_plot.im_
+                    im.set_clim(vmin=0.44, vmax=0.56)
+                    plt.title(f'{elec_grp}_{t_tag}')
+                    plt.tight_layout()
+                    plt.savefig(os.path.join(sf_dir,f'{elec_grp}_{t_tag}.tif'), dpi=300)
+                    plt.close()
