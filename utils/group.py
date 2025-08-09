@@ -1063,7 +1063,7 @@ def atlas2_hist(label2atlas_raw, chs_sel, col, fig_save_dir_fm, ylim: list=[0,25
     plt.close()
 
 
-def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = None):
+def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = None,y_tag:str='Duration'):
     import matplotlib.pyplot as plt
     import pandas as pd
     import seaborn as sns
@@ -1071,7 +1071,7 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
     stripplot_data = []
     custom_palette = {}
 
-    barplot_data = {'GRP': [], 'Mean_Latency': [], 'SEM_Latency': []}
+    barplot_data = {'GRP': [], 'Mean_Y': [], 'SEM_Y': []}
 
     c = 0
 
@@ -1084,23 +1084,23 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
 
         ele_grp = ele_grps[k]
 
-        if 'latency' not in electrode_latency_df.columns:
+        if y_tag not in electrode_latency_df.columns:
             if electrode_latency_df.shape[1] == 1:
-                electrode_latency_df.columns = ['latency']
+                electrode_latency_df.columns = [y_tag]
             else:
                 raise ValueError("electrode_latency_df must have a 'latency' column or be a single-column DataFrame.")
 
-        valid_latencies = electrode_latency_df['latency'].dropna()
+        valid_latencies = electrode_latency_df[y_tag].dropna()
 
         if not valid_latencies.empty:
             barplot_data['GRP'].append(ele_grp)
-            barplot_data['Mean_Latency'].append(valid_latencies.mean())
-            barplot_data['SEM_Latency'].append(valid_latencies.sem())
+            barplot_data['Mean_Y'].append(valid_latencies.mean())
+            barplot_data['SEM_Y'].append(valid_latencies.sem())
 
-        for i, latency_value in enumerate(electrode_latency_df['latency']):
+        for i, latency_value in enumerate(electrode_latency_df[y_tag]):
             if pd.notna(latency_value):
                 electrode_id = f'Ele_{c}'
-                stripplot_data.append({'GRP': ele_grp, 'Latency': latency_value, 'Electrode': electrode_id})
+                stripplot_data.append({'GRP': ele_grp, y_tag: latency_value, 'Electrode': electrode_id})
                 custom_palette[electrode_id] = electrode_colors[i]
                 c += 1
 
@@ -1111,7 +1111,7 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
     from scipy.stats import f_oneway
 
     # Separate the Latency data by GRP group
-    data_for_anova = [df_stripplot['Latency'][df_stripplot['GRP'] == g] for g in df_stripplot['GRP'].unique()]
+    data_for_anova = [df_stripplot[y_tag][df_stripplot['GRP'] == g] for g in df_stripplot['GRP'].unique()]
 
     # Perform the one-way ANOVA
     f_statistic, p_value = f_oneway(*data_for_anova)
@@ -1123,7 +1123,7 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
     from statsmodels.stats.multicomp import pairwise_tukeyhsd
     # Perform Tukey's HSD post-hoc test
     print("\n\n--- Tukey's HSD Post-Hoc Test Results ---")
-    tukey_result = pairwise_tukeyhsd(endog=df_stripplot['Latency'],
+    tukey_result = pairwise_tukeyhsd(endog=df_stripplot[y_tag],
                                      groups=df_stripplot['GRP'],
                                      alpha=0.05)
 
@@ -1136,8 +1136,8 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
     sns.barplot(
         data=df_barplot,
         x='GRP',
-        y='Mean_Latency',
-        yerr=df_barplot['SEM_Latency'],
+        y='Y',
+        yerr=df_barplot['SEM_Y'],
         capsize=0.1,
         ax=ax,
         order=group_order,
@@ -1149,7 +1149,7 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
         sns.stripplot(
             data=df_stripplot,
             x='GRP',
-            y='Latency',
+            y=y_tag,
             hue='Electrode',
             palette=custom_palette,
             jitter=0.2,
@@ -1162,7 +1162,7 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
             alpha=0.7
         )
 
-    ax.set_ylabel('Latency', fontsize=20)
+    ax.set_ylabel(y_tag, fontsize=20)
     ax.tick_params(axis='y', labelsize=30)
     ax.set_xlabel('')
     current_labels = [label.get_text() for label in ax.get_xticklabels()]

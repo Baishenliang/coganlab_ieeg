@@ -142,11 +142,11 @@ for t_tag,t_range in zip(
             m=m_chs.take(get_time_indexs(m_chs.labels[2],t_range[0],t_range[1]),axis=2)
             m.tofile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
 
-        cats, labels = classes_from_labels(m.labels[0], '/', 2)
+        cats, labels = classes_from_labels(m.labels[0], '/', 3,crop=0)
         if run_decoder:
             mixup(m,0)
             # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
-            decoder = Decoder(cats, n_splits=10, n_repeats=500)
+            decoder = Decoder(cats, n_splits=3, n_repeats=500)
             cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=N_cores)
             cm_dprime = calculate_d_prime(cm)
 

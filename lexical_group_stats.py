@@ -499,9 +499,9 @@ for sig_idx, sig_tag in zip(
     # electrode_colorss.append(electrode_colors)
     ele_grps.append(sig_tag)
 
-elegroup_strip(electrode_activity_length_dfs, ele_grps)
-elegroup_strip(electrode_peak_value_dfs, ele_grps)
-elegroup_strip(electrode_mean_value_dfs, ele_grps)
+elegroup_strip(electrode_activity_length_dfs, ele_grps,'Length of sig clusters')
+# elegroup_strip(electrode_peak_value_dfs, ele_grps)
+# elegroup_strip(electrode_mean_value_dfs, ele_grps)
 
 # %% reassign electrode indices by conditions
 MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
@@ -522,8 +522,8 @@ if groupsTag == "LexDelay":
     len_d=len(data_LexDelay_Aud.labels[0])
 
     for roi_idx,roi_idx_tag in zip(
-            (LexDelay_all_sig_idx,LexDelay_Delay_sig_idx),
-            ('All','Delay')):
+            (LexDelay_Delay_sig_idx,),#LexDelay_all_sig_idx,
+            ('Delay',)):#'All'
 
         for TypeLabel, sig, atlas_hist_ylim,col in zip(
             ('Auditory_all', 'Delay_all', 'Motorprep_noMotor','Motor_noAud'),
