@@ -134,9 +134,9 @@ for feature_tag in ('lexstus','pho1'):
                 ('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
                 ('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
         ):
+            task_i+=1
             if debug_mode and ((feature_tag!='pho1') or (t_tag!='encode') or (elec_grp!='Auditory_delay')):
                 continue
-            task_i+=1
             print(f'task_i {task_i}')
             if is_cluster and task_i!=task_ID:
                 continue
@@ -155,10 +155,9 @@ for feature_tag in ('lexstus','pho1'):
                     cats, labels = classes_from_labels(m.labels[0], '/', 3,crop=1)
                     not_u_trials = np.where(labels!=4)[0].tolist()
                     m=m.take(not_u_trials,axis=0)
-                    cats, labels = classes_from_labels(m.labels[0], '/', 3,crop=1)
                 mixup(m, 0)
                 m.tofile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{feature_tag}_{t_tag}_{elec_grp}'))
-
+            cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=1)
             if run_decoder:
                 # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
                 decoder = Decoder(cats, n_splits=10, n_repeats=500)
