@@ -168,7 +168,7 @@ for feature_tag in ('lexstus','pho1'):
                     n_split=10
                 elif feature_tag=='pho1':
                     cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=0)
-                    n_split=2
+                    n_split=5
                 elif feature_tag=='pho2':
                     cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=1)
                     n_split=10
