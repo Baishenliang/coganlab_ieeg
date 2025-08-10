@@ -7,19 +7,20 @@ library(lmerTest)
 
 file_path <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/PCA_LDA/Auditory_Delay_long.csv"
 long_data <- read.csv(file_path)
+n_perm <- 10
+set.seed(42)
 
 long_data$time <- as.numeric(long_data$time)
-
 time_points <- unique(long_data$time)
 
 # Add pho1
 long_data <- long_data %>% mutate(pho1 = substr(stim, 1, 1))
 
-results_df <- data.frame(
-  time_point = numeric(),
-  estimate = numeric(),
-  p_value = numeric()
-)
+# results_df <- data.frame(
+#   time_point = numeric(),
+#   estimate = numeric(),
+#   p_value = numeric()
+# )
 
 compare_df <- data.frame(
   time_point = numeric(),
@@ -27,11 +28,12 @@ compare_df <- data.frame(
   p_value_comp = numeric()
 )
 
-# perm_compare_df <- data.frame(
-#   time_point = numeric(),
-#   chi_squared_obs = numeric(),
-#   p_value_perm = numeric()
-# )
+perm_compare_df <- data.frame(
+  perm = numeric(),
+  time_point = numeric(),
+  chi_squared_obs = numeric(),
+  p_value_perm = numeric()
+)
 
 for (tp in time_points) {
   cat(paste(tp,'\n'))
@@ -41,16 +43,16 @@ for (tp in time_points) {
   lme_model <- lmer(value ~ pho1 + (1 | subject) + (1 | electrode) + (1 | stim),
                     data = current_data,
                     REML = FALSE)
-  model_summary <- summary(lme_model)
-  pho1_effect_row <- grepl("pho1", rownames(model_summary$coefficients))
-  estimate <- model_summary$coefficients[pho1_effect_row, "Estimate"]
-  p_value <- model_summary$coefficients[pho1_effect_row, "Pr(>|t|)"]
-  
-  results_df <- rbind(results_df, data.frame(
-    time_point = tp,
-    estimate = estimate,
-    p_value = p_value
-  ))
+  # model_summary <- summary(lme_model)
+  # pho1_effect_row <- grepl("pho1", rownames(model_summary$coefficients))
+  # estimate <- model_summary$coefficients[pho1_effect_row, "Estimate"]
+  # p_value <- model_summary$coefficients[pho1_effect_row, "Pr(>|t|)"]
+  # 
+  # results_df <- rbind(results_df, data.frame(
+  #   time_point = tp,
+  #   estimate = estimate,
+  #   p_value = p_value
+  # ))
   
   # Model comparison (to null)
   null_model <- lmer(value ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
@@ -67,13 +69,43 @@ for (tp in time_points) {
   ))
 
   # Permutation
+  for (i_perm in 1:n_perm) {
+    cat(paste(i_perm,' perm in ',n_perm))
+    
+    current_data_perm<-data.frame(
+      value_perm<-sample(current_data$value),
+      fea_perm<-sample(current_data$pho1),
+      subject<-current_data$subject,
+      electrode<-current_data$electrode,
+      stim<-current_data$stim
+    )
+    
+    lme_model_perm <- lmer(value_perm ~ fea_perm + (1 | subject) + (1 | electrode) + (1 | stim),
+                      data = current_data_perm,
+                      REML = FALSE)
+    null_model_perm <- lmer(value_perm ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
+                           data = current_data_perm,
+                           REML = FALSE)
+    model_comparison_perm <- anova(null_model_perm, lme_model_perm)
+    p_value_comp_perm <- model_comparison_perm$`Pr(>Chisq)`[2]
+    observed_chisq_perm  <- model_comparison_perm$Chisq[2]
+    
+    perm_compare_df <- rbind(perm_compare_df, data.frame(
+      perm = i_perm,
+      time_point = tp,
+      chi_squared_obs = observed_chisq_perm,
+      p_value_perm = p_value_comp_perm
+    ))
+  }
   
 }
 
-results_df <- results_df %>% arrange(time_point)
+# results_df <- results_df %>% arrange(time_point)
 compare_df <- compare_df %>% arrange(time_point)
+perm_compare_df <- perm_compare_df %>% arrange(time_point)
 
-print(results_df)
+# print(results_df)
 print(compare_df)
+print(perm_compare_df)
 
 # write.csv(results_df, "lme_results_by_timepoint_from_long.csv", row.names = FALSE)
