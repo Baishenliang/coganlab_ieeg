@@ -241,6 +241,58 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
+def win_to_Rdataframe(data_in,safe_dir,win_len:int=10):
+
+    import pandas as pd
+    from scipy.ndimage import uniform_filter1d
+    from ieeg.arrays.label import LabeledArray
+
+    # Smooth
+    data_in_labels=data_in.labels
+    data_in_array=data_in.__array__()
+    #data_i: eeg data matrix, observations * channels * times
+    data_in_array_smoothed = uniform_filter1d(data_in_array, size=win_len, axis=2, mode='nearest')
+    data_in_smoothed=LabeledArray(data_in_array_smoothed, data_in_labels)
+    print('smoothing completed')
+
+    # To a long format
+    data_dict=data_in_smoothed.to_dict()
+    rows_list = []
+    for event_string, electrodes_dict in data_dict.items():
+        print(f"{event_string} in {len(electrodes_dict)}")
+        event_parts = event_string.split('/')
+        wordness = event_parts[2]
+        stim = event_parts[3]
+
+        for subject_electrode, timepoints_dict in electrodes_dict.items():
+            subject, electrode = subject_electrode.split('-')
+
+            for time_point, value in timepoints_dict.items():
+                row = {
+                    'subject': subject,
+                    'electrode': electrode,
+                    'wordness': wordness,
+                    'stim': stim,
+                    'time_point': time_point,
+                    'value': value
+                }
+                rows_list.append(row)
+    df_long = pd.DataFrame(rows_list)
+    df_long['time_point'] = pd.to_numeric(df_long['time_point'])
+
+    # make it wide
+    df_wide = df_long.pivot(
+        index=['subject', 'electrode', 'wordness', 'stim'],
+        columns='time_point',
+        values='value'
+    )
+    df_wide_reset = df_wide.reset_index()
+    df_wide_reset.columns.name = None
+
+    # save
+    df_long.to_csv(f'{safe_dir}_long.csv', index=False, encoding='utf-8')
+    df_wide_reset.to_csv(f'{safe_dir}_wide.csv', index=False, encoding='utf-8')
+
 def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False,chs_s_all_idx=None,sorted_indices=None,select_electrodes:bool=True):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).

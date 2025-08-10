@@ -1,0 +1,79 @@
+# install.packages("tidyverse")
+# install.packages("lmerTest")
+
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+
+file_path <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/PCA_LDA/Auditory_Delay_long.csv"
+long_data <- read.csv(file_path)
+
+long_data$time <- as.numeric(long_data$time)
+
+time_points <- unique(long_data$time)
+
+# Add pho1
+long_data <- long_data %>% mutate(pho1 = substr(stim, 1, 1))
+
+results_df <- data.frame(
+  time_point = numeric(),
+  estimate = numeric(),
+  p_value = numeric()
+)
+
+compare_df <- data.frame(
+  time_point = numeric(),
+  chi_squared_comp =  numeric(),
+  p_value_comp = numeric()
+)
+
+# perm_compare_df <- data.frame(
+#   time_point = numeric(),
+#   chi_squared_obs = numeric(),
+#   p_value_perm = numeric()
+# )
+
+for (tp in time_points) {
+  cat(paste(tp,'\n'))
+  current_data <- filter(long_data, time == tp)
+  
+  # Modelling
+  lme_model <- lmer(value ~ pho1 + (1 | subject) + (1 | electrode) + (1 | stim),
+                    data = current_data,
+                    REML = FALSE)
+  model_summary <- summary(lme_model)
+  pho1_effect_row <- grepl("pho1", rownames(model_summary$coefficients))
+  estimate <- model_summary$coefficients[pho1_effect_row, "Estimate"]
+  p_value <- model_summary$coefficients[pho1_effect_row, "Pr(>|t|)"]
+  
+  results_df <- rbind(results_df, data.frame(
+    time_point = tp,
+    estimate = estimate,
+    p_value = p_value
+  ))
+  
+  # Model comparison (to null)
+  null_model <- lmer(value ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
+                     data = current_data,
+                     REML = FALSE)
+  model_comparison <- anova(null_model, lme_model)
+  p_value_comp <- model_comparison$`Pr(>Chisq)`[2]
+  observed_chisq  <- model_comparison$Chisq[2]
+  
+  compare_df <- rbind(compare_df, data.frame(
+    time_point = tp,
+    chi_squared_comp =  observed_chisq ,
+    p_value_comp = p_value_comp
+  ))
+
+  # Permutation
+  
+}
+
+results_df <- results_df %>% arrange(time_point)
+compare_df <- compare_df %>% arrange(time_point)
+
+print(results_df)
+print(compare_df)
+
+# write.csv(results_df, "lme_results_by_timepoint_from_long.csv", row.names = FALSE)

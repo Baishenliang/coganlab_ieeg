@@ -118,8 +118,8 @@ if not is_cluster:
 
 
 # %% Select electrodes
-read_mode=False
-run_decoder=True
+read_mode=True
+run_decoder=False
 debug_mode=True
 loaded_data={}
 task_i=0
@@ -161,17 +161,17 @@ for feature_tag in ('lexstus','pho1'):
                     m=m.take(not_small_trials,axis=0)
                 mixup(m, 0)
                 m.tofile(os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{feature_tag}_{t_tag}_{elec_grp}'))
+            if feature_tag=='lexstus':
+                cats, labels = classes_from_labels(m.labels[0], '/', 2)
+                n_split=10
+            elif feature_tag=='pho1':
+                cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=0)
+                n_split=5
+            elif feature_tag=='pho2':
+                cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=1)
+                n_split=10
             if run_decoder:
                 # decoder = Decoder(cats, oversample=True, n_splits=5, n_repeats=100)
-                if feature_tag=='lexstus':
-                    cats, labels = classes_from_labels(m.labels[0], '/', 2)
-                    n_split=10
-                elif feature_tag=='pho1':
-                    cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=0)
-                    n_split=5
-                elif feature_tag=='pho2':
-                    cats, labels = classes_from_labels(m.labels[0], '/', 3, crop=1)
-                    n_split=10
                 decoder = Decoder(cats, n_splits=n_split, n_repeats=500)
                 cm = decoder.cv_cm(m.__array__().swapaxes(0,1), labels, normalize='true',n_jobs=N_cores)
                 cm_dprime = calculate_acc(cm)
