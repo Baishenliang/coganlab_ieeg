@@ -51,7 +51,7 @@ for (tp in time_points) {
   current_data <- filter(long_data, time == tp)
   
   # Modelling
-  lme_model <- lmer(value ~ pho1 + (1 | subject) + (1 | electrode) + (1 | stim),
+  lme_model <- lmer(value ~ wordness + (1 | subject) + (1 | electrode) + (1 | stim),
                     data = current_data,
                     REML = FALSE)
   # model_summary <- summary(lme_model)
@@ -90,7 +90,7 @@ for (tp in time_points) {
     
     current_data_perm <- data.frame(
       value_perm <- current_data$value,
-      fea_perm <- sample(current_data$pho1),
+      fea_perm <- sample(current_data$wordness),
       subject <- current_data$subject,
       electrode <- current_data$electrode,
       stim <- current_data$stim
@@ -131,5 +131,5 @@ perm_compare_df <- perm_compare_df %>% arrange(time_point)
 print(compare_df)
 print(perm_compare_df)
 
-write.csv(compare_df, paste(dirname(file_path),"/Aud_delay_org.csv",sep=''), row.names = FALSE)
-write.csv(perm_compare_df, paste(dirname(file_path),"/Aud_delay_perm.csv",sep=''), row.names = FALSE)
+write.csv(compare_df, paste(dirname(file_path),"/Aud_delay_org_wordness.csv",sep=''), row.names = FALSE)
+write.csv(perm_compare_df, paste(dirname(file_path),"/Aud_delay_perm_wordness.csv",sep=''), row.names = FALSE)

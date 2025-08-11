@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import pandas as pd
 from ieeg.calc.stats import time_cluster
+import matplotlib.pyplot as plt
 
 script_dir = os.path.dirname("D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\PCA_LDA\\lme_encode_timecluster.py")
 current_dir = os.getcwd()
@@ -16,9 +17,13 @@ import glm_utils as glm
 alpha=0.05
 alpha_clus=0.05
 
+#%% Run time cluster
 # Load data
-aud_delay_org = pd.read_csv('Aud_delay_org.csv')
-aud_delay_perm = pd.read_csv('Aud_delay_perm.csv')
+# aud_delay_org = pd.read_csv('Aud_delay_org.csv')
+# aud_delay_perm = pd.read_csv('Aud_delay_perm.csv')
+aud_delay_org = pd.read_csv('Aud_delay_org_wordness.csv')
+aud_delay_perm = pd.read_csv('Aud_delay_perm_wordness.csv')
+
 time_point = aud_delay_org['time_point'].to_numpy()
 r2_i = aud_delay_org['chi_squared_comp'].to_numpy()
 null_r2_i_df = aud_delay_perm.pivot_table(
@@ -44,3 +49,33 @@ mask_null_i=(null_p_i>(1-alpha)).astype(int) # # 2-d time series: n_perm*time (b
 # Time perm cluster
 mask_time_clus = time_cluster(mask_i_org, mask_null_i,1 - alpha_clus)
 
+#%% Plotting
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.plot(time_point, r2_i[0], label='χ² value', color='royalblue', linewidth=2)
+true_indices = np.where(mask_time_clus)[0]
+
+if true_indices.size > 0:
+    split_points = np.where(np.diff(true_indices) != 1)[0] + 1
+    clusters_indices = np.split(true_indices, split_points)
+
+    for i, cluster in enumerate(clusters_indices):
+        start_index = cluster[0]
+        end_index = cluster[-1]
+
+        time_step = time_point[1] - time_point[0]
+        start_time = time_point[start_index] - time_step / 2
+        end_time = time_point[end_index] + time_step / 2
+
+        label = 'Sig. Cluster' if i == 0 else ""
+        ax.axvspan(start_time, end_time, color='gold', alpha=0.4, label=label)
+
+ax.set_title("Encoding of lexical status in Auditory Delay electrodes", fontsize=16)
+ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
+ax.set_ylabel("χ² to baseline model", fontsize=12)
+ax.legend()
+ax.set_xlim(time_point.min(), time_point.max())
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+plt.tight_layout()
+plt.savefig(os.path.join('results', f'Auditory_Delay_multiencode_wordness.tif'), dpi=300)
+plt.close()
