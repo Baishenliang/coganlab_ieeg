@@ -16,16 +16,21 @@ cl <- makeCluster(num_cores - 1)
 registerDoParallel(cl)
 
 #%% Parameters
-n_perm <-500
+n_perm <-100
 set.seed(42)
+feature<-'pho1'
 
 #%% Load files
-file_path <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/PCA_LDA/Auditory_Delay_long.csv"
+file_path <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/lme/data/epoc_LexDelayRep_Aud_delay_Sensorymotor_delay_long.csv"
 long_data <- read.csv(file_path)
 long_data$time <- as.numeric(long_data$time)
 time_points <- unique(long_data$time)
-# Add pho1
-long_data <- long_data %>% mutate(pho1 = substr(stim, 1, 1))
+# Add fea
+if (feature=='pho1'){
+  long_data <- long_data %>% mutate(fea = substr(stim, 1, 1))
+  } else if (feature=='wordness'){
+  long_data$fea=long_data$wordness
+}
 
 # results_df <- data.frame(
 #   time_point = numeric(),
@@ -51,7 +56,7 @@ for (tp in time_points) {
   current_data <- filter(long_data, time == tp)
   
   # Modelling
-  lme_model <- lmer(value ~ wordness + (1 | subject) + (1 | electrode) + (1 | stim),
+  lme_model <- lmer(value ~ fea + (1 | subject) + (1 | electrode) + (1 | stim),
                     data = current_data,
                     REML = FALSE)
   # model_summary <- summary(lme_model)
@@ -90,7 +95,7 @@ for (tp in time_points) {
     
     current_data_perm <- data.frame(
       value_perm <- current_data$value,
-      fea_perm <- sample(current_data$wordness),
+      fea_perm <- sample(current_data$fea),
       subject <- current_data$subject,
       electrode <- current_data$electrode,
       stim <- current_data$stim
@@ -131,5 +136,5 @@ perm_compare_df <- perm_compare_df %>% arrange(time_point)
 print(compare_df)
 print(perm_compare_df)
 
-write.csv(compare_df, paste(dirname(file_path),"/Aud_delay_org_wordness.csv",sep=''), row.names = FALSE)
-write.csv(perm_compare_df, paste(dirname(file_path),"/Aud_delay_perm_wordness.csv",sep=''), row.names = FALSE)
+write.csv(compare_df, paste(dirname(file_path),"/Sensorymotor_delay_delay_org_pho1.csv",sep=''), row.names = FALSE)
+write.csv(perm_compare_df, paste(dirname(file_path),"/Sensorymotor_delay_delay_perm_pho1.csv",sep=''), row.names = FALSE)

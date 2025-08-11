@@ -6,7 +6,7 @@ import pandas as pd
 from ieeg.calc.stats import time_cluster
 import matplotlib.pyplot as plt
 
-script_dir = os.path.dirname("/projects/lme/lme_encode_timecluster.py")
+script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
 current_dir = os.getcwd()
 if current_dir != script_dir:
     os.chdir(script_dir)
@@ -21,8 +21,8 @@ alpha_clus=0.05
 # Load data
 # aud_delay_org = pd.read_csv('Aud_delay_org.csv')
 # aud_delay_perm = pd.read_csv('Aud_delay_perm.csv')
-aud_delay_org = pd.read_csv('../PCA_LDA/Aud_delay_org_wordness.csv')
-aud_delay_perm = pd.read_csv('../PCA_LDA/Aud_delay_perm_wordness.csv')
+aud_delay_org = pd.read_csv('results/Sensorymotor_delay_delay_org_wordness.csv')
+aud_delay_perm = pd.read_csv('results/Sensorymotor_delay_delay_perm_wordness.csv')
 
 time_point = aud_delay_org['time_point'].to_numpy()
 r2_i = aud_delay_org['chi_squared_comp'].to_numpy()
@@ -77,5 +77,5 @@ ax.set_xlim(time_point.min(), time_point.max())
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 plt.tight_layout()
-plt.savefig(os.path.join('../PCA_LDA/results', f'Auditory_Delay_multiencode_wordness.tif'), dpi=300)
+plt.savefig(os.path.join('figs', f'Auditory_Delay_multiencode_wordness.tif'), dpi=300)
 plt.close()
