@@ -131,4 +131,5 @@ perm_compare_df <- perm_compare_df %>% arrange(time_point)
 print(compare_df)
 print(perm_compare_df)
 
-write.csv(compare_df, "Aud_delay_org.csv", row.names = FALSE)
+write.csv(compare_df, paste(dirname(file_path),"/Aud_delay_org.csv",sep=''), row.names = FALSE)
+write.csv(perm_compare_df, paste(dirname(file_path),"/Aud_delay_perm.csv",sep=''), row.names = FALSE)
