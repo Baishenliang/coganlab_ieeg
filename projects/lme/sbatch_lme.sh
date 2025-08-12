@@ -4,6 +4,6 @@
 #SBATCH --mem=20G
 #SBATCH --cpus-per-task=30
 #SBATCH --partition=common,scavenger
-#SBATCH --output=DCC_out/a.out
+#SBATCH --output=DCC_out/%a.out
 module load R
 Rscript lme_encode.R
