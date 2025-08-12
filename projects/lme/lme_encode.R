@@ -172,7 +172,7 @@ for (feature in features) {
     
     cat("Starting modeling \n")
     clusterExport(cl, varlist = c("model_func"))
-    perm_compare_df<-parLapply(cl, data_by_time, run_permutation_for_timepoint)
+    perm_compare_df<-parLapply(cl, data_by_time, model_func)
     stopCluster(cl)
     
     perm_compare_df <- perm_compare_df %>% arrange(time_point)
