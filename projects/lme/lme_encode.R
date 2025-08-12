@@ -30,32 +30,33 @@ if (os_type == "Windows") {
     num_cores <- 10
   }
 }
-  
+
 #%% Get core environment
-cl <- makeCluster(num_cores-1) 
+cl <- makeCluster(num_cores - 1)
 registerDoParallel(cl)
 
 #%% Parameters
-n_perm <-200
+n_perm <- 10
 set.seed(42)
-features<-c('pho1','pho2','pho3','pho4','pho5')
-align_to_onsets<-c('org','pho1')
-post_align_T_threshold<-c(-0.2,1)
+features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
+align_to_onsets <- c('org', 'pho1')
+post_align_T_threshold <- c(-0.2, 1)
 
 #%% Load files
 cat("loading files \n")
-file_path <- paste(home_dir,"data/epoc_LexDelayRep_Aud_full_Auditory_delay_long.csv",sep="")
+file_path <- paste(home_dir,
+                   "data/epoc_LexDelayRep_Aud_full_Auditory_delay_long.csv",
+                   sep = "")
 long_data_org <- read.csv(file_path)
 
 #%% Run computations
 cat("run computations \n")
-a=1
-for (feature in features){
-  for (align_to_onset in align_to_onsets){
-    
+a = 1
+for (feature in features) {
+  for (align_to_onset in align_to_onsets) {
     # slurm task selection
-    a <- a+1
-    if (task_ID>0 && a!=task_ID){
+    a <- a + 1
+    if (task_ID > 0 && a != task_ID) {
       next
     }
     
@@ -72,11 +73,14 @@ for (feature in features){
           align_to_onset == 'pho5' ~ round(time_point - pho_t5, 2),
         )
       ) %>%
-      filter((time_point >= post_align_T_threshold[1]) & (time_point <= post_align_T_threshold[2]))
+      filter((time_point >= post_align_T_threshold[1]) &
+               (time_point <= post_align_T_threshold[2])
+      )
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
     
     # Add fea
+    cat("Adding feature column \n")
     long_data <- long_data %>%
       mutate(
         fea = case_when(
@@ -88,68 +92,54 @@ for (feature in features){
           feature == 'wordness' ~ wordness
         )
       )
-    # results_df <- data.frame(
-    #   time_point = numeric(),
-    #   estimate = numeric(),
-    #   p_value = numeric()
-    # )
     
-    compare_df <- data.frame(
-      time_point = numeric(),
-      chi_squared_comp =  numeric(),
-      p_value_comp = numeric()
-    )
+    if (os_type == "Linux"){
+      rm(long_data_org)
+    }
     
-    perm_compare_df <- data.frame(
-      perm = numeric(),
-      time_point = numeric(),
-      chi_squared_obs = numeric(),
-      p_value_perm = numeric()
-    )
+    cat("Re-formatting long data \n")
+    data_by_time <- split(long_data, long_data$time)
+    rm(long_data)
     
-    for (tp in time_points) {
-      cat(paste(feature,' ',align_to_onset,'aligned ','Processing time point:', tp,'\n'))
-      current_data <- filter(long_data, time == tp)
+    cat("Starting modeling \n")
+    perm_compare_df <- foreach(
+      current_data = data_by_time,
+      .combine = 'rbind',
+      .packages = c('lme4', 'lmerTest', 'dplyr'),
+      .errorhandling = 'pass'
+    ) %dopar% {
+
+      tp <- current_data$time[1]
       
       # Modelling
-      lme_model <- lmer(value ~ fea + (1 | subject) + (1 | electrode) + (1 | stim),
-                        data = current_data,
-                        REML = FALSE)
-      # model_summary <- summary(lme_model)
-      # pho1_effect_row <- grepl("pho1", rownames(model_summary$coefficients))
-      # estimate <- model_summary$coefficients[pho1_effect_row, "Estimate"]
-      # p_value <- model_summary$coefficients[pho1_effect_row, "Pr(>|t|)"]
-      # 
-      # results_df <- rbind(results_df, data.frame(
-      #   time_point = tp,
-      #   estimate = estimate,
-      #   p_value = p_value
-      # ))
+      lme_model <- lmer(
+        value ~ fea + (1 | subject) + (1 | electrode) + (1 | stim),
+        data = current_data,
+        REML = FALSE
+      )
       
       # Model comparison (to null)
-      null_model <- lmer(value ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
-                         data = current_data,
-                         REML = FALSE)
+      null_model <- lmer(
+        value ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
+        data = current_data,
+        REML = FALSE
+      )
       model_comparison <- anova(null_model, lme_model)
       p_value_comp <- model_comparison$`Pr(>Chisq)`[2]
       observed_chisq  <- model_comparison$Chisq[2]
       
-      compare_df <- rbind(compare_df, data.frame(
+      # Write down original model X2
+      perm_compare_df_i <- data.frame(
+        perm = 0,
         time_point = tp,
-        chi_squared_comp =  observed_chisq ,
-        p_value_comp = p_value_comp
-      ))
-    
+        chi_squared_obs = observed_chisq,
+        p_value_perm = p_value_comp
+      )
+      
       # Permutation
       cat('Start perm \n')
-      perm_compare_df_tp <- foreach(
-        i_perm = 1:n_perm,
-        .combine = 'rbind',
-        .packages = c('lme4', 'dplyr'),
-        .export = c('current_data') 
-      ) %dopar% {
-        cat(paste(i_perm, ' perm in ', n_perm, '\n'))
-        
+      for (i_perm in 1:n_perm) {
+
         current_data_perm <- data.frame(
           value_perm <- current_data$value,
           fea_perm <- sample(current_data$fea),
@@ -172,28 +162,23 @@ for (feature in features){
         p_value_comp_perm <- model_comparison_perm$`Pr(>Chisq)`[2]
         observed_chisq_perm  <- model_comparison_perm$Chisq[2]
         
-        return(
-          data.frame(
-            perm = i_perm,
-            time_point = tp,
-            chi_squared_obs = observed_chisq_perm,
-            p_value_perm = p_value_comp_perm
-          )
-        )
       }
-      perm_compare_df<-rbind(perm_compare_df,perm_compare_df_tp)
-      
+      perm_compare_df_i <- rbind(
+        perm_compare_df_i,
+        data.frame(
+          perm = i_perm,
+          time_point = tp,
+          chi_squared_obs = observed_chisq_perm,
+          p_value_perm = p_value_comp_perm
+        )
+      )
+      return(perm_compare_df_i)
     }
     
-    # results_df <- results_df %>% arrange(time_point)
-    compare_df <- compare_df %>% arrange(time_point)
     perm_compare_df <- perm_compare_df %>% arrange(time_point)
     
-    # print(results_df)
-    print(compare_df)
     print(perm_compare_df)
     
-    write.csv(compare_df, paste(home_dir,"results/","Auditory_delay_full_org_",feature,"_",align_to_onset,"aln.csv",sep=''), row.names = FALSE)
-    write.csv(perm_compare_df, paste(home_dir,"results/","Auditory_delay_full_perm_",feature,"_",align_to_onset,"aln.csv",sep=''), row.names = FALSE)
+    write.csv(perm_compare_df,paste(home_dir,"results/","Auditory_delay_full_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
   }
 }
