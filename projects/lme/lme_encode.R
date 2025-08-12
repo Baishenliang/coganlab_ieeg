@@ -98,16 +98,18 @@ model_func <- function(current_data){
     p_value_comp_perm <- model_comparison_perm$`Pr(>Chisq)`[2]
     observed_chisq_perm  <- model_comparison_perm$Chisq[2]
     
-  }
-  perm_compare_df_i <- rbind(
-    perm_compare_df_i,
-    data.frame(
-      perm = i_perm,
-      time_point = tp,
-      chi_squared_obs = observed_chisq_perm,
-      p_value_perm = p_value_comp_perm
+    perm_compare_df_i <- rbind(
+      perm_compare_df_i,
+      data.frame(
+        perm = i_perm,
+        time_point = tp,
+        chi_squared_obs = observed_chisq_perm,
+        p_value_perm = p_value_comp_perm
+      )
     )
-  )
+    
+  }
+
   return(perm_compare_df_i)
 }
 
