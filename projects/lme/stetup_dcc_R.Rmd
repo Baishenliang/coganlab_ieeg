@@ -1,0 +1,37 @@
+---
+title: "Setup_R_DCC"
+author: "Baishen"
+date: "2025-08-12"
+output: html_document
+---
+
+## Intro
+
+Setup R in DCC. See <https://oit-rc.pages.oit.duke.edu/docs/R/RDCC/#background> for details.
+
+```{bash}
+mkdir  ~/lab/bl314/rlib
+module load R
+R
+```
+
+After opening R's environment, run:
+
+```{r}
+options("repos")
+options(repos="https://archive.linux.duke.edu/cran/")
+options("repos")
+install.packages("lme4", lib="~/lab/bl314/rlib")
+install.packages("tidyverse", lib="~/lab/bl314/rlib")
+install.packages("lmerTest", lib="~/lab/bl314/rlib")
+install.packages("foreach", lib="~/lab/bl314/rlib")
+install.packages("doParallel", lib="~/lab/bl314/rlib")
+library(lme4,lib.loc="~/lab/bl314/rlib")
+q()
+```
+
+Test it in bash
+
+```{bash}
+ls ~/lab/bl314/rlib/lme4
+```

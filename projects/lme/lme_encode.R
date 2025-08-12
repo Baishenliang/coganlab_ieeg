@@ -1,29 +1,45 @@
-# install.packages("tidyverse")
-# install.packages("lmerTest")
-# install.packages("foreach")
-# install.packages("doParallel")
+os_type <- Sys.info()['sysname']
 
-library(tidyverse)
-library(lme4)
-library(lmerTest)
-library(parallel)
-library(foreach)
-library(doParallel)
-
+if (os_type == "Windows") {
+  execution_mode <- "WINDOWS_LOCAL"
+  num_cores <- -1
+  library(tidyverse)
+  library(lme4)
+  library(lmerTest)
+  library(parallel)
+  library(foreach)
+  library(doParallel)
+  home_dir <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/lme/"
+} else if (os_type == "Linux")  {
+  if (slurm_job_id != "") {
+    execution_mode <- "HPC_SLURM_JOB"
+    num_cores <- as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", unset = 30))
+  } else{
+    execution_mode <- "LINUX_INTERACTIVE"
+    num_cores <- 30
+  }
+  home_dir <- "~/workspace/lme/"
+  library(tidyverse, lib.loc = "~/lab/bl314/rlib")
+  library(lme4, lib.loc = "~/lab/bl314/rlib")
+  library(lmerTest, lib.loc = "~/lab/bl314/rlib")
+  library(parallel, lib.loc = "~/lab/bl314/rlib")
+  library(foreach, lib.loc = "~/lab/bl314/rlib")
+  library(doParallel, lib.loc = "~/lab/bl314/rlib")
+}
+  
 #%% Get core environment
 num_cores <- detectCores()
 cl <- makeCluster(num_cores - 1) 
 registerDoParallel(cl)
 
 #%% Parameters
-n_perm <-30
+n_perm <-200
 set.seed(42)
-features<-c('pho1','pho3')
-align_to_onsets<-c('pho1','pho3')
+features<-c('pho1','pho2','pho3','pho4','pho5')
+align_to_onsets<-c('org','pho1')
 post_align_T_threshold<-c(-0.2,1)
 
 #%% Load files
-home_dir <-"D:/bsliang_Coganlabcode/coganlab_ieeg/projects/lme/"
 file_path <- paste(home_dir,"data/epoc_LexDelayRep_Aud_full_Auditory_delay_long.csv",sep="")
 long_data_org <- read.csv(file_path)
 
@@ -33,7 +49,7 @@ for (feature in features){
     long_data <- long_data_org %>%
       mutate(
         time_point = case_when(
-          align_to_onset == 'org' ~ time_point - pho_t1,
+          align_to_onset == 'org' ~ time_point,
           align_to_onset == 'pho1' ~ round(time_point - pho_t1, 2),
           align_to_onset == 'pho2' ~ round(time_point - pho_t2, 2),
           align_to_onset == 'pho3' ~ round(time_point - pho_t3, 2),
@@ -110,7 +126,7 @@ for (feature in features){
       ))
     
       # Permutation
-      cat('Start perm')
+      cat('Start perm \n')
       perm_compare_df_tp <- foreach(
         i_perm = 1:n_perm,
         .combine = 'rbind',
@@ -161,7 +177,7 @@ for (feature in features){
     print(compare_df)
     print(perm_compare_df)
     
-    write.csv(compare_df, paste(home_dir,"results","Auditory_delay_full_org_",feature,"_",align_to_onset,"aln.csv",sep=''), row.names = FALSE)
-    write.csv(perm_compare_df, paste(home_dir,"results","Auditory_delay_full_perm",feature,"_",align_to_onset,"3aln.csv",sep=''), row.names = FALSE)
+    write.csv(compare_df, paste(home_dir,"results/","Auditory_delay_full_org_",feature,"_",align_to_onset,"aln.csv",sep=''), row.names = FALSE)
+    write.csv(perm_compare_df, paste(home_dir,"results/","Auditory_delay_full_perm_",feature,"_",align_to_onset,"aln.csv",sep=''), row.names = FALSE)
   }
 }
