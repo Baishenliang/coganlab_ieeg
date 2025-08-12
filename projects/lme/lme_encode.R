@@ -3,8 +3,6 @@ os_type <- Sys.info()['sysname']
 if (os_type == "Windows") {
   execution_mode <- "WINDOWS_LOCAL"
   library(tidyverse)
-  library(lme4)
-  library(lmerTest)
   library(parallel)
   library(foreach)
   library(doParallel)
@@ -13,8 +11,6 @@ if (os_type == "Windows") {
   num_cores <- detectCores()-1
 } else if (os_type == "Linux")  {
   library(tidyverse, lib.loc = "~/lab/bl314/rlib")
-  library(lme4, lib.loc = "~/lab/bl314/rlib")
-  library(lmerTest, lib.loc = "~/lab/bl314/rlib")
   library(parallel, lib.loc = "~/lab/bl314/rlib")
   library(foreach, lib.loc = "~/lab/bl314/rlib")
   library(doParallel, lib.loc = "~/lab/bl314/rlib")
@@ -39,11 +35,11 @@ model_func <- function(current_data){
   if (os_type == "Windows"){
     library(lme4)
     library(lmerTest)
-    library(dplyr)
+    library(tidyverse)
   }else if (os_type == "Linux"){
     library(lme4, lib.loc = "~/lab/bl314/rlib")
     library(lmerTest, lib.loc = "~/lab/bl314/rlib")
-    library(dplyr, lib.loc = "~/lab/bl314/rlib")
+    library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   }
   
   tp <- current_data$time[1]
