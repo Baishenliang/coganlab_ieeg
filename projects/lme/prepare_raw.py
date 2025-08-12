@@ -68,8 +68,8 @@ else:
 # %% Select electrodes
 loaded_data={}
 for t_tag,t_range in zip(
-        ('encode','delay'),
-        ([-0.2,mean_word_len+auditory_decay],[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
+        ('full','encode','delay'),
+        ([-0.2,mean_word_len+auditory_decay+delay_len],[-0.2,mean_word_len+auditory_decay],[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
 ):
     for elec_grp,elec_idx in zip(
             ('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
