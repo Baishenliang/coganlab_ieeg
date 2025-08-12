@@ -75,6 +75,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
+  n_perm <- 10
   for (i_perm in 1:n_perm) {
     
     current_data_perm <- data.frame(
@@ -117,7 +118,6 @@ cl <- makeCluster(num_cores)
 registerDoParallel(cl)
 
 #%% Parameters
-n_perm <- 10
 set.seed(42)
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 align_to_onsets <- c('org', 'pho1')
@@ -131,8 +131,7 @@ file_path <- paste(home_dir,
 long_data_org <- read.csv(file_path)
 
 #%% Run computations
-cat("run computations \n")
-a = 1
+a = 0
 for (feature in features) {
   for (align_to_onset in align_to_onsets) {
     # slurm task selection
