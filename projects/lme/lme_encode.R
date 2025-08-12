@@ -14,10 +14,10 @@ if (os_type == "Windows") {
   slurm_job_id <- Sys.getenv("SLURM_JOB_ID")
   if (slurm_job_id != "") {
     execution_mode <- "HPC_SLURM_JOB"
-    num_cores <- as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", unset = 30))
+    num_cores <- as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", unset = 10))
   } else{
     execution_mode <- "LINUX_INTERACTIVE"
-    num_cores <- 30
+    num_cores <- 10
   }
   home_dir <- "~/workspace/lme/"
   library(tidyverse, lib.loc = "~/lab/bl314/rlib")
@@ -41,10 +41,12 @@ align_to_onsets<-c('org','pho1')
 post_align_T_threshold<-c(-0.2,1)
 
 #%% Load files
+cat("loading files \n")
 file_path <- paste(home_dir,"data/epoc_LexDelayRep_Aud_full_Auditory_delay_long.csv",sep="")
 long_data_org <- read.csv(file_path)
 
 for (feature in features){
+  cat("Re-aligning time points \n")
   for (align_to_onset in align_to_onsets){
     #%% re-align to onsets and get timepoint
     long_data <- long_data_org %>%
@@ -94,7 +96,7 @@ for (feature in features){
     )
     
     for (tp in time_points) {
-      cat(paste('Processing time point:', tp,'\n'))
+      cat(paste(feature,' ',align_to_onset,'aligned ','Processing time point:', tp,'\n'))
       current_data <- filter(long_data, time == tp)
       
       # Modelling
