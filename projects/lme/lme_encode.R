@@ -35,6 +35,7 @@ if (os_type == "Windows") {
 model_func <- function(current_data){
   
   # Loading packages
+  os_type <- Sys.info()['sysname']
   if (os_type == "Windows"){
     library(lme4)
     library(lmerTest)
