@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH -e DCC_out/slurm_%a.err
+#SBATCH -e DCC_out/%a.err
 #SBATCH -a 1-20
-#SBATCH --mem=80G
-#SBATCH --cpus-per-task=20
+#SBATCH --mem=20G
+#SBATCH --cpus-per-task=30
 #SBATCH --partition=common,scavenger
-#SBATCH --output=DCC_out/test%a.out
+#SBATCH --output=DCC_out/a.out
 module load R
 Rscript lme_encode.R

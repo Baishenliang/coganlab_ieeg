@@ -145,7 +145,8 @@ for (feature in features){
       perm_compare_df_tp <- foreach(
         i_perm = 1:n_perm,
         .combine = 'rbind',
-        .packages = c('lme4', 'dplyr')
+        .packages = c('lme4', 'dplyr'),
+        .export = c('current_data') 
       ) %dopar% {
         cat(paste(i_perm, ' perm in ', n_perm, '\n'))
         
