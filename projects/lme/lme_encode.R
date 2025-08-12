@@ -119,8 +119,8 @@ registerDoParallel(cl)
 
 #%% Parameters
 set.seed(42)
-features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 align_to_onsets <- c('org', 'pho1', 'pho2')
+features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
 
 #%% Load files
@@ -132,8 +132,8 @@ long_data_org <- read.csv(file_path)
 
 #%% Run computations
 a = 0
-for (feature in features) {
-  for (align_to_onset in align_to_onsets) {
+for (align_to_onset in align_to_onsets) {
+  for (feature in features) {
     # slurm task selection
     a <- a + 1
     if (task_ID > 0 && a != task_ID) {
