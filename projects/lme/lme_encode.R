@@ -11,6 +11,7 @@ if (os_type == "Windows") {
   library(doParallel)
   home_dir <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/lme/"
 } else if (os_type == "Linux")  {
+  slurm_job_id <- Sys.getenv("SLURM_JOB_ID")
   if (slurm_job_id != "") {
     execution_mode <- "HPC_SLURM_JOB"
     num_cores <- as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", unset = 30))
