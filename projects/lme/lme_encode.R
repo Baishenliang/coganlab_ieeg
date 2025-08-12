@@ -73,7 +73,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 3
+  n_perm <- 100
   for (i_perm in 1:n_perm) {
     
     current_data_perm <- data.frame(
@@ -120,7 +120,7 @@ registerDoParallel(cl)
 #%% Parameters
 set.seed(42)
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
-align_to_onsets <- c('org', 'pho1')
+align_to_onsets <- c('org', 'pho1', 'pho2')
 post_align_T_threshold <- c(-0.2, 1)
 
 #%% Load files
