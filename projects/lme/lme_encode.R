@@ -10,7 +10,7 @@ if (os_type == "Windows") {
   library(doParallel)
   home_dir <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/lme/"
   task_ID <- -1
-  num_cores <- detectCores()
+  num_cores <- detectCores()-1
 } else if (os_type == "Linux")  {
   library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   library(lme4, lib.loc = "~/lab/bl314/rlib")
@@ -31,8 +31,77 @@ if (os_type == "Windows") {
   }
 }
 
+#%% Modeling func
+model_func <- function(current_data){
+  
+  tp <- current_data$time[1]
+  
+  # Modelling
+  lme_model <- lmer(
+    value ~ fea + (1 | subject) + (1 | electrode) + (1 | stim),
+    data = current_data,
+    REML = FALSE
+  )
+  
+  # Model comparison (to null)
+  null_model <- lmer(
+    value ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
+    data = current_data,
+    REML = FALSE
+  )
+  model_comparison <- anova(null_model, lme_model)
+  p_value_comp <- model_comparison$`Pr(>Chisq)`[2]
+  observed_chisq  <- model_comparison$Chisq[2]
+  
+  # Write down original model X2
+  perm_compare_df_i <- data.frame(
+    perm = 0,
+    time_point = tp,
+    chi_squared_obs = observed_chisq,
+    p_value_perm = p_value_comp
+  )
+  
+  # Permutation
+  cat('Start perm \n')
+  for (i_perm in 1:n_perm) {
+    
+    current_data_perm <- data.frame(
+      value_perm <- current_data$value,
+      fea_perm <- sample(current_data$fea),
+      subject <- current_data$subject,
+      electrode <- current_data$electrode,
+      stim <- current_data$stim
+    )
+    
+    lme_model_perm <- lmer(
+      value_perm ~ fea_perm + (1 | subject) + (1 | electrode) + (1 | stim),
+      data = current_data_perm,
+      REML = FALSE
+    )
+    null_model_perm <- lmer(
+      value_perm ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
+      data = current_data_perm,
+      REML = FALSE
+    )
+    model_comparison_perm <- anova(null_model_perm, lme_model_perm)
+    p_value_comp_perm <- model_comparison_perm$`Pr(>Chisq)`[2]
+    observed_chisq_perm  <- model_comparison_perm$Chisq[2]
+    
+  }
+  perm_compare_df_i <- rbind(
+    perm_compare_df_i,
+    data.frame(
+      perm = i_perm,
+      time_point = tp,
+      chi_squared_obs = observed_chisq_perm,
+      p_value_perm = p_value_comp_perm
+    )
+  )
+  return(perm_compare_df_i)
+}
+
 #%% Get core environment
-cl <- makeCluster(num_cores - 1)
+cl <- makeCluster(num_cores)
 registerDoParallel(cl)
 
 #%% Parameters
@@ -102,78 +171,9 @@ for (feature in features) {
     rm(long_data)
     
     cat("Starting modeling \n")
-    perm_compare_df <- foreach(
-      current_data = data_by_time,
-      .combine = 'rbind',
-      .packages = c('lme4', 'lmerTest', 'dplyr'),
-      .errorhandling = 'pass'
-    ) %dopar% {
-
-      tp <- current_data$time[1]
-      
-      # Modelling
-      lme_model <- lmer(
-        value ~ fea + (1 | subject) + (1 | electrode) + (1 | stim),
-        data = current_data,
-        REML = FALSE
-      )
-      
-      # Model comparison (to null)
-      null_model <- lmer(
-        value ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
-        data = current_data,
-        REML = FALSE
-      )
-      model_comparison <- anova(null_model, lme_model)
-      p_value_comp <- model_comparison$`Pr(>Chisq)`[2]
-      observed_chisq  <- model_comparison$Chisq[2]
-      
-      # Write down original model X2
-      perm_compare_df_i <- data.frame(
-        perm = 0,
-        time_point = tp,
-        chi_squared_obs = observed_chisq,
-        p_value_perm = p_value_comp
-      )
-      
-      # Permutation
-      cat('Start perm \n')
-      for (i_perm in 1:n_perm) {
-
-        current_data_perm <- data.frame(
-          value_perm <- current_data$value,
-          fea_perm <- sample(current_data$fea),
-          subject <- current_data$subject,
-          electrode <- current_data$electrode,
-          stim <- current_data$stim
-        )
-        
-        lme_model_perm <- lmer(
-          value_perm ~ fea_perm + (1 | subject) + (1 | electrode) + (1 | stim),
-          data = current_data_perm,
-          REML = FALSE
-        )
-        null_model_perm <- lmer(
-          value_perm ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
-          data = current_data_perm,
-          REML = FALSE
-        )
-        model_comparison_perm <- anova(null_model_perm, lme_model_perm)
-        p_value_comp_perm <- model_comparison_perm$`Pr(>Chisq)`[2]
-        observed_chisq_perm  <- model_comparison_perm$Chisq[2]
-        
-      }
-      perm_compare_df_i <- rbind(
-        perm_compare_df_i,
-        data.frame(
-          perm = i_perm,
-          time_point = tp,
-          chi_squared_obs = observed_chisq_perm,
-          p_value_perm = p_value_comp_perm
-        )
-      )
-      return(perm_compare_df_i)
-    }
+    clusterExport(cl, varlist = c("model_func"))
+    perm_compare_df<-parLapply(cl, data_by_time, run_permutation_for_timepoint)
+    stopCluster(cl)
     
     perm_compare_df <- perm_compare_df %>% arrange(time_point)
     
