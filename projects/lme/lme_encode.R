@@ -4,6 +4,7 @@ if (os_type == "Windows") {
   execution_mode <- "WINDOWS_LOCAL"
   library(tidyverse)
   library(parallel)
+  # library(pbapply)
   library(foreach)
   library(doParallel)
   home_dir <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/lme/"
@@ -12,6 +13,7 @@ if (os_type == "Windows") {
 } else if (os_type == "Linux")  {
   library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   library(parallel, lib.loc = "~/lab/bl314/rlib")
+  # library(pbapply, lib.loc = "~/lab/bl314/rlib")
   library(foreach, lib.loc = "~/lab/bl314/rlib")
   library(doParallel, lib.loc = "~/lab/bl314/rlib")
   slurm_job_id <- Sys.getenv("SLURM_JOB_ID")
@@ -71,7 +73,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 10
+  n_perm <- 3
   for (i_perm in 1:n_perm) {
     
     current_data_perm <- data.frame(
@@ -181,7 +183,7 @@ for (feature in features) {
     clusterExport(cl, varlist = c("model_func"))
     perm_compare_df<-parLapply(cl, data_by_time, model_func)
     stopCluster(cl)
-    
+    perm_compare_df <- do.call(rbind, perm_compare_df)
     perm_compare_df <- perm_compare_df %>% arrange(time_point)
     
     print(perm_compare_df)
