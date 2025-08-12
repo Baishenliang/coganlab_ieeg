@@ -2,7 +2,6 @@ os_type <- Sys.info()['sysname']
 
 if (os_type == "Windows") {
   execution_mode <- "WINDOWS_LOCAL"
-  num_cores <- -1
   library(tidyverse)
   library(lme4)
   library(lmerTest)
@@ -10,27 +9,30 @@ if (os_type == "Windows") {
   library(foreach)
   library(doParallel)
   home_dir <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/lme/"
+  task_ID <- -1
+  num_cores <- detectCores()
 } else if (os_type == "Linux")  {
-  slurm_job_id <- Sys.getenv("SLURM_JOB_ID")
-  if (slurm_job_id != "") {
-    execution_mode <- "HPC_SLURM_JOB"
-    num_cores <- as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", unset = 10))
-  } else{
-    execution_mode <- "LINUX_INTERACTIVE"
-    num_cores <- 10
-  }
-  home_dir <- "~/workspace/lme/"
   library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   library(lme4, lib.loc = "~/lab/bl314/rlib")
   library(lmerTest, lib.loc = "~/lab/bl314/rlib")
   library(parallel, lib.loc = "~/lab/bl314/rlib")
   library(foreach, lib.loc = "~/lab/bl314/rlib")
   library(doParallel, lib.loc = "~/lab/bl314/rlib")
+  slurm_job_id <- Sys.getenv("SLURM_JOB_ID")
+  home_dir <- "~/workspace/lme/"
+  if (slurm_job_id != "") {
+    execution_mode <- "HPC_SLURM_JOB"
+    task_ID <- as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+    num_cores <- as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", unset = 10))
+  } else{
+    execution_mode <- "LINUX_INTERACTIVE"
+    task_ID <- -1
+    num_cores <- 10
+  }
 }
   
 #%% Get core environment
-num_cores <- detectCores()
-cl <- makeCluster(num_cores - 1) 
+cl <- makeCluster(num_cores-1) 
 registerDoParallel(cl)
 
 #%% Parameters
@@ -45,10 +47,20 @@ cat("loading files \n")
 file_path <- paste(home_dir,"data/epoc_LexDelayRep_Aud_full_Auditory_delay_long.csv",sep="")
 long_data_org <- read.csv(file_path)
 
+#%% Run computations
+cat("run computations \n")
+a=1
 for (feature in features){
-  cat("Re-aligning time points \n")
   for (align_to_onset in align_to_onsets){
+    
+    # slurm task selection
+    a <- a+1
+    if (task_ID>0 && a!=task_ID){
+      next
+    }
+    
     #%% re-align to onsets and get timepoint
+    cat("Re-aligning time points \n")
     long_data <- long_data_org %>%
       mutate(
         time_point = case_when(
