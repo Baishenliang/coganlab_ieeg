@@ -34,6 +34,17 @@ if (os_type == "Windows") {
 #%% Modeling func
 model_func <- function(current_data){
   
+  # Loading packages
+  if (os_type == "Windows"){
+    library(lme4)
+    library(lmerTest)
+    library(dplyr)
+  }else if (os_type == "Linux"){
+    library(lme4, lib.loc = "~/lab/bl314/rlib")
+    library(lmerTest, lib.loc = "~/lab/bl314/rlib")
+    library(dplyr, lib.loc = "~/lab/bl314/rlib")
+  }
+  
   tp <- current_data$time[1]
   
   # Modelling
