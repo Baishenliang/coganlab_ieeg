@@ -126,7 +126,7 @@ post_align_T_threshold <- c(-0.2, 1)
 #%% Load files
 cat("loading files \n")
 file_path <- paste(home_dir,
-                   "data/epoc_LexDelayRep_Aud_full_Auditory_delay_long.csv",
+                   "data/epoc_LexDelayRep_Aud_full_Sensorymotor_delay_long.csv",
                    sep = "")
 long_data_org <- read.csv(file_path)
 
@@ -193,6 +193,6 @@ for (align_to_onset in align_to_onsets) {
     
     print(perm_compare_df)
     
-    write.csv(perm_compare_df,paste(home_dir,"results/","Auditory_delay_full_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
+    write.csv(perm_compare_df,paste(home_dir,"results/","Sensorymotor_delay_full_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
   }
 }
