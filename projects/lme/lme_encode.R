@@ -85,12 +85,12 @@ model_func <- function(current_data){
     )
     
     lme_model_perm <- lmer(
-      value_perm ~ fea_perm + (1 | subject) + (1 | electrode) + (1 | stim),
+      value_perm ~ fea_perm + (1 | subject) + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
     null_model_perm <- lmer(
-      value_perm ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
+      value_perm ~ 1 + (1 | subject) + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
@@ -119,14 +119,15 @@ registerDoParallel(cl)
 
 #%% Parameters
 set.seed(42)
-align_to_onsets <- c('pho3', 'pho4', 'pho5')
+elec_grp <- 'Auditory'
+align_to_onsets <- c('pho0', 'pho1', 'pho2')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
 
 #%% Load files
 cat("loading files \n")
 file_path <- paste(home_dir,
-                   "data/epoc_LexDelayRep_Aud_full_Sensorymotor_delay_long.csv",
+                   "data/epoc_LexDelayRep_Aud_full_",elec_grp,"_delay_long.csv",
                    sep = "")
 long_data_org <- read.csv(file_path)
 
@@ -145,7 +146,7 @@ for (align_to_onset in align_to_onsets) {
     long_data <- long_data_org %>%
       mutate(
         time_point = case_when(
-          align_to_onset == 'org' ~ time_point,
+          align_to_onset == 'pho0' ~ time_point,
           align_to_onset == 'pho1' ~ round(time_point - pho_t1, 2),
           align_to_onset == 'pho2' ~ round(time_point - pho_t2, 2),
           align_to_onset == 'pho3' ~ round(time_point - pho_t3, 2),
@@ -193,6 +194,6 @@ for (align_to_onset in align_to_onsets) {
     
     print(perm_compare_df)
     
-    write.csv(perm_compare_df,paste(home_dir,"results/","Sensorymotor_delay_full_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
+    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_delay_full_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
   }
 }
