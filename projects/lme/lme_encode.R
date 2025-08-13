@@ -119,7 +119,7 @@ registerDoParallel(cl)
 
 #%% Parameters
 set.seed(42)
-align_to_onsets <- c('org', 'pho1', 'pho2')
+align_to_onsets <- c('pho3', 'pho4', 'pho5')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
 
@@ -183,6 +183,9 @@ for (align_to_onset in align_to_onsets) {
     
     cat("Starting modeling \n")
     clusterExport(cl, varlist = c("model_func"))
+    # Fot Duke HPC sbatch:
+    # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
+    # 13 tasks can be paralled at once.
     perm_compare_df<-parLapply(cl, data_by_time, model_func)
     stopCluster(cl)
     perm_compare_df <- do.call(rbind, perm_compare_df)
