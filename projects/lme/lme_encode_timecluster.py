@@ -21,24 +21,24 @@ alpha_clus=0.05
 # Load data
 # aud_delay_org = pd.read_csv('Aud_delay_org.csv')
 # aud_delay_perm = pd.read_csv('Aud_delay_perm.csv')
-aud_delay_org = pd.read_csv('results/Auditory_delay_full_org_pho1_pho3aln.csv')
-aud_delay_perm = pd.read_csv('results/Auditory_delay_full_perm_pho1_pho3aln.csv')
+raw = pd.read_csv('results/Auditory_delay_full_pho3_orgaln.csv')
 
-time_point = aud_delay_org['time_point'].to_numpy()
-r2_i = aud_delay_org['chi_squared_comp'].to_numpy()
-null_r2_i_df = aud_delay_perm.pivot_table(
+time_point = np.unique(raw['time_point'].to_numpy())
+r2s_i_df = raw.pivot_table(
     index='perm',
     columns='time_point',
     values='chi_squared_obs'
 )
-null_r2_i = null_r2_i_df.to_numpy()
+r2s_i = r2s_i_df.to_numpy()
 
 # r2_i, 1-d time series of original glm values
 # null_r2_i, 2-d time series of original glm values: n_perm*time
+r2_i=r2s_i[0,:]
+r2_i = np.expand_dims(r2_i, axis=0)
+null_r2_i=r2s_i[1:,:]
+
 
 # Get original mask
-r2_i = np.expand_dims(r2_i, axis=0)
-r2s_i = np.concatenate([r2_i, null_r2_i], axis=0)
 org_p_i = glm.aaron_perm_gt_1d(r2s_i, axis=0)[0] # 1-d time series
 mask_i_org = (org_p_i > (1 - alpha)).astype(int) # 1-d time series (binary)
 
@@ -77,5 +77,5 @@ ax.set_xlim(time_point.min(), time_point.max())
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 plt.tight_layout()
-plt.savefig(os.path.join('figs', f'Auditory_delay_full_pho1_pho3aln.tif'), dpi=300)
+plt.savefig(os.path.join('figs', f'Auditory_delay_full_pho3_orgaln.tif'), dpi=300)
 plt.close()
