@@ -116,16 +116,16 @@ align_to_onsets <- c('pho0')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
 
-#%% Load files
-cat("loading files \n")
-file_path <- paste(home_dir,
-                   "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
-                   sep = "")
-long_data_org <- read.csv(file_path)
-
-#%% Run computations
-a = 0
 for (elec_grp in elec_grps){
+  #%% Load files
+  cat("loading files \n")
+  file_path <- paste(home_dir,
+                     "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
+                     sep = "")
+  long_data_org <- read.csv(file_path)
+  
+  #%% Run computations
+  a = 0
   for (align_to_onset in align_to_onsets) {
     for (feature in features) {
       # slurm task selection
