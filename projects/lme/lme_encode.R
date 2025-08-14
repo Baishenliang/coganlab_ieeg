@@ -48,14 +48,14 @@ model_func <- function(current_data){
   
   # Modelling
   lme_model <- lmer(
-    value ~ fea + (1 | subject) + (1 | electrode),
+    value ~ fea + (1 | electrode/subject),
     data = current_data,
     REML = FALSE
   )
   
   # Model comparison (to null)
   null_model <- lmer(
-    value ~ 1 + (1 | subject) +  (1 | electrode),
+    value ~ 1 + (1 | electrode/subject),
     data = current_data,
     REML = FALSE
   )
@@ -80,12 +80,12 @@ model_func <- function(current_data){
       mutate(fea_perm = sample(fea))
     
     lme_model_perm <- lmer(
-      value ~ fea_perm + (1 | subject) + (1 | electrode),
+      value ~ fea_perm + (1 | electrode/subject),
       data = current_data_perm,
       REML = FALSE
     )
     null_model_perm <- lmer(
-      value ~ 1 + (1 | subject) + (1 | electrode),
+      value ~ 1 + (1 | electrode/subject),
       data = current_data_perm,
       REML = FALSE
     )
@@ -111,7 +111,7 @@ model_func <- function(current_data){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grp <- 'Auditory_delay'
+elec_grps <- c('Auditory_delay','Auditory_all')
 align_to_onsets <- c('pho0')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
@@ -125,72 +125,74 @@ long_data_org <- read.csv(file_path)
 
 #%% Run computations
 a = 0
-for (align_to_onset in align_to_onsets) {
-  for (feature in features) {
-    # slurm task selection
-    a <- a + 1
-    if (task_ID > 0 && a != task_ID) {
-      next
-    }
-    
-    #%% re-align to onsets and get timepoint
-    cat("Re-aligning time points \n")
-    long_data <- long_data_org %>%
-      mutate(
-        time_point = case_when(
-          align_to_onset == 'pho0' ~ time_point,
-          align_to_onset == 'pho1' ~ round(time_point - pho_t1, 2),
-          align_to_onset == 'pho2' ~ round(time_point - pho_t2, 2),
-          align_to_onset == 'pho3' ~ round(time_point - pho_t3, 2),
-          align_to_onset == 'pho4' ~ round(time_point - pho_t4, 2),
-          align_to_onset == 'pho5' ~ round(time_point - pho_t5, 2),
+for (elec_grp in elec_grps){
+  for (align_to_onset in align_to_onsets) {
+    for (feature in features) {
+      # slurm task selection
+      a <- a + 1
+      if (task_ID > 0 && a != task_ID) {
+        next
+      }
+      
+      #%% re-align to onsets and get timepoint
+      cat("Re-aligning time points \n")
+      long_data <- long_data_org %>%
+        mutate(
+          time_point = case_when(
+            align_to_onset == 'pho0' ~ time_point,
+            align_to_onset == 'pho1' ~ round(time_point - pho_t1, 2),
+            align_to_onset == 'pho2' ~ round(time_point - pho_t2, 2),
+            align_to_onset == 'pho3' ~ round(time_point - pho_t3, 2),
+            align_to_onset == 'pho4' ~ round(time_point - pho_t4, 2),
+            align_to_onset == 'pho5' ~ round(time_point - pho_t5, 2),
+          )
+        ) %>%
+        filter((time_point >= post_align_T_threshold[1]) &
+                 (time_point <= post_align_T_threshold[2])
         )
-      ) %>%
-      filter((time_point >= post_align_T_threshold[1]) &
-               (time_point <= post_align_T_threshold[2])
-      )
-    long_data$time <- as.numeric(long_data$time)
-    time_points <- unique(long_data$time)
-    
-    # Add fea
-    cat("Adding feature column \n")
-    long_data <- long_data %>%
-      mutate(
-        fea = case_when(
-          feature == 'pho1'     ~ pho1,
-          feature == 'pho2'     ~ pho2,
-          feature == 'pho3'     ~ pho3,
-          feature == 'pho4'     ~ pho4,
-          feature == 'pho5'     ~ pho5,
-          feature == 'syl1'     ~ paste0(pho1,pho2),
-          feature == 'syl2'     ~ paste0(pho3,pho4,pho5),
-          feature == 'wordness' ~ wordness
+      long_data$time <- as.numeric(long_data$time)
+      time_points <- unique(long_data$time)
+      
+      # Add fea
+      cat("Adding feature column \n")
+      long_data <- long_data %>%
+        mutate(
+          fea = case_when(
+            feature == 'pho1'     ~ pho1,
+            feature == 'pho2'     ~ pho2,
+            feature == 'pho3'     ~ pho3,
+            feature == 'pho4'     ~ pho4,
+            feature == 'pho5'     ~ pho5,
+            feature == 'syl1'     ~ paste0(pho1,pho2),
+            feature == 'syl2'     ~ paste0(pho3,pho4,pho5),
+            feature == 'wordness' ~ wordness
+          )
         )
-      )
-    
-    if (os_type == "Linux"){
-      rm(long_data_org)
+      
+      if (os_type == "Linux"){
+        rm(long_data_org)
+      }
+      
+      cat("Re-formatting long data \n")
+      data_by_time <- split(long_data, long_data$time)
+      rm(long_data)
+      
+      cat("Starting modeling \n")
+      #%% Get core environment
+      cl <- makeCluster(num_cores)
+      registerDoParallel(cl)
+      clusterExport(cl, varlist = c("model_func"))
+      # Fot Duke HPC sbatch:
+      # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
+      # 13 tasks can be paralled at once.
+      perm_compare_df<-parLapply(cl, data_by_time, model_func)
+      stopCluster(cl)
+      perm_compare_df <- do.call(rbind, perm_compare_df)
+      perm_compare_df <- perm_compare_df %>% arrange(time_point)
+      
+      print(perm_compare_df)
+      
+      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
     }
-    
-    cat("Re-formatting long data \n")
-    data_by_time <- split(long_data, long_data$time)
-    rm(long_data)
-    
-    cat("Starting modeling \n")
-    #%% Get core environment
-    cl <- makeCluster(num_cores)
-    registerDoParallel(cl)
-    clusterExport(cl, varlist = c("model_func"))
-    # Fot Duke HPC sbatch:
-    # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
-    # 13 tasks can be paralled at once.
-    perm_compare_df<-parLapply(cl, data_by_time, model_func)
-    stopCluster(cl)
-    perm_compare_df <- do.call(rbind, perm_compare_df)
-    perm_compare_df <- perm_compare_df %>% arrange(time_point)
-    
-    print(perm_compare_df)
-    
-    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
   }
 }
