@@ -119,15 +119,16 @@ registerDoParallel(cl)
 
 #%% Parameters
 set.seed(42)
-elec_grp <- 'Auditory'
-align_to_onsets <- c('pho0', 'pho1', 'pho3')
-features <- c('syl1', 'syl2')
+phase<-'full'
+elec_grp <- 'Auditory_delay'
+align_to_onsets <- c('pho3', 'pho4', 'pho5')
+features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
 
 #%% Load files
 cat("loading files \n")
 file_path <- paste(home_dir,
-                   "data/epoc_LexDelayRep_Aud_full_",elec_grp,"_delay_long.csv",
+                   "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
                    sep = "")
 long_data_org <- read.csv(file_path)
 
@@ -196,6 +197,6 @@ for (align_to_onset in align_to_onsets) {
     
     print(perm_compare_df)
     
-    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_delay_full_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
+    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
   }
 }

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -e DCC_out/%a.err
 #SBATCH -a 1-20
-#SBATCH --mem=60G
+#SBATCH --mem=30G
 #SBATCH --cpus-per-task=30
 #SBATCH --partition=common,scavenger
 #SBATCH --output=DCC_out/%a.out
