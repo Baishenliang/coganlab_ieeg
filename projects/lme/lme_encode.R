@@ -48,14 +48,14 @@ model_func <- function(current_data){
   
   # Modelling
   lme_model <- lmer(
-    value ~ fea + (1+fea | electrode),
+    value ~ fea + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
   
   # Model comparison (to null)
   null_model <- lmer(
-    value ~ 1 +  (1+fea | electrode),
+    value ~ 1 +  (1 | electrode),
     data = current_data,
     REML = FALSE
   )
@@ -80,12 +80,12 @@ model_func <- function(current_data){
       mutate(fea_perm = sample(fea))
     
     lme_model_perm <- lmer(
-      value ~ fea_perm + (1 + fea | electrode),
+      value ~ fea_perm + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
     null_model_perm <- lmer(
-      value ~ 1 + (1 + fea | electrode),
+      value ~ 1 + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
@@ -111,7 +111,7 @@ model_func <- function(current_data){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grp <- 'Auditory_delay'
+elec_grp <- 'Auditory_all'
 align_to_onsets <- c('pho0')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
