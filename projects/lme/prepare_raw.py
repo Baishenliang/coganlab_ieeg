@@ -68,12 +68,12 @@ else:
 # %% Select electrodes
 loaded_data={}
 for t_tag,t_range in zip(
-        ('full','encode','delay'),
-        ([-0.2,mean_word_len+auditory_decay+delay_len],[-0.2,mean_word_len+auditory_decay],[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
+        ('encode','full','delay'),
+        ([-0.2,mean_word_len+auditory_decay],[-0.2,mean_word_len+auditory_decay+delay_len],[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
 ):
     for elec_grp,elec_idx in zip(
-            ('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
-            ('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+            ('Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
+            ('LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
     ):
         print(f'Now Doing {t_tag} {elec_grp}')
         m_chs = epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)

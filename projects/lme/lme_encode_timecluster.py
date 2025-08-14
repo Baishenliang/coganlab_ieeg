@@ -49,10 +49,10 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05):
 #%% Plotting
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
 for pho_tag,pho_pos in zip(('Consonant','Vowel'),([1,3,5],[2,4])):
-    for j in range(3, 5):
+    for j in range(0,2):
         fig, ax = plt.subplots(figsize=(12, 4))
         for i in pho_pos:
-            filename = f"results/Sensorymotor_delay_full_pho{i}_pho{j}aln.csv"
+            filename = f"results/Auditory_delay_full_pho{i}_pho{j}aln.csv"
             time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.05, 0.05)
             ax.plot(time_point, time_series, label=f'pho{i}', color=colors[i-1], linewidth=2)
             true_indices = np.where(mask_time_clus)[0]
@@ -81,5 +81,5 @@ for pho_tag,pho_pos in zip(('Consonant','Vowel'),([1,3,5],[2,4])):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         plt.tight_layout()
-        plt.savefig(os.path.join('figs', f'{pho_tag} Sensorymotor_delay_full_pho{j}aln.tif'), dpi=300)
+        plt.savefig(os.path.join('figs', f'{pho_tag} Auditory_delay_full_pho{j}aln.tif'), dpi=300)
         plt.close()
