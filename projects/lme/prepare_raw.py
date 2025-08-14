@@ -68,8 +68,8 @@ else:
 # %% Select electrodes
 loaded_data={}
 for t_tag,t_range in zip(
-        ('encode','full','delay'),
-        ([-0.2,mean_word_len+auditory_decay],[-0.2,mean_word_len+auditory_decay+delay_len],[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
+        ('full',),
+        ([-0.2,mean_word_len+auditory_decay+delay_len],)
 ):
     for elec_grp,elec_idx in zip(
             ('Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
@@ -79,4 +79,4 @@ for t_tag,t_range in zip(
         m_chs = epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
         m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
         mixup(m, 0)
-        gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'))
+        gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'),win_len=2) #20ms for phoneme responses
