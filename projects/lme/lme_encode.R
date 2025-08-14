@@ -48,14 +48,14 @@ model_func <- function(current_data){
   
   # Modelling
   lme_model <- lmer(
-    value ~ fea + (1 | subject) + (1 | electrode) + (1 | stim),
+    value ~ fea + (1 | subject) + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
   
   # Model comparison (to null)
   null_model <- lmer(
-    value ~ 1 + (1 | subject) + (1 | electrode) + (1 | stim),
+    value ~ 1 + (1 | subject) + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
