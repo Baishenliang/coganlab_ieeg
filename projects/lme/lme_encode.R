@@ -48,14 +48,14 @@ model_func <- function(current_data){
   
   # Modelling
   lme_model <- lmer(
-    value ~ fea + ctr_fea1 + ctr_fea2 + ctr_fea3 + ctr_fea4 + (1 | subject) + (1 | electrode),
+    value ~ fea + (1 | subject) + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
   
   # Model comparison (to null)
   null_model <- lmer(
-    value ~ 1 + ctr_fea1 + ctr_fea2 + ctr_fea3 + ctr_fea4 + (1 | subject) + (1 | electrode),
+    value ~ 1 + (1 | subject) + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
@@ -80,12 +80,12 @@ model_func <- function(current_data){
       mutate(fea_perm = sample(fea))
     
     lme_model_perm <- lmer(
-      value ~ fea_perm + ctr_fea1 + ctr_fea2 + ctr_fea3 + ctr_fea4 + (1 | subject) + (1 | electrode),
+      value ~ fea_perm + (1 | subject) + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
     null_model_perm <- lmer(
-      value ~ 1 + ctr_fea1 + ctr_fea2 + ctr_fea3 + ctr_fea4 + (1 | subject) + (1 | electrode),
+      value ~ 1 + (1 | subject) + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
@@ -112,7 +112,7 @@ model_func <- function(current_data){
 set.seed(42)
 phase<-'full'
 elec_grp <- 'Auditory_delay'
-align_to_onsets <- c('pho0','pho1', 'pho2', 'pho3', 'pho4', 'pho5')
+align_to_onsets <- c('pho0')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
 
@@ -166,43 +166,7 @@ for (align_to_onset in align_to_onsets) {
           feature == 'syl2'     ~ paste0(pho3,pho4,pho5),
           feature == 'wordness' ~ wordness
         )
-      )%>%
-      # For full models, set control phoneme features (not done for syllables yet)
-      mutate(
-        ctr_fea1 = case_when(
-          feature == 'pho1' ~ pho2,
-          feature == 'pho2' ~ pho1,
-          feature == 'pho3' ~ pho1,
-          feature == 'pho4' ~ pho1,
-          feature == 'pho5' ~ pho1
-        ),
-        ctr_fea2 = case_when(
-          feature == 'pho1' ~ pho3,
-          feature == 'pho2' ~ pho3,
-          feature == 'pho3' ~ pho2,
-          feature == 'pho4' ~ pho2,
-          feature == 'pho5' ~ pho2
-        ),
-        ctr_fea3 = case_when(
-          feature == 'pho1' ~ pho4,
-          feature == 'pho2' ~ pho4,
-          feature == 'pho3' ~ pho4,
-          feature == 'pho4' ~ pho3,
-          feature == 'pho5' ~ pho3
-        ),
-        ctr_fea4 = case_when(
-          feature == 'pho1' ~ pho5,
-          feature == 'pho2' ~ pho5,
-          feature == 'pho3' ~ pho5,
-          feature == 'pho4' ~ pho5,
-          feature == 'pho5' ~ pho4
-        )
-      ) %>%
-      # remove all the pho column
-      select(-starts_with("pho"))%>%
-      select(-starts_with("stim"))%>%
-      select(-starts_with("wordness"))
-    
+      )
     
     if (os_type == "Linux"){
       rm(long_data_org)
@@ -227,6 +191,6 @@ for (align_to_onset in align_to_onsets) {
     
     print(perm_compare_df)
     
-    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln_fulllme.csv",sep = ''),row.names = FALSE)
+    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
   }
 }
