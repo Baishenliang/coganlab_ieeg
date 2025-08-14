@@ -120,8 +120,8 @@ registerDoParallel(cl)
 #%% Parameters
 set.seed(42)
 elec_grp <- 'Auditory'
-align_to_onsets <- c('pho0', 'pho1', 'pho2')
-features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
+align_to_onsets <- c('pho0', 'pho1', 'pho3')
+features <- c('syl1', 'syl2')
 post_align_T_threshold <- c(-0.2, 1)
 
 #%% Load files
@@ -170,6 +170,8 @@ for (align_to_onset in align_to_onsets) {
           feature == 'pho3'     ~ pho3,
           feature == 'pho4'     ~ pho4,
           feature == 'pho5'     ~ pho5,
+          feature == 'syl1'     ~ paste0(pho1,pho2),
+          feature == 'syl2'     ~ paste0(pho3,pho4,pho5),
           feature == 'wordness' ~ wordness
         )
       )
