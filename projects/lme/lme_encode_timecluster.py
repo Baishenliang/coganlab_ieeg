@@ -48,13 +48,13 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05):
 
 #%% Plotting
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
-for pho_tag,pho_pos in zip(('Syllable',),([1,2],)):
-    for j in [1,3]:
+for pho_tag,pho_pos in zip(('Consonant','Vowel'),([1,3,5],[2,4])):
+    for j in range(0,6):
         fig, ax = plt.subplots(figsize=(12, 4))
         for i in pho_pos:
-            filename = f"results/Auditory_delay_full_syl{i}_pho{j}aln.csv"
-            time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.05, 0.01)
-            ax.plot(time_point, time_series, label=f'syl{i}', color=colors[i-1], linewidth=2)
+            filename = f"results/Auditory_delay_full_pho{i}_pho{j}aln_fulllme.csv"
+            time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.05, 0.05)
+            ax.plot(time_point, time_series, label=f'pho{i}', color=colors[i-1], linewidth=2)
             true_indices = np.where(mask_time_clus)[0]
             if true_indices.size > 0:
                 split_points = np.where(np.diff(true_indices) != 1)[0] + 1
@@ -71,7 +71,7 @@ for pho_tag,pho_pos in zip(('Syllable',),([1,2],)):
                     label = f'clust{k} of pho{i}'
                     ax.axvspan(start_time, end_time, color=colors[i-1], alpha=0.4, label=label)
         if j>0:
-            ax.set_title(f"{pho_tag} encoding in Auditory Delay electrodes aligned to syl{j} onset", fontsize=16)
+            ax.set_title(f"{pho_tag} encoding in Auditory Delay electrodes aligned to pho{j} onset", fontsize=16)
         else:
             ax.set_title(f"{pho_tag} encoding in Auditory Delay electrodes aligned to stim onset", fontsize=16)
         ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
@@ -81,5 +81,5 @@ for pho_tag,pho_pos in zip(('Syllable',),([1,2],)):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         plt.tight_layout()
-        plt.savefig(os.path.join('figs', f'{pho_tag} Auditory_delay_full_pho{j}aln_syl.tif'), dpi=300)
+        plt.savefig(os.path.join('figs', f'{pho_tag} Auditory_delay_full_pho{j}aln_fulllme.tif'), dpi=300)
         plt.close()
