@@ -115,7 +115,7 @@ elec_grps <- c('Auditory_delay','Auditory_all')
 align_to_onsets <- c('pho0')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
-
+a = 0
 for (elec_grp in elec_grps){
   #%% Load files
   cat("loading files \n")
@@ -125,7 +125,6 @@ for (elec_grp in elec_grps){
   long_data_org <- read.csv(file_path)
   
   #%% Run computations
-  a = 0
   for (align_to_onset in align_to_onsets) {
     for (feature in features) {
       # slurm task selection
