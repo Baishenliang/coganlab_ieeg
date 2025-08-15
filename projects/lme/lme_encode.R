@@ -48,14 +48,14 @@ model_func <- function(current_data){
   
   # Modelling
   lme_model <- lmer(
-    value ~ fea + (1 | electrode/subject),
+    value ~ fea + (1 | electrode),# + (1 | electrode/subject),
     data = current_data,
     REML = FALSE
   )
   
   # Model comparison (to null)
   null_model <- lmer(
-    value ~ 1 + (1 | electrode/subject),
+    value ~ 1 + (1 | electrode),# + (1 | electrode/subject),
     data = current_data,
     REML = FALSE
   )
@@ -80,12 +80,12 @@ model_func <- function(current_data){
       mutate(fea_perm = sample(fea))
     
     lme_model_perm <- lmer(
-      value ~ fea_perm + (1 | electrode/subject),
+      value ~ fea_perm  + (1 | electrode),# + (1 | electrode/subject),
       data = current_data_perm,
       REML = FALSE
     )
     null_model_perm <- lmer(
-      value ~ 1 + (1 | electrode/subject),
+      value ~ 1  + (1 | electrode),# + (1 | electrode/subject),
       data = current_data_perm,
       REML = FALSE
     )
