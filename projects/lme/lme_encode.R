@@ -111,7 +111,7 @@ model_func <- function(current_data){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_delay','Auditory_all')
+elec_grps <- c('Auditory_all')
 align_to_onsets <- c('pho0')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
