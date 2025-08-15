@@ -46,28 +46,28 @@ model_func <- function(current_data){
   
   tp <- current_data$time[1]
   
-  # Modelling
-  lme_model <- lmer(
-    value ~ fea + (1 | electrode/subject),
+  glm_model <- glm(
+    value ~ fea,
     data = current_data,
-    REML = FALSE
+    family = gaussian(link = "identity") # Specify family for linear model
   )
   
-  # Model comparison (to null)
-  null_model <- lmer(
-    value ~ 1 + (1 | electrode/subject),
+  # Null model (intercept-only)
+  null_model <- glm(
+    value ~ 1,
     data = current_data,
-    REML = FALSE
+    family = gaussian(link = "identity")
   )
-  model_comparison <- anova(null_model, lme_model)
-  p_value_comp <- model_comparison$`Pr(>Chisq)`[2]
-  observed_chisq  <- model_comparison$Chisq[2]
+  
+  model_comparison <- anova(null_model, glm_model, test = "F")
+  p_value_comp <- model_comparison$`Pr(>F)`[2]
+  observed_f_stat <- model_comparison$F[2]
   
   # Write down original model X2
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
-    chi_squared_obs = observed_chisq,
+    chi_squared_obs = observed_f_stat,
     p_value_perm = p_value_comp
   )
   
@@ -79,26 +79,28 @@ model_func <- function(current_data){
     current_data_perm <- current_data %>%
       mutate(fea_perm = sample(fea))
     
-    lme_model_perm <- lmer(
-      value ~ fea_perm  + (1 | electrode/subject),
+    glm_model_perm <- glm(
+      value ~ fea_perm,
       data = current_data_perm,
-      REML = FALSE
+      family = gaussian(link = "identity") # Specify family for linear model
     )
-    null_model_perm <- lmer(
-      value ~ 1  + (1 | electrode/subject),
+    
+    null_model_perm <- glm(
+      value ~ 1,
       data = current_data_perm,
-      REML = FALSE
+      family = gaussian(link = "identity")
     )
-    model_comparison_perm <- anova(null_model_perm, lme_model_perm)
-    p_value_comp_perm <- model_comparison_perm$`Pr(>Chisq)`[2]
-    observed_chisq_perm  <- model_comparison_perm$Chisq[2]
+   
+    model_comparison_perm <- anova(null_model_perm, glm_model_perm, test = "F")
+    p_value_comp_perm <- model_comparison_perm$`Pr(>F)`[2]
+    observed_f_stat_perm <- model_comparison_perm$F[2]
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
       data.frame(
         perm = i_perm,
         time_point = tp,
-        chi_squared_obs = observed_chisq_perm,
+        chi_squared_obs = observed_f_stat_perm,
         p_value_perm = p_value_comp_perm
       )
     )
@@ -111,7 +113,7 @@ model_func <- function(current_data){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_all')
+elec_grps <- c('Auditory_all','Auditory_delay')
 align_to_onsets <- c('pho0')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
@@ -191,7 +193,7 @@ for (elec_grp in elec_grps){
       
       print(perm_compare_df)
       
-      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln_nested.csv",sep = ''),row.names = FALSE)
+      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln_glm.csv",sep = ''),row.names = FALSE)
     }
   }
 }
