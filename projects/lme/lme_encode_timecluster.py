@@ -51,15 +51,15 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05):
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
 is_normalize=False
 for elec_grp in ['Auditory_delay','Auditory_all']:
-    for pho_tag,pho_pos in zip(('Phoneme','Consonant','Vowel'),(range(1,6),[1,3,5],[2,4])):
+    for pho_tag,pho_pos in zip(('Phoneme','Consonant','Vowel'),(range(1,2),range(1,2),range(1,2))):
         for j in range(0,1):
             fig, ax = plt.subplots(figsize=(12, 4))
             for i in pho_pos:
-                filename = f"results/{elec_grp}_full_pho{i}_pho{j}aln.csv"
+                filename = f"results/{elec_grp}_full_pho_pho{j}aln.csv"
                 time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.001, 0.002)
                 if is_normalize:
                     time_series = (time_series - np.min(time_series)) / (np.max(time_series) - np.min(time_series))
-                ax.plot(time_point, time_series, label=f'pho{i}', color=colors[i-1], linewidth=2)
+                ax.plot(time_point, time_series, label=f'pho', color=colors[i-1], linewidth=2)
                 true_indices = np.where(mask_time_clus)[0]
                 if true_indices.size > 0:
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
@@ -73,7 +73,7 @@ for elec_grp in ['Auditory_delay','Auditory_all']:
                         start_time = time_point[start_index] - time_step / 2
                         end_time = time_point[end_index] + time_step / 2
 
-                        label = f'clust{k} of pho{i}'
+                        label = f'clust{k} of pho'
                         ax.plot([start_time, end_time], [300-10*(i-1), 300-10*(i-1)],
                                 color=colors[i - 1],alpha=0.4,
                                 linewidth=4,  # Make the line thick like a bar

@@ -176,6 +176,6 @@ for (elec_grp in elec_grps){
     
     print(perm_compare_df)
     
-    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln_.csv",sep = ''),row.names = FALSE)
+    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
   }
 }
