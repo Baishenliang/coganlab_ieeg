@@ -55,7 +55,7 @@ for elec_grp in ['Auditory_delay','Auditory_all']:
         for j in range(0,1):
             fig, ax = plt.subplots(figsize=(12, 4))
             for i in pho_pos:
-                filename = f"results/{elec_grp}_full_pho_pho{j}aln.csv"
+                filename = f"results/{elec_grp}_full_wordness_pho{j}aln.csv"
                 time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.001, 0.002)
                 if is_normalize:
                     time_series = (time_series - np.min(time_series)) / (np.max(time_series) - np.min(time_series))

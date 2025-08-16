@@ -48,7 +48,7 @@ model_func <- function(current_data){
   
   # Modelling
   lme_model <- lmer(
-    value ~ pho1 + pho2 + pho3 + pho4 + pho5 + (1 | electrode),
+    value ~ wordness + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
@@ -73,16 +73,16 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1000
+  n_perm <- 5000
   for (i_perm in 1:n_perm) {
     
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
     
     current_data_perm <- current_data %>%
-      mutate(across(starts_with("pho"), ~ .x[perm_indices]))
+      mutate(wordness = wordness[perm_indices])
     
     lme_model_perm <- lmer(
-      value ~ pho1 + pho2 + pho3 + pho4 + pho5  + (1 | electrode),
+      value ~ wordness  + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
@@ -115,7 +115,7 @@ set.seed(42)
 phase<-'full'
 elec_grps <- c('Auditory_delay')
 align_to_onsets <- c('pho0')
-feature <- c('pho')
+feature <- c('wordness')
 post_align_T_threshold <- c(-0.2, 1.5)
 a = 0
 for (elec_grp in elec_grps){
