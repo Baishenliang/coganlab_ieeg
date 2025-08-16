@@ -73,7 +73,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1000
+  n_perm <- 5000
   for (i_perm in 1:n_perm) {
     
     current_data_perm <- current_data %>%
@@ -111,7 +111,7 @@ model_func <- function(current_data){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_all','Auditory_delay')
+elec_grps <- c('Auditory_delay')
 align_to_onsets <- c('pho0')
 features <- c('pho1', 'pho2', 'pho3', 'pho4', 'pho5')
 post_align_T_threshold <- c(-0.2, 1)
