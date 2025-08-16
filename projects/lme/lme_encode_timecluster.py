@@ -55,8 +55,8 @@ for elec_grp in ['Auditory_delay','Auditory_all']:
         for j in range(0,1):
             fig, ax = plt.subplots(figsize=(12, 4))
             for i in pho_pos:
-                filename = f"results/{elec_grp}_full_pho{i}_pho{j}aln_glm.csv"
-                time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.05, 0.05)
+                filename = f"results/{elec_grp}_full_pho{i}_pho{j}aln.csv"
+                time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.001, 0.002)
                 if is_normalize:
                     time_series = (time_series - np.min(time_series)) / (np.max(time_series) - np.min(time_series))
                 ax.plot(time_point, time_series, label=f'pho{i}', color=colors[i-1], linewidth=2)
@@ -74,7 +74,7 @@ for elec_grp in ['Auditory_delay','Auditory_all']:
                         end_time = time_point[end_index] + time_step / 2
 
                         label = f'clust{k} of pho{i}'
-                        ax.plot([start_time, end_time], [18-(i-1), 18-(i-1)],
+                        ax.plot([start_time, end_time], [300-10*(i-1), 300-10*(i-1)],
                                 color=colors[i - 1],alpha=0.4,
                                 linewidth=4,  # Make the line thick like a bar
                                 solid_capstyle='butt')  # Makes the line ends flat
@@ -89,5 +89,5 @@ for elec_grp in ['Auditory_delay','Auditory_all']:
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             plt.tight_layout()
-            plt.savefig(os.path.join('figs', f'{pho_tag} {elec_grp}_full_pho{j}aln_glm.tif'), dpi=300)
+            plt.savefig(os.path.join('figs', f'{pho_tag} {elec_grp}_full_pho{j}aln.tif'), dpi=300)
             plt.close()
