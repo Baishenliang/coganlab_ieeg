@@ -55,7 +55,7 @@ model_func <- function(current_data){
   
   # Model comparison (to null)
   null_model <- lmer(
-    value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + pho1 + pho2 + pho3 + pho4 + pho5 (1 | electrode),
+    value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + pho1 + pho2 + pho3 + pho4 + pho5 + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
