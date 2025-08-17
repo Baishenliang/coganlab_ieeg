@@ -48,7 +48,7 @@ model_func <- function(current_data){
   
   # Modelling
   lme_model <- lmer(
-    value ~ wordness + (1 | electrode),
+    value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
@@ -73,16 +73,16 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 5000
+  n_perm <- 2
   for (i_perm in 1:n_perm) {
     
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
     
     current_data_perm <- current_data %>%
-      mutate(wordness = wordness[perm_indices])
+      mutate(across(starts_with("pho"), ~ .x[perm_indices]))
     
     lme_model_perm <- lmer(
-      value ~ wordness  + (1 | electrode),
+      value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16  + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
@@ -115,9 +115,29 @@ set.seed(42)
 phase<-'full'
 elec_grps <- c('Auditory_delay')
 align_to_onsets <- c('pho0')
-feature <- c('wordness')
+feature <- c('aco')
 post_align_T_threshold <- c(-0.2, 1.5)
 a = 0
+
+#Load acoustic parameters
+acoust_path <- paste(home_dir,
+                   "data/envelope_feature_dict.csv",
+                   sep = "")
+acoust_fea <- read.csv(acoust_path)
+acoust_fea_T <- acoust_fea %>%
+  mutate(row_id = 1:n()) %>%
+  pivot_longer(
+    cols = -row_id,
+    names_to = "stim",
+    values_to = "aco_value"
+  ) %>%
+  pivot_wider(
+    names_from = row_id,
+    values_from = aco_value,
+    names_prefix = "aco"
+  )
+
+#%% Start looping
 for (elec_grp in elec_grps){
   #%% Load files
   cat("loading files \n")
@@ -125,6 +145,9 @@ for (elec_grp in elec_grps){
                      "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
                      sep = "")
   long_data_org <- read.csv(file_path)
+  
+  #%% append acoustic features
+  long_data_org <- left_join(long_data_org,acoust_fea_T,by='stim')
   
   #%% Run computations
   for (align_to_onset in align_to_onsets) {
