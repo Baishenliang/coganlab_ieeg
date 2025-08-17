@@ -79,7 +79,7 @@ model_func <- function(current_data){
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
     
     current_data_perm <- current_data %>%
-      mutate(across(starts_with("pho"), ~ .x[perm_indices]))
+      mutate(across(starts_with("aco"), ~ .x[perm_indices]))
     
     lme_model_perm <- lmer(
       value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16  + (1 | electrode),
@@ -115,7 +115,7 @@ set.seed(42)
 phase<-'full'
 elec_grps <- c('Auditory_delay')
 align_to_onsets <- c('pho0')
-feature <- c('aco')
+feature <- c('pho_aco')
 post_align_T_threshold <- c(-0.2, 1.5)
 a = 0
 
