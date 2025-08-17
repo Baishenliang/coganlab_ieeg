@@ -45,63 +45,47 @@ model_func <- function(current_data){
   }
   
   tp <- current_data$time[1]
-  
-  # Modelling
-  lme_model <- lmer(
-    value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + pho1 + pho2 + pho3 + pho4 + pho5 + (1 | electrode),
-    data = current_data,
-    REML = FALSE
-  )
-  
-  # Model comparison (to null)
-  null_model <- lmer(
-    value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + (1 | electrode),
-    data = current_data,
-    REML = FALSE
-  )
-  model_comparison <- anova(null_model, lme_model)
-  p_value_comp <- model_comparison$`Pr(>Chisq)`[2]
-  observed_chisq  <- model_comparison$Chisq[2]
-  
-  # Write down original model X2
+
+  # partial glm
+  aco_formula <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:16), collapse = " + ")))
+  model_aco <- lm(aco_formula, data = current_data)
+  current_data$value_res <- residuals(model_aco)
+  pho_formula <- as.formula(paste0("value_res ~ ", paste0(paste0("pho", 1:5), collapse = " + ")))
+  model_pho <- lm(pho_formula, data = current_data)
+  model_pho_summary <- summary(model_pho)
+  r_squared_obs <- model_pho_summary$r.squared
+
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
-    chi_squared_obs = observed_chisq,
-    p_value_perm = p_value_comp
+    chi_squared_obs = r_squared_obs
   )
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1
+  n_perm <- 500
   for (i_perm in 1:n_perm) {
     
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
     
     current_data_perm <- current_data %>%
+      select(everything(), -value_res) %>%
       mutate(across(starts_with("aco") | starts_with("pho"), ~ .x[perm_indices]))
     
-    lme_model_perm <- lmer(
-      value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + pho1 + pho2 + pho3 + pho4 + pho5 + (1 | electrode),
-      data = current_data_perm,
-      REML = FALSE
-    )
-    null_model_perm <- lmer(
-      value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16  + (1 | electrode),
-      data = current_data_perm,
-      REML = FALSE
-    )
-    model_comparison_perm <- anova(null_model_perm, lme_model_perm)
-    p_value_comp_perm <- model_comparison_perm$`Pr(>Chisq)`[2]
-    observed_chisq_perm  <- model_comparison_perm$Chisq[2]
+    aco_formula <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:16), collapse = " + ")))
+    model_aco <- lm(aco_formula, data = current_data_perm)
+    current_data_perm$value_res <- residuals(model_aco)
+    pho_formula <- as.formula(paste0("value_res ~ ", paste0(paste0("pho", 1:5), collapse = " + ")))
+    model_pho <- lm(pho_formula, data = current_data_perm)
+    model_pho_summary <- summary(model_pho)
+    r_squared_obs <- model_pho_summary$r.squared
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
       data.frame(
         perm = i_perm,
         time_point = tp,
-        chi_squared_obs = observed_chisq_perm,
-        p_value_perm = p_value_comp_perm
+        chi_squared_obs = r_squared_obs
       )
     )
     
@@ -113,9 +97,9 @@ model_func <- function(current_data){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_delay')
+elec_grps <- c('Auditory_delay','Sensorymotor_delay','Delay_only','Motor_delay')
 align_to_onsets <- c('pho0')
-feature <- c('pho_aco')
+feature <- c('pho_aco_parglm')
 post_align_T_threshold <- c(-0.2, 1.5)
 a = 0
 
