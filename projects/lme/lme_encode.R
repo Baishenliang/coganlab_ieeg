@@ -48,14 +48,14 @@ model_func <- function(current_data){
   
   # Modelling
   lme_model <- lmer(
-    value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + (1 | electrode),
+    value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + pho1 + pho2 + pho3 + pho4 + pho5 + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
   
   # Model comparison (to null)
   null_model <- lmer(
-    value ~ 1 + (1 | electrode),
+    value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + (1 | electrode),
     data = current_data,
     REML = FALSE
   )
@@ -73,21 +73,21 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 2
+  n_perm <- 10
   for (i_perm in 1:n_perm) {
     
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
     
     current_data_perm <- current_data %>%
-      mutate(across(starts_with("aco"), ~ .x[perm_indices]))
+      mutate(across(starts_with("aco") | starts_with("pho"), ~ .x[perm_indices]))
     
     lme_model_perm <- lmer(
-      value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16  + (1 | electrode),
+      value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16 + pho1 + pho2 + pho3 + pho4 + pho5 + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
     null_model_perm <- lmer(
-      value ~ 1  + (1 | electrode),
+      value ~ aco1 + aco2 + aco3 + aco4 + aco5 + aco6 + aco7 + aco8 + aco9 + aco10 + aco11 + aco12 + aco13 + aco14 + aco15 + aco16  + (1 | electrode),
       data = current_data_perm,
       REML = FALSE
     )
