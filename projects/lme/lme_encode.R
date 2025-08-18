@@ -47,10 +47,10 @@ model_func <- function(current_data){
   tp <- current_data$time[1]
 
   # partial glm
-  aco_formula <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:16), collapse = " + ")))
+  aco_formula <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:16), collapse = " + "), "+", paste0(paste0("pho", 1:5), collapse = " + ")))
   model_aco <- lm(aco_formula, data = current_data)
   current_data$value_res <- residuals(model_aco)
-  pho_formula <- as.formula(paste0("value_res ~ ", paste0(paste0("pho", 1:5), collapse = " + ")))
+  pho_formula <- as.formula("value_res ~  wordness")
   model_pho <- lm(pho_formula, data = current_data)
   model_pho_summary <- summary(model_pho)
   r_squared_obs <- model_pho_summary$r.squared
@@ -70,12 +70,12 @@ model_func <- function(current_data){
     
     current_data_perm <- current_data %>%
       select(everything(), -value_res) %>%
-      mutate(across(starts_with("pho"), ~ .x[perm_indices]))
+      mutate(across(wordness, ~ .x[perm_indices]))
     
-    aco_formula <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:16), collapse = " + ")))
+    aco_formula <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:16), collapse = " + "), "+", paste0(paste0("pho", 1:5), collapse = " + ")))
     model_aco <- lm(aco_formula, data = current_data_perm)
     current_data_perm$value_res <- residuals(model_aco)
-    pho_formula <- as.formula(paste0("value_res ~ ", paste0(paste0("pho", 1:5), collapse = " + ")))
+    pho_formula <- as.formula("value_res ~ wordness")
     model_pho <- lm(pho_formula, data = current_data_perm)
     model_pho_summary <- summary(model_pho)
     r_squared_obs <- model_pho_summary$r.squared
@@ -99,7 +99,7 @@ set.seed(42)
 phase<-'full'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Delay_only','Motor_delay')
 align_to_onsets <- c('pho0')
-feature <- c('pho_aco_parglm_permphoonly')
+feature <- c('lexstus_permlexonly')
 post_align_T_threshold <- c(-0.2, 1.5)
 a = 0
 
