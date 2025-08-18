@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from ieeg.calc.stats import time_cluster
 import matplotlib.pyplot as plt
+from statsmodels.stats.multitest import multipletests
 from pyparsing import alphas
 
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
@@ -15,7 +16,7 @@ sys.path.append(os.path.abspath(os.path.join("..", "GLM")))
 import glm_utils as glm
 
 #%% Run time cluster
-def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05):
+def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster'):
     # Load data
     # aud_delay_org = pd.read_csv('Aud_delay_org.csv')
     # aud_delay_perm = pd.read_csv('Aud_delay_perm.csv')
@@ -42,27 +43,37 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05):
     null_p_i = glm.aaron_perm_gt_1d(null_r2_i, axis=0) # 2-d time series: n_perm*time
     mask_null_i=(null_p_i>(1-alpha)).astype(int) # # 2-d time series: n_perm*time (binary)
 
-    # Time perm cluster
-    mask_time_clus = time_cluster(mask_i_org, mask_null_i,1 - alpha_clus)
+    if mode == 'time_cluster':
+        # Time perm cluster
+        stat_out = time_cluster(mask_i_org, mask_null_i,1 - alpha_clus)
+    elif mode == 'fdr':
+        #fdr
+        stat_out, p_fdr, _, _ = multipletests(1-org_p_i, alpha=alpha_clus, method='fdr_bh')
 
-    return time_point,r2_i[0],mask_time_clus
+    return time_point,r2_i[0],stat_out
+
+
 
 #%% Plotting
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
-is_normalize=True
+is_normalize=False
+mode='fdr'
 for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
     for j in range(0,1):
         fig, ax = plt.subplots(figsize=(12, 4))
-        for i,fea in enumerate(['aco','pho_aco_parglm','lexstus']):
+        i=0
+        for fea,fea_tag in zip(('aco','pho_aco_parglm_permphoonly','lexstus_permlexonly'),
+                                     ('Acoustic','Phonemic(-aco)','Lexical status(-pho&aco)')):
             filename = f"results/{elec_grp}_full_{fea}_pho{j}aln.csv"
-            time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.001, 0.001)
+            time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.002, 0.0001,mode=mode)
             if is_normalize:
-                time_series = (time_series - np.min(time_series)) / (np.max(time_series) - np.min(time_series))
+                time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
                 para_sig_bar = [1,1e-1]
             else:
-                para_sig_bar = [8e-3,1e-3]
+                time_series = time_series - np.mean(time_series[time_point <= 0])
+                para_sig_bar = [5e-3,1e-3]
 
-            ax.plot(time_point, time_series, label=fea, color=colors[i-1], linewidth=2)
+            ax.plot(time_point, time_series, label=fea_tag, color=colors[i-1], linewidth=2)
             true_indices = np.where(mask_time_clus)[0]
             if true_indices.size > 0:
                 split_points = np.where(np.diff(true_indices) != 1)[0] + 1
@@ -81,12 +92,13 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                             color=colors[i - 1],alpha=0.4,
                             linewidth=4,  # Make the line thick like a bar
                             solid_capstyle='butt')  # Makes the line ends flat
+            i+=1
         if j>0:
-            ax.set_title(f"Encoding in {elec_grp} electrodes aligned to pho{j} onset", fontsize=16)
+            ax.set_title(f"{elec_grp} electrodes aligned to pho{j} onset (Partial)", fontsize=16)
         else:
-            ax.set_title(f"Encoding in {elec_grp} electrodes aligned to stim onset", fontsize=16)
+            ax.set_title(f"{elec_grp} electrodes aligned to stim onset (Partial)", fontsize=16)
         ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
-        ax.set_ylabel("X2 to baseline model", fontsize=12)
+        ax.set_ylabel("(Partial) ($R^2$)", fontsize=12)
         ax.legend()
         ax.set_xlim(time_point.min(), time_point.max())
         ax.spines['top'].set_visible(False)
