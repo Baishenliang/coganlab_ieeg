@@ -46,14 +46,10 @@ model_func <- function(current_data){
   
   tp <- current_data$time[1]
 
-  # partial glm
-  aco_formula <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:16), collapse = " + "), "+", paste0(paste0("pho", 1:5), collapse = " + ")))
-  model_aco <- lm(aco_formula, data = current_data)
-  current_data$value_res <- residuals(model_aco)
-  pho_formula <- as.formula("value_res ~  wordness")
-  model_pho <- lm(pho_formula, data = current_data)
-  model_pho_summary <- summary(model_pho)
-  r_squared_obs <- model_pho_summary$r.squared
+  full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:9), collapse = " + "), "+", paste0(paste0("pho", 1:23), collapse = " + "), "+wordness"))
+  full <- lm(full_fml, data = current_data)
+  coeffs <- coef(full)[grep(feature, names(coef(full)))]
+  r_squared_obs <- sum(abs(coeffs)^2)
 
   perm_compare_df_i <- data.frame(
     perm = 0,
@@ -69,16 +65,11 @@ model_func <- function(current_data){
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
     
     current_data_perm <- current_data %>%
-      select(everything(), -value_res) %>%
-      mutate(across(wordness, ~ .x[perm_indices]))
+      mutate(across(starts_with(feature), ~ .x[perm_indices]))
     
-    aco_formula <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:16), collapse = " + "), "+", paste0(paste0("pho", 1:5), collapse = " + ")))
-    model_aco <- lm(aco_formula, data = current_data_perm)
-    current_data_perm$value_res <- residuals(model_aco)
-    pho_formula <- as.formula("value_res ~ wordness")
-    model_pho <- lm(pho_formula, data = current_data_perm)
-    model_pho_summary <- summary(model_pho)
-    r_squared_obs <- model_pho_summary$r.squared
+    full_perm <- lm(full_fml, data = current_data_perm)
+    coeffs_perm <- coef(full_perm)[grep(feature, names(coef(full_perm)))]
+    r_squared_obs <- sum(abs(coeffs_perm)^2)
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
@@ -99,13 +90,13 @@ set.seed(42)
 phase<-'full'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Delay_only','Motor_delay')
 align_to_onsets <- c('pho0')
-feature <- c('lexstus_permlexonly')
+features <- c('aco','pho')
 post_align_T_threshold <- c(-0.2, 1.5)
 a = 0
 
 #Load acoustic parameters
 acoust_path <- paste(home_dir,
-                   "data/envelope_feature_dict.csv",
+                   "data/envelope_feature_dict_pca.csv",
                    sep = "")
 acoust_fea <- read.csv(acoust_path)
 acoust_fea_T <- acoust_fea %>%
@@ -121,68 +112,91 @@ acoust_fea_T <- acoust_fea %>%
     names_prefix = "aco"
   )
 
+#Load phonemic parameters
+pho_path <- paste(home_dir,
+                     "data/phoneme_one_hot_dict_pca.csv",
+                     sep = "")
+pho_fea <- read.csv(pho_path)
+pho_fea_T <- pho_fea %>%
+  mutate(row_id = 1:n()) %>%
+  pivot_longer(
+    cols = -row_id,
+    names_to = "stim",
+    values_to = "pho_value"
+  ) %>%
+  pivot_wider(
+    names_from = row_id,
+    values_from = pho_value,
+    names_prefix = "pho"
+  )
+
 #%% Start looping
 for (elec_grp in elec_grps){
-  #%% Load files
-  cat("loading files \n")
-  file_path <- paste(home_dir,
-                     "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
-                     sep = "")
-  long_data_org <- read.csv(file_path)
-  
-  #%% append acoustic features
-  long_data_org <- left_join(long_data_org,acoust_fea_T,by='stim')
-  
-  #%% Run computations
-  for (align_to_onset in align_to_onsets) {
-    # slurm task selection
-    a <- a + 1
-    if (task_ID > 0 && a != task_ID) {
-      next
-    }
+  for (feature in features){
+    #%% Load files
+    cat("loading files \n")
+    file_path <- paste(home_dir,
+                       "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
+                       sep = "")
+    long_data_org <- read.csv(file_path)
     
-    #%% re-align to onsets and get timepoint
-    cat("Re-aligning time points \n")
-    long_data <- long_data_org %>%
-      mutate(
-        time_point = case_when(
-          align_to_onset == 'pho0' ~ time_point,
-          align_to_onset == 'pho1' ~ round(time_point - pho_t1, 2),
-          align_to_onset == 'pho2' ~ round(time_point - pho_t2, 2),
-          align_to_onset == 'pho3' ~ round(time_point - pho_t3, 2),
-          align_to_onset == 'pho4' ~ round(time_point - pho_t4, 2),
-          align_to_onset == 'pho5' ~ round(time_point - pho_t5, 2),
+    #%% append acoustic features
+    long_data_org <- left_join(long_data_org,acoust_fea_T,by='stim')
+    
+    #%% append pho features
+    long_data_org <- left_join(long_data_org,pho_fea_T,by='stim')
+    
+    #%% Run computations
+    for (align_to_onset in align_to_onsets) {
+      # slurm task selection
+      a <- a + 1
+      if (task_ID > 0 && a != task_ID) {
+        next
+      }
+      
+      #%% re-align to onsets and get timepoint
+      cat("Re-aligning time points \n")
+      long_data <- long_data_org %>%
+        mutate(
+          time_point = case_when(
+            align_to_onset == 'pho0' ~ time_point,
+            align_to_onset == 'pho1' ~ round(time_point - pho_t1, 2),
+            align_to_onset == 'pho2' ~ round(time_point - pho_t2, 2),
+            align_to_onset == 'pho3' ~ round(time_point - pho_t3, 2),
+            align_to_onset == 'pho4' ~ round(time_point - pho_t4, 2),
+            align_to_onset == 'pho5' ~ round(time_point - pho_t5, 2),
+          )
+        ) %>%
+        filter((time_point >= post_align_T_threshold[1]) &
+                 (time_point <= post_align_T_threshold[2])
         )
-      ) %>%
-      filter((time_point >= post_align_T_threshold[1]) &
-               (time_point <= post_align_T_threshold[2])
-      )
-    long_data$time <- as.numeric(long_data$time)
-    time_points <- unique(long_data$time)
-    
-    if (os_type == "Linux"){
-      rm(long_data_org)
+      long_data$time <- as.numeric(long_data$time)
+      time_points <- unique(long_data$time)
+      
+      if (os_type == "Linux"){
+        rm(long_data_org)
+      }
+      
+      cat("Re-formatting long data \n")
+      data_by_time <- split(long_data, long_data$time)
+      rm(long_data)
+      
+      cat("Starting modeling \n")
+      #%% Get core environment
+      cl <- makeCluster(num_cores)
+      registerDoParallel(cl)
+      clusterExport(cl, varlist = c("model_func"))
+      # Fot Duke HPC sbatch:
+      # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
+      # 13 tasks can be paralled at once.
+      perm_compare_df<-parLapply(cl, data_by_time, model_func)
+      stopCluster(cl)
+      perm_compare_df <- do.call(rbind, perm_compare_df)
+      perm_compare_df <- perm_compare_df %>% arrange(time_point)
+      
+      print(perm_compare_df)
+      
+      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
     }
-    
-    cat("Re-formatting long data \n")
-    data_by_time <- split(long_data, long_data$time)
-    rm(long_data)
-    
-    cat("Starting modeling \n")
-    #%% Get core environment
-    cl <- makeCluster(num_cores)
-    registerDoParallel(cl)
-    clusterExport(cl, varlist = c("model_func"))
-    # Fot Duke HPC sbatch:
-    # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
-    # 13 tasks can be paralled at once.
-    perm_compare_df<-parLapply(cl, data_by_time, model_func)
-    stopCluster(cl)
-    perm_compare_df <- do.call(rbind, perm_compare_df)
-    perm_compare_df <- perm_compare_df %>% arrange(time_point)
-    
-    print(perm_compare_df)
-    
-    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
   }
 }
