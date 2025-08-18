@@ -241,7 +241,7 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def win_to_Rdataframe(data_in,safe_dir,win_len:int=10):
+def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False):
 
     import pandas as pd
     import os
@@ -280,24 +280,34 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10):
             subject, electrode = subject_electrode.split('-')
 
             for time_point, value in timepoints_dict.items():
-                row = {
-                    'subject': subject,
-                    'electrode': electrode,
-                    'wordness': wordness,
-                    'stim': stim,
-                    'pho1': stim_pho_dict[stim][0],
-                    'pho2': stim_pho_dict[stim][1],
-                    'pho3': stim_pho_dict[stim][2],
-                    'pho4': stim_pho_dict[stim][3],
-                    'pho5': stim_pho_dict[stim][4],
-                    'pho_t1': stim_pho_t_dict[stim][0],
-                    'pho_t2': stim_pho_t_dict[stim][1],
-                    'pho_t3': stim_pho_t_dict[stim][2],
-                    'pho_t4': stim_pho_t_dict[stim][3],
-                    'pho_t5': stim_pho_t_dict[stim][4],
-                    'time_point': time_point,
-                    'value': value
-                }
+                if append_pho:
+                    row = {
+                        'subject': subject,
+                        'electrode': electrode,
+                        'wordness': wordness,
+                        'stim': stim,
+                        'pho1': stim_pho_dict[stim][0],
+                        'pho2': stim_pho_dict[stim][1],
+                        'pho3': stim_pho_dict[stim][2],
+                        'pho4': stim_pho_dict[stim][3],
+                        'pho5': stim_pho_dict[stim][4],
+                        'pho_t1': stim_pho_t_dict[stim][0],
+                        'pho_t2': stim_pho_t_dict[stim][1],
+                        'pho_t3': stim_pho_t_dict[stim][2],
+                        'pho_t4': stim_pho_t_dict[stim][3],
+                        'pho_t5': stim_pho_t_dict[stim][4],
+                        'time_point': time_point,
+                        'value': value
+                    }
+                else:
+                    row = {
+                        'subject': subject,
+                        'electrode': electrode,
+                        'wordness': wordness,
+                        'stim': stim,
+                        'time_point': time_point,
+                        'value': value
+                    }
                 rows_list.append(row)
     df_long = pd.DataFrame(rows_list)
     df_long['time_point'] = pd.to_numeric(df_long['time_point'])
