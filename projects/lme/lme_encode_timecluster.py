@@ -56,53 +56,49 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:s
 
 #%% Plotting
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
-is_normalize=False
+is_normalize=True
 mode='fdr'
 for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
-    for j in range(0,1):
-        fig, ax = plt.subplots(figsize=(12, 4))
-        i=0
-        for fea,fea_tag in zip(('aco','pho_aco_parglm_permphoonly','lexstus_permlexonly'),
-                                     ('Acoustic','Phonemic(-aco)','Lexical status(-pho&aco)')):
-            filename = f"results/{elec_grp}_full_{fea}_pho{j}aln.csv"
-            time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.002, 0.0001,mode=mode)
-            if is_normalize:
-                time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
-                para_sig_bar = [1,1e-1]
-            else:
-                time_series = time_series - np.mean(time_series[time_point <= 0])
-                para_sig_bar = [5e-3,1e-3]
-
-            ax.plot(time_point, time_series, label=fea_tag, color=colors[i-1], linewidth=2)
-            true_indices = np.where(mask_time_clus)[0]
-            if true_indices.size > 0:
-                split_points = np.where(np.diff(true_indices) != 1)[0] + 1
-                clusters_indices = np.split(true_indices, split_points)
-
-                for k, cluster in enumerate(clusters_indices):
-                    start_index = cluster[0]
-                    end_index = cluster[-1]
-
-                    time_step = time_point[1] - time_point[0]
-                    start_time = time_point[start_index] - time_step / 2
-                    end_time = time_point[end_index] + time_step / 2
-
-                    label = f'clust{k} of pho'
-                    ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(i-1),para_sig_bar[0]-para_sig_bar[1]*(i-1)],
-                            color=colors[i - 1],alpha=0.4,
-                            linewidth=4,  # Make the line thick like a bar
-                            solid_capstyle='butt')  # Makes the line ends flat
-            i+=1
-        if j>0:
-            ax.set_title(f"{elec_grp} electrodes aligned to pho{j} onset (Partial)", fontsize=16)
+    fig, ax = plt.subplots(figsize=(12, 4))
+    i=0
+    for fea,fea_tag in zip(('aco','pho'),
+                                 ('Acoustic','Phonemic(-aco)')):
+        filename = f"results/{elec_grp}_full_{fea}.csv"
+        time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.002, 0.0005,mode=mode)
+        if is_normalize:
+            time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
+            para_sig_bar = [1,1e-1]
         else:
-            ax.set_title(f"{elec_grp} electrodes aligned to stim onset (Partial)", fontsize=16)
-        ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
-        ax.set_ylabel("(Partial) ($R^2$)", fontsize=12)
-        ax.legend()
-        ax.set_xlim(time_point.min(), time_point.max())
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        plt.tight_layout()
-        plt.savefig(os.path.join('figs', f'{elec_grp}_full_pho{j}aln.tif'), dpi=300)
-        plt.close()
+            time_series = time_series - np.mean(time_series[time_point <= 0])
+            para_sig_bar = [5e-3,1e-3]
+
+        ax.plot(time_point, time_series, label=fea_tag, color=colors[i-1], linewidth=2)
+        true_indices = np.where(mask_time_clus)[0]
+        if true_indices.size > 0:
+            split_points = np.where(np.diff(true_indices) != 1)[0] + 1
+            clusters_indices = np.split(true_indices, split_points)
+
+            for k, cluster in enumerate(clusters_indices):
+                start_index = cluster[0]
+                end_index = cluster[-1]
+
+                time_step = time_point[1] - time_point[0]
+                start_time = time_point[start_index] - time_step / 2
+                end_time = time_point[end_index] + time_step / 2
+
+                label = f'clust{k} of pho'
+                ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(i-1),para_sig_bar[0]-para_sig_bar[1]*(i-1)],
+                        color=colors[i - 1],alpha=0.4,
+                        linewidth=4,  # Make the line thick like a bar
+                        solid_capstyle='butt')  # Makes the line ends flat
+        i+=1
+    ax.set_title(f"{elec_grp} electrodes aligned to stim onset (Partial)", fontsize=16)
+    ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
+    ax.set_ylabel("(Partial) ($R^2$)", fontsize=12)
+    ax.legend()
+    ax.set_xlim(time_point.min(), time_point.max())
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join('figs', f'{elec_grp}_full.tif'), dpi=300)
+    plt.close()
