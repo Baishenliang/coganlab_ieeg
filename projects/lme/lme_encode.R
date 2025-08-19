@@ -45,11 +45,14 @@ model_func <- function(current_data,feature){
   }
   
   tp <- current_data$time[1]
-
-  full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:2), collapse = " + "), "+", paste0(paste0("mix", 1:6), collapse = " + "), "+", paste0(paste0("pho", 1:9), collapse = " + "), "+wordness"))
-  full <- lm(full_fml, data = current_data)
-  coeffs <- coef(full)[grep(feature, names(coef(full)))]
-  r_squared_obs <- mean(abs(coeffs))
+  if (feature=='aco'){
+    fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:2), collapse = " + ")))
+  }
+ else if (feature=='pho'){
+    fml <- as.formula(paste0("value ~ ", paste0(paste0("pho", 1:9), collapse = " + ")))
+  }
+  m <- lm(fml, data = current_data)
+  r_squared_obs <- summary(m)$r.squared
 
   perm_compare_df_i <- data.frame(
     perm = 0,
@@ -67,9 +70,8 @@ model_func <- function(current_data,feature){
     current_data_perm <- current_data %>%
       mutate(across(starts_with(feature), ~ .x[perm_indices]))
     
-    full_perm <- lm(full_fml, data = current_data_perm)
-    coeffs_perm <- coef(full_perm)[grep(feature, names(coef(full_perm)))]
-    r_squared_obs <- mean(abs(coeffs_perm))
+    m_perm <- lm(fml, data = current_data_perm)
+    r_squared_obs <- summary(m_perm)$r.squared
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
@@ -88,7 +90,7 @@ model_func <- function(current_data,feature){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_all',"Auditory_delay")#,'Sensorymotor_delay')#,'Delay_only','Motor_delay')
+elec_grps <- c('Auditory_all')#,'Sensorymotor_delay')#,'Delay_only','Motor_delay')
 features <- c('aco','pho')
 post_align_T_threshold <- c(-0.5, 0.6)
 a = 0

@@ -57,9 +57,9 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:s
 #%% Plotting
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-is_normalize=False
+is_normalize=True
 mode='time_cluster'
-for elec_grp in ['Auditory_all','Auditory_delay']:
+for elec_grp in ['Auditory_all']:
     fig, ax = plt.subplots(figsize=(12, 4))
     i=0
     for fea,fea_tag in zip(('aco','pho'),
