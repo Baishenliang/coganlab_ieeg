@@ -30,7 +30,7 @@ if (os_type == "Windows") {
 }
 
 #%% Modeling func
-model_func <- function(current_data){
+model_func <- function(current_data,feature){
   
   # Loading packages
   os_type <- Sys.info()['sysname']
@@ -49,7 +49,7 @@ model_func <- function(current_data){
   full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:9), collapse = " + "), "+", paste0(paste0("pho", 1:23), collapse = " + "), "+wordness"))
   full <- lm(full_fml, data = current_data)
   coeffs <- coef(full)[grep(feature, names(coef(full)))]
-  r_squared_obs <- sum(abs(coeffs)^2)
+  r_squared_obs <- sum(abs(coeffs))
 
   perm_compare_df_i <- data.frame(
     perm = 0,
@@ -69,7 +69,7 @@ model_func <- function(current_data){
     
     full_perm <- lm(full_fml, data = current_data_perm)
     coeffs_perm <- coef(full_perm)[grep(feature, names(coef(full_perm)))]
-    r_squared_obs <- sum(abs(coeffs_perm)^2)
+    r_squared_obs <- sum(abs(coeffs_perm))
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
@@ -138,13 +138,13 @@ for (elec_grp in elec_grps){
     file_path <- paste(home_dir,
                        "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
                        sep = "")
-    long_data_org <- read.csv(file_path)
+    long_data <- read.csv(file_path)
     
     #%% append acoustic features
-    long_data_org <- left_join(long_data_org,acoust_fea_T,by='stim')
+    long_data <- left_join(long_data,acoust_fea_T,by='stim')
     
     #%% append pho features
-    long_data_org <- left_join(long_data_org,pho_fea_T,by='stim')
+    long_data <- left_join(long_data,pho_fea_T,by='stim')
     
     #%% Run computations
     for (align_to_onset in align_to_onsets) {
@@ -154,28 +154,8 @@ for (elec_grp in elec_grps){
         next
       }
       
-      #%% re-align to onsets and get timepoint
-      cat("Re-aligning time points \n")
-      long_data <- long_data_org %>%
-        mutate(
-          time_point = case_when(
-            align_to_onset == 'pho0' ~ time_point,
-            align_to_onset == 'pho1' ~ round(time_point - pho_t1, 2),
-            align_to_onset == 'pho2' ~ round(time_point - pho_t2, 2),
-            align_to_onset == 'pho3' ~ round(time_point - pho_t3, 2),
-            align_to_onset == 'pho4' ~ round(time_point - pho_t4, 2),
-            align_to_onset == 'pho5' ~ round(time_point - pho_t5, 2),
-          )
-        ) %>%
-        filter((time_point >= post_align_T_threshold[1]) &
-                 (time_point <= post_align_T_threshold[2])
-        )
       long_data$time <- as.numeric(long_data$time)
       time_points <- unique(long_data$time)
-      
-      if (os_type == "Linux"){
-        rm(long_data_org)
-      }
       
       cat("Re-formatting long data \n")
       data_by_time <- split(long_data, long_data$time)
@@ -189,7 +169,7 @@ for (elec_grp in elec_grps){
       # Fot Duke HPC sbatch:
       # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
       # 13 tasks can be paralled at once.
-      perm_compare_df<-parLapply(cl, data_by_time, model_func)
+      perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
       stopCluster(cl)
       perm_compare_df <- do.call(rbind, perm_compare_df)
       perm_compare_df <- perm_compare_df %>% arrange(time_point)
