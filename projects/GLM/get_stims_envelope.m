@@ -5,9 +5,14 @@ addpath(genpath('../../../MatlabToolbox'))
 
 clc; clear; close all;
 
+% Set window (now for pho1)
+sel_win=[0, 0.13];
+win_tag='pho1';
+
 % Set the data path
 data_path = 'C:\Users\bl314\Box\CoganLab\task_stimuli\LexicalDecRepDelay';
-output_file = 'envelope_power_bins.txt';
+% output_file = 'envelope_power_bins.txt';
+output_file = ['envelope_power_bins_',win_tag,'.txt'];
 
 % Get all WAV files
 wav_files = dir(fullfile(data_path, '*.wav'));
@@ -43,6 +48,9 @@ for i = 1:num_files
     if size(audio, 2) > 1
         audio = mean(audio, 2);
     end
+
+    % Window the data for analysis
+    audio = audio(round(sel_win(1)*fs)+1:round(sel_win(2)*fs),1);
 
     % Compute envelope power for each frequency band
     [~,env,~] = gammatoneFast(audio'/std(audio),cfs,fs);

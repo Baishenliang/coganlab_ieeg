@@ -46,7 +46,7 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
 
-  full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:20), collapse = " + "), "+", paste0(paste0("pho", 1:7), collapse = " + "), "+wordness"))
+  full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:7), collapse = " + "), "+", paste0(paste0("pho", 1:10), collapse = " + "), "+wordness"))
   full <- lm(full_fml, data = current_data)
   coeffs <- coef(full)[grep(feature, names(coef(full)))]
   r_squared_obs <- mean(abs(coeffs))
@@ -95,7 +95,7 @@ a = 0
 
 #Load acoustic parameters
 acopho_path <- paste(home_dir,
-                   "data/aco_pho_dict_pca.csv",
+                   "data/pho1_aco_pho_dict_pca.csv",
                    sep = "")
 acopho_fea <- read.csv(acopho_path,row.names = 1)
 
