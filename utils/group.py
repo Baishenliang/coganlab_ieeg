@@ -263,7 +263,10 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False):
     data_in_labels=data_in.labels
     data_in_array=data_in.__array__()
     #data_i: eeg data matrix, observations * channels * times
-    data_in_array_smoothed = uniform_filter1d(data_in_array, size=win_len, axis=2, mode='nearest',origin=(win_len - 1) // 2)
+    if win_len>0:
+        data_in_array_smoothed = uniform_filter1d(data_in_array, size=win_len, axis=2, mode='nearest',origin=(win_len - 1) // 2)
+    else:
+        data_in_array_smoothed=data_in_array
     data_in_smoothed=LabeledArray(data_in_array_smoothed, data_in_labels)
     print('smoothing completed')
 
