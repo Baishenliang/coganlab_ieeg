@@ -89,7 +89,6 @@ model_func <- function(current_data,feature){
 set.seed(42)
 phase<-'full'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Delay_only','Motor_delay')
-align_to_onsets <- c('pho0')
 features <- c('aco','pho')
 post_align_T_threshold <- c(-0.2, 1.5)
 a = 0
