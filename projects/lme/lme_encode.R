@@ -107,6 +107,11 @@ acopho_fea_T <- acopho_fea_T[, c("stim", setdiff(names(acopho_fea_T), "stim"))]
 #%% Start looping
 for (elec_grp in elec_grps){
   for (feature in features){
+    #%% Run computations
+    if (task_ID > 0 && a != task_ID) {
+      next
+    }
+    
     #%% Load files
     cat("loading files \n")
     # slurm task selection
@@ -118,11 +123,6 @@ for (elec_grp in elec_grps){
     
     #%% append acoustic features
     long_data <- left_join(long_data,acopho_fea_T,by='stim')
-    
-    #%% Run computations
-    if (task_ID > 0 && a != task_ID) {
-      next
-    }
     
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
