@@ -49,7 +49,7 @@ model_func <- function(current_data,feature){
   full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:9), collapse = " + "), "+", paste0(paste0("pho", 1:23), collapse = " + "), "+wordness"))
   full <- lm(full_fml, data = current_data)
   coeffs <- coef(full)[grep(feature, names(coef(full)))]
-  r_squared_obs <- sum(abs(coeffs))
+  r_squared_obs <- mean(abs(coeffs))
 
   perm_compare_df_i <- data.frame(
     perm = 0,
@@ -69,7 +69,7 @@ model_func <- function(current_data,feature){
     
     full_perm <- lm(full_fml, data = current_data_perm)
     coeffs_perm <- coef(full_perm)[grep(feature, names(coef(full_perm)))]
-    r_squared_obs <- sum(abs(coeffs_perm))
+    r_squared_obs <- mean(abs(coeffs_perm))
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
