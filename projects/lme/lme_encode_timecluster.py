@@ -55,14 +55,15 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:s
 
 
 #%% Plotting
-colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
-is_normalize=True
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+is_normalize=False
 mode='time_cluster'
-for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
+for elec_grp in ['Auditory_all']:
     fig, ax = plt.subplots(figsize=(12, 4))
     i=0
-    for fea,fea_tag in zip(('aco','pho'),
-                                 ('Acoustic','Phonemic')):
+    for fea,fea_tag in zip(('pho3','pho4','pho5','pho6','pho7'),
+                                 ('pho3','pho4','pho5','pho6','pho7')):
         filename = f"results/{elec_grp}_full_{fea}.csv"
         time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.0001, 0.0005,mode=mode)
         if is_normalize:
