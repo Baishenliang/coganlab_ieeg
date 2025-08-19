@@ -134,6 +134,8 @@ for (elec_grp in elec_grps){
   for (feature in features){
     #%% Load files
     cat("loading files \n")
+    # slurm task selection
+    a <- a + 1
     file_path <- paste(home_dir,
                        "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
                        sep = "")
@@ -146,36 +148,32 @@ for (elec_grp in elec_grps){
     long_data <- left_join(long_data,pho_fea_T,by='stim')
     
     #%% Run computations
-    for (align_to_onset in align_to_onsets) {
-      # slurm task selection
-      a <- a + 1
-      if (task_ID > 0 && a != task_ID) {
-        next
-      }
-      
-      long_data$time <- as.numeric(long_data$time)
-      time_points <- unique(long_data$time)
-      
-      cat("Re-formatting long data \n")
-      data_by_time <- split(long_data, long_data$time)
-      rm(long_data)
-      
-      cat("Starting modeling \n")
-      #%% Get core environment
-      cl <- makeCluster(num_cores)
-      registerDoParallel(cl)
-      clusterExport(cl, varlist = c("model_func"))
-      # Fot Duke HPC sbatch:
-      # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
-      # 13 tasks can be paralled at once.
-      perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
-      stopCluster(cl)
-      perm_compare_df <- do.call(rbind, perm_compare_df)
-      perm_compare_df <- perm_compare_df %>% arrange(time_point)
-      
-      print(perm_compare_df)
-      
-      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
+    if (task_ID > 0 && a != task_ID) {
+      next
     }
+    
+    long_data$time <- as.numeric(long_data$time)
+    time_points <- unique(long_data$time)
+    
+    cat("Re-formatting long data \n")
+    data_by_time <- split(long_data, long_data$time)
+    rm(long_data)
+    
+    cat("Starting modeling \n")
+    #%% Get core environment
+    cl <- makeCluster(num_cores)
+    registerDoParallel(cl)
+    clusterExport(cl, varlist = c("model_func"))
+    # Fot Duke HPC sbatch:
+    # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
+    # 13 tasks can be paralled at once.
+    perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
+    stopCluster(cl)
+    perm_compare_df <- do.call(rbind, perm_compare_df)
+    perm_compare_df <- perm_compare_df %>% arrange(time_point)
+    
+    print(perm_compare_df)
+    
+    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",align_to_onset,"aln.csv",sep = ''),row.names = FALSE)
   }
 }
