@@ -108,6 +108,7 @@ acopho_fea_T <- acopho_fea_T[, c("stim", setdiff(names(acopho_fea_T), "stim"))]
 for (elec_grp in elec_grps){
   for (feature in features){
     #%% Run computations
+    a <- a + 1
     if (task_ID > 0 && a != task_ID) {
       next
     }
@@ -115,7 +116,6 @@ for (elec_grp in elec_grps){
     #%% Load files
     cat("loading files \n")
     # slurm task selection
-    a <- a + 1
     file_path <- paste(home_dir,
                        "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
                        sep = "")
