@@ -46,7 +46,7 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
 
-  full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:9), collapse = " + "), "+", paste0(paste0("pho", 1:23), collapse = " + "), "+wordness"))
+  full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:2), collapse = " + "), "+", paste0(paste0("pho", 1:7), collapse = " + "), "+", paste0(paste0("mix", 1:18), collapse = " + "), "+wordness"))
   full <- lm(full_fml, data = current_data)
   coeffs <- coef(full)[grep(feature, names(coef(full)))]
   r_squared_obs <- mean(abs(coeffs))
@@ -59,7 +59,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 5000
+  n_perm <- 2
   for (i_perm in 1:n_perm) {
     
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
@@ -88,46 +88,21 @@ model_func <- function(current_data,feature){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_delay','Sensorymotor_delay','Delay_only','Motor_delay')
+elec_grps <- c('Auditory_delay','Sensorymotor_delay')#,'Delay_only','Motor_delay')
 features <- c('aco','pho')
 post_align_T_threshold <- c(-0.2, 1.5)
 a = 0
 
 #Load acoustic parameters
-acoust_path <- paste(home_dir,
-                   "data/envelope_feature_dict_pca.csv",
+acopho_path <- paste(home_dir,
+                   "data/aco_pho_dict_pca.csv",
                    sep = "")
-acoust_fea <- read.csv(acoust_path)
-acoust_fea_T <- acoust_fea %>%
-  mutate(row_id = 1:n()) %>%
-  pivot_longer(
-    cols = -row_id,
-    names_to = "stim",
-    values_to = "aco_value"
-  ) %>%
-  pivot_wider(
-    names_from = row_id,
-    values_from = aco_value,
-    names_prefix = "aco"
-  )
+acopho_fea <- read.csv(acopho_path,row.names = 1)
 
-#Load phonemic parameters
-pho_path <- paste(home_dir,
-                     "data/phoneme_one_hot_dict_pca.csv",
-                     sep = "")
-pho_fea <- read.csv(pho_path)
-pho_fea_T <- pho_fea %>%
-  mutate(row_id = 1:n()) %>%
-  pivot_longer(
-    cols = -row_id,
-    names_to = "stim",
-    values_to = "pho_value"
-  ) %>%
-  pivot_wider(
-    names_from = row_id,
-    values_from = pho_value,
-    names_prefix = "pho"
-  )
+acopho_fea_T <- as.data.frame(t(acopho_fea))
+acopho_fea_T$stim <- rownames(acopho_fea_T)
+acopho_fea_T <- acopho_fea_T[, c("stim", setdiff(names(acopho_fea_T), "stim"))]
+
 
 #%% Start looping
 for (elec_grp in elec_grps){
@@ -142,10 +117,7 @@ for (elec_grp in elec_grps){
     long_data <- read.csv(file_path)
     
     #%% append acoustic features
-    long_data <- left_join(long_data,acoust_fea_T,by='stim')
-    
-    #%% append pho features
-    long_data <- left_join(long_data,pho_fea_T,by='stim')
+    long_data <- left_join(long_data,acopho_fea_T,by='stim')
     
     #%% Run computations
     if (task_ID > 0 && a != task_ID) {
