@@ -69,7 +69,7 @@ else:
 loaded_data={}
 for t_tag,t_range in zip(
         ('full',),
-        ([-0.2,mean_word_len+auditory_decay+delay_len],)
+        ([-0.5,mean_word_len+auditory_decay+delay_len],)
 ):
     for elec_grp,elec_idx in zip(
             ('Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),

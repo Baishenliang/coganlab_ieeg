@@ -46,7 +46,7 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
 
-  full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:10), collapse = " + "), "+", paste0(paste0("pho", 1:7), collapse = " + "), "+wordness"))
+  full_fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:2), collapse = " + "), "+", paste0(paste0("mix", 1:6), collapse = " + "), "+", paste0(paste0("pho", 1:9), collapse = " + "), "+wordness"))
   full <- lm(full_fml, data = current_data)
   coeffs <- coef(full)[grep(feature, names(coef(full)))]
   r_squared_obs <- mean(abs(coeffs))
@@ -88,9 +88,9 @@ model_func <- function(current_data,feature){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_all')#,'Sensorymotor_delay')#,'Delay_only','Motor_delay')
+elec_grps <- c('Auditory_all',"Auditory_delay")#,'Sensorymotor_delay')#,'Delay_only','Motor_delay')
 features <- c('aco','pho')
-post_align_T_threshold <- c(-0.1, 0.6)
+post_align_T_threshold <- c(-0.5, 0.6)
 a = 0
 
 #Load acoustic parameters
