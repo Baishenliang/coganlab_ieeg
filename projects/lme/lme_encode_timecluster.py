@@ -59,7 +59,7 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 is_normalize=True
 mode='fdr'
-for elec_grp in ['Auditory_all']:
+for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
     fig, ax = plt.subplots(figsize=(12, 4))
     i=0
     for fea,fea_tag in zip(('aco','pho'),

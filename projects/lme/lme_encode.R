@@ -62,7 +62,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1000
+  n_perm <- 5000
   for (i_perm in 1:n_perm) {
     
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
@@ -90,7 +90,7 @@ model_func <- function(current_data,feature){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_all')#,'Sensorymotor_delay')#,'Delay_only','Motor_delay')
+elec_grps <- c('Auditory_all','Auditory_delay','Sensorymotor_delay','Delay_only','Motor_delay')
 features <- c('aco','pho')
 post_align_T_threshold <- c(-0.5, 0.6)
 a = 0
