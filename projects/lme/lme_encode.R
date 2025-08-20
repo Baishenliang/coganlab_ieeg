@@ -65,10 +65,18 @@ model_func <- function(current_data,feature){
   # Permutation
   cat('Start perm \n')
   n_perm <- 500
+  current_data <- current_data %>%
+    mutate(orig_row_id = row_number())
+  
   for (i_perm in 1:n_perm) {
     
-    perm_indices <- sample(1:nrow(current_data), nrow(current_data))
-    
+    # perm trials per electrode per patient
+    perm_indices <- current_data %>%
+      group_by(subject, electrode) %>%
+      group_split() %>%
+      map(~ sample(.x$orig_row_id, size = nrow(.x))) %>%
+      flatten_int()
+      
     current_data_perm <- current_data %>%
       mutate(across(starts_with(feature), ~ .x[perm_indices]))
     
@@ -94,7 +102,7 @@ model_func <- function(current_data,feature){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_delay')
+elec_grps <- c('Auditory_all','Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
 features <- c('aco','pho')
 a = 0
 
@@ -135,7 +143,7 @@ for (elec_grp in elec_grps){
     #%% get baseline
     long_data <- long_data %>%
       group_by(subject, electrode, stim) %>%
-      mutate(bsl = mean(value[time > -0.4 & time <= -0.1],na.rm = TRUE))%>%
+      mutate(bsl = mean(value[time > -0.4 & time <= -0],na.rm = TRUE))%>%
       mutate(across(starts_with("bsl"), ~if_else(is.nan(.), 0, .))) %>%
       ungroup()
     

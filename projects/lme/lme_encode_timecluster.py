@@ -61,15 +61,15 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:s
 #%% Plotting
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-is_normalize=True
+is_normalize=False
 mode='time_cluster'
 for elec_grp in ['Auditory_delay']:
     fig, ax = plt.subplots(figsize=(12, 4))
     i=0
     for fea,fea_tag in zip(('aco','pho'),
-                                 ('aco','pho-aco')):
+                                 ('Acoustic','Phonemic')):
         filename = f"results/{elec_grp}_full_{fea}.csv"
-        time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.005, 0.005,mode=mode)
+        time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.0025, 0.0025,mode=mode)
         time_series=gaussian_filter1d(time_series, sigma=5, mode='nearest')
         # win_len=10
         # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
@@ -79,7 +79,7 @@ for elec_grp in ['Auditory_delay']:
             para_sig_bar = [1,1e-1]
         else:
             # time_series = time_series - np.mean(time_series[time_point <= 0])
-            para_sig_bar = [5e-3,1e-3]
+            para_sig_bar = [26,1]
 
         ax.plot(time_point, time_series, label=fea_tag, color=colors[i-1], linewidth=2)
         true_indices = np.where(mask_time_clus)[0]
