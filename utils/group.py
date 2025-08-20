@@ -325,8 +325,8 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False):
     df_wide_reset.columns.name = None
 
     # save
-    df_long.to_csv(f'{safe_dir}_long.csv', index=False, encoding='utf-8')
-    df_wide_reset.to_csv(f'{safe_dir}_wide.csv', index=False, encoding='utf-8')
+    df_long.to_csv(f'{safe_dir}_long.csv', index=False, encoding='utf-8',na_rep='NA')
+    df_wide_reset.to_csv(f'{safe_dir}_wide.csv', index=False, encoding='utf-8',na_rep='NA')
 
 def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False,chs_s_all_idx=None,sorted_indices=None,select_electrodes:bool=True):
     """

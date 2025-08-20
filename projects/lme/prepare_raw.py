@@ -78,5 +78,5 @@ for t_tag,t_range in zip(
         print(f'Now Doing {t_tag} {elec_grp}')
         m_chs = epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
         m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
-        mixup(m, 0)
+        # mixup(m, 0)
         gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'epoc_LexDelayRep_Aud_{t_tag}_{elec_grp}'),win_len=0,append_pho=False) #100s for phoneme responses
