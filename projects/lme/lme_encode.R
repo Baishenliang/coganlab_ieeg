@@ -45,14 +45,16 @@ model_func <- function(current_data,feature){
   }
   
   tp <- current_data$time[1]
+  fml_bsl<-as.formula('value ~ bsl')
   if (feature=='aco'){
-    fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:3), collapse = " + ")))
-  }
- else if (feature=='pho'){
-    fml <- as.formula(paste0("value ~ ", paste0(paste0("pho", 1:18), collapse = " + ")))
+    fml <- as.formula(paste0("value ~ bsl+", paste0(paste0("aco", 1:3), collapse = " + ")))
+  }else if (feature=='pho'){
+    fml <- as.formula(paste0("value ~ bsl+", paste0(paste0("pho", 1:11), collapse = " + ")))
   }
   m <- lm(fml, data = current_data,na.action = na.exclude)
-  r_squared_obs <- summary(m)$r.squared
+  m_bsl <- lm(fml_bsl, data = current_data,na.action = na.exclude)
+  anova_results <- anova(m_bsl, m)
+  r_squared_obs <- anova_results$`F`[2]
 
   perm_compare_df_i <- data.frame(
     perm = 0,
@@ -62,7 +64,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 10000
+  n_perm <- 500
   for (i_perm in 1:n_perm) {
     
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
@@ -71,7 +73,9 @@ model_func <- function(current_data,feature){
       mutate(across(starts_with(feature), ~ .x[perm_indices]))
     
     m_perm <- lm(fml, data = current_data_perm,na.action = na.exclude)
-    r_squared_obs <- summary(m_perm)$r.squared
+    m_perm_bsl <- lm(fml_bsl, data = current_data_perm,na.action = na.exclude)
+    anova_results <- anova(m_perm_bsl, m_perm)
+    r_squared_obs <- anova_results$`F`[2]
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
@@ -90,14 +94,13 @@ model_func <- function(current_data,feature){
 #%% Parameters
 set.seed(42)
 phase<-'full'
-elec_grps <- c('Auditory_all','Auditory_delay','Sensorymotor_delay','Delay_only','Motor_delay')
+elec_grps <- c('Auditory_delay')
 features <- c('aco','pho')
-post_align_T_threshold <- c(-0.5, 0.6)
 a = 0
 
 #Load acoustic parameters
 acopho_path <- paste(home_dir,
-                   "data/syl1_aco_pho_dict_pca.csv",
+                   "data/pho1_aco_pho_dict_pca.csv",
                    sep = "")
 acopho_fea <- read.csv(acopho_path,row.names = 1)
 
@@ -128,6 +131,13 @@ for (elec_grp in elec_grps){
     
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
+    
+    #%% get baseline
+    long_data <- long_data %>%
+      group_by(subject, electrode, stim) %>%
+      mutate(bsl = mean(value[time > -0.4 & time <= -0.1],na.rm = TRUE))%>%
+      mutate(across(starts_with("bsl"), ~if_else(is.nan(.), 0, .))) %>%
+      ungroup()
     
     cat("Re-formatting long data \n")
     data_by_time <- split(long_data, long_data$time)

@@ -14,29 +14,17 @@ if current_dir != script_dir:
     os.chdir(script_dir)
 sys.path.append(os.path.abspath(os.path.join("..", "GLM")))
 import glm_utils as glm
+from scipy.ndimage import gaussian_filter1d,uniform_filter1d
 
 #%% Run time cluster
-def bsl_correct(df_extended):
-    # Calculate the average of 'chi_squared_obs' for each 'perm' where 'time_point' < 0
-    avg_chi_squared = df_extended[df_extended['time_point'] < 0].groupby('perm')['chi_squared_obs'].mean()
-    # Map the calculated average back to the original DataFrame
-    df_extended['avg_chi_squared'] = df_extended['perm'].map(avg_chi_squared)
-    # Subtract the mapped average from the original 'chi_squared_obs'
-    df_extended['chi_squared_obs'] = df_extended['chi_squared_obs'] - df_extended['avg_chi_squared']
 
-    return df_extended
 
-def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster',raw2_filename=None):
+def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster'):
     # Load data
     # aud_delay_org = pd.read_csv('Aud_delay_org.csv')
     # aud_delay_perm = pd.read_csv('Aud_delay_perm.csv')
-    if raw2_filename is None:
-        raw = pd.read_csv(raw_filename)
-    else:
-        raw = pd.read_csv(raw_filename)
-        raw2 = pd.read_csv(raw2_filename)
-        raw['chi_squared_obs'] = raw['chi_squared_obs']-raw2['chi_squared_obs']
-    raw=bsl_correct(raw)
+    raw = pd.read_csv(raw_filename)
+    # raw=bsl_correct(raw)
     time_point = np.unique(raw['time_point'].to_numpy())
     r2s_i_df = raw.pivot_table(
         index='perm',
@@ -73,18 +61,18 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:s
 #%% Plotting
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-is_normalize=False
+is_normalize=True
 mode='time_cluster'
-for elec_grp in ['Auditory_all','Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
+for elec_grp in ['Auditory_delay']:
     fig, ax = plt.subplots(figsize=(12, 4))
     i=0
     for fea,fea_tag in zip(('aco','pho'),
                                  ('aco','pho-aco')):
         filename = f"results/{elec_grp}_full_{fea}.csv"
-        if fea=='aco':
-            time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.0001, 0.001,mode=mode)
-        elif fea=='pho':
-            time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.0001, 0.001,mode=mode,raw2_filename=f"results/{elec_grp}_full_aco.csv")
+        time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.005, 0.005,mode=mode)
+        time_series=gaussian_filter1d(time_series, sigma=5, mode='nearest')
+        # win_len=10
+        # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
         if is_normalize:
             time_series = (time_series - np.min(time_series)) / (np.max(time_series) - np.min(time_series))
             # time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
