@@ -58,16 +58,17 @@ def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:s
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 is_normalize=True
-mode='time_cluster'
+mode='fdr'
 for elec_grp in ['Auditory_all']:
     fig, ax = plt.subplots(figsize=(12, 4))
     i=0
     for fea,fea_tag in zip(('aco','pho'),
                                  ('aco','pho')):
         filename = f"results/{elec_grp}_full_{fea}.csv"
-        time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.0001, 0.0005,mode=mode)
+        time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.0005, 0.0005,mode=mode)
         if is_normalize:
-            time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
+            time_series = (time_series - np.min(time_series)) / (np.max(time_series) - np.min(time_series))
+            # time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
             para_sig_bar = [1,1e-1]
         else:
             # time_series = time_series - np.mean(time_series[time_point <= 0])

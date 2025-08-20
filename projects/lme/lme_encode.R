@@ -46,12 +46,12 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
   if (feature=='aco'){
-    fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:2), collapse = " + ")))
+    fml <- as.formula(paste0("value ~ ", paste0(paste0("aco", 1:3), collapse = " + ")))
   }
  else if (feature=='pho'){
-    fml <- as.formula(paste0("value ~ ", paste0(paste0("pho", 1:9), collapse = " + ")))
+    fml <- as.formula(paste0("value ~ ", paste0(paste0("pho", 1:18), collapse = " + ")))
   }
-  m <- lm(fml, data = current_data)
+  m <- lm(fml, data = current_data,na.action = na.exclude)
   r_squared_obs <- summary(m)$r.squared
 
   perm_compare_df_i <- data.frame(
@@ -62,7 +62,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 2
+  n_perm <- 1000
   for (i_perm in 1:n_perm) {
     
     perm_indices <- sample(1:nrow(current_data), nrow(current_data))
@@ -70,7 +70,7 @@ model_func <- function(current_data,feature){
     current_data_perm <- current_data %>%
       mutate(across(starts_with(feature), ~ .x[perm_indices]))
     
-    m_perm <- lm(fml, data = current_data_perm)
+    m_perm <- lm(fml, data = current_data_perm,na.action = na.exclude)
     r_squared_obs <- summary(m_perm)$r.squared
     
     perm_compare_df_i <- rbind(
@@ -97,7 +97,7 @@ a = 0
 
 #Load acoustic parameters
 acopho_path <- paste(home_dir,
-                   "data/pho1_aco_pho_dict_pca.csv",
+                   "data/syl1_aco_pho_dict_pca.csv",
                    sep = "")
 acopho_fea <- read.csv(acopho_path,row.names = 1)
 
