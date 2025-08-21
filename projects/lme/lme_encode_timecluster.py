@@ -65,11 +65,12 @@ is_normalize=False
 mode='time_cluster'
 for elec_grp in ['Auditory_delay']:
     fig, ax = plt.subplots(figsize=(12, 4))
+    ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
     i=0
     for fea,fea_tag in zip(('aco','pho'),
                                  ('Acoustic','Phonemic')):
         filename = f"results/{elec_grp}_full_{fea}.csv"
-        time_point, time_series, mask_time_clus = get_traces_clus(filename, 0.0025, 0.0025,mode=mode)
+        time_point, time_series, mask_time_clus = get_traces_clus(filename, 2/3000, 2/3000,mode=mode)
         time_series=gaussian_filter1d(time_series, sigma=5, mode='nearest')
         # win_len=10
         # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)

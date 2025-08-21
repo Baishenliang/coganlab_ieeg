@@ -64,21 +64,18 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 500
-  current_data <- current_data %>%
-    mutate(orig_row_id = row_number())
+  n_perm <- 10000
   
   for (i_perm in 1:n_perm) {
-    
-    # perm trials per electrode per patient
-    perm_indices <- current_data %>%
-      group_by(subject, electrode) %>%
-      group_split() %>%
-      map(~ sample(.x$orig_row_id, size = nrow(.x))) %>%
-      flatten_int()
-      
+    set.seed(10000 + i_perm)
     current_data_perm <- current_data %>%
-      mutate(across(starts_with(feature), ~ .x[perm_indices]))
+      group_by(subject, electrode) %>%
+      mutate(
+        perm_indices = sample(1:n()),
+        across(starts_with(feature), ~ .x[perm_indices])
+      ) %>%
+      ungroup() %>%
+      select(-perm_indices)
     
     m_perm <- lm(fml, data = current_data_perm,na.action = na.exclude)
     m_perm_bsl <- lm(fml_bsl, data = current_data_perm,na.action = na.exclude)
@@ -100,7 +97,6 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-set.seed(42)
 phase<-'full'
 elec_grps <- c('Auditory_all','Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
 features <- c('aco','pho')
@@ -143,7 +139,7 @@ for (elec_grp in elec_grps){
     #%% get baseline
     long_data <- long_data %>%
       group_by(subject, electrode, stim) %>%
-      mutate(bsl = mean(value[time > -0.4 & time <= -0],na.rm = TRUE))%>%
+      mutate(bsl = mean(value[time > -0.1 & time <= 0],na.rm = TRUE))%>%
       mutate(across(starts_with("bsl"), ~if_else(is.nan(.), 0, .))) %>%
       ungroup()
     
