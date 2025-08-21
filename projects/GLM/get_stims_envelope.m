@@ -8,8 +8,10 @@ clc; clear; close all;
 % Set window (now for pho1)
 % sel_win=[0, 0.13];
 % win_tag='pho1';
-sel_win=[0, 0.3];
-win_tag='syl1';
+% sel_win=[0, 0.3];
+% win_tag='syl1';
+sel_win=[0.1, 0.3];
+win_tag='pho2';
 
 % Set the data path
 data_path = 'C:\Users\bl314\Box\CoganLab\task_stimuli\LexicalDecRepDelay';

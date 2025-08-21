@@ -47,9 +47,9 @@ model_func <- function(current_data,feature){
   tp <- current_data$time[1]
   fml_bsl<-as.formula('value ~ bsl')
   if (feature=='aco'){
-    fml <- as.formula(paste0("value ~ bsl+", paste0(paste0("aco", 1:3), collapse = " + ")))
+    fml <- as.formula(paste0("value ~ bsl+", paste0(paste0("aco", 1:2), collapse = " + ")))
   }else if (feature=='pho'){
-    fml <- as.formula(paste0("value ~ bsl+", paste0(paste0("pho", 1:11), collapse = " + ")))
+    fml <- as.formula(paste0("value ~ bsl+", paste0(paste0("pho", 1:6), collapse = " + ")))
   }
   m <- lm(fml, data = current_data,na.action = na.exclude)
   m_bsl <- lm(fml_bsl, data = current_data,na.action = na.exclude)
@@ -64,7 +64,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 10000
+  n_perm <- 500
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -98,13 +98,13 @@ model_func <- function(current_data,feature){
 
 #%% Parameters
 phase<-'full'
-elec_grps <- c('Auditory_all','Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
+elec_grps <- c('Auditory_delay')
 features <- c('aco','pho')
 a = 0
 
 #Load acoustic parameters
 acopho_path <- paste(home_dir,
-                   "data/pho1_aco_pho_dict_pca.csv",
+                   "data/pho2_aco_pho_dict_pca.csv",
                    sep = "")
 acopho_fea <- read.csv(acopho_path,row.names = 1)
 
