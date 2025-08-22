@@ -19,11 +19,10 @@ from scipy.ndimage import gaussian_filter1d,uniform_filter1d
 #%% Run time cluster
 
 
-def get_traces_clus(raw_filename, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster'):
+def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster'):
     # Load data
     # aud_delay_org = pd.read_csv('Aud_delay_org.csv')
     # aud_delay_perm = pd.read_csv('Aud_delay_perm.csv')
-    raw = pd.read_csv(raw_filename)
     # raw=bsl_correct(raw)
     time_point = np.unique(raw['time_point'].to_numpy())
     r2s_i_df = raw.pivot_table(
@@ -67,48 +66,60 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
     fig, ax = plt.subplots(figsize=(12, 4))
     ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
     i=0
-    for fea,fea_tag in zip(('aco','pho','word'),
-                                 ('Acoustic','Phonemic','Lexical status')):
-        filename = f"results/{elec_grp}_full_{fea}.csv"
-        time_point, time_series, mask_time_clus = get_traces_clus(filename, 2/100, 2/100,mode=mode)
-        # time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
-        # win_len=10
-        # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
-        if is_normalize:
-            time_series = (time_series - np.min(time_series)) / (np.max(time_series) - np.min(time_series))
-            # time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
-            para_sig_bar = [1,1e-1]
-        else:
-            # time_series = time_series - np.mean(time_series[time_point <= 0])
-            para_sig_bar = [26,1]
+    for fea,fea_tag in zip(('pho',),
+                                 ('Phonemic',)):
+        for wordness in ('Word','Nonword','Word-Nonword'):
+            if  wordness != 'Word-Nonword':
+                filename = f"results/{elec_grp}_full_{fea}_{wordness}.csv"
+                raw = pd.read_csv(filename)
+            else:
+                filename_Word = f"results/{elec_grp}_full_{fea}_Word.csv"
+                filename_Nonword = f"results/{elec_grp}_full_{fea}_Nonword.csv"
+                raw_word = pd.read_csv(filename_Word)
+                raw_nonword = pd.read_csv(filename_Nonword)
+                chi_squared_diff = raw_nonword['chi_squared_obs'] - raw_word['chi_squared_obs']
+                # Create the new 'raw' DataFrame
+                raw = raw_word[['perm', 'time_point']].copy()
+                raw['chi_squared_obs'] = chi_squared_diff
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 2/5e3, 2/5e3,mode=mode)
+            time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
+            # win_len=10
+            # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
+            if is_normalize:
+                time_series = (time_series - np.min(time_series)) / (np.max(time_series) - np.min(time_series))
+                # time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
+                para_sig_bar = [1,1e-1]
+            else:
+                # time_series = time_series - np.mean(time_series[time_point <= 0])
+                para_sig_bar = [18,1]
 
-        ax.plot(time_point, time_series, label=fea_tag, color=colors[i-1], linewidth=2)
-        true_indices = np.where(mask_time_clus)[0]
-        if true_indices.size > 0:
-            split_points = np.where(np.diff(true_indices) != 1)[0] + 1
-            clusters_indices = np.split(true_indices, split_points)
+            ax.plot(time_point, time_series, label=f"{fea_tag} {wordness}", color=colors[i-1], linewidth=2)
+            true_indices = np.where(mask_time_clus)[0]
+            if true_indices.size > 0:
+                split_points = np.where(np.diff(true_indices) != 1)[0] + 1
+                clusters_indices = np.split(true_indices, split_points)
 
-            for k, cluster in enumerate(clusters_indices):
-                start_index = cluster[0]
-                end_index = cluster[-1]
+                for k, cluster in enumerate(clusters_indices):
+                    start_index = cluster[0]
+                    end_index = cluster[-1]
 
-                time_step = time_point[1] - time_point[0]
-                start_time = time_point[start_index] - time_step / 2
-                end_time = time_point[end_index] + time_step / 2
+                    time_step = time_point[1] - time_point[0]
+                    start_time = time_point[start_index] - time_step / 2
+                    end_time = time_point[end_index] + time_step / 2
 
-                label = f'clust{k} of pho'
-                ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(i-1),para_sig_bar[0]-para_sig_bar[1]*(i-1)],
-                        color=colors[i - 1],alpha=0.4,
-                        linewidth=4,  # Make the line thick like a bar
-                        solid_capstyle='butt')  # Makes the line ends flat
-        i+=1
+                    label = f'clust{k} of pho'
+                    ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(i-1),para_sig_bar[0]-para_sig_bar[1]*(i-1)],
+                            color=colors[i - 1],alpha=0.4,
+                            linewidth=4,  # Make the line thick like a bar
+                            solid_capstyle='butt')  # Makes the line ends flat
+            i+=1
     ax.set_title(f"{elec_grp} electrodes aligned to stim onset (Partial)", fontsize=16)
     ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
     ax.set_ylabel("Normalized (Partial) ($R^2$)", fontsize=12)
     ax.legend()
-    ax.set_xlim(time_point.min(), time_point.max())
+    ax.set_xlim(-0.4, time_point.max())
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     plt.tight_layout()
-    plt.savefig(os.path.join('figs', f'{elec_grp}_full.tif'), dpi=300)
+    plt.savefig(os.path.join('figs', f'{elec_grp}_wordness.tif'), dpi=300)
     plt.close()
