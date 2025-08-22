@@ -48,23 +48,19 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
   if (model_type=='simple'){
-    fml_bsl<-as.formula(paste0('value ~ bsl1+bsl2+bsl3+bsl4'))
+    fml_bsl<-as.formula(paste0('value ~ 1'))
     if (feature=='aco'){
-      fml<-as.formula(paste0('value ~ bsl1+bsl2+bsl3+bsl4+',paste0(paste0("aco", 1:9), collapse = " + "),"+wordness"))
+      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
     }else if (feature=='pho'){
-      fml<-as.formula(paste0('value ~ bsl1+bsl2+bsl3+bsl4+',paste0(paste0("pho", 1:23), collapse = " + "),"+wordness"))
-    }else if (feature=='word'){
-      fml<-as.formula('value ~ bsl1+bsl2+bsl3+bsl4 + wordness')
+      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:23), collapse = " + ")))
     }
   }else if (model_type=='full'){
     if (feature=='aco'){
-      fml_bsl<-as.formula(paste0('value ~ bsl1+bsl2+bsl3+bsl4+',paste0(paste0("pho", 1:23), collapse = " + "),"+wordness"))
+      fml_bsl<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:23), collapse = " + ")))
     }else if (feature=='pho'){
-      fml_bsl<-as.formula(paste0('value ~ bsl1+bsl2+bsl3+bsl4+',paste0(paste0("aco", 1:9), collapse = " + "),"+wordness"))
-    }else if (feature=='word'){
-      fml_bsl<-as.formula(paste0('value ~ bsl1+bsl2+bsl3+bsl4+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
+      fml_bsl<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
     }
-    fml <-as.formula(paste0('value ~ bsl1+bsl2+bsl3+bsl4+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + "),"+wordness"))
+    fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
   }
   
   m <- lm(fml, data = current_data,na.action = na.exclude)
@@ -115,7 +111,7 @@ model_func <- function(current_data,feature){
 #%% Parameters
 phase<-'full'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
-features <- c('aco','pho','word')
+features <- c('aco','pho')
 a = 0
 
 #Load acoustic parameters
@@ -140,58 +136,105 @@ pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 #%% Start looping
 for (elec_grp in elec_grps){
   for (feature in features){
-    #%% Run computations
-    a <- a + 1
-    if (task_ID > 0 && a != task_ID) {
-      next
-    }
     
     #%% Load files
     cat("loading files \n")
     # slurm task selection
-    file_path <- paste(home_dir,
+    file_path_long <- paste(home_dir,
                        "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
                        sep = "")
-    long_data <- read.csv(file_path)
+    long_data <- read.csv(file_path_long)
+    long_data$time <- as.numeric(long_data$time)
+    file_path_wide <- paste(home_dir,
+                            "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_wide.csv",
+                            sep = "")
+    wide_data <- read.csv(file_path_wide)
+
+    #%% Baseline correction
+    cat("correcting baseline \n")
+    windowed_means <- long_data %>%
+      filter(time > -0.4 & time <= 0) %>%
+      mutate(
+        time_window = floor((time - (-0.4)) / 0.1)
+      ) %>%
+      group_by(subject, electrode, stim, time_window) %>%
+      summarise(mean_val = mean(value, na.rm = TRUE), .groups = 'drop') %>%
+      pivot_wider(
+        names_from = time_window,
+        values_from = mean_val,
+        names_prefix = "mean_window_"
+      )
+    rm(long_data)
+    wide_data <- wide_data %>%
+      left_join(windowed_means, by = c("subject", "electrode", "stim"))
+    all_time_col_names <- names(wide_data)[str_detect(names(wide_data), "^X")]
+    baseline_predictor_cols <- names(wide_data)[str_detect(names(wide_data), "mean_window_")]
+    regression_data <- wide_data
+    for (y_col in all_time_col_names) {
+      fml <- as.formula(paste(y_col, "~", paste(baseline_predictor_cols, collapse = " + ")))
+      model <- lm(fml, data = wide_data,na.action = na.exclude)
+      regression_data[[y_col]] <- residuals(model)
+    }
+    wide_data <- regression_data %>%
+      select(-starts_with("mean_window"))
+    rm(regression_data)
+    
+    #%% transform to long
+    cat("transforming to long \n")
+    long_data <- wide_data %>%
+      pivot_longer(
+        cols = starts_with("X"),
+        names_to = "time_label",
+        values_to = "value"
+      ) %>%
+      mutate(
+        time = case_when(
+          str_detect(time_label, "X\\.") ~ as.numeric(str_replace(time_label, "X\\.", "-")),
+          TRUE ~ as.numeric(str_replace(time_label, "X", ""))
+        )
+      )%>%
+      select(-time_label)
     
     #%% append acoustic features
     long_data <- left_join(long_data,aco_fea_T,by='stim')
     
     #%% append phonemic features
     long_data <- left_join(long_data,pho_fea_T,by='stim')
-    
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
-    
-    #%% get baseline
-    long_data <- long_data %>%
-      group_by(subject, electrode, stim) %>%
-      mutate(bsl1 = mean(value[time > -0.1 & time <= 0],na.rm = TRUE),
-             bsl2 = mean(value[time > -0.2 & time <= -0.1],na.rm = TRUE),
-             bsl3 = mean(value[time > -0.3 & time <= -0.2],na.rm = TRUE),
-             bsl4 = mean(value[time > -0.4 & time <= -0.3],na.rm = TRUE))%>%
-      mutate(across(starts_with("bsl"), ~if_else(is.nan(.), 0, .))) %>%
-      ungroup()
-    
-    cat("Re-formatting long data \n")
-    data_by_time <- split(long_data, long_data$time)
-    rm(long_data)
-    
-    cat("Starting modeling \n")
-    #%% Get core environment
-    cl <- makeCluster(num_cores)
-    registerDoParallel(cl)
-    clusterExport(cl, varlist = c("model_func"))
-    # Fot Duke HPC sbatch:
-    # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
-    # 13 tasks can be paralled at once.
-    perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
-    stopCluster(cl)
-    perm_compare_df <- do.call(rbind, perm_compare_df)
-    perm_compare_df <- perm_compare_df %>% arrange(time_point)
-    
-    print(perm_compare_df)
-    
-    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,".csv",sep = ''),row.names = FALSE)
+
+    for (lex in c("Word","Nonword")){
+      #%% Run computations
+      a <- a + 1
+      if (task_ID > 0 && a != task_ID) {
+        next
+      }
+      
+      word_data <- long_data %>%
+        filter(wordness == lex)
+      
+      if (task_ID > 0){rm(long_data)}
+      
+      cat("Re-formatting long data \n")
+      data_by_time <- split(word_data, word_data$time)
+      rm(word_data)
+      
+      cat("Starting modeling \n")
+      #%% Get core environment
+      cl <- makeCluster(num_cores)
+      registerDoParallel(cl)
+      clusterExport(cl, varlist = c("model_func"))
+      # Fot Duke HPC sbatch:
+      # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
+      # 13 tasks can be paralled at once.
+      perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
+      stopCluster(cl)
+      perm_compare_df <- do.call(rbind, perm_compare_df)
+      perm_compare_df <- perm_compare_df %>% arrange(time_point)
+      
+      print(perm_compare_df)
+      
+      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",lex,".csv",sep = ''),row.names = FALSE)
+    }
   }
 }
