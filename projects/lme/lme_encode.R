@@ -53,14 +53,20 @@ model_func <- function(current_data,feature){
       fml<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
     }else if (feature=='pho'){
       fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:23), collapse = " + ")))
+    }else{
+      fml<-as.formula(paste0('value ~ 1+',feature))
     }
   }else if (model_type=='full'){
     if (feature=='aco'){
       fml_bsl<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:23), collapse = " + ")))
+      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
     }else if (feature=='pho'){
       fml_bsl<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
+      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
+    }else{
+      fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
+      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + "),"+",feature))
     }
-    fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
   }
   
   m <- lm(fml, data = current_data,na.action = na.exclude)
@@ -76,7 +82,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 5000
+  n_perm <- 5e4
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -111,7 +117,7 @@ model_func <- function(current_data,feature){
 #%% Parameters
 phase<-'full'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
-features <- c('aco','pho')
+features <- c('aco','pho','Frq','Uni_Pos_SC')
 a = 0
 
 #Load acoustic parameters
@@ -132,6 +138,18 @@ pho_fea_T <- as.data.frame(t(pho_fea))
 pho_fea_T$stim <- rownames(pho_fea_T)
 pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
+#Load word freq parameters
+freq_path <- paste(home_dir,"data/word_freq.csv",sep = "")
+freq_fea <- read.csv(freq_path)
+cols_to_normalize <- c(
+  "Frq", "Uni_SC", "Uni_Pos_SC", "Uni_FW", "Uni_Pos_FW",
+  "Bi_SC", "Bi_Pos_SC", "Bi_FW", "Bi_Pos_FW", "Tri_SC",
+  "Tri_Pos_SC", "Tri_FW", "Tri_Pos_FW"
+)
+normalized_freq_fea <- freq_fea
+normalized_freq_fea[, cols_to_normalize] <- lapply(freq_fea[, cols_to_normalize], scale)
+freq_fea<-normalized_freq_fea
+rm(normalized_freq_fea)
 
 #%% Start looping
 for (elec_grp in elec_grps){
@@ -202,11 +220,23 @@ for (elec_grp in elec_grps){
     long_data <- left_join(long_data,pho_fea_T,by='stim')
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
+    
+    #%% append word frequency features
+    if (feature!='aco' && feature!='pho'){
+      long_data <- long_data %>%
+        left_join(
+          freq_fea %>% select(stim, !!sym(feature)),
+          by = "stim"
+        )
+    }
 
     for (lex in c("Word","Nonword")){
       #%% Run computations
       a <- a + 1
       if (task_ID > 0 && a != task_ID) {
+        next
+      }
+      if (lex=='Nonword' && feature=='Frq'){
         next
       }
       

@@ -63,13 +63,20 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
 is_normalize=False
 mode='time_cluster'
 for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
-    fig, ax = plt.subplots(figsize=(12, 4))
-    ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
-    i=0
-    for fea,fea_tag in zip(('pho',),
-                                 ('Phonemic',)):
-        for wordness in ('Word','Nonword','Word-Nonword'):
-            if  wordness != 'Word-Nonword':
+
+    for fea,fea_tag in zip(('aco','pho','Frq','Uni_Pos_SC'),
+                                 ('Acoustic','Phonemic','Word Frequency','Unigram Frequency')):
+        fig, ax = plt.subplots(figsize=(12, 4))
+        ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
+        i = 0
+        if fea=='aco' or fea=='pho':
+            wordnesses=('Word','Nonword','Nonword-Word')
+        else:
+            wordnesses=('Word','Nonword','Word-Nonword')
+        for wordness in wordnesses:
+            if fea=='Frq' and wordness!='Word':
+                continue
+            if  wordness =='Word' or wordness =='Nonword':
                 filename = f"results/{elec_grp}_full_{fea}_{wordness}.csv"
                 raw = pd.read_csv(filename)
             else:
@@ -77,11 +84,14 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 filename_Nonword = f"results/{elec_grp}_full_{fea}_Nonword.csv"
                 raw_word = pd.read_csv(filename_Word)
                 raw_nonword = pd.read_csv(filename_Nonword)
-                chi_squared_diff = raw_nonword['chi_squared_obs'] - raw_word['chi_squared_obs']
+                if wordness=='Nonword-Word':
+                    chi_squared_diff = raw_nonword['chi_squared_obs'] - raw_word['chi_squared_obs']
+                elif wordness=='Word-Nonword':
+                    chi_squared_diff = raw_word['chi_squared_obs'] - raw_nonword['chi_squared_obs']
                 # Create the new 'raw' DataFrame
                 raw = raw_word[['perm', 'time_point']].copy()
                 raw['chi_squared_obs'] = chi_squared_diff
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 2/5e3, 2/5e3,mode=mode)
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 2/3e3, 2/3e3,mode=mode)
             time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
             # win_len=10
             # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
@@ -113,13 +123,13 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                             linewidth=4,  # Make the line thick like a bar
                             solid_capstyle='butt')  # Makes the line ends flat
             i+=1
-    ax.set_title(f"{elec_grp} electrodes aligned to stim onset (Partial)", fontsize=16)
-    ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
-    ax.set_ylabel("Normalized (Partial) ($R^2$)", fontsize=12)
-    ax.legend()
-    ax.set_xlim(-0.4, time_point.max())
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    plt.tight_layout()
-    plt.savefig(os.path.join('figs', f'{elec_grp}_wordness.tif'), dpi=300)
-    plt.close()
+        ax.set_title(f"{elec_grp} electrodes aligned to stim onset (Partial)", fontsize=16)
+        ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
+        ax.set_ylabel("Normalized (Partial) ($R^2$)", fontsize=12)
+        ax.legend()
+        ax.set_xlim(-0.4, time_point.max())
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        plt.tight_layout()
+        plt.savefig(os.path.join('figs', f'{elec_grp}_{fea_tag}.tif'), dpi=300)
+        plt.close()
