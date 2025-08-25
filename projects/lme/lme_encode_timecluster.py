@@ -64,19 +64,23 @@ is_normalize=False
 mode='time_cluster'
 for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 
-    for fea,fea_tag in zip(('aco','pho','Frq','Uni_Pos_SC'),
-                                 ('Acoustic','Phonemic','Word Frequency','Unigram Frequency')):
+    # for fea,fea_tag in zip(('wordness','aco','pho','Frq','Uni_Pos_SC'),
+    #                              ('Lexical status','Acoustic','Phonemic','Word Frequency','Unigram Frequency')):
+    for fea,fea_tag in zip(('wordness',),
+                                 ('Lexical status',)):
         fig, ax = plt.subplots(figsize=(12, 4))
         ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
         i = 0
         if fea=='aco' or fea=='pho':
-            wordnesses=('Word','Nonword','Nonword-Word')
+            wordnesses=('All','Word','Nonword','Nonword-Word')
         else:
-            wordnesses=('Word','Nonword','Word-Nonword')
+            wordnesses=('All','Word','Nonword','Word-Nonword')
         for wordness in wordnesses:
             if fea=='Frq' and wordness!='Word':
                 continue
-            if  wordness =='Word' or wordness =='Nonword':
+            if fea=='wordness' and wordness!='All':
+                continue
+            if wordness =='All' or wordness =='Word' or wordness =='Nonword':
                 filename = f"results/{elec_grp}_full_{fea}_{wordness}.csv"
                 raw = pd.read_csv(filename)
             else:
@@ -91,16 +95,16 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 # Create the new 'raw' DataFrame
                 raw = raw_word[['perm', 'time_point']].copy()
                 raw['chi_squared_obs'] = chi_squared_diff
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 2/3e3, 2/3e3,mode=mode)
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 1/5e3, 1/5e3,mode=mode)
             time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
             # win_len=10
             # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
             if is_normalize:
-                time_series = (time_series - np.min(time_series)) / (np.max(time_series) - np.min(time_series))
+                time_series = (time_series - np.min(time_series[(time_point > -0.2) & (time_point <= 0)]))# / (np.max(time_series) - np.min(time_series))
                 # time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
                 para_sig_bar = [1,1e-1]
             else:
-                # time_series = time_series - np.mean(time_series[time_point <= 0])
+                time_series = time_series - np.mean(time_series[(time_point > -0.2) & (time_point <= 0)])
                 para_sig_bar = [18,1]
 
             ax.plot(time_point, time_series, label=f"{fea_tag} {wordness}", color=colors[i-1], linewidth=2)
@@ -125,9 +129,9 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
             i+=1
         ax.set_title(f"{elec_grp} electrodes aligned to stim onset (Partial)", fontsize=16)
         ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
-        ax.set_ylabel("Normalized (Partial) ($R^2$)", fontsize=12)
+        ax.set_ylabel("$X^2$ (Baseline corrected)", fontsize=12)
         ax.legend()
-        ax.set_xlim(-0.4, time_point.max())
+        ax.set_xlim(-0.2, time_point.max())
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         plt.tight_layout()

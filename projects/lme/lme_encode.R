@@ -117,7 +117,8 @@ model_func <- function(current_data,feature){
 #%% Parameters
 phase<-'full'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
-features <- c('aco','pho','Frq','Uni_Pos_SC')
+# features <- c('aco','pho','Frq','Uni_Pos_SC')
+features <- c('wordness')
 a = 0
 
 #Load acoustic parameters
@@ -222,26 +223,34 @@ for (elec_grp in elec_grps){
     time_points <- unique(long_data$time)
     
     #%% append word frequency features
-    if (feature!='aco' && feature!='pho'){
+    if (feature!='aco' && feature!='pho' && feature!='wordness'){
       long_data <- long_data %>%
         left_join(
           freq_fea %>% select(stim, !!sym(feature)),
           by = "stim"
         )
     }
-
-    for (lex in c("Word","Nonword")){
+    for (lex in c("All","Word","Nonword")){
       #%% Run computations
       a <- a + 1
       if (task_ID > 0 && a != task_ID) {
         next
       }
+      # If it is nonword then skip the Frq
       if (lex=='Nonword' && feature=='Frq'){
         next
       }
+      # If it is not for all word and nonword data then skip the wordness
+      if (lex!='All' && feature=='wordness'){
+        next
+      }
       
-      word_data <- long_data %>%
-        filter(wordness == lex)
+      if (lex=='Word' || lex=='Nonword'){
+        word_data <- long_data %>%
+          filter(wordness == lex)
+      }else{
+        word_data <- long_data
+      }
       
       if (task_ID > 0){rm(long_data)}
       
