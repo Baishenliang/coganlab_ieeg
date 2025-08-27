@@ -64,15 +64,15 @@ is_normalize=False
 mode='time_cluster'
 for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 
-    # for fea,fea_tag in zip(('wordness','aco','pho','Frq','Uni_Pos_SC'),
-    #                              ('Lexical status','Acoustic','Phonemic','Word Frequency','Unigram Frequency')):
-    for fea,fea_tag in zip(('wordness',),
-                                 ('Lexical status',)):
+    for fea,fea_tag in zip(('wordness','aco','pho','Frq','Uni_Pos_SC'),
+                                 ('Lexical status','Acoustic','Phonemic','Word Frequency','Unigram Frequency')):
         fig, ax = plt.subplots(figsize=(12, 4))
         ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
         i = 0
         if fea=='aco' or fea=='pho':
-            wordnesses=('All','Word','Nonword','Nonword-Word')
+            wordnesses=('Word','Nonword','Nonword-Word')
+        elif fea=='Frq' or fea=='Uni_Pos_SC':
+            wordnesses=('Word','Nonword','Word-Nonword')
         else:
             wordnesses=('All','Word','Nonword','Word-Nonword')
         for wordness in wordnesses:
@@ -107,7 +107,8 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 time_series = time_series - np.mean(time_series[(time_point > -0.2) & (time_point <= 0)])
                 para_sig_bar = [18,1]
 
-            ax.plot(time_point, time_series, label=f"{fea_tag} {wordness}", color=colors[i-1], linewidth=2)
+            if wordness == 'All' or wordness == 'Word' or wordness == 'Nonword':
+                ax.plot(time_point, time_series, label=f"{fea_tag} {wordness}", color=colors[i-1], linewidth=2)
             true_indices = np.where(mask_time_clus)[0]
             if true_indices.size > 0:
                 split_points = np.where(np.diff(true_indices) != 1)[0] + 1
@@ -127,7 +128,7 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                             linewidth=4,  # Make the line thick like a bar
                             solid_capstyle='butt')  # Makes the line ends flat
             i+=1
-        ax.set_title(f"{elec_grp} electrodes aligned to stim onset (Partial)", fontsize=16)
+        ax.set_title(f"{elec_grp} electrodes aligned to stim onset (Unique)", fontsize=16)
         ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=12)
         ax.set_ylabel("$X^2$ (Baseline corrected)", fontsize=12)
         ax.legend()
