@@ -105,7 +105,7 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 para_sig_bar = [1,1e-1]
             else:
                 time_series = time_series - np.mean(time_series[(time_point > -0.2) & (time_point <= 0)])
-                para_sig_bar = [18,1]
+                para_sig_bar = [30,1]
 
             if wordness == 'All' or wordness == 'Word' or wordness == 'Nonword':
                 ax.plot(time_point, time_series, label=f"{fea_tag} {wordness}", color=colors[i-1], linewidth=2)

@@ -65,7 +65,9 @@ model_func <- function(current_data,feature){
       fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
     }else if (feature=='wordness'){
       fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
-      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:23,":",feature), collapse = " + "),"+",feature))
+      fml <-as.formula(paste0('value ~ 1+',
+                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + "),"+",
+                                paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:23,":",feature), collapse = " + "),"+",feature))
     }else{
       fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
       fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + "),"+",feature))
@@ -85,7 +87,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e4
+  n_perm <- 1e2
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
