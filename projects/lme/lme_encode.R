@@ -58,13 +58,13 @@ model_func <- function(current_data,feature){
     }
   }else if (model_type=='full'){
     if (feature=='aco'){
-      fml_bsl<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:23), collapse = " + ")))
-      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('pho', 1:23),paste0('Wordvec', 1:91)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23),paste0('Wordvec', 1:91)), collapse = ' + ')))
     }else if (feature=='pho'){
-      fml_bsl<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
-      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('Wordvec', 1:91)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23),paste0('Wordvec', 1:91)), collapse = ' + ')))
     }else if (feature=='wordness'){
-      fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23)), collapse = ' + ')))
       fml <-as.formula(paste0('value ~ 1+',
                               paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + "),"+",
                                 paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:23,":",feature), collapse = " + "),"+",feature))
@@ -87,7 +87,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e2
+  n_perm <- 1e4
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -123,7 +123,7 @@ model_func <- function(current_data,feature){
 phase<-'full'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
-features <- c('wordness')
+features <- c('aco','pho')
 a = 0
 
 #Load acoustic parameters
@@ -143,6 +143,15 @@ pho_fea <- read.csv(pho_path,row.names = 1)
 pho_fea_T <- as.data.frame(t(pho_fea))
 pho_fea_T$stim <- rownames(pho_fea_T)
 pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
+
+#Load Word2vec parameters
+word2vec_path <- paste(home_dir,
+                  "data/word_to_embedding_pca.csv",
+                  sep = "")
+word2vec_fea <- read.csv(word2vec_path,row.names = 1)
+word2vec_fea_T <- as.data.frame(t(word2vec_fea))
+word2vec_fea_T$stim <- rownames(word2vec_fea_T)
+word2vec_fea_T <- word2vec_fea_T[, c("stim", setdiff(names(word2vec_fea_T), "stim"))]
 
 #Load word freq parameters
 freq_path <- paste(home_dir,"data/word_freq.csv",sep = "")
@@ -224,6 +233,10 @@ for (elec_grp in elec_grps){
     
     #%% append phonemic features
     long_data <- left_join(long_data,pho_fea_T,by='stim')
+    
+    #%% append word2vec features
+    long_data <- left_join(long_data,word2vec_fea_T,by='stim')
+    
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
     

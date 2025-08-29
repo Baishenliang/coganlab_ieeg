@@ -95,7 +95,7 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 # Create the new 'raw' DataFrame
                 raw = raw_word[['perm', 'time_point']].copy()
                 raw['chi_squared_obs'] = chi_squared_diff
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 1/5e3, 1/5e3,mode=mode)
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 1/1e2, 1/1e2,mode=mode)
             time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
             # win_len=10
             # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
@@ -105,7 +105,7 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 para_sig_bar = [1,1e-1]
             else:
                 time_series = time_series - np.mean(time_series[(time_point > -0.2) & (time_point <= 0)])
-                para_sig_bar = [30,1]
+                para_sig_bar = [12,1]
 
             if wordness == 'All' or wordness == 'Word' or wordness == 'Nonword':
                 ax.plot(time_point, time_series, label=f"{fea_tag} {wordness}", color=colors[i-1], linewidth=2)
