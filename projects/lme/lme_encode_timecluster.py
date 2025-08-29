@@ -64,15 +64,15 @@ is_normalize=False
 mode='time_cluster'
 for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 
-    for fea,fea_tag in zip(('wordness','aco','pho','Frq','Uni_Pos_SC'),
-                                 ('Lexical status','Acoustic','Phonemic','Word Frequency','Unigram Frequency')):
+    for fea,fea_tag in zip(('Wordvec','wordness','aco','pho'),
+                                 ('Embedding','Lexical status','Acoustic','Phonemic')):
         fig, ax = plt.subplots(figsize=(12, 4))
         ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
         i = 0
         if fea=='aco' or fea=='pho':
-            wordnesses=('Word','Nonword','Nonword-Word')
+            wordnesses=('All','Word','Nonword','Nonword-Word')
         elif fea=='Frq' or fea=='Uni_Pos_SC':
-            wordnesses=('Word','Nonword','Word-Nonword')
+            wordnesses=('All','Word','Nonword','Word-Nonword')
         else:
             wordnesses=('All','Word','Nonword','Word-Nonword')
         for wordness in wordnesses:

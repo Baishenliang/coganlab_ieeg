@@ -58,16 +58,19 @@ model_func <- function(current_data,feature){
     }
   }else if (model_type=='full'){
     if (feature=='aco'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('pho', 1:23),paste0('Wordvec', 1:91)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23),paste0('Wordvec', 1:91)), collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('pho', 1:23)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23)), collapse = ' + ')))
     }else if (feature=='pho'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('Wordvec', 1:91)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23),paste0('Wordvec', 1:91)), collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23)), collapse = ' + ')))
     }else if (feature=='wordness'){
       fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23)), collapse = ' + ')))
       fml <-as.formula(paste0('value ~ 1+',
                               paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + "),"+",
                                 paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:23,":",feature), collapse = " + "),"+",feature))
+    }else if (feature=='Wordvec'){
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23), paste0('Wordvec', 1:91)),collapse = ' + ')))
     }else{
       fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
       fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + "),"+",feature))
@@ -87,7 +90,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e4
+  n_perm <- 1e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -123,7 +126,7 @@ model_func <- function(current_data,feature){
 phase<-'full'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
-features <- c('aco','pho')
+features <- c('aco','pho','wordness','Wordvec')
 a = 0
 
 #Load acoustic parameters
@@ -237,17 +240,16 @@ for (elec_grp in elec_grps){
     #%% append word2vec features
     long_data <- left_join(long_data,word2vec_fea_T,by='stim')
     
+    #%% append word frequency features
+    long_data <- long_data %>%
+      left_join(
+        freq_fea %>% select(stim, 'Uni_Pos_SC'),
+        by = "stim"
+      )
+    
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
     
-    #%% append word frequency features
-    if (feature!='aco' && feature!='pho' && feature!='wordness'){
-      long_data <- long_data %>%
-        left_join(
-          freq_fea %>% select(stim, !!sym(feature)),
-          by = "stim"
-        )
-    }
     for (lex in c("All","Word","Nonword")){
       #%% Run computations
       a <- a + 1
