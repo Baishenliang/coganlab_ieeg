@@ -250,7 +250,7 @@ for (elec_grp in elec_grps){
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
     
-    for (lex in c("All","Word","Nonword")){
+    for (lex in c("Word","Nonword")){
       #%% Run computations
       a <- a + 1
       if (task_ID > 0 && a != task_ID) {
@@ -261,6 +261,7 @@ for (elec_grp in elec_grps){
         next
       }
       # If it is not for all word and nonword data then skip the wordness
+      # Although now we don't do 'Alls's
       if (lex!='All' && feature=='wordness'){
         next
       }

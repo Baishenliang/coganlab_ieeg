@@ -1145,6 +1145,9 @@ def atlas2_hist(label2atlas_raw, chs_sel, col, fig_save_dir_fm, ylim: list=[0,25
             # ax2.set_ylim(bottom=0)
             ax2.set_xlabel('') # Hide the x-axis label for the secondary plot as it's shared
 
+    ax = plt.gca()  # Get current axes
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     plt.tight_layout()
     plt.savefig(fig_save_dir_fm, dpi=300)
     plt.close()
@@ -1164,10 +1167,10 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
 
     for k, electrode_latency_df in enumerate(electrode_latency_dfs):
         if electrode_colorss is not None:
-            electrode_colors = electrode_colorss[k]
+            default_color = electrode_colorss[k]
         else:
             default_color = [0.5, 0.5, 0.5]
-            electrode_colors = [default_color] * len(electrode_latency_df)
+        electrode_colors = [default_color] * len(electrode_latency_df)
 
         ele_grp = ele_grps[k]
 
@@ -1223,7 +1226,7 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
     sns.barplot(
         data=df_barplot,
         x='GRP',
-        y='Y',
+        y='Mean_Y',
         yerr=df_barplot['SEM_Y'],
         capsize=0.1,
         ax=ax,
@@ -1249,7 +1252,7 @@ def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = No
             alpha=0.7
         )
 
-    ax.set_ylabel(y_tag, fontsize=20)
+    ax.set_ylabel(y_tag, fontsize=30)
     ax.tick_params(axis='y', labelsize=30)
     ax.set_xlabel('')
     current_labels = [label.get_text() for label in ax.get_xticklabels()]
