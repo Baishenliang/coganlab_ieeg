@@ -3,9 +3,9 @@ from pickle import FALSE
 from matplotlib_venn import venn3
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
+#groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -238,7 +238,7 @@ if "LexDelay" in groupsTag:
 if "LexNoDelay" in groupsTag:
 
     # (Auditory)
-    data_LexNoDelay_Aud_sorted,_,_,LexNoDelay_Aud_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud,epoc_LexNoDelay_Aud, cluster_twin,[0,mean_word_len])
+    data_LexNoDelay_Aud_sorted,_,_,LexNoDelay_Aud_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud,epoc_LexNoDelay_Aud, cluster_twin,[0,mean_word_len+auditory_decay])
 
     # (Motor prepare)
     data_LexNoDelay_Motor_Prep_sorted,_,_,LexNoDelay_Motor_Prep_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_prep_win)
@@ -278,6 +278,8 @@ if "LexNoDelay" in groupsTag:
     Lex_idxes['LexNoDelay_Sensory_OR_Motor_sig_idx'] = LexNoDelay_Sensory_OR_Motor_sig_idx
     Lex_idxes['LexNoDelay_all_sig_idx'] = LexNoDelay_all_sig_idx
     Lex_idxes['LexNoDelay_Motor_sig_idx'] = LexNoDelay_Motor_sig_idx
+    Lex_idxes['LexNoDelay_Aud_sig_idx'] = LexNoDelay_Aud_sig_idx
+    Lex_idxes['LexNoDelay_Motor_Resp_sig_idx'] = LexNoDelay_Motor_Resp_sig_idx
     # Lex_idxes['LexNoDelay_Silence_Encode_sig_idx'] = LexNoDelay_Silence_Encode_sig_idx
     # Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx'] = LexNoDelay_Silence_Encode_Only_sig_idx
     # Lex_idxes['LexNoDelay_Silence_Del_sig_idx'] = LexNoDelay_Silence_Del_sig_idx
@@ -572,11 +574,11 @@ if groupsTag == "LexDelay":
         plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
         plt.title('High gamma z-score traces (Stim aligned)',fontsize=20)
         wav_bsl_corr = True
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_sig_idx & roi_idx, f'Auditory n={len(LexDelay_Aud_sig_idx & roi_idx)}',
-                  Auditory_col, '-', wav_bsl_corr,ylim=[-0.2,0.8])
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Delay_sig_idx & roi_idx, f'Delay n={len(LexDelay_Delay_sig_idx & roi_idx)}',Delay_col,'-',wav_bsl_corr,ylim=[-0.2,0.8])
-        plot_wave(epoc_LexDelay_Aud,LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorimotor n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',Sensorimotor_col,'-',wav_bsl_corr,ylim=[-0.2,0.8])
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx & roi_idx, f'Motor n={len(LexDelay_Motor_sig_idx & roi_idx)}', Motor_col,'-',wav_bsl_corr,ylim=[-0.2,0.8])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_sig_idx & roi_idx, f'Auditory Delay n={len(LexDelay_Aud_sig_idx & roi_idx)}',
+                  Auditory_col, '-', wav_bsl_corr,ylim=[-0.2,1.5])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx & roi_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & roi_idx)}',Delay_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
+        plot_wave(epoc_LexDelay_Aud,LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorimotor Delay n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',Sensorimotor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx & roi_idx, f'Motor Delay n={len(LexDelay_Motor_sig_idx & roi_idx)}', Motor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
         plt.axvline(x=0, linestyle='--', color='k')
         plt.legend(loc='upper right',fontsize=15)
         plt.tick_params(axis='both', labelsize=16)
@@ -592,8 +594,8 @@ if groupsTag == "LexDelay":
         wav_bsl_corr = False
         plot_wave(epoc_LexDelay_Go, LexDelay_Aud_sig_idx,
                   f'Auditory_all n={len(LexDelay_Aud_sig_idx & roi_idx)}', Auditory_col, '-', False,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Go, LexDelay_Delay_sig_idx & roi_idx, f'Motorprep n={len(LexDelay_Delay_sig_idx & roi_idx)}', Delay_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Go,LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorimotor n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',Sensorimotor_col,'-',wav_bsl_corr,ylim=[-0.2,0.8])
+        plot_wave(epoc_LexDelay_Go, LexDelay_DelayOnly_sig_idx & roi_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & roi_idx)}', Delay_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
+        plot_wave(epoc_LexDelay_Go,LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorimotor n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',Sensorimotor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
         plot_wave(epoc_LexDelay_Go, LexDelay_Motor_sig_idx & roi_idx, f'Motor_noAud_all n={len(LexDelay_Motor_sig_idx & roi_idx)}', Motor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
         plt.axvline(x=0, linestyle='--', color='k')
         plt.title('(Go aligned)',fontsize=20)
@@ -611,7 +613,7 @@ if groupsTag == "LexDelay":
         wav_bsl_corr = False
         plot_wave(epoc_LexDelay_Resp, LexDelay_Aud_sig_idx & roi_idx,
                   f'Auditory_all n={len(LexDelay_Aud_sig_idx & roi_idx)}', Auditory_col, '-', False,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_Delay_sig_idx & roi_idx, f'Motorprep n={len(LexDelay_Delay_sig_idx & roi_idx)}', Delay_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
+        plot_wave(epoc_LexDelay_Resp, LexDelay_DelayOnly_sig_idx & roi_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & roi_idx)}', Delay_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
         plot_wave(epoc_LexDelay_Resp,LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorimotor n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',Sensorimotor_col,'-',wav_bsl_corr,ylim=[-0.2,0.8])
         plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_sig_idx & roi_idx, f'Motor_noAud_all n={len(LexDelay_Motor_sig_idx & roi_idx)}', Motor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
         plt.axvline(x=0, linestyle='--', color='k')
@@ -1072,8 +1074,12 @@ elif groupsTag=="LexDelay&LexNoDelay":
     Ndel_aud = Lex_idxes['LexNoDelay_Aud_NoMotor_sig_idx']
     Ndel_sm = Lex_idxes['LexNoDelay_Sensorimotor_sig_idx']
     Ndel_mtr = Lex_idxes['LexNoDelay_Motor_sig_idx']
+    Ndel_encode = Lex_idxes['LexNoDelay_Aud_sig_idx']
+    Ndel_response = Lex_idxes['LexNoDelay_Motor_Resp_sig_idx']
+
     del_all = (del_aud | del_sm | del_mtr | Lex_idxes['LexDelay_Motorprep_Only_sig_idx'] | Lex_idxes['LexDelay_DelayOnly_sig_idx'])
     Ndel_all = (Ndel_aud | Ndel_sm | Ndel_mtr)
+
     # Do the same things but for the Silent trials in lexical No Delay tasks (i.e., just listen)
     Ndel_S_encode_only=Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx']
     Ndel_S_del=Lex_idxes['LexNoDelay_Silence_Del_sig_idx']
@@ -1196,8 +1202,8 @@ elif groupsTag=="LexDelay&LexNoDelay":
     plt.close()
 
     for D_sig,D_tag in zip(
-            (del_sm,del_del,del_delol),
-            ('SM_DEL','DEL_DEL','DELOL_DEL')):
+            (del_del,),#del_sm,del_delol),
+            ('DEL_DEL',)):#'SM_DEL','DELOL_DEL')):
 
         if D_tag!='DEL_DEL':
             continue
@@ -1239,7 +1245,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
         plt.pie(DLREP_SM_inNDLJL,labels=DLREP_SM_inNDLJL_labels,colors=DLREP_SM_inNDLJL_colors,startangle=90,autopct='%1.2f%%')
         plt.show()
 
-        # Brain plot for SM electrodes in Delay (separated by functions in No Delay)
+        # Brain plot for electrodes in Delay (separated by functions in No Delay)
         len_d=len(data_LexDelay_Aud.labels[0])
         TypeLabel=f'{D_tag}_Delay_Rep in NoDelay Rep'
         cols = np.full((len_d, 3), 0.5)
@@ -1251,6 +1257,36 @@ elif groupsTag=="LexDelay&LexNoDelay":
         pick_labels=list(data_LexDelay_Aud.labels[0][list(D_sig)])
         plot_brain(subjs, pick_labels,cols_lst,None,os.path.join(fig_save_dir,f'{TypeLabel}_brain.tif'),0.5,0.2)
         # atlas2_hist(ch_labels_roi,list(data_LexDelay_Aud.labels[0][list(del_sm - (Ndel_aud | Ndel_sm))]),[0.5,0.5,0.5],os.path.join(fig_save_dir,f'Atlas histogram silent SM in NDL rep.tif'))
+
+        # Brain plot for electrodes in Delay (separated by functions in No Delay)
+        len_d=len(data_LexDelay_Aud.labels[0])
+        TypeLabel=f'{D_tag}_Delay_Rep in NoDelay Rep'
+        cols = np.full((len_d, 3), 0.5)
+        cols[list(D_sig & Ndel_aud),:] = Auditory_col
+        cols[list(D_sig & Ndel_sm),:] = Sensorimotor_col
+        cols[list(D_sig & Ndel_mtr),:] = Motor_col
+        cols[list(D_sig - Ndel_all),:] = (1,1,1)
+        cols_lst=cols[list(D_sig)].tolist()
+        pick_labels=list(data_LexDelay_Aud.labels[0][list(D_sig)])
+        plot_brain(subjs, pick_labels,cols_lst,None,os.path.join(fig_save_dir,f'{TypeLabel}_brain.tif'),0.5,0.2)
+
+        # Brain plot for Aud and SM electrodes in
+        len_d=len(data_LexDelay_Aud.labels[0])
+        TypeLabel=f'{D_tag}_Delay_Rep in NoDelay Rep'
+        # Delay & whether they are still Encoding electrodes in NoDelay
+        cols = np.full((len_d, 3), 0.5)
+        cols[list(D_sig & (del_aud | del_sm) & Ndel_encode),:] = Auditory_col
+        cols[list(D_sig & (del_aud | del_sm) - Ndel_encode),:] = [0.5,0.5,0.5]
+        cols_lst=cols[list(D_sig & (del_aud | del_sm))].tolist()
+        pick_labels=list(data_LexDelay_Aud.labels[0][list(D_sig & (del_aud | del_sm))])
+        plot_brain(subjs, pick_labels,cols_lst,None,os.path.join(fig_save_dir,f'{TypeLabel}_brain.tif'),0.3,0.2)
+        # Delay & whether they are still Response electrodes in NoDelay
+        cols = np.full((len_d, 3), 0.5)
+        cols[list(D_sig & (del_mtr | del_sm) & Ndel_response),:] = Motor_col
+        cols[list(D_sig & (del_mtr | del_sm) - Ndel_response),:] = [0.5,0.5,0.5]
+        cols_lst=cols[list(D_sig & (del_mtr | del_sm))].tolist()
+        pick_labels=list(data_LexDelay_Aud.labels[0][list(D_sig & (del_aud | del_sm))])
+        plot_brain(subjs, pick_labels,cols_lst,None,os.path.join(fig_save_dir,f'{TypeLabel}_brain.tif'),0.3,0.2)
 
         TypeLabel = f'{D_tag}_Delay_Rep in NoDelay JL'
         cols = np.full((len_d, 3), 0.5)
