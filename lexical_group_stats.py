@@ -23,17 +23,17 @@ trial_labels='CORRECT'
 # Parameters from the lexical delay task
 
 # Strong Auditory response set
-mean_word_len=0.5#0.65#0.62 # from utils/lexdelay_get_stim_length.m
+mean_word_len=0.65#0.65 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0 # a short period of time that we may assume auditory decay takes
-delay_len=1.125+0.15 # average length from sound offset to Go onset
+delay_len=1.125 # average length from sound offset to Go onset
 
 # mean_word_len=0.15#0.62 # from utils/lexdelay_get_stim_length.m
 # auditory_decay=0 # a short period of time that we may assume auditory decay takes
 # delay_len=1.525 # average length from sound offset to Go onset
 
-motor_prep_win=[-0.25,-0.1] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
-motor_resp_win=[-0.1,1] # get windows for motor response (0.75s to avoid too much auditory feedback)
-go_resp_win=[0.25, 0.75] # speech preparation signals from Go onset. 0.25s cut
+motor_prep_win=[-0.75,0] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
+motor_resp_win=[0,1] # get windows for motor response (0.75s to avoid too much auditory feedback)
+go_resp_win=[0, 0.75] # speech preparation signals from Go onset. 0.25s cut
 pre_stimonset_win=[-0.5,0]
 cluster_twin=0.011 # length of sig cluster (if it is 0.011, one sample only)
 
@@ -174,7 +174,7 @@ if "LexDelay" in groupsTag:
     data_LexDelay_Aud_sorted,_,_,LexDelay_Aud_sig_idx,*_ = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[0,mean_word_len+auditory_decay])
 
     # (Delay)
-    data_LexDelay_Delay_sorted,_,_,LexDelay_Delay_sig_idx,*_=sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len+0.1])
+    data_LexDelay_Delay_sorted,_,_,LexDelay_Delay_sig_idx,*_=sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[mean_word_len+auditory_decay,mean_word_len+auditory_decay+delay_len])
 
     # (Go)
     data_LexDelay_Go_sorted, _,_, LexDelay_Go_sig_idx,*_ = sort_chs_by_actonset(data_LexDelay_Go, epoc_LexDelay_Go, cluster_twin, go_resp_win)
@@ -238,7 +238,7 @@ if "LexDelay" in groupsTag:
 if "LexNoDelay" in groupsTag:
 
     # (Auditory)
-    data_LexNoDelay_Aud_sorted,_,_,LexNoDelay_Aud_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud,epoc_LexNoDelay_Aud, cluster_twin,[0,mean_word_len+auditory_decay])
+    data_LexNoDelay_Aud_sorted,_,_,LexNoDelay_Aud_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud,epoc_LexNoDelay_Aud, cluster_twin,[0,mean_word_len])
 
     # (Motor prepare)
     data_LexNoDelay_Motor_Prep_sorted,_,_,LexNoDelay_Motor_Prep_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_prep_win)
@@ -290,7 +290,7 @@ if "LexNoDelay" in groupsTag:
         epoc_LexNoDelay_Aud_DelDel=select_electrodes(epoc_LexNoDelay_Aud,LexDelay_Delay_sig_idx)
         epoc_LexNoDelay_Resp_DelDel=select_electrodes(epoc_LexNoDelay_Resp,LexDelay_Delay_sig_idx)
         _, _, _, LexNoDelay_Aud_DelDel_all,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud_DelDel,epoc_LexNoDelay_Aud_DelDel,cluster_twin, [-0.1,10])
-        _, _, _, LexNoDelay_Aud_DelDel_aud,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud_DelDel,epoc_LexNoDelay_Aud_DelDel,cluster_twin, [-0.1,mean_word_len + auditory_decay])
+        _, _, _, LexNoDelay_Aud_DelDel_aud,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud_DelDel,epoc_LexNoDelay_Aud_DelDel,cluster_twin, [0,mean_word_len])
         _, _, _, LexNoDelay_Aud_DelDel_mtrprep,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp_DelDel, epoc_LexNoDelay_Resp_DelDel, cluster_twin, motor_prep_win)
         _, _, _, LexNoDelay_Aud_DelDel_mtr,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp_DelDel, epoc_LexNoDelay_Resp_DelDel, cluster_twin, motor_resp_win)
         delsm_full=set(range(1, len(LexDelay_Delay_sig_idx)+1))
@@ -318,7 +318,7 @@ DelNoDel_Aud_paras={}
 for sig_idx, sig_tag,align_data,align_epoc in zip(
         (LexDelay_all_sig_idx,LexDelay_Delay_sig_idx,LexDelay_DelayOnly_sig_idx, LexDelay_Auditory_in_Delay_sig_idx, LexDelay_Sensorimotor_in_Delay_sig_idx,
          LexDelay_Motor_in_Delay_sig_idx, LexDelay_Motorprep_Only_sig_idx),
-        ('all_sig','Delay_all','DelOnly', 'Auditory', 'SM', 'Motor', 'Motorpreponly'),
+        ('all_sig','Delay_all','DelOnly', 'Auditory_Del', 'SM_Del', 'Motor_Del', 'Motorpreponly'),
         (data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud),
         (epoc_LexDelay_Aud,epoc_LexDelay_Aud,epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud)
 ):
@@ -350,7 +350,7 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
              f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
     _, _, _, _, _, paras,*_ = sort_chs_by_actonset(
         data_LexDelay_in_Delay_Aud, epoc_LexDelay_in_Delay_Aud,
-        cluster_twin, [mean_word_len+auditory_decay, mean_word_len+auditory_decay+delay_len+0.1], mask_data=True, sorted_indices=LexDelay_in_Delay_sorted_indices,
+        cluster_twin, [mean_word_len+auditory_decay, mean_word_len+auditory_decay+delay_len], mask_data=True, sorted_indices=LexDelay_in_Delay_sorted_indices,
         chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx, select_electrodes=False)
     DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']=paras
     # for column_name in ['activity_length', 'peak_location']:
@@ -493,14 +493,14 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
 # Summing up key electrodes
 electrode_activity_length_dfs=[]
 electrode_peak_value_dfs=[]
-electrode_mean_value_dfs=[]
+electrode_rms_value_dfs=[]
 
 # electrode_colorss=[]
 ele_grps=[]
 for sig_idx, sig_tag in zip(
         (LexDelay_DelayOnly_sig_idx, LexDelay_Auditory_in_Delay_sig_idx, LexDelay_Sensorimotor_in_Delay_sig_idx,
          LexDelay_Motor_in_Delay_sig_idx),
-        ('DelOnly', 'Auditory', 'SM', 'Motor')
+        ('DelOnly', 'Auditory_Del', 'SM_Del', 'Motor_Del')
 ):
     # electrode_latency_df = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned'][['first_non_nan_location']]
     electrode_latency_df = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned'][['activity_length']]
@@ -508,31 +508,31 @@ for sig_idx, sig_tag in zip(
     # Calculate 3 standard deviations for outlier removal
     # 这种删数据的方法可能会被attack，以后再回来认真看看吧。
     peak_values = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['peak_value']
-    mean_values = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['mean_value']
+    rms_values = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['sum_value']
 
     peak_3sd_threshold = peak_values.mean() + 3 * peak_values.std()
-    mean_3sd_threshold = mean_values.mean() + 3 * mean_values.std()
+    rms_3sd_threshold = rms_values.mean() + 3 * rms_values.std()
 
     # Filter for values > 0 and <= 3SD
     electrode_peak_value_df = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned'][['peak_value']][
         (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['peak_value'] > 0) &
         (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['peak_value'] <= peak_3sd_threshold)
     ]
-    electrode_mean_value_df = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned'][['mean_value']][
-        (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['mean_value'] > 0) &
-        (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['mean_value'] <= mean_3sd_threshold)
+    electrode_rms_value_df = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned'][['rms_value']][
+        (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['rms_value'] > 0) &
+        (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['rms_value'] <= rms_3sd_threshold)
     ]
     # electrode_colors=onsets2col(DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['activity_length'],data_LexDelay_Aud.labels[0][list(sig_idx)].tolist())
     electrode_activity_length_dfs.append(electrode_latency_df)
     electrode_peak_value_dfs.append(electrode_peak_value_df)
-    electrode_mean_value_dfs.append(electrode_mean_value_df)
+    electrode_rms_value_dfs.append(electrode_rms_value_df)
 
     # electrode_colorss.append(electrode_colors)
     ele_grps.append(sig_tag)
 
 elegroup_strip(electrode_activity_length_dfs, ele_grps,[Delay_col,Auditory_col,Sensorimotor_col,Motor_col],'Accumulated cluster length')
 elegroup_strip(electrode_peak_value_dfs, ele_grps,[Delay_col,Auditory_col,Sensorimotor_col,Motor_col],'Peak of z-scores')
-elegroup_strip(electrode_mean_value_dfs, ele_grps,[Delay_col,Auditory_col,Sensorimotor_col,Motor_col],'Mean of z-scores')
+elegroup_strip(electrode_rms_value_dfs, ele_grps,[Delay_col,Auditory_col,Sensorimotor_col,Motor_col],'Sum of z-scores')
 
 # %% reassign electrode indices by conditions
 Waveplot_wth=10 # Width of wave plots
@@ -545,8 +545,8 @@ if groupsTag == "LexDelay":
     len_d=len(data_LexDelay_Aud.labels[0])
 
     for roi_idx,roi_idx_tag in zip(
-            (LexDelay_Delay_sig_idx,LexDelay_all_sig_idx),
-            ('Delay','All')):
+            (LexDelay_Delay_sig_idx,),
+            ('Delay',)):
 
         for TypeLabel, sig, atlas_hist_ylim,col in zip(
             ('Auditory', 'Delay', 'Sensory-motor','Motor'),
@@ -903,14 +903,16 @@ if groupsTag == "LexDelay":
     DLREP_DEL_inDLREP = np.array([len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Aud_NoMotor_sig_idx']),
                                   len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Sensorimotor_sig_idx']),
                                   len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Motor_sig_idx']),
-                                  len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_DelayOnly_sig_idx'])
+                                  len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_DelayOnly_sig_idx']),
+                                  len(Lex_idxes['LexDelay_Delay_sig_idx'] - (Lex_idxes['LexDelay_Aud_NoMotor_sig_idx']| Lex_idxes['LexDelay_Sensorimotor_sig_idx'] | Lex_idxes['LexDelay_Motor_sig_idx'] | Lex_idxes['LexDelay_DelayOnly_sig_idx']))
                                   ])
 
     DLREP_DEL_inDLREP_labels = [f"Auditory N = {len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Aud_NoMotor_sig_idx'])}",
                                 f"Sensory-motor N = {len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Sensorimotor_sig_idx'])}",
                                 f"Motor N = {len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_Motor_sig_idx'])}",
-                                f"Delay Only N = {len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_DelayOnly_sig_idx'])}"]
-    DLREP_DEL_inDLREP_colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col]
+                                f"Delay Only N = {len(Lex_idxes['LexDelay_Delay_sig_idx'] & Lex_idxes['LexDelay_DelayOnly_sig_idx'])}",
+                                "Others"]
+    DLREP_DEL_inDLREP_colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col,[0.5,0.5,0.5]]
     plt.pie(DLREP_DEL_inDLREP, labels=DLREP_DEL_inDLREP_labels, colors=DLREP_DEL_inDLREP_colors, startangle=90,
             autopct='%1.2f%%')
     plt.show()

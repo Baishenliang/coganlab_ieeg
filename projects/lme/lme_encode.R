@@ -170,8 +170,8 @@ freq_fea<-normalized_freq_fea
 rm(normalized_freq_fea)
 
 #%% Start looping
-for (elec_grp in elec_grps){
-  for (feature in features){
+for (feature in features){
+  for (elec_grp in elec_grps){
     
     #%% Load files
     cat("loading files \n")

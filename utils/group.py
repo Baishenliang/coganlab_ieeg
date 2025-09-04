@@ -465,6 +465,8 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
         peak_location = np.nan
         first_non_nan_location = np.nan
         mean_value = 0
+        rms_value = 0
+        sum_value = 0
 
         if activity_length > 0:
 
@@ -473,14 +475,20 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
 
             first_non_nan_location = times[np.where(~np.isnan(channel_data))[0][0]]
 
-            mean_value = np.nanmean(not_nan_values)
+            rms_value = np.sqrt(np.mean(not_nan_values ** 2))
+
+            mean_value = np.nansum(not_nan_values)/activity_length
+
+            sum_value = np.nansum(not_nan_values)
 
         data_s_sorted_paras[chs_s_sorted[channel_idx]]={
             "activity_length": activity_length,
             "peak_value": peak_value,
             "peak_location": peak_location,
             "first_non_nan_location": first_non_nan_location,
-            "mean_value": mean_value
+            "mean_value": mean_value,
+            "rms_value": rms_value,
+            "sum_value":sum_value
         }
 
     data_s_sorted_paras_tab = pd.DataFrame.from_dict(data_s_sorted_paras, orient='index')
@@ -1018,7 +1026,7 @@ def adjust_saturation(rgb_color, avg_value,map:str='none'):
         return np.array(rgba_color[:3]).tolist()
 
 def atlas2_hist(label2atlas_raw, chs_sel, col, fig_save_dir_fm, ylim: list=[0,25], is_percentage: bool = False,
-                electrode_latency_df = None, electrode_colors: list = None,sort_ROI_by: str='count',reverse_sort:bool=True):
+                electrode_latency_df = None, electrode_colors: list = None,sort_ROI_by: str='count',reverse_sort:bool=True,hist_or_pie: str='pie'):
 
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -1071,86 +1079,106 @@ def atlas2_hist(label2atlas_raw, chs_sel, col, fig_save_dir_fm, ylim: list=[0,25
         for key,value in value_sums.items():
             value_means[key] = value / value_nonan_counts[key]
 
-    # Create the figure and primary axes for the bar plot
-    fig, ax1 = plt.subplots(figsize=(15, 6))
-
     # Sort the values by their count in descending order
     if sort_ROI_by == 'count':
         sorted_values = sorted(value_counts.items(), key=lambda x: x[1], reverse=reverse_sort)
     elif sort_ROI_by == 'latency':
-        sorted_atlas_labels_by_latency = sorted(value_means.keys(), key=lambda k: value_means[k],reverse=reverse_sort)
+        sorted_atlas_labels_by_latency = sorted(value_means.keys(), key=lambda k: value_means[k], reverse=reverse_sort)
         sorted_values = [(label, value_counts.get(label, 0)) for label in sorted_atlas_labels_by_latency]
     atlas_labels = [item[0] for item in sorted_values]
     counts = [item[1] for item in sorted_values]
 
-    # Bar plot on the primary y-axis (ax1)
-    ax1.bar(atlas_labels, counts, color=col)
-    ax1.set_xlabel('Atlas', fontsize=20)
-    if is_percentage:
-        ax1.set_ylabel('Percentage of Electrodes', fontsize=20)
-    else:
-        ax1.set_ylabel('Number of Electrodes', fontsize=20)
-    ax1.set_xticks(range(len(atlas_labels))) # Set tick locations
-    ax1.set_xticklabels(atlas_labels, fontsize=30, rotation=45, ha='right') # Set labels with rotation and alignment
-    ax1.tick_params(axis='y', labelsize=30)
-    ax1.set_ylim(ylim)
+    if hist_or_pie=='hist':
+        # Create the figure and primary axes for the bar plot
+        fig, ax1 = plt.subplots(figsize=(15, 6))
 
-    # --- Add the secondary Y-axis and Seaborn Stripplot ---
-    if electrode_latency_df is not None and electrode_colors is not None:
-        if len(chs_sel) != len(electrode_colors):
-            raise ValueError("The number of selected channels (chs_sel) must match the number of electrode colors.")
+        # Bar plot on the primary y-axis (ax1)
+        ax1.bar(atlas_labels, counts, color=col)
+        ax1.set_xlabel('Atlas', fontsize=20)
+        if is_percentage:
+            ax1.set_ylabel('Percentage of Electrodes', fontsize=20)
+        else:
+            ax1.set_ylabel('Number of Electrodes', fontsize=20)
+        ax1.set_xticks(range(len(atlas_labels))) # Set tick locations
+        ax1.set_xticklabels(atlas_labels, fontsize=30, rotation=45, ha='right') # Set labels with rotation and alignment
+        ax1.tick_params(axis='y', labelsize=30)
+        ax1.set_ylim(ylim)
 
-        # Create a secondary y-axis
-        ax2 = ax1.twinx()
+        # --- Add the secondary Y-axis and Seaborn Stripplot ---
+        if electrode_latency_df is not None and electrode_colors is not None:
+            if len(chs_sel) != len(electrode_colors):
+                raise ValueError("The number of selected channels (chs_sel) must match the number of electrode colors.")
 
-        # Prepare data for stripplot in a DataFrame format suitable for Seaborn
-        stripplot_data = []
-        custom_palette = {} # To store colors for each electrode
+            # Create a secondary y-axis
+            ax2 = ax1.twinx()
 
-        for i, ch_sel in enumerate(chs_sel):
-            atlas_region = label2atlas.get(ch_sel)
-            if atlas_region and atlas_region in atlas_labels: # Ensure atlas region is in our sorted labels
-                if ch_sel in electrode_latency_df.index:
-                    latency_value = electrode_latency_df.loc[ch_sel, 'latency']
-                    if pd.notna(latency_value):
-                        stripplot_data.append({'Atlas': atlas_region, 'Latency': latency_value, 'Electrode': ch_sel})
-                        custom_palette[ch_sel] = electrode_colors[i] # Map electrode to its color
+            # Prepare data for stripplot in a DataFrame format suitable for Seaborn
+            stripplot_data = []
+            custom_palette = {} # To store colors for each electrode
+
+            for i, ch_sel in enumerate(chs_sel):
+                atlas_region = label2atlas.get(ch_sel)
+                if atlas_region and atlas_region in atlas_labels: # Ensure atlas region is in our sorted labels
+                    if ch_sel in electrode_latency_df.index:
+                        latency_value = electrode_latency_df.loc[ch_sel, 'latency']
+                        if pd.notna(latency_value):
+                            stripplot_data.append({'Atlas': atlas_region, 'Latency': latency_value, 'Electrode': ch_sel})
+                            custom_palette[ch_sel] = electrode_colors[i] # Map electrode to its color
+                    else:
+                        print(f"Warning: Electrode {ch_sel} not found in electrode_latency_df. Skipping latency plot for this electrode.")
                 else:
-                    print(f"Warning: Electrode {ch_sel} not found in electrode_latency_df. Skipping latency plot for this electrode.")
-            else:
-                print(f"Warning: Electrode {ch_sel} atlas region '{atlas_region}' not in the main bar plot. Skipping latency plot for this electrode.")
+                    print(f"Warning: Electrode {ch_sel} atlas region '{atlas_region}' not in the main bar plot. Skipping latency plot for this electrode.")
 
-        if stripplot_data: # Only plot if there's data
-            df_stripplot = pd.DataFrame(stripplot_data)
+            if stripplot_data: # Only plot if there's data
+                df_stripplot = pd.DataFrame(stripplot_data)
 
-            # Define the order of x-axis categories for Seaborn to match the bar plot
-            order = atlas_labels
+                # Define the order of x-axis categories for Seaborn to match the bar plot
+                order = atlas_labels
 
-            # Use stripplot with hue set to 'Electrode' and a custom palette
-            sns.stripplot(
-                data=df_stripplot,
-                x='Atlas',
-                y='Latency',
-                hue='Electrode', # Use 'Electrode' for unique color mapping
-                palette=custom_palette, # Apply the custom palette
-                jitter=0.2, # Adjust jitter to spread points horizontally
-                dodge=False, # Do not dodge points based on hue
-                ax=ax2, # Plot on the secondary axis
-                s=6, # Marker size
-                legend=False # Hide the legend for individual electrodes
-            )
+                # Use stripplot with hue set to 'Electrode' and a custom palette
+                sns.stripplot(
+                    data=df_stripplot,
+                    x='Atlas',
+                    y='Latency',
+                    hue='Electrode', # Use 'Electrode' for unique color mapping
+                    palette=custom_palette, # Apply the custom palette
+                    jitter=0.2, # Adjust jitter to spread points horizontally
+                    dodge=False, # Do not dodge points based on hue
+                    ax=ax2, # Plot on the secondary axis
+                    s=6, # Marker size
+                    legend=False # Hide the legend for individual electrodes
+                )
 
-            ax2.set_ylabel('Latency', fontsize=20, color='grey')
-            ax2.tick_params(axis='y', labelsize=30, colors='grey')
-            # ax2.set_ylim(bottom=0)
-            ax2.set_xlabel('') # Hide the x-axis label for the secondary plot as it's shared
+                ax2.set_ylabel('Latency', fontsize=20, color='grey')
+                ax2.tick_params(axis='y', labelsize=30, colors='grey')
+                # ax2.set_ylim(bottom=0)
+                ax2.set_xlabel('') # Hide the x-axis label for the secondary plot as it's shared
 
-    ax = plt.gca()  # Get current axes
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    plt.tight_layout()
-    plt.savefig(fig_save_dir_fm, dpi=300)
-    plt.close()
+        ax = plt.gca()  # Get current axes
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        plt.tight_layout()
+        plt.savefig(fig_save_dir_fm, dpi=300)
+        plt.close()
+
+    #%% Pie chart for the first five components
+    elif hist_or_pie=='pie':
+        plt.figure()
+        counts_f = counts[0:5]
+        counts_f.append(int(np.sum(counts[5:])))
+        labels_f = atlas_labels[0:5]
+        labels_f.append('Others')
+        label_cols = [(0.3922, 0.1961, 0.5882), (0.502, 0.0, 0.502), (0.6275, 0.1255, 0.9412), (0.8, 0.6, 1.0), (0.902, 0.902, 0.98), (0.8627, 0.8627, 0.8627)]
+        # Calculate the total sum of the counts
+        total = sum(counts_f)
+        def my_autopct(pct):
+            val = int(pct * total / 100)
+            return f'{val}'
+        plt.pie(counts_f, labels=labels_f, colors=label_cols, startangle=90,
+                autopct=my_autopct,textprops={'fontsize': 20})
+        plt.tight_layout()
+        plt.savefig(fig_save_dir_fm, dpi=300)
+        plt.close()
 
 
 def elegroup_strip(electrode_latency_dfs, ele_grps, electrode_colorss: list = None,y_tag:str='Duration'):
