@@ -1025,13 +1025,39 @@ def adjust_saturation(rgb_color, avg_value,map:str='none'):
         # Return only the RGB components as a list
         return np.array(rgba_color[:3]).tolist()
 
+def create_gradient(base_rgb, steps):
+    """
+    Creates a list of RGB tuples representing a gradient.
+    The gradient goes from the base_rgb color to white.
+    """
+    gradient_colors = []
+    # The target color for the gradient is white
+    target_rgb = (1.0, 1.0, 1.0)
+
+    for i in range(steps):
+        # Calculate the interpolation factor
+        # This will go from 0 to 1
+        interp_factor = i / (steps - 1)
+
+        # Linearly interpolate each RGB channel
+        r = base_rgb[0] + (target_rgb[0] - base_rgb[0]) * interp_factor
+        g = base_rgb[1] + (target_rgb[1] - base_rgb[1]) * interp_factor
+        b = base_rgb[2] + (target_rgb[2] - base_rgb[2]) * interp_factor
+
+        # Append the new color to the list, rounding for cleaner output
+        gradient_colors.append((round(r, 4), round(g, 4), round(b, 4)))
+
+    return gradient_colors
+
 def atlas2_hist(label2atlas_raw, chs_sel, col, fig_save_dir_fm, ylim: list=[0,25], is_percentage: bool = False,
-                electrode_latency_df = None, electrode_colors: list = None,sort_ROI_by: str='count',reverse_sort:bool=True,hist_or_pie: str='pie'):
+                electrode_latency_df = None, electrode_colors: list = None,sort_ROI_by: str='count',reverse_sort:bool=True,hist_or_pie: str='pie',pie_label_col_base:list=[1,0,0]):
 
     import matplotlib.pyplot as plt
     import pandas as pd
     import seaborn as sns  # Import seaborn
+
     label2atlas = {ch_sel: label2atlas_raw[ch_sel] for ch_sel in chs_sel}
+
 
     # Count the number of keys for each value (atlas region)
     value_counts = {}
@@ -1162,19 +1188,22 @@ def atlas2_hist(label2atlas_raw, chs_sel, col, fig_save_dir_fm, ylim: list=[0,25
         plt.close()
 
     #%% Pie chart for the first five components
+
     elif hist_or_pie=='pie':
         plt.figure()
         counts_f = counts[0:5]
         counts_f.append(int(np.sum(counts[5:])))
         labels_f = atlas_labels[0:5]
         labels_f.append('Others')
-        label_cols = [(0.3922, 0.1961, 0.5882), (0.502, 0.0, 0.502), (0.6275, 0.1255, 0.9412), (0.8, 0.6, 1.0), (0.902, 0.902, 0.98), (0.8627, 0.8627, 0.8627)]
+        pie_label_cols=create_gradient(pie_label_col_base,6)
+        pie_label_cols=pie_label_cols[0:5]
+        pie_label_cols.append((0.8627, 0.8627, 0.8627))
         # Calculate the total sum of the counts
         total = sum(counts_f)
         def my_autopct(pct):
             val = int(pct * total / 100)
             return f'{val}'
-        plt.pie(counts_f, labels=labels_f, colors=label_cols, startangle=90,
+        plt.pie(counts_f, labels=labels_f, colors=pie_label_cols, startangle=90,
                 autopct=my_autopct,textprops={'fontsize': 20})
         plt.tight_layout()
         plt.savefig(fig_save_dir_fm, dpi=300)
