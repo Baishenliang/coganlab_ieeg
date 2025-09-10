@@ -65,9 +65,9 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
     i = 0
     for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
                                  ('Embedding','Lexical status','Acoustic','Phonemic'),
-                                ([6,0.5],[8,0.5],[12,0.5],[12,0.5])):
+                                ([6,0.5],[8,0.5],[20,0.5],[20,0.5])):
         j=0
-        fig, ax = plt.subplots(figsize=(15, 8))
+        fig, ax = plt.subplots(figsize=(19, 4))
         ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
         ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7)
         ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7)
@@ -78,7 +78,7 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
         else:
             wordnesses=('All','Word','Nonword','Word-Nonword')
         for wordness in wordnesses:
-            if fea=='Frq' and wordness!='Word':
+            if (fea=='Frq' or fea=='Wordvec') and wordness!='Word':
                 continue
             if fea=='wordness' and wordness!='All':
                 continue
@@ -97,7 +97,7 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 # Create the new 'raw' DataFrame
                 raw = raw_word[['perm', 'time_point']].copy()
                 raw['chi_squared_obs'] = chi_squared_diff
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 2/1e4, 2/1e4,mode=mode)
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 1/5e3, 1/5e3,mode=mode)
             time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
             # win_len=10
             # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
@@ -135,11 +135,12 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                             solid_capstyle='butt')  # Makes the line ends flat
             j+=1
             i+=1
-        ax.set_title(f"{fea_tag}", fontsize=24)
-        ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
+        # ax.set_title(f"{fea_tag}", fontsize=24)
+        # ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
         ax.set_ylabel("$X^2$", fontsize=20)
         ax.tick_params(axis='both', which='major', labelsize=16)
-        ax.legend(fontsize=18)
+        if fea!='wordness':
+            ax.legend(fontsize=18)
         ax.set_xlim(-0.2, time_point.max())
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
