@@ -18,6 +18,13 @@ from scipy.ndimage import gaussian_filter1d,uniform_filter1d
 
 #%% Run time cluster
 
+font_scale=2
+plt.rcParams['font.size'] = 14*font_scale
+plt.rcParams['axes.titlesize'] = 16*font_scale
+plt.rcParams['axes.labelsize'] = 12*font_scale
+plt.rcParams['xtick.labelsize'] = 12*font_scale
+plt.rcParams['ytick.labelsize'] = 12*font_scale
+plt.rcParams['legend.fontsize'] = 12*font_scale
 
 def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster'):
     # Load data
@@ -65,12 +72,12 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
     i = 0
     for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
                                  ('Embedding','Lexical status','Acoustic','Phonemic'),
-                                ([6,0.5],[8,0.5],[20,0.5],[20,0.5])):
+                                ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
         j=0
-        fig, ax = plt.subplots(figsize=(19, 4))
-        ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7)
-        ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7)
-        ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7)
+        fig, ax = plt.subplots(figsize=(19, 6))
+        ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
+        ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
+        ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
         if fea=='aco' or fea=='pho':
             wordnesses=('Word','Nonword','Nonword-Word')
         elif fea=='Frq' or fea=='Uni_Pos_SC' or fea=='Wordvec':
@@ -110,7 +117,7 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 para_sig_bar = para_sig_barbar
 
             if wordness == 'All' or wordness == 'Word' or wordness == 'Nonword':
-                ax.plot(time_point, time_series, label=f"{wordness}", color=colors[i-1], linewidth=2)
+                ax.plot(time_point, time_series, label=f"{wordness}", color=colors[i-1], linewidth=5)
             true_indices = np.where(mask_time_clus)[0]
             if true_indices.size > 0:
                 split_points = np.where(np.diff(true_indices) != 1)[0] + 1
@@ -131,16 +138,16 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                         colcol=colors[i - 1]
                     ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(j-1),para_sig_bar[0]-para_sig_bar[1]*(j-1)],
                             color=colcol,alpha=0.4,
-                            linewidth=4,  # Make the line thick like a bar
+                            linewidth=10,  # Make the line thick like a bar
                             solid_capstyle='butt')  # Makes the line ends flat
             j+=1
             i+=1
         # ax.set_title(f"{fea_tag}", fontsize=24)
         # ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
-        ax.set_ylabel("$X^2$", fontsize=20)
-        ax.tick_params(axis='both', which='major', labelsize=16)
-        if fea!='wordness':
-            ax.legend(fontsize=18)
+        ax.set_ylabel("$X^2$")#, fontsize=20)
+        ax.tick_params(axis='both', which='major')#, labelsize=16)
+        # if fea!='wordness':
+        #     ax.legend(fontsize=18)
         ax.set_xlim(-0.2, time_point.max())
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
