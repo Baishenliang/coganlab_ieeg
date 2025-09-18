@@ -550,11 +550,11 @@ if groupsTag == "LexDelay":
     # Delay & whether they are still Encoding electrodes in NoDelay
     for elec_idx,elec_col in zip((LexDelay_Aud_NoMotor_sig_idx,LexDelay_Sensorimotor_sig_idx,LexDelay_Motor_sig_idx,LexDelay_DelayOnly_sig_idx),
                                  (Auditory_col,Sensorimotor_col,Motor_col,Delay_col)):
-        mode='without_delay' #'all','with delay', 'without_delay'
+        mode='all' #'all','with delay', 'without_delay'
         cols = np.full((len_d, 3), 0.5)
         cols[list(elec_idx & LexDelay_Delay_sig_idx), :] = elec_col
         if len(elec_idx - LexDelay_Delay_sig_idx)>0:
-            cols[list(elec_idx - LexDelay_Delay_sig_idx), :] = create_gradient(elec_col,6)[2]
+            cols[list(elec_idx - LexDelay_Delay_sig_idx), :] = create_gradient(elec_col,6)[4]
         print(f'In Delay {len(elec_idx & LexDelay_Delay_sig_idx)} Not in Delay {len(elec_idx - LexDelay_Delay_sig_idx)}')
         if mode=='all':
             cols_lst = cols[list(elec_idx)].tolist()
@@ -948,6 +948,7 @@ if groupsTag == "LexDelay":
     DLREP_DEL_inDLREP_colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col,[0.5,0.5,0.5]]
     plt.pie(DLREP_DEL_inDLREP, labels=DLREP_DEL_inDLREP_labels, colors=DLREP_DEL_inDLREP_colors, startangle=90,
             autopct=my_autopct,textprops={'fontsize': 15})
+    plt.rcParams.update({'font.size': 14})  # Base font size
     plt.show()
 
 
