@@ -1191,12 +1191,13 @@ def atlas2_hist(label2atlas_raw, chs_sel, col, fig_save_dir_fm, ylim: list=[0,25
 
     elif hist_or_pie=='pie':
         plt.figure()
-        counts_f = counts[0:5]
-        counts_f.append(int(np.sum(counts[5:])))
-        labels_f = atlas_labels[0:5]
+        visible_till=10
+        counts_f = counts[0:visible_till]
+        counts_f.append(int(np.sum(counts[visible_till:])))
+        labels_f = atlas_labels[0:visible_till]
         labels_f.append('Others')
-        pie_label_cols=create_gradient(pie_label_col_base,6)
-        pie_label_cols=pie_label_cols[0:5]
+        pie_label_cols=create_gradient(pie_label_col_base,visible_till+1)
+        pie_label_cols=pie_label_cols[0:visible_till]
         pie_label_cols.append((0.8627, 0.8627, 0.8627))
         # Calculate the total sum of the counts
         total = sum(counts_f)
