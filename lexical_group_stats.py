@@ -312,6 +312,17 @@ if "LexNoDelay" in groupsTag:
 
     # May do in_Silence electrodes later
 Lex_idxes['groupsTag']=groupsTag
+
+Spt_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Spt']
+lPMC_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lPMC']
+lIPL_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL']
+lIFG_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG']
+
+Lex_idxes['Hikock_Spt']=Spt_sig_idx
+Lex_idxes['Hikock_lPMC']=hickok_roi_sig_idx['lPMC']
+Lex_idxes['Hikock_lIPL']=hickok_roi_sig_idx['lIPL']
+Lex_idxes['Hikock_lIFG']=hickok_roi_sig_idx['lIFG']
+
 with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.npy'), "wb") as f:
     pickle.dump(Lex_idxes, f)
 
@@ -663,10 +674,6 @@ if groupsTag == "LexDelay":
 
     # Waves for Auditory, Delay, Motor_Prep, and Motor electrodes
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
-    Spt_sig_idx=LexDelay_all_sig_idx & hickok_roi_sig_idx['Spt']
-    lPMC_sig_idx=LexDelay_all_sig_idx & hickok_roi_sig_idx['lPMC']
-    lIPL_sig_idx=LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL']
-    lIFG_sig_idx=LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG']
 
     # Brain plot for electrode distribution:
     len_d = len(data_LexDelay_Aud.labels[0])
