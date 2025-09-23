@@ -251,7 +251,7 @@ for (feature in features){
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
     
-    for (lex in c("Word","Nonword")){
+    for (lex in c("Word","Nonword",'All')){
       #%% Run computations
       a <- a + 1
       if (task_ID > 0 && a != task_ID) {
