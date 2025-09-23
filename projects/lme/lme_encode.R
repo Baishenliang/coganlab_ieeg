@@ -124,7 +124,8 @@ model_func <- function(current_data,feature){
 
 #%% Parameters
 phase<-'full'
-elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
+# elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
+elec_grps <- c('Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 features <- c('aco','pho','wordness','Wordvec')
 a = 0

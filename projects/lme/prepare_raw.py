@@ -72,8 +72,10 @@ for t_tag,t_range in zip(
         ([-0.5,mean_word_len+auditory_decay+delay_len],)
 ):
     for elec_grp,elec_idx in zip(
-            ('Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only'),
-            ('LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+            ('Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only',
+             'Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG'),
+            ('LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx',
+             'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
     ):
         print(f'Now Doing {t_tag} {elec_grp}')
         m_chs = epoc_LexDelayRep_Aud.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
