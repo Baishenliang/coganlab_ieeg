@@ -319,9 +319,9 @@ lIPL_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL']
 lIFG_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG']
 
 Lex_idxes['Hikock_Spt']=Spt_sig_idx
-Lex_idxes['Hikock_lPMC']=hickok_roi_sig_idx['lPMC']
-Lex_idxes['Hikock_lIPL']=hickok_roi_sig_idx['lIPL']
-Lex_idxes['Hikock_lIFG']=hickok_roi_sig_idx['lIFG']
+Lex_idxes['Hikock_lPMC']=lPMC_sig_idx
+Lex_idxes['Hikock_lIPL']=lIPL_sig_idx
+Lex_idxes['Hikock_lIFG']=lIFG_sig_idx
 
 with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.npy'), "wb") as f:
     pickle.dump(Lex_idxes, f)
