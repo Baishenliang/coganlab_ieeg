@@ -6,4 +6,4 @@
 #SBATCH --partition=common,scavenger
 #SBATCH --output=DCC_out/%a.out
 module load R
-Rscript lme_encode.R
+Rscript lme_encode_univar.R
