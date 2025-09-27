@@ -48,13 +48,13 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
   if (model_type=='simple'){
-    fml_bsl<-as.formula(paste0('value ~ 1'))
+    fml_bsl<-as.formula(paste0(feature,' ~ 1'))
     if (feature=='aco'){
       fml<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
     }else if (feature=='pho'){
       fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:23), collapse = " + ")))
     }else{
-      fml<-as.formula(paste0('value ~ 1+',feature))
+      fml<-as.formula(paste0(feature,'~ 1 + value'))
     }
   }else if (model_type=='full'){
     if (feature=='aco'){
@@ -90,12 +90,12 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e4
+  n_perm <- 1e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
     current_data_perm <- current_data %>%
-      group_by(subject, electrode) %>%
+      group_by(electrode) %>%
       mutate(
         perm_indices = sample(1:n()),
         across(starts_with(feature), ~ .x[perm_indices])
@@ -125,11 +125,11 @@ model_func <- function(current_data,feature){
 #%% Parameters
 ana_tag<-'NoDel'
 phase<-'full'
-del_nodel_tag <- 'epoc_LexNoDelay_Cue'
+del_nodel_tag <- 'epoc_LexNoDelay_Aud'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 # features <- c('aco','pho','wordness','Wordvec')
-features <- c('aud_onset','resp_onset')
+features <- c('resp_onset')
 a = 0
 
 #Load acoustic parameters
@@ -193,6 +193,14 @@ for (feature in features){
     
     na_fea_rows <- is.na(long_data[[feature]])
     long_data <- long_data[!na_fea_rows, ] 
+    
+    long_data <- long_data %>%
+      unite(
+        col = "subj_electrode",
+        c(subject, electrode),
+        sep = "_"
+      ) %>%
+      rename(electrode = subj_electrode)
     
     # #%% append acoustic features
     # long_data <- left_join(long_data,aco_fea_T,by='stim')
