@@ -176,6 +176,12 @@ rm(normalized_freq_fea)
 for (feature in features){
   for (elec_grp in elec_grps){
     
+    #%% Run computations
+    a <- a + 1
+    if (task_ID > 0 && a != task_ID) {
+      next
+    }
+    
     #%% Load files
     cat("loading files \n")
     # slurm task selection
