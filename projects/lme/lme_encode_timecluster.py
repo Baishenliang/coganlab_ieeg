@@ -67,12 +67,13 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 is_normalize=False
 mode='time_cluster'
-for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
+for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 
     i = 0
     for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
                                  ('Embedding','Lexical status','Acoustic','Phonemic'),
                                 ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
+
         j=0
         fig, ax = plt.subplots(figsize=(19, 6))
         ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
