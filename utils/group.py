@@ -17,6 +17,20 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
     from ieeg.arrays.label import LabeledArray
     from ieeg.arrays.label import combine as cb_dict
 
+    def unique_single_event(trial_annoate):
+        seen_counts = {}
+        new_trial_annoate = []
+        for item in trial_annoate:
+            segments = item.split('/')
+            key_segment = segments[3]
+            count = seen_counts.get(key_segment, -1) + 1
+            seen_counts[key_segment] = count
+            segments[3] = f"{key_segment}-{count}"
+            modified_item = '/'.join(segments)
+            new_trial_annoate.append(modified_item)
+        return new_trial_annoate
+
+
     match stat_type:
         case "zscore":
             fif_read = lambda f: mne.read_epochs(f, False, preload=True)
@@ -124,7 +138,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
         if keeptrials:
             arr = LabeledArray.from_signal(subj_dataset)
-            trial_annoate = arr.labels[0]
+            trial_annoate = unique_single_event(arr.labels[0])
             del arr
             # trial_annoate = make_array_unique(trial_annoate,'/')
         del subj_dataset # clear up memory
@@ -241,13 +255,88 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False):
+def get_onset_times(epoc):
+    import re
+    import pandas as pd
+    import glob
+    import os
+
+    unique_padded_ids = set()
+    for label in epoc.labels[1]:
+        patient_id = label.split('-')[0]
+        letter_part = patient_id[0]
+        number_part = patient_id[1:]
+        padded_number = f"{int(number_part):04d}"
+        padded_id = f"{letter_part}{padded_number}"
+        unique_padded_ids.add(padded_id)
+    subjs = list(unique_padded_ids)
+
+    auditory_stim_dicts = {}
+    resp_dicts = {}
+    for subj in subjs:
+        print(subj)
+        HOME = os.path.expanduser("~")
+        LAB_root = os.path.join(HOME, "Box", "CoganLab")
+        clean_root = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BIDS', "derivatives", "clean")
+
+        subj_gamma_clean_dir = os.path.join(clean_root, f'sub-{subj}', 'ieeg')
+        files = glob.glob(os.path.join(subj_gamma_clean_dir, '*acq-*_run-*_desc-clean_events.tsv'))
+        files_sorted = sorted(files, key=lambda x: [int(i) for i in re.findall(r'acq-(\d+)_run-(\d+)', x)[0]])
+        dfs = [pd.read_csv(f, sep='\t') for f in files_sorted]
+        events_df = pd.concat(dfs, ignore_index=True)
+
+        filtered_df = events_df[
+            events_df['trial_type'].str.contains('CORRECT') & events_df['trial_type'].str.contains('Repeat')].copy()
+        filtered_df['trial_id'] = filtered_df['trial_type'].str.contains('Cue').cumsum()
+        filtered_df['key_segment'] = filtered_df['trial_type'].str.split('/').str[3]
+        auditory_stim_dict = {}
+        resp_dict = {}
+
+        seen_counts = {}
+        for trial_id in filtered_df['trial_id'].unique():
+            trial_data = filtered_df[filtered_df['trial_id'] == trial_id]
+
+            cue_onset = trial_data[trial_data['trial_type'].str.contains('Auditory_stim')]['onset'].iloc[0]
+
+            auditory_stim_row = trial_data[trial_data['trial_type'].str.contains('Auditory_stim')]
+            resp_row = trial_data[trial_data['trial_type'].str.contains('Resp')]
+
+            key = trial_data['key_segment'].iloc[0]
+
+            count = seen_counts.get(key, -1) + 1
+            seen_counts[key] = count
+            key_count = f"{key}-{count}"
+
+            if key_count not in auditory_stim_dict:
+                auditory_stim_dict[key_count] = []
+            if key_count not in resp_dict:
+                resp_dict[key_count] = []
+
+            auditory_stim_diff = [float(auditory_stim_row['onset'].iloc[0] - cue_onset)]
+            resp_diff = [float(resp_row['onset'].iloc[0] - cue_onset)]
+
+            auditory_stim_dict[key_count] = auditory_stim_dict[key_count] + auditory_stim_diff
+            resp_dict[key_count] = resp_dict[key_count] + resp_diff
+
+        auditory_stim_dicts[subj] = auditory_stim_dict
+        resp_dicts[subj] = resp_dict
+
+    return auditory_stim_dicts, resp_dicts
+
+def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDelay_append_startings=False):
 
     import pandas as pd
     import os
     import pickle
     from scipy.ndimage import uniform_filter1d
     from ieeg.arrays.label import LabeledArray
+
+    if NoDelay_append_startings:
+        sf_dir=safe_dir.split('\\')[0]
+        with open(os.path.join(sf_dir,'LexNoDelay_Aud_auditory_stim_dicts.pkl'), 'rb') as f:
+            auditory_stim_dicts = pickle.load(f)
+        with open(os.path.join(sf_dir,'LexNoDelay_Aud_resp_dicts.pkl'), 'rb') as f:
+            resp_dicts = pickle.load(f)
 
     # Load stim feature dictonaries
     # These dictionaries are generated by "D:\bsliang_Coganlabcode\coganlab_ieeg\projects\GLM\generate_features.ipynb"
@@ -302,6 +391,30 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False):
                         'time_point': time_point,
                         'value': value
                     }
+                elif NoDelay_append_startings==True:
+                    prefix = subject[0]
+                    number = subject[1:]
+                    padded_number = number.zfill(4)
+                    subj = prefix + padded_number
+                    if stim in auditory_stim_dicts[subj]:
+                        aud_onset=round(auditory_stim_dicts[subj][stim][0],5)
+                    else:
+                        aud_onset=np.nan
+                    if stim in resp_dicts[subj]:
+                        resp_onset=round(resp_dicts[subj][stim][0],5)
+                    else:
+                        resp_onset=np.nan
+                    stim_entry=stim.split('-')[0]
+                    row = {
+                        'subject': subject,
+                        'electrode': electrode,
+                        'wordness': wordness,
+                        'stim': stim_entry,
+                        'time_point': time_point,
+                        'aud_onset': aud_onset,
+                        'resp_onset': resp_onset,
+                        'value': value
+                    }
                 else:
                     row = {
                         'subject': subject,
@@ -315,18 +428,20 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False):
     df_long = pd.DataFrame(rows_list)
     df_long['time_point'] = pd.to_numeric(df_long['time_point'])
 
-    # make it wide
-    df_wide = df_long.pivot(
-        index=['subject', 'electrode', 'wordness', 'stim'],
-        columns='time_point',
-        values='value'
-    )
-    df_wide_reset = df_wide.reset_index()
-    df_wide_reset.columns.name = None
-
     # save
     df_long.to_csv(f'{safe_dir}_long.csv', index=False, encoding='utf-8',na_rep='NA')
-    df_wide_reset.to_csv(f'{safe_dir}_wide.csv', index=False, encoding='utf-8',na_rep='NA')
+
+    if not NoDelay_append_startings:
+        # make it wide
+        df_wide = df_long.pivot(
+            index=['subject', 'electrode', 'wordness', 'stim'],
+            columns='time_point',
+            values='value'
+        )
+        df_wide_reset = df_wide.reset_index()
+        df_wide_reset.columns.name = None
+        df_wide_reset.to_csv(f'{safe_dir}_wide.csv', index=False, encoding='utf-8', na_rep='NA')
+
 
 def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False,chs_s_all_idx=None,sorted_indices=None,select_electrodes:bool=True):
     """
