@@ -106,7 +106,7 @@ for elec_typ in elec_typs:
 
         # Plot predicting time series
         try:
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 5e-2, 5e-2,mode='time_cluster')
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 5e-1, 5e-2,mode='time_cluster')
         except Exception as e:
             continue
         time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
