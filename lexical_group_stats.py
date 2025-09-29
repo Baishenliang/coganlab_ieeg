@@ -3,9 +3,9 @@ from pickle import FALSE
 from matplotlib_venn import venn3
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
+groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -727,7 +727,7 @@ if groupsTag == "LexDelay":
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
     plt.figure(figsize=(Waveplot_wth * (100 / 350), Waveplot_hgt))
     wav_bsl_corr = False
-    plot_wave(epoc_LexDelay_Resp, Spt_sig_idx,f'Spt n={len(Spt_sig_idx)}',Auditory_col, '-', wav_bsl_corr, ylim=[-0.2, 1.6])
+    plot_wave(epoc_LexDelay_Resp, Spt_sig_idx,f'lPMC n={len(Spt_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 1.6])
     plot_wave(epoc_LexDelay_Resp, lPMC_sig_idx,f'lPMC n={len(lPMC_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 1.6])
     plot_wave(epoc_LexDelay_Resp, lIPL_sig_idx,f'lIPL n={len(lIPL_sig_idx)}', Delay_col, '-',wav_bsl_corr, ylim=[-0.2, 1.6])
     plot_wave(epoc_LexDelay_Resp, lIFG_sig_idx,f'lIFG n={len(lIFG_sig_idx)}', Motor_col, '-', wav_bsl_corr, ylim=[-0.2, 1.6])
@@ -737,11 +737,70 @@ if groupsTag == "LexDelay":
     plt.legend().set_visible(False)
     plt.tick_params(axis='both', labelsize=16)
     plt.xticks(rotation=45)
-    plt.xlim([-0.25, 1])
+    plt.xlim([-0.5, 1])
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_org_cat_Resp_{roi_idx_tag}.tif'), dpi=300)
     plt.close()
+
+    # Plot Hickok ROI waves by electrodes aligned to Motor onsets
+    # sig/nonsig before Motor onset
+    _, _, _, sig_before_resp_onset, *_ = sort_chs_by_actonset(data_LexDelay_Resp,
+                                                              epoc_LexDelay_Resp,
+                                                              cluster_twin, [-0.5, 0], mask_data=True,
+                                                              select_electrodes=True)
+    for Hickok_roi_gp,col,tag in zip(
+            (Spt_sig_idx,lPMC_sig_idx,lIFG_sig_idx),
+            (Auditory_col,Sensorimotor_col,Motor_col),
+            ('Spt','lPMC','lIFG')
+    ):
+
+        # Clus plots
+        Hickok_ROI_data = select_electrodes(data_LexDelay_Resp, Hickok_roi_gp)
+        Hickok_ROI_epoch = select_electrodes(epoc_LexDelay_Resp, Hickok_roi_gp)
+        Hickok_ROI_epoch_sort_unmask,*_ = sort_chs_by_actonset(Hickok_ROI_data,
+                                                              Hickok_ROI_epoch,
+                                                              cluster_twin, [-0.5, 1],
+                                                              mask_data=False,
+                                                              select_electrodes=False)
+        Hickok_ROI_epoch_sort, _, Hickok_ROI_epoch_sort_idx, _, onsets_mot, *_ = sort_chs_by_actonset(Hickok_ROI_data,
+                                                                                      Hickok_ROI_epoch,
+                                                                                      cluster_twin, [-0.5, 1],
+                                                                                      mask_data=True,
+                                                                                      select_electrodes=False)
+        plot_chs(Hickok_ROI_epoch_sort, os.path.join(fig_save_dir,
+                                                             f'Hickok_sig_alg_resp_{tag}.jpg'),
+                 tag, percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
+                 fig_size=[4, 20 * (len(Hickok_roi_gp) / 250)])
+
+        # wave
+        plt.figure(figsize=(Waveplot_wth * (6/5)*(100 / 350), Waveplot_hgt))
+        wav_bsl_corr = False
+        plot_wave(Hickok_ROI_epoch_sort_unmask, Hickok_ROI_epoch_sort_idx,f'',col, '-', wav_bsl_corr, ylim=[-0.4, 3.5],average_trace=False)
+        plt.axvline(x=0, linestyle='--', color='k')
+        plt.axhline(y=0, linestyle='--', color='gray')
+        plt.title(tag, fontsize=20)
+        plt.tick_params(axis='both', labelsize=16)
+        plt.xticks(rotation=45)
+        plt.xlim([-0.5, 1])
+        plt.gca().spines[['top', 'right']].set_visible(False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(fig_save_dir, f'Hickok_wave_alg_resp_{tag}.tif'), dpi=300)
+        plt.close()
+
+        # pie plot (sig vs. nonsig before onset)
+        Hickok_roi_gp_sig = Hickok_roi_gp & sig_before_resp_onset
+        Hickok_roi_gp_nonsig = Hickok_roi_gp - sig_before_resp_onset
+        # ////Waiting for future plotting
+
+        # brain plot (sig vs. nonsig before onset)
+        cols = np.full((len_d, 3), 0.5)
+        for col_idx_i in range(len(Hickok_roi_gp)):
+            cols[list(Hickok_roi_gp)[Hickok_ROI_epoch_sort_idx[col_idx_i]], :] = create_gradient(col, len(Hickok_roi_gp)+1)[col_idx_i]
+        cols_lst = cols[list(Hickok_roi_gp)].tolist()
+        pick_labels = list(data_LexDelay_Resp.labels[0][list(Hickok_roi_gp)])
+        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain.tif'), 0.3, hemi='both')
+
 
     # Percentages of Aud, Mt, SM, and delay electrodes
     def my_autopct(pct):
