@@ -80,9 +80,9 @@ for elec_typ in elec_typs:
     # read data
     file_pattern = f"results/NoDel_{elec_typ}_*_full_resp_onset.csv"
     matching_files = glob.glob(file_pattern, recursive=False)
-    ymax=25
+    ymax=2e-1
     for filename in matching_files:
-        para_sig_bar=[ymax-1,1.2]
+        para_sig_bar=[1e-1,0]
         fig, ax = plt.subplots(figsize=(19, 6))
         ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
         raw = pd.read_csv(filename)
@@ -101,7 +101,7 @@ for elec_typ in elec_typs:
         ]
         resp_onset_data_subj_elec = hg_raw_subj_elec['resp_onset'].dropna().tolist()
         n_dots = len(resp_onset_data_subj_elec)
-        random_y_values = np.random.uniform(0, ymax-1, n_dots)
+        random_y_values = np.random.uniform(0, ymax-(1e-2), n_dots)
         ax.scatter(resp_onset_data_subj_elec, random_y_values, color='red', s=50, alpha=0.7)
 
         # Plot predicting time series
@@ -137,7 +137,7 @@ for elec_typ in elec_typs:
                 end_time = time_point[end_index] + time_step / 2
 
                 label = f'clust{k} of pho'
-                ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1],para_sig_bar[0]-para_sig_bar[1]],
+                ax.plot([start_time, end_time], [para_sig_bar[0],para_sig_bar[0]],
                         color=[0,0,1],alpha=0.4,
                         linewidth=10,  # Make the line thick like a bar
                         solid_capstyle='butt')  # Makes the line ends flat
@@ -145,7 +145,7 @@ for elec_typ in elec_typs:
         ax.set_ylabel("$X^2$")#, fontsize=20)
         ax.tick_params(axis='both', which='major')#, labelsize=16)
         ax.set_xlim(-0.2, time_point.max())
-        ax.set_ylim(-2,ymax)
+        ax.set_ylim(-2e-2,ymax)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         plt.tight_layout()
