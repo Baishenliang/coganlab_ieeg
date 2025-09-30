@@ -137,11 +137,11 @@ model_func <- function(current_data,feature){
 #%% Parameters
 ana_tag<-'NoDel'
 phase<-'full'
-del_nodel_tag <- 'epoc_LexNoDelay_Aud'
+del_nodel_tag <- 'epoc_LexNoDelay_Cue'
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 # features <- c('aco','pho','wordness','Wordvec')
-features <- c('resp_onset')
+features <- c('aud_onset','resp_onset')
 a = 0
 
 #Load acoustic parameters
