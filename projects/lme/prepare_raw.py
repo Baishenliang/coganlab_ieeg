@@ -22,6 +22,11 @@ from ieeg.calc.fast import mixup
 mean_word_len=0.65#0.62 # from utils/lexdelay_get_stim_length.m
 auditory_decay=0 # a short period of time that we may assume auditory decay takes
 delay_len=1.125 # average length from sound offset to Go onset
+encoding_mode='univariate'
+if encoding_mode=='univariate':
+    cbind_subjs=False
+elif encoding_mode=='multivariate':
+    cbind_subjs=True
 
 def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
     time_str = [float(i) for i in time_str]
@@ -44,37 +49,27 @@ trial_labels='CORRECT'
 # %% Sort data and get significant electrode lists
 import os
 import numpy as np
-import matplotlib.pyplot as plt
-from ieeg.arrays.label import LabeledArray
 
-if groupsTag=="LexDelay" and os.path.exists(os.path.join(sf_dir,'epoc_LexDelayRep_Aud.npy')):
-    epoc_LexDelayRep_Aud = LabeledArray.fromfile(os.path.join(sf_dir,'epoc_LexDelayRep_Aud'))
-# elif groupsTag=="LexDelay&LexNoDelay" and os.path.exists(os.path.join(sf_dir,'epoc_LexNoDelay_Aud.npy')):
-#     # epoc_LexDelayRep_Aud = LabeledArray.fromfile(os.path.join(sf_dir,'epoc_LexDelayRep_Aud_withNDel'))
-#     # epoc_LexNoDelay_Aud = LabeledArray.fromfile(os.path.join(sf_dir,'epoc_LexNoDelay_Aud'))
-#     epoc_LexNoDelay_Aud = LabeledArray.fromfile(os.path.join(sf_dir,'epoc_LexNoDelay_Aud'))
+stats_root_delay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
+stats_root_nodelay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BIDS', "derivatives", "stats")
 
-else:
-    stats_root_delay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
-    stats_root_nodelay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BIDS', "derivatives", "stats")
+if groupsTag=="LexDelay":
+    data_LexDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay)
+    elec_labels=data_LexDelay_Aud.labels[0]
+    epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+if groupsTag=="LexDelay&LexNoDelay":
+    # epoc_LexDelayRep_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+    # epoc_LexNoDelay_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+    data_LexNoDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_nodelay,stats_root_nodelay)
+    elec_labels=data_LexNoDelay_Aud.labels[0]
+    epoc_LexNoDelay_Cue, _ = gp.load_stats('zscore', 'Cue_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
 
-    if groupsTag=="LexDelay":
-        epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True)
-        epoc_LexDelayRep_Aud.tofile(os.path.join(sf_dir,'epoc_LexDelayRep_Aud'))
-    if groupsTag=="LexDelay&LexNoDelay":
-        # epoc_LexDelayRep_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_delay,trial_labels=trial_labels,keeptrials=True)
-        # epoc_LexDelayRep_Aud.tofile(os.path.join(sf_dir,'epoc_LexDelayRep_Aud_withNDel'))
-        epoc_LexNoDelay_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True)
-        epoc_LexNoDelay_Aud.tofile(os.path.join(sf_dir,'epoc_LexNoDelay_Aud'))
-        # epoc_LexNoDelay_Cue, _ = gp.load_stats('zscore', 'Cue_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True)
-        # epoc_LexNoDelay_Cue.tofile(os.path.join(sf_dir,'epoc_LexNoDelay_Cue'))
-
-        # Generate trial-based Auditory and Response onsets
-        auditory_stim_dicts, resp_dicts=gp.get_onset_times(epoc_LexNoDelay_Aud)
-        with open(os.path.join(sf_dir,'LexNoDelay_Aud_auditory_stim_dicts.pkl'), 'wb') as f:
-            pickle.dump(auditory_stim_dicts, f)
-        with open(os.path.join(sf_dir,'LexNoDelay_Aud_resp_dicts.pkl'), 'wb') as f:
-            pickle.dump(resp_dicts, f)
+    # Generate trial-based Auditory and Response onsets
+    auditory_stim_dicts, resp_dicts=gp.get_onset_times(epoc_LexNoDelay_Cue,encoding_mode)
+    with open(os.path.join(sf_dir,'LexNoDelay_Cue_auditory_stim_dicts.pkl'), 'wb') as f:
+        pickle.dump(auditory_stim_dicts, f)
+    with open(os.path.join(sf_dir,'LexNoDelay_Cue_resp_dicts.pkl'), 'wb') as f:
+        pickle.dump(resp_dicts, f)
 
 # %% Select electrodes
 loaded_data={}
@@ -88,16 +83,32 @@ if groupsTag=="LexDelay":
 elif groupsTag=="LexDelay&LexNoDelay":
     elec_grps=('Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only')
     elec_idxs=('LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
-    epoc=epoc_LexNoDelay_Aud
-    epoc_tag='epoc_LexNoDelay_Aud'
+    epoc=epoc_LexNoDelay_Cue
+    epoc_tag='epoc_LexNoDelay_Cue'
 
 for t_tag,t_range in zip(
         ('full',),
-        ([-0.5,mean_word_len+auditory_decay+delay_len],)
+        ([-0.1,3.01],)
 ):
     for elec_grp,elec_idx in zip(elec_grps,elec_idxs):
         print(f'Now Doing {t_tag} {elec_grp}')
-        m_chs = epoc.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
-        m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
-        # mixup(m, 0)
+        if encoding_mode=='multivariate':
+            m_chs = epoc.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
+            m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
+            # mixup(m, 0)
+        elif encoding_mode=='univariate':
+            epoc_dict={}
+            for s,epoc_s in epoc.items():
+                s_ele_sel = [
+                    item.replace(f'{s}-', '')
+                    for item in elec_labels[list(LexDelay_twin_idxes[elec_idx])]
+                    if item.startswith(s)
+                ]
+                if not s_ele_sel:
+                    continue
+                m_chs = epoc_s.take(s_ele_sel, axis=1)
+                m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
+                epoc_dict[s]=m
+            del m
+            m = epoc_dict
         gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'{epoc_tag}_{t_tag}_{elec_grp}'),win_len=0,append_pho=False,NoDelay_append_startings=True) #100s for phoneme responses

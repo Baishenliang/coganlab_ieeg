@@ -1,6 +1,10 @@
-from pyqtgraph.util.cprint import color
+from dbm import error
 
-def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0,trial_labels: str='CORRECT',keeptrials: bool=False):
+from pyqtgraph.util.cprint import color
+from sqlalchemy.testing.plugin.plugin_base import warnings
+
+
+def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0,trial_labels: str='CORRECT',keeptrials: bool=False,cbind_subjs:bool=True):
     """
     Load patient level stats files (e.g., *.fif) for further group level analysis
     output is an ieeg LabeledArray
@@ -16,6 +20,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
     import glob
     from ieeg.arrays.label import LabeledArray
     from ieeg.arrays.label import combine as cb_dict
+    import warnings
 
     def unique_single_event(trial_annoate):
         seen_counts = {}
@@ -30,6 +35,10 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
             new_trial_annoate.append(modified_item)
         return new_trial_annoate
 
+
+    if keeptrials== False and cbind_subjs==True:
+        warnings.warn("applying cbind subjects needed to first set keeptrials as True. Set as False automatically now.")
+        cbind_subjs=False
 
     match stat_type:
         case "zscore":
@@ -46,7 +55,6 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
             fif_read = np.load
 
     subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
-    import warnings
     subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     # else:
     #     subjs = [subj for subj in subjs if subj != 'D0023' and subj != 'D0032' and subj != 'D0035'  and subj != 'D0038' and subj != 'D0042' and subj != 'D0044' and subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
@@ -185,7 +193,10 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
         if keeptrials:
             labels=[trial_annoate,aligned_chs,times]
             subj_arr = LabeledArray(aligned_data, labels)
-            subj_dict = subj_arr.to_dict()
+            if cbind_subjs==True:
+                subj_dict = subj_arr.to_dict()
+            else:
+                subj_dict = subj_arr
             del subj_arr,aligned_data
             subject = 'D' + subject[1:].lstrip('0')
             if i==0:
@@ -193,12 +204,12 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
             data[subject]=subj_dict
             del subj_dict
 
-    if keeptrials:
+    if keeptrials and cbind_subjs==True:
         data_dict=cb_dict(data,(0,2),'-')
         del data
         data=LabeledArray.from_dict(data_dict)
         del data_dict
-    else:
+    elif not keeptrials:
         data_raw = np.concatenate(data_lst, axis=0)
         labels = [chs, times]
         data=LabeledArray(data_raw, labels)
@@ -255,21 +266,32 @@ def sel_subj_data(data_in,chs_idx):
     data_out=LabeledArray(data_sel, labels)
     return data_out
 
-def get_onset_times(epoc):
+def get_onset_times(epoc,encoding_mode):
     import re
     import pandas as pd
     import glob
     import os
 
-    unique_padded_ids = set()
-    for label in epoc.labels[1]:
-        patient_id = label.split('-')[0]
-        letter_part = patient_id[0]
-        number_part = patient_id[1:]
-        padded_number = f"{int(number_part):04d}"
-        padded_id = f"{letter_part}{padded_number}"
-        unique_padded_ids.add(padded_id)
-    subjs = list(unique_padded_ids)
+    if encoding_mode == 'multivariate':
+        unique_padded_ids = set()
+        for label in epoc.labels[1]:
+            patient_id = label.split('-')[0]
+            letter_part = patient_id[0]
+            number_part = patient_id[1:]
+            padded_number = f"{int(number_part):04d}"
+            padded_id = f"{letter_part}{padded_number}"
+            unique_padded_ids.add(padded_id)
+        subjs = list(unique_padded_ids)
+    elif encoding_mode == 'univariate':
+        unique_padded_ids = set()
+        for label in epoc.keys():
+            patient_id = label
+            letter_part = patient_id[0]
+            number_part = patient_id[1:]
+            padded_number = f"{int(number_part):04d}"
+            padded_id = f"{letter_part}{padded_number}"
+            unique_padded_ids.add(padded_id)
+        subjs = list(unique_padded_ids)
 
     auditory_stim_dicts = {}
     resp_dicts = {}
@@ -296,7 +318,7 @@ def get_onset_times(epoc):
         for trial_id in filtered_df['trial_id'].unique():
             trial_data = filtered_df[filtered_df['trial_id'] == trial_id]
 
-            cue_onset = trial_data[trial_data['trial_type'].str.contains('Auditory_stim')]['onset'].iloc[0]
+            cue_onset = trial_data[trial_data['trial_type'].str.contains('Cue')]['onset'].iloc[0]
 
             auditory_stim_row = trial_data[trial_data['trial_type'].str.contains('Auditory_stim')]
             resp_row = trial_data[trial_data['trial_type'].str.contains('Resp')]
@@ -333,9 +355,9 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDe
 
     if NoDelay_append_startings:
         sf_dir=safe_dir.split('\\')[0]
-        with open(os.path.join(sf_dir,'LexNoDelay_Aud_auditory_stim_dicts.pkl'), 'rb') as f:
+        with open(os.path.join(sf_dir,'LexNoDelay_Cue_auditory_stim_dicts.pkl'), 'rb') as f:
             auditory_stim_dicts = pickle.load(f)
-        with open(os.path.join(sf_dir,'LexNoDelay_Aud_resp_dicts.pkl'), 'rb') as f:
+        with open(os.path.join(sf_dir,'LexNoDelay_Cue_resp_dicts.pkl'), 'rb') as f:
             resp_dicts = pickle.load(f)
 
     # Load stim feature dictonaries
@@ -348,83 +370,94 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDe
     with open(filename, 'rb') as f:
         stim_pho_t_dict = pickle.load(f)
 
-    # Smooth
-    data_in_labels=data_in.labels
-    data_in_array=data_in.__array__()
-    #data_i: eeg data matrix, observations * channels * times
-    if win_len>0:
-        data_in_array_smoothed = uniform_filter1d(data_in_array, size=win_len, axis=2, mode='nearest',origin=(win_len - 1) // 2)
-    else:
-        data_in_array_smoothed=data_in_array
-    data_in_smoothed=LabeledArray(data_in_array_smoothed, data_in_labels)
-    print('smoothing completed')
-
     # To a long format
-    data_dict=data_in_smoothed.to_dict()
+
+    if not isinstance(data_in, dict):
+        data_in = {'D00': data_in}
     rows_list = []
-    for event_string, electrodes_dict in data_dict.items():
-        print(f"{event_string} in {len(electrodes_dict)}")
-        event_parts = event_string.split('/')
-        wordness = event_parts[2]
-        stim = event_parts[3]
 
-        for subject_electrode, timepoints_dict in electrodes_dict.items():
-            subject, electrode = subject_electrode.split('-')
+    for data_in_key,data_in_value in data_in.items():
 
-            for time_point, value in timepoints_dict.items():
-                if append_pho:
-                    row = {
-                        'subject': subject,
-                        'electrode': electrode,
-                        'wordness': wordness,
-                        'stim': stim,
-                        'pho1': stim_pho_dict[stim][0],
-                        'pho2': stim_pho_dict[stim][1],
-                        'pho3': stim_pho_dict[stim][2],
-                        'pho4': stim_pho_dict[stim][3],
-                        'pho5': stim_pho_dict[stim][4],
-                        'pho_t1': stim_pho_t_dict[stim][0],
-                        'pho_t2': stim_pho_t_dict[stim][1],
-                        'pho_t3': stim_pho_t_dict[stim][2],
-                        'pho_t4': stim_pho_t_dict[stim][3],
-                        'pho_t5': stim_pho_t_dict[stim][4],
-                        'time_point': time_point,
-                        'value': value
-                    }
-                elif NoDelay_append_startings==True:
-                    prefix = subject[0]
-                    number = subject[1:]
-                    padded_number = number.zfill(4)
-                    subj = prefix + padded_number
-                    if stim in auditory_stim_dicts[subj]:
-                        aud_onset=round(auditory_stim_dicts[subj][stim][0],5)
-                    else:
-                        aud_onset=np.nan
-                    if stim in resp_dicts[subj]:
-                        resp_onset=round(resp_dicts[subj][stim][0],5)
-                    else:
-                        resp_onset=np.nan
-                    stim_entry=stim.split('-')[0]
-                    row = {
-                        'subject': subject,
-                        'electrode': electrode,
-                        'wordness': wordness,
-                        'stim': stim_entry,
-                        'time_point': time_point,
-                        'aud_onset': aud_onset,
-                        'resp_onset': resp_onset,
-                        'value': value
-                    }
+        # Smooth
+        data_in_labels = data_in_value.labels
+        data_in_array = data_in_value.__array__()
+        # data_i: eeg data matrix, observations * channels * times
+        if win_len > 0:
+            data_in_array_smoothed = uniform_filter1d(data_in_array, size=win_len, axis=2, mode='nearest',
+                                                      origin=(win_len - 1) // 2)
+        else:
+            data_in_array_smoothed = data_in_array
+        data_in_smoothed = LabeledArray(data_in_array_smoothed, data_in_labels)
+        print('smoothing completed')
+
+        data_dict=data_in_smoothed.to_dict()
+        for event_string, electrodes_dict in data_dict.items():
+            print(f"{event_string} in {len(electrodes_dict)}")
+            event_parts = event_string.split('/')
+            wordness = event_parts[2]
+            stim = event_parts[3]
+
+            for subject_electrode, timepoints_dict in electrodes_dict.items():
+                if data_in_key=='D00':
+                    subject, electrode = subject_electrode.split('-')
                 else:
-                    row = {
-                        'subject': subject,
-                        'electrode': electrode,
-                        'wordness': wordness,
-                        'stim': stim,
-                        'time_point': time_point,
-                        'value': value
-                    }
-                rows_list.append(row)
+                    subject=data_in_key
+                    electrode=subject_electrode
+
+                for time_point, value in timepoints_dict.items():
+                    if append_pho:
+                        row = {
+                            'subject': subject,
+                            'electrode': electrode,
+                            'wordness': wordness,
+                            'stim': stim,
+                            'pho1': stim_pho_dict[stim][0],
+                            'pho2': stim_pho_dict[stim][1],
+                            'pho3': stim_pho_dict[stim][2],
+                            'pho4': stim_pho_dict[stim][3],
+                            'pho5': stim_pho_dict[stim][4],
+                            'pho_t1': stim_pho_t_dict[stim][0],
+                            'pho_t2': stim_pho_t_dict[stim][1],
+                            'pho_t3': stim_pho_t_dict[stim][2],
+                            'pho_t4': stim_pho_t_dict[stim][3],
+                            'pho_t5': stim_pho_t_dict[stim][4],
+                            'time_point': time_point,
+                            'value': value
+                        }
+                    elif NoDelay_append_startings==True:
+                        prefix = subject[0]
+                        number = subject[1:]
+                        padded_number = number.zfill(4)
+                        subj = prefix + padded_number
+                        if stim in auditory_stim_dicts[subj]:
+                            aud_onset=round(auditory_stim_dicts[subj][stim][0],5)
+                        else:
+                            aud_onset=np.nan
+                        if stim in resp_dicts[subj]:
+                            resp_onset=round(resp_dicts[subj][stim][0],5)
+                        else:
+                            resp_onset=np.nan
+                        stim_entry=stim.split('-')[0]
+                        row = {
+                            'subject': subject,
+                            'electrode': electrode,
+                            'wordness': wordness,
+                            'stim': stim_entry,
+                            'time_point': time_point,
+                            'aud_onset': aud_onset,
+                            'resp_onset': resp_onset,
+                            'value': value
+                        }
+                    else:
+                        row = {
+                            'subject': subject,
+                            'electrode': electrode,
+                            'wordness': wordness,
+                            'stim': stim,
+                            'time_point': time_point,
+                            'value': value
+                        }
+                    rows_list.append(row)
     df_long = pd.DataFrame(rows_list)
     df_long['time_point'] = pd.to_numeric(df_long['time_point'])
 
