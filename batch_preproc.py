@@ -68,7 +68,7 @@ from matplotlib import pyplot as plt
 #     "D0117": "gamma"
 # }
 subject_processing_dict_org = {
-    "D0024": "gamma"
+    "D0026": "gamma"
 }
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 # %% define task
