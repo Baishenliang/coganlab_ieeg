@@ -96,7 +96,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e3
+  n_perm <- 2e2
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -138,7 +138,7 @@ model_func <- function(current_data,feature){
 ana_tag<-'NoDel'
 phase<-'full'
 del_nodel_tag <- 'epoc_LexNoDelay_Cue'
-elec_grps <- c('Auditory_NoDelay')#,'Sensorymotor_delay','Motor_delay','Delay_only')
+elec_grps <- c('Auditory_NoDelay','Sensorymotor_delay','Motor_delay','Delay_only')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 # features <- c('aco','pho','wordness','Wordvec')
 features <- c('aud_onset','resp_onset')
