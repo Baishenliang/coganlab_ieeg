@@ -82,7 +82,8 @@ model_func <- function(current_data,feature){
   cv_moding<-function(current_data,perm=FALSE){
     # Folding the data
     set.seed(42)
-    k_folds <- 10
+    k_folds <- 1
+    if (k_folds >1){
     current_data_with_folds <- current_data %>%
       group_by(subject, electrode) %>%
       mutate(
@@ -114,6 +115,14 @@ model_func <- function(current_data,feature){
     
     })
     mean_F_stat <- mean(all_fold_F_stats$F_statistic, na.rm = TRUE)
+    }
+    else
+    {
+    m <- lm(fml, data = current_data,na.action = na.exclude)
+    m_bsl <- lm(fml_bsl, data = current_data,na.action = na.exclude)
+    anova_results <- anova(m_bsl, m)
+    mean_F_stat <- anova_results$`F`[2]
+    }
     return(mean_F_stat)
   }
 
