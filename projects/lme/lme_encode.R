@@ -3,6 +3,7 @@ os_type <- Sys.info()['sysname']
 if (os_type == "Windows") {
   execution_mode <- "WINDOWS_LOCAL"
   library(tidyverse)
+  library(stringr)
   library(parallel)
   # library(pbapply)
   library(foreach)
@@ -12,6 +13,7 @@ if (os_type == "Windows") {
   num_cores <- detectCores()-1
 } else if (os_type == "Linux")  {
   library(tidyverse, lib.loc = "~/lab/bl314/rlib")
+  library(stringr, lib.loc = "~/lab/bl314/rlib")
   library(parallel, lib.loc = "~/lab/bl314/rlib")
   # library(pbapply, lib.loc = "~/lab/bl314/rlib")
   library(foreach, lib.loc = "~/lab/bl314/rlib")
@@ -77,20 +79,54 @@ model_func <- function(current_data,feature){
     }
   }
   
-  m <- lm(fml, data = current_data,na.action = na.exclude)
-  m_bsl <- lm(fml_bsl, data = current_data,na.action = na.exclude)
-  anova_results <- anova(m_bsl, m)
-  r_squared_obs <- anova_results$`F`[2]
+  cv_moding<-function(current_data,perm=FALSE){
+    # Folding the data
+    set.seed(42)
+    k_folds <- 10
+    current_data_with_folds <- current_data %>%
+      group_by(subject, electrode) %>%
+      mutate(
+        fold_id = sample(1:n()) %>% 
+          cut(breaks = k_folds, labels = FALSE) %>%
+          as.factor()
+      ) %>%
+      ungroup()
+    
+    # Do the fitting
+    fold_ids <- unique(current_data_with_folds$fold_id)
+    if (perm==TRUE){
+      fold_ids <- fold_ids[1]
+    }
+    all_fold_F_stats <- map_dfr(fold_ids, function(i) {
+      
+      train_data <- current_data_with_folds %>%
+        filter(fold_id != i)
+      
+      m <- lm(fml, data = train_data,na.action = na.exclude)
+      m_bsl <- lm(fml_bsl, data = train_data,na.action = na.exclude)
+      anova_results <- anova(m_bsl, m)
+      r_squared_obs <- anova_results$`F`[2]
+      
+      data.frame(
+        fold = i,
+        F_statistic = r_squared_obs
+      )
+    
+    })
+    mean_F_stat <- mean(all_fold_F_stats$F_statistic, na.rm = TRUE)
+    return(mean_F_stat)
+  }
 
+  mean_F_stat<-cv_moding(current_data)
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
-    chi_squared_obs = r_squared_obs
+    chi_squared_obs = mean_F_stat
   )
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e4
+  n_perm <- 1e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -103,10 +139,10 @@ model_func <- function(current_data,feature){
       ungroup() %>%
       select(-perm_indices)
     
-    m_perm <- lm(fml, data = current_data_perm,na.action = na.exclude)
-    m_perm_bsl <- lm(fml_bsl, data = current_data_perm,na.action = na.exclude)
-    anova_results <- anova(m_perm_bsl, m_perm)
-    r_squared_obs <- anova_results$`F`[2]
+    # m_perm <- lm(fml, data = current_data_perm,na.action = na.exclude)
+    # m_perm_bsl <- lm(fml_bsl, data = current_data_perm,na.action = na.exclude)
+    # anova_results <- anova(m_perm_bsl, m_perm)
+    r_squared_obs <-cv_moding(current_data_perm,perm=TRUE)
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
@@ -124,10 +160,13 @@ model_func <- function(current_data,feature){
 
 #%% Parameters
 phase<-'full'
-# elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
-elec_grps <- c('Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
+#elec_grps <- c('Sensorymotor_delay')
+elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
+#elec_grps <- c('Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
-features <- c('aco','pho','wordness','Wordvec')
+#features <- c('aco','pho','wordness','Wordvec')
+features <- c('pho')
+
 a = 0
 
 #Load acoustic parameters
@@ -182,6 +221,10 @@ for (feature in features){
                        sep = "")
     long_data <- read.csv(file_path_long)
     long_data$time <- as.numeric(long_data$time)
+    
+    bsl_corr=FALSE
+    
+    if (bsl_corr==TRUE){
     file_path_wide <- paste(home_dir,
                             "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_wide.csv",
                             sep = "")
@@ -231,6 +274,13 @@ for (feature in features){
         )
       )%>%
       select(-time_label)
+    }
+    
+    #%% get only word part of the "stim"
+    long_data <- long_data %>%
+      mutate(
+        stim = str_split_fixed(string = stim, pattern = "-", n = 2)[, 1]
+      )
     
     #%% append acoustic features
     long_data <- left_join(long_data,aco_fea_T,by='stim')
