@@ -10,7 +10,7 @@ if (os_type == "Windows") {
   library(doParallel)
   home_dir <- "D:/bsliang_Coganlabcode/coganlab_ieeg/projects/lme/"
   task_ID <- -1
-  num_cores <- detectCores()-1
+  num_cores <- detectCores()-10
 } else if (os_type == "Linux")  {
   library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   library(stringr, lib.loc = "~/lab/bl314/rlib")
@@ -46,7 +46,7 @@ model_func <- function(current_data,feature){
     library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   }
   
-  model_type='full'
+  model_type='simple'
   
   tp <- current_data$time[1]
   if (model_type=='simple'){
@@ -54,79 +54,40 @@ model_func <- function(current_data,feature){
     if (feature=='aco'){
       fml<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
     }else if (feature=='pho'){
-      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:23), collapse = " + ")))
+      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:5), collapse = " + ")))
     }else{
       fml<-as.formula(paste0('value ~ 1+',feature))
     }
   }else if (model_type=='full'){
     if (feature=='aco'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('pho', 1:23)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23)), collapse = ' + ')))
+      fml_bsl<-as.formula(paste0('value ~ 1'))
+      # fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('pho', 1:9)), collapse = ' + ')))
+      # fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:9)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
     }else if (feature=='pho'){
       fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:5)), collapse = ' + ')))
     }else if (feature=='wordness'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23)), collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:5)), collapse = ' + ')))
       fml <-as.formula(paste0('value ~ 1+',
-                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + "),"+",
-                                paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:23,":",feature), collapse = " + "),"+",feature))
+                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + "),"+",
+                                paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:9,":",feature), collapse = " + "),"+",feature))
     }else if (feature=='Wordvec'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:23), paste0('Wordvec', 1:91)),collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:5)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:5), paste0('Wordvec', 1:91)),collapse = ' + ')))
     }else{
-      fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + ")))
-      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:23), collapse = " + "),"+",feature))
+      fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + ")))
+      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + "),"+",feature))
     }
-  }
-  
-  cv_moding<-function(current_data,perm=FALSE){
-    # Folding the data
-    set.seed(42)
-    k_folds <- 1
-    if (k_folds >1){
-    current_data_with_folds <- current_data %>%
-      group_by(subject, electrode) %>%
-      mutate(
-        fold_id = sample(1:n()) %>% 
-          cut(breaks = k_folds, labels = FALSE) %>%
-          as.factor()
-      ) %>%
-      ungroup()
-    
-    # Do the fitting
-    fold_ids <- unique(current_data_with_folds$fold_id)
-    if (perm==TRUE){
-      fold_ids <- fold_ids[1]
-    }
-    all_fold_F_stats <- map_dfr(fold_ids, function(i) {
-      
-      train_data <- current_data_with_folds %>%
-        filter(fold_id != i)
-      
-      m <- lm(fml, data = train_data,na.action = na.exclude)
-      m_bsl <- lm(fml_bsl, data = train_data,na.action = na.exclude)
-      anova_results <- anova(m_bsl, m)
-      r_squared_obs <- anova_results$`F`[2]
-      
-      data.frame(
-        fold = i,
-        F_statistic = r_squared_obs
-      )
-    
-    })
-    mean_F_stat <- mean(all_fold_F_stats$F_statistic, na.rm = TRUE)
-    }
-    else
-    {
-    m <- lm(fml, data = current_data,na.action = na.exclude)
-    m_bsl <- lm(fml_bsl, data = current_data,na.action = na.exclude)
-    anova_results <- anova(m_bsl, m)
-    mean_F_stat <- anova_results$`F`[2]
-    }
-    return(mean_F_stat)
   }
 
-  mean_F_stat<-cv_moding(current_data)
+  m <- lm(fml, data = current_data,na.action = na.exclude)
+  # m_bsl <- lm(fml_bsl, data = current_data,na.action = na.exclude)
+  # anova_results <- anova(m_bsl, m)
+  # mean_F_stat <- anova_results$`F`[2]
+  pattern <- paste0("^", feature)
+  mean_F_stat <- sum(abs(coef(m)[grep(pattern, names(coef(m)))]))
+  
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
@@ -143,22 +104,24 @@ model_func <- function(current_data,feature){
       group_by(subject, electrode) %>%
       mutate(
         perm_indices = sample(1:n()),
-        across(starts_with(feature), ~ .x[perm_indices])
+        across(starts_with('aco') | starts_with('pho'), ~ .x[perm_indices]) #across(starts_with(feature), ~ .x[perm_indices])
       ) %>%
       ungroup() %>%
       select(-perm_indices)
     
-    # m_perm <- lm(fml, data = current_data_perm,na.action = na.exclude)
-    # m_perm_bsl <- lm(fml_bsl, data = current_data_perm,na.action = na.exclude)
-    # anova_results <- anova(m_perm_bsl, m_perm)
-    r_squared_obs <-cv_moding(current_data_perm,perm=TRUE)
+      m <- lm(fml, data = current_data_perm,na.action = na.exclude)
+      # m_bsl <- lm(fml_bsl, data = current_data_perm,na.action = na.exclude)
+      # anova_results <- anova(m_bsl, m)
+      # mean_F_stat <- anova_results$`F`[2]
+      pattern <- paste0("^", feature)
+      mean_F_stat <- sum(abs(coef(m)[grep(pattern, names(coef(m)))]))
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
       data.frame(
         perm = i_perm,
         time_point = tp,
-        chi_squared_obs = r_squared_obs
+        chi_squared_obs = mean_F_stat
       )
     )
     
@@ -169,13 +132,14 @@ model_func <- function(current_data,feature){
 
 #%% Parameters
 phase<-'full'
-#elec_grps <- c('Sensorymotor_delay')
-elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
+elec_grps <- c('Delay','Sensorymotor_delay','Auditory_all')
+# elec_grps <- c('Sensorymotor_delay','Auditory_delay')
+# elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
 #elec_grps <- c('Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 #features <- c('aco','pho','wordness','Wordvec')
-features <- c('pho')
-
+# features <- paste0("pho", 1:9)
+features <- c("aco","pho")
 a = 0
 
 #Load acoustic parameters
@@ -291,6 +255,16 @@ for (feature in features){
         stim = str_split_fixed(string = stim, pattern = "-", n = 2)[, 1]
       )
     
+    #%% average across stim
+    # long_data <- long_data %>%
+    #   group_by(subject, electrode, time, wordness,stim) %>%
+    #   summarise(
+    #     value = mean(value, na.rm = TRUE),
+    #     .groups = 'drop'
+    #   ) %>%
+    #   ungroup()
+
+
     #%% append acoustic features
     long_data <- left_join(long_data,aco_fea_T,by='stim')
     
@@ -310,7 +284,8 @@ for (feature in features){
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
     
-    for (lex in c("Word","Nonword",'All')){
+    # for (lex in c("Word","Nonword",'All')){
+    for (lex in c("Word","Nonword")){
       #%% Run computations
       a <- a + 1
       if (task_ID > 0 && a != task_ID) {

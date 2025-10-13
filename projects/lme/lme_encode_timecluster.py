@@ -1,5 +1,6 @@
 # Set dir
 import os
+import re
 import sys
 import numpy as np
 import pandas as pd
@@ -25,6 +26,10 @@ plt.rcParams['axes.labelsize'] = 12*font_scale
 plt.rcParams['xtick.labelsize'] = 12*font_scale
 plt.rcParams['ytick.labelsize'] = 12*font_scale
 plt.rcParams['legend.fontsize'] = 12*font_scale
+
+def expand_sequence(prefix: str, max_number: int) -> tuple:
+    expanded_list = [f'{prefix}{i}' for i in range(1, max_number + 1)]
+    return tuple(expanded_list)
 
 def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster'):
     # Load data
@@ -67,19 +72,26 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 is_normalize=False
 mode='time_cluster'
-for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
-
-    i = 0
-    for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
-                                 ('Embedding','Lexical status','Acoustic','Phonemic'),
-                                ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
-
+#for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
+# for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
+# for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
+for elec_grp in ['Delay', 'Sensorymotor_delay','Auditory_all']:
+    # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
+    #                              ('Embedding','Lexical status','Acoustic','Phonemic'),
+    #                             ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
+    # for fea, fea_tag in zip(expand_sequence('pho',9),
+    #                                          expand_sequence('Phonemic',9)):
+    #     para_sig_barbar=[0.3, 0.02]
+    for fea, fea_tag, para_sig_barbar in zip(('aco','pho'),
+                                             ('Acoustic','Phonemic'),
+                                             ([2, 0.1],[0.8, 0.03])):
+        i = 0
         j=0
         fig, ax = plt.subplots(figsize=(19, 6))
         ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
         ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
         ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
-        if fea=='aco' or fea=='pho':
+        if 'aco' in fea or 'pho' in fea:
             wordnesses=('Word','Nonword','Nonword-Word')
         elif fea=='Frq' or fea=='Uni_Pos_SC' or fea=='Wordvec':
             wordnesses=('Word','Nonword','Word-Nonword')
@@ -105,7 +117,9 @@ for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
                 # Create the new 'raw' DataFrame
                 raw = raw_word[['perm', 'time_point']].copy()
                 raw['chi_squared_obs'] = chi_squared_diff
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 1/5e3, 1/5e3,mode=mode)
+            #time_point, time_series, mask_time_clus = get_traces_clus(raw, 1/5e3, 1/5e3,mode=mode)
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 1e-2, 1e-2,mode=mode)
+
             time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
             # win_len=10
             # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
@@ -114,7 +128,7 @@ for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
                 # time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
                 para_sig_bar = [1,1e-1]
             else:
-                time_series = time_series - np.mean(time_series[(time_point > -0.2) & (time_point <= 0)])
+                time_series = time_series
                 para_sig_bar = para_sig_barbar
 
             if wordness == 'All' or wordness == 'Word' or wordness == 'Nonword':
@@ -136,22 +150,22 @@ for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
                     if wordness == 'Nonword-Word' or wordness == 'Word-Nonword':
                         colcol=[1,0,0]
                     else:
-                        colcol=colors[i - 1]
+                        colcol=colors[i-1]
                     ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(j-1),para_sig_bar[0]-para_sig_bar[1]*(j-1)],
                             color=colcol,alpha=0.4,
                             linewidth=10,  # Make the line thick like a bar
                             solid_capstyle='butt')  # Makes the line ends flat
             j+=1
             i+=1
-        # ax.set_title(f"{fea_tag}", fontsize=24)
-        # ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
-        ax.set_ylabel("$X^2$")#, fontsize=20)
+        ax.set_title(f"{fea_tag}", fontsize=24)
+        ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
+        ax.set_ylabel("$r^2$")#, fontsize=20)
         ax.tick_params(axis='both', which='major')#, labelsize=16)
-        # if fea!='wordness':
-        #     ax.legend(fontsize=18)
-        ax.set_xlim(-0.2, time_point.max())
+        if fea!='wordness':
+            ax.legend(fontsize=18)
+        ax.set_xlim(-0.2, 2)#time_point.max())
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         plt.tight_layout()
-        plt.savefig(os.path.join('figs', f'{elec_grp}_{fea_tag}.tif'), dpi=300)
+        plt.savefig(os.path.join('figs','a', f'{elec_grp}_{fea_tag}.tif'), dpi=300)
         plt.close()
