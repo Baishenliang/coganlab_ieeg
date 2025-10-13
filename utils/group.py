@@ -4,7 +4,7 @@ from pyqtgraph.util.cprint import color
 from sqlalchemy.testing.plugin.plugin_base import warnings
 
 
-def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0,trial_labels: str='CORRECT',keeptrials: bool=False,cbind_subjs:bool=True):
+def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0,trial_labels: str='CORRECT',keeptrials: bool=False,cbind_subjs:bool=True,testsubj=False):
     """
     Load patient level stats files (e.g., *.fif) for further group level analysis
     output is an ieeg LabeledArray
@@ -54,8 +54,11 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
         case "glm":
             fif_read = np.load
 
-    subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
-    subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+    if not testsubj:
+        subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
+        subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+    else:
+        subjs = ['D0024','D0100']
     # else:
     #     subjs = [subj for subj in subjs if subj != 'D0023' and subj != 'D0032' and subj != 'D0035'  and subj != 'D0038' and subj != 'D0042' and subj != 'D0044' and subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117']# and subj != 'D0028'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
 
@@ -396,6 +399,7 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDe
             event_parts = event_string.split('/')
             wordness = event_parts[2]
             stim = event_parts[3]
+            stim_entry = stim.split('-')[0]
 
             for subject_electrode, timepoints_dict in electrodes_dict.items():
                 if data_in_key=='D00':
@@ -410,7 +414,7 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDe
                             'subject': subject,
                             'electrode': electrode,
                             'wordness': wordness,
-                            'stim': stim,
+                            'stim': stim_entry,
                             'pho1': stim_pho_dict[stim][0],
                             'pho2': stim_pho_dict[stim][1],
                             'pho3': stim_pho_dict[stim][2],
@@ -437,7 +441,6 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDe
                             resp_onset=round(resp_dicts[subj][stim][0],5)
                         else:
                             resp_onset=np.nan
-                        stim_entry=stim.split('-')[0]
                         row = {
                             'subject': subject,
                             'electrode': electrode,
@@ -476,7 +479,7 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDe
         df_wide_reset.to_csv(f'{safe_dir}_wide.csv', index=False, encoding='utf-8', na_rep='NA')
 
 
-def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False,chs_s_all_idx=None,sorted_indices=None,select_electrodes:bool=True):
+def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:bool=False,chs_s_all_idx=None,sorted_indices=None,select_electrodes:bool=True,scatter_onsets=None):
     """
     Selete channels with significant activation clusters (all mask==1 in any window with win_len) within a time range (time_range).
     Sort the significant channels according to the onset.
@@ -499,6 +502,10 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
     chs=data_in.labels[0]
     data=data_in.__array__()
     mask=mask_in.__array__()
+
+    # if scatter_onsets:
+    #     fs=(max(times)-min(times))/len(times)
+    #     scatter_onsets=[(i-min(times))/fs for i in scatter_onsets]
 
     spf = 1 / (times[1] - times[0])  # Calculate the sampling frequency
     if bin:
@@ -587,15 +594,30 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
     onsets_s_sorted = [onsets_s[i] for i in sorted_indices]
 
     # %% cut times:
-    tw_idx=np.r_[search_start:search_stop+1]
-    times = np.array(times)[tw_idx]
-    data_s_sorted = data_s_sorted[:,tw_idx]
-    data_us = data_us[:,tw_idx]
+    if scatter_onsets is None:
+        tw_idx = np.r_[search_start:search_stop + 1]
+        times = np.array(times)[tw_idx]
+        data_s_sorted = data_s_sorted[:,tw_idx]
+        data_us = data_us[:,tw_idx]
+    else:
+        data_s_sorted_new=[]
+        for ch_idx, scatter_onset in enumerate(scatter_onsets):
+            search_start = np.argmin(np.abs(np.array(times) - scatter_onset))
+            search_stop = np.argmin(np.abs(np.array(times) - (scatter_onset+0.1)))
+            tw_idx_t = np.r_[search_start:search_stop + 1]
+            data_s_sorted_new.append(data_s_sorted[ch_idx,tw_idx_t])
+        times = np.array(times)[tw_idx_t]
+
+
     # %% return the data
-    labels = [chs_s_sorted, times.tolist()]
-    data_out=LabeledArray(data_s_sorted, labels)
-    labes_all = [chs, times.tolist()]
-    data_us_out=LabeledArray(data_us, labes_all)
+    if scatter_onsets is None:
+        labels = [chs_s_sorted, times.tolist()]
+        data_out=LabeledArray(data_s_sorted, labels)
+        labes_all = [chs, times.tolist()]
+        data_us_out=LabeledArray(data_us, labes_all)
+    else:
+        data_out=[]
+        data_us_out=[]
     # onset_out=LabeledArray(np.array(onsets_s_sorted), chs_s_sorted)
     # %% get the parameters
     num_channels = data_s_sorted.shape[0]
@@ -618,10 +640,10 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
 
         if activity_length > 0:
 
-            peak_value = np.nanmax(not_nan_values)
-            peak_location = times[np.where(channel_data == peak_value)[0][0]]
-
-            first_non_nan_location = times[np.where(~np.isnan(channel_data))[0][0]]
+            if scatter_onsets is None:
+                peak_value = np.nanmax(not_nan_values)
+                peak_location = times[np.where(channel_data == peak_value)[0][0]]
+                first_non_nan_location = times[np.where(~np.isnan(channel_data))[0][0]]
 
             rms_value = np.sqrt(np.mean(not_nan_values ** 2))
 
@@ -845,7 +867,7 @@ def get_sig_elecs_keyword(data_in,sig_idx,keyword):
             out.append(chs[i])
     return out
 
-def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discrete_y:bool=False,discrete_y_lables:list=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'],percentage_vscale=True,vmin=0,vmax=100,is_colbar=True,fig_size:list=[4,10]):
+def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discrete_y:bool=False,discrete_y_lables:list=['Both silent', 'Shared sig', 'Delay Rep only', 'NoDelay JL only'],percentage_vscale=True,vmin=0,vmax=100,is_colbar=True,fig_size:list=[4,10],scatter_onsets=None):
     """
     plot the significant channels in a sorted order
     """
@@ -859,6 +881,10 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
     times = [float(i) for i in times]
     chs = data_in.labels[0]
     data = data_in.__array__()
+
+    if scatter_onsets:
+        fs=(max(times)-min(times))/len(times)
+        scatter_onsets=[(i-min(times))/fs for i in scatter_onsets]
 
     # Automatically calculate ch_gap and time_gap to avoid label overlap
     num_channels = len(chs)
@@ -909,6 +935,19 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
                 cbar.set_ticklabels(discrete_y_lables)
                 cbar.set_label('Shared significance')
 
+    if scatter_onsets:
+        num_y_points = len(scatter_onsets)
+        scatter_y_indices = np.arange(num_y_points)
+        ax.scatter(
+            scatter_onsets,
+            scatter_y_indices,
+            marker='o',
+            s=20,
+            c='red',
+            edgecolors='red',
+            linewidths=0,
+            zorder=5
+        )
     # fig.colorbar(im, ax=ax)
     ax.set_title(title)
 
@@ -997,6 +1036,46 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f='x', dotsize=0.3,
         fig3d.save_image(fig_save_dir_f)
         fig3d.close()
 
+
+def get_subj_elec_idx(subjs,grp_labels):
+
+    def remove_leading_zeros(subj_id):
+        if subj_id.startswith('D'):
+            numeric_part = subj_id[1:]
+            return 'D' + numeric_part.lstrip('0')
+        return subj_id
+    new_subjs = [remove_leading_zeros(s) for s in subjs]
+    patient_label_indices = {subj: set() for subj in new_subjs}
+
+    for target_subj in new_subjs:
+        for index, label in enumerate(grp_labels):
+            if label.startswith(target_subj):
+                patient_label_indices[target_subj].add(index)
+
+    return patient_label_indices
+
+def get_roi_subj_matrix(roi_data):
+    import pandas as pd
+    from collections import defaultdict
+    def extract_subject_id(electrode_name):
+        return electrode_name.split('-')[0]
+
+    subject_counts = defaultdict(lambda: defaultdict(int))
+    all_subjects = set()
+
+    for roi_name, elec_list in roi_data.items():
+        for electrode in elec_list:
+            subject_id = extract_subject_id(electrode)
+            all_subjects.add(subject_id)
+            subject_counts[subject_id][roi_name] += 1
+
+    results_df = pd.DataFrame(index=sorted(list(all_subjects)))
+
+    for subject in results_df.index:
+        for roi_name in roi_data.keys():
+            results_df.loc[subject, roi_name] = subject_counts[subject].get(roi_name, 0)
+
+    results_df = results_df.astype(int)
 
 def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list = [0, 0, 1],
                       mode:str="save_brain_plot",label_every=None,bin:bool=False):

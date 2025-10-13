@@ -37,8 +37,8 @@ def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
 
 # %% groups of patients
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
-groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -57,13 +57,14 @@ if groupsTag=="LexDelay":
     data_LexDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay)
     elec_labels=data_LexDelay_Aud.labels[0]
     epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+    NoDelay_append_startings=False
 if groupsTag=="LexDelay&LexNoDelay":
     # epoc_LexDelayRep_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
     # epoc_LexNoDelay_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
     data_LexNoDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_nodelay,stats_root_nodelay)
     elec_labels=data_LexNoDelay_Aud.labels[0]
     epoc_LexNoDelay_Cue, _ = gp.load_stats('zscore', 'Cue_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
-
+    NoDelay_append_startings=True
     # Generate trial-based Auditory and Response onsets
     auditory_stim_dicts, resp_dicts=gp.get_onset_times(epoc_LexNoDelay_Cue,encoding_mode)
     with open(os.path.join(sf_dir,'LexNoDelay_Cue_auditory_stim_dicts.pkl'), 'wb') as f:
@@ -74,21 +75,21 @@ if groupsTag=="LexDelay&LexNoDelay":
 # %% Select electrodes
 loaded_data={}
 if groupsTag=="LexDelay":
-    elec_grps=('Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only',
-             'Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
-    elec_idxs=('LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx',
-             'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
+    elec_grps=('Delay','Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only')
+             #'Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
+    elec_idxs=('LexDelay_Delay_sig_idx','LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+             #'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
     epoc=epoc_LexDelayRep_Aud
     epoc_tag='epoc_LexDelayRep_Aud'
 elif groupsTag=="LexDelay&LexNoDelay":
-    elec_grps=('Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only')
-    elec_idxs=('LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+    elec_grps=('Auditory_NoDelay',)#'Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only')
+    elec_idxs=('LexNoDelay_Aud_sig_idx',)#'LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
     epoc=epoc_LexNoDelay_Cue
     epoc_tag='epoc_LexNoDelay_Cue'
 
 for t_tag,t_range in zip(
         ('full',),
-        ([-0.1,3.01],)
+        ([-0.5,6],)
 ):
     for elec_grp,elec_idx in zip(elec_grps,elec_idxs):
         print(f'Now Doing {t_tag} {elec_grp}')
@@ -111,4 +112,5 @@ for t_tag,t_range in zip(
                 epoc_dict[s]=m
             del m
             m = epoc_dict
-        gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'{epoc_tag}_{t_tag}_{elec_grp}'),win_len=0,append_pho=False,NoDelay_append_startings=True) #100s for phoneme responses
+
+        gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'{epoc_tag}_{t_tag}_{elec_grp}'),win_len=0,append_pho=False,NoDelay_append_startings=NoDelay_append_startings) #100s for phoneme responses
