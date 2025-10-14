@@ -4,7 +4,8 @@ import sys
 import glob
 import numpy as np
 import pandas as pd
-import pickle
+from scipy.stats import pearsonr,ttest_ind
+import seaborn as sns
 from ieeg.calc.stats import time_cluster
 import matplotlib.pyplot as plt
 from statsmodels.stats.multitest import multipletests
@@ -95,7 +96,7 @@ elec_typs=('Auditory_NoDelay',)
 pred_onset='aud_onset'
 plot_elec_pic=False
 for elec_typ in elec_typs:
-    # read raw hg data
+    #%% read raw hg data
     r2_lst=[]
     clus_lst=[]
     subj_elec_lst=[]
@@ -106,7 +107,9 @@ for elec_typ in elec_typs:
     file_pattern = f"results/NoDel_{elec_typ}_*_full_{pred_onset}.csv"
     matching_files = glob.glob(file_pattern, recursive=False)
     ymax=2e-1
-    for filename in matching_files[0:50]:
+
+    #%% loop for each electrodes
+    for filename in matching_files:
         para_sig_bar=[1e-1,0]
         if plot_elec_pic:
             fig, ax = plt.subplots(figsize=(19, 6))
@@ -192,6 +195,7 @@ for elec_typ in elec_typs:
                     plt.savefig(os.path.join('figs', f'NoDel_{elec_typ}_{subj_elec}_full_{pred_onset}.tif'), dpi=100)
                     plt.close()
 
+    #%% glm HG correlations
     # Generate Label array
     labels=(subj_elec_lst,time_point)
     r2_arr=LabeledArray(np.stack(r2_lst,axis=0), labels)
@@ -241,9 +245,136 @@ for elec_typ in elec_typs:
              fig_size=[6, 20 * (np.shape(r2_lst)[0] / 250)],scatter_onsets=subj_elec_onsets_array.tolist())
 
     # Get windowed paras
-    _, _, _, _, _, paras, *_ = gp.sort_chs_by_actonset(clus_arr,
+    # predicting onsets
+    _, _, _, _, _, paras_glm, *_ = gp.sort_chs_by_actonset(clus_arr,
                                                   r2_arr,
                                                   0.011, [0, 0.2],
                                                   sorted_indices=sorted_indices,
                                                   mask_data=True,
                                                   select_electrodes=False,scatter_onsets=subj_elec_onsets_array.tolist())
+    paras_glm.index = paras_glm.index.str.replace('_', '-')
+
+    # high gamma
+    _, _, _, _, _, paras_hg, *_ = gp.sort_chs_by_actonset(Mask_NoDel_Aud,
+                                                  Epoc_NoDel_Aud,
+                                                  0.011, [0, 0.2],
+                                                  sorted_indices=sorted_indices,
+                                                  mask_data=True,
+                                                  select_electrodes=False)
+
+    # extract key parameters of the responses
+    df_merged = pd.DataFrame({
+        'sum_value_glm': paras_glm['rms_value'],
+        'sum_value_hg': paras_hg['rms_value']
+    }).dropna()
+    df_merged = df_merged[df_merged['sum_value_hg'] != 0]
+    df_merged2 = df_merged[df_merged['sum_value_glm'] != 0]
+    data_glm_aligned = df_merged2['sum_value_glm']
+    data_hg_aligned = df_merged2['sum_value_hg']
+
+    # do correlation
+    correlation, p_value = pearsonr(data_glm_aligned, data_hg_aligned)
+
+    # Fig1: correlation
+    sns.set_theme(style="whitegrid")
+    plt.figure(figsize=(8, 6))
+
+    sns.scatterplot(
+        x=data_glm_aligned,
+        y=data_hg_aligned,
+        s=100,
+        color='#3498db'
+    )
+
+    sns.regplot(
+        x=data_glm_aligned,
+        y=data_hg_aligned,
+        scatter=False,
+        color='#e74c3c',
+        line_kws={'linestyle': '--', 'linewidth': 2}
+    )
+
+    plt.title(
+        f'Correlations between Auditory HG and stim onset GLM',
+        fontsize=14,
+        fontweight='bold'
+    )
+    plt.xlabel('RMS GLM R-squared (200ms win)', fontsize=12)
+    plt.ylabel('RMS HG Z-score (200ms win)', fontsize=12)
+
+    plt.text(
+        x=np.min(data_glm_aligned),
+        y=np.max(data_hg_aligned),
+        s=f'$r={correlation:.3f},p={p_value:.3f}$',
+        fontsize=12,
+        color='#e74c3c',
+        ha='left',
+        va='top'
+    )
+
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.tight_layout()
+    plt.savefig(os.path.join('figs', f'NoDel_{elec_typ}_glm_rms_corrplot.tif'), dpi=100)
+
+    # Fig2: predicting glm vs. not predicting glm
+    df_merged['GLM_Zero'] = np.where(
+        df_merged['sum_value_glm'] == 0,
+        'Not Predicting (n={})',
+        'Predicting (n={})'
+    )
+
+    counts = df_merged['GLM_Zero'].value_counts()
+
+    def update_label(label):
+        if 'Not Predicting' in label:
+            count = counts.get(label, 0)
+            return label.format(count)
+        elif 'Predicting' in label:
+            count = counts.get(label, 0)
+            return label.format(count)
+        return label
+
+
+    df_merged['GLM_Zero'] = df_merged['GLM_Zero'].apply(update_label)
+
+    category_order = [label for label in df_merged['GLM_Zero'].unique() if 'Not Predicting' in label]
+    category_order += [label for label in df_merged['GLM_Zero'].unique() if 'Predicting' in label]
+
+    plt.figure(figsize=(9, 7))
+    sns.set_theme(style="whitegrid")
+
+    sns.violinplot(
+        data=df_merged,
+        x='GLM_Zero',
+        y='sum_value_hg',
+        order=category_order,
+        inner=None,
+        palette=["#ADD8E6", "#F08080"],
+        linewidth=1.5
+    )
+
+    sns.stripplot(
+        data=df_merged,
+        x='GLM_Zero',
+        y='sum_value_hg',
+        order=category_order,
+        color='gray',
+        size=6,
+        jitter=True,
+        alpha=0.7
+    )
+
+    plt.title('GLM sig clusters', fontsize=14)
+    plt.xlabel('Predicting stim onsets by GLM', fontsize=12)
+    plt.ylabel('Auditory responses HG rms of z-score', fontsize=12)
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    plt.savefig(os.path.join('figs', f'NoDel_{elec_typ}_glm_rms_violin.tif'), dpi=100)
+
+    group_zero = df_merged[df_merged['sum_value_glm'] == 0]['sum_value_hg']
+    group_non_zero = df_merged[df_merged['sum_value_glm'] != 0]['sum_value_hg']
+    t_statistic, p_value = ttest_ind(group_zero, group_non_zero, equal_var=True)
+    print("--- Independent Samples T-Test Results ---")
+    print(f"T-Statistic: {t_statistic:.4f}")
+    print(f"df: {len(group_non_zero)+len(group_zero)-2}")
+    print(f"P-Value: {p_value:.4f}")
