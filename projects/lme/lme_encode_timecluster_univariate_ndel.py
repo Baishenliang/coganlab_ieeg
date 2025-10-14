@@ -90,17 +90,19 @@ def get_subj_elec(filename,pred_onset,aud_onset):
 
 #%% Get data
 #elec_typs=('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
-elec_typs=('Auditory_NoDelay',)
+#elec_typs=('Auditory_NoDelay',)
+elec_typs=('Sensorymotor_delay',)
 
 #%% Plotting
-pred_onset='aud_onset'
-plot_elec_pic=False
+pred_onset='resp_onset'
+plot_elec_pic=True
 for elec_typ in elec_typs:
     #%% read raw hg data
     r2_lst=[]
     clus_lst=[]
     subj_elec_lst=[]
     subj_elec_onsets=[]
+    subj_elec_crosscorr_peak=[]
     hg_filename=f'data\\epoc_LexNoDelay_Cue_full_{elec_typ}_long.csv'
     hg_raw = pd.read_csv(hg_filename)
     # read data
@@ -112,7 +114,8 @@ for elec_typ in elec_typs:
     for filename in matching_files:
         para_sig_bar=[1e-1,0]
         if plot_elec_pic:
-            fig, ax = plt.subplots(figsize=(19, 6))
+            fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(19, 15))
+            ax = axs[0]
             ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
         raw = pd.read_csv(filename)
         subj_elec=get_subj_elec(filename,elec_typ,pred_onset)
@@ -159,10 +162,53 @@ for elec_typ in elec_typs:
         if plot_elec_pic:
             ax.plot(time_point,subj_elec_hg_series,color=[0,1,0], linewidth=5,label='HG trace (normalized)')
 
+        # Do HG-onsethistogram cross-correlation and plot
+            # histogram
+        onset_times = np.array(resp_onset_data_subj_elec)
+        counts, _ = np.histogram(onset_times, bins=time_point)
+        counts=np.append(counts, 0)
+        total_onsets = len(onset_times)
+        onset_prob_series = counts / total_onsets
+            # cross-corr (move beta, keep histogram)
+        cross_corr = np.correlate(time_series,onset_prob_series, mode='full')
+        time_resolution = np.diff(time_point)[0]
+        lags_index = np.arange(-(len(time_point) - 1), len(time_point))
+        max_corr_index = np.argmax(cross_corr)
+        optimal_lag_k = lags_index[max_corr_index]
+        optimal_lag_time = optimal_lag_k * time_resolution
+        i_ts_peak = np.argmax(onset_prob_series)
+        time_ts_peak = time_point[i_ts_peak]
+        cross_corr_peak = time_ts_peak+optimal_lag_time
+
+        # plot CC indexes
+        if plot_elec_pic:
+            ax.axvline(x=time_ts_peak, color='red', linestyle='--', alpha=0.7,linewidth=3,label='onset peak')
+            ax.axvline(x=cross_corr_peak, color='blue', linestyle='--', alpha=0.7,linewidth=3,label='onset peak + cc peak lag')
+
+            time_lags = lags_index * time_resolution
+            ax1=axs[1]
+            ax1.plot(time_lags, cross_corr, label='Cross-Correlation')
+            ax1.axvline(
+                optimal_lag_time,
+                color='r',
+                linestyle='--',
+                linewidth=1.5,
+                label=f'Optimal Lag: {optimal_lag_time:.4f} s ({optimal_lag_k} steps)'
+            )
+            ax1.axvline(0, color='k', linestyle=':', linewidth=0.8)
+            ax1.axhline(0, color='gray', linestyle='-', linewidth=0.5)
+            ax1.set_ylim([-0.02,0.1])
+            ax1.set_title('Cross-Correlation vs. Time Lag')
+            ax1.set_xlabel('Time Lag (seconds)')
+            ax1.set_ylabel('Cross-Correlation Value (Unnormalized)')
+            ax1.legend()
+            ax1.grid(True, linestyle='--')
+
         r2_lst.append(time_series)
         clus_lst.append(mask_time_clus.astype(int))
         subj_elec_lst.append(subj_elec)
         subj_elec_onsets.append(float(np.min(resp_onset_data_subj_elec)))
+        subj_elec_crosscorr_peak.append(cross_corr_peak)
 
         if plot_elec_pic:
             ax.legend(loc='upper left')
@@ -185,15 +231,15 @@ for elec_typ in elec_typs:
                             linewidth=10,  # Make the line thick like a bar
                             solid_capstyle='butt')  # Makes the line ends flat
 
-                    ax.set_ylabel("$X^2$")#, fontsize=20)
-                    ax.tick_params(axis='both', which='major')#, labelsize=16)
-                    ax.set_xlim(-0.2, time_point.max())
-                    ax.set_ylim(-2e-2,ymax)
-                    ax.spines['top'].set_visible(False)
-                    ax.spines['right'].set_visible(False)
-                    plt.tight_layout()
-                    plt.savefig(os.path.join('figs', f'NoDel_{elec_typ}_{subj_elec}_full_{pred_onset}.tif'), dpi=100)
-                    plt.close()
+            ax.set_ylabel("$X^2$")#, fontsize=20)
+            ax.tick_params(axis='both', which='major')#, labelsize=16)
+            ax.set_xlim(-0.2, 5)
+            ax.set_ylim(-2e-2,ymax)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            plt.tight_layout()
+            plt.savefig(os.path.join('figs', f'NoDel_{elec_typ}_{subj_elec}_full_{pred_onset}.tif'), dpi=100)
+            plt.close()
 
     #%% glm HG correlations
     # Generate Label array
@@ -314,7 +360,7 @@ for elec_typ in elec_typs:
 
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
-    plt.savefig(os.path.join('figs', f'NoDel_{elec_typ}_glm_rms_corrplot.tif'), dpi=100)
+    plt.savefig(os.path.join('figs', f'NoDel_{elec_typ}_{pred_onset}_glm_rms_corrplot.tif'), dpi=100)
 
     # Fig2: predicting glm vs. not predicting glm
     df_merged['GLM_Zero'] = np.where(
@@ -369,7 +415,7 @@ for elec_typ in elec_typs:
     plt.ylabel('Auditory responses HG rms of z-score', fontsize=12)
     plt.xticks(rotation=0)
     plt.tight_layout()
-    plt.savefig(os.path.join('figs', f'NoDel_{elec_typ}_glm_rms_violin.tif'), dpi=100)
+    plt.savefig(os.path.join('figs', f'NoDel_{elec_typ}_{pred_onset}_glm_rms_violin.tif'), dpi=100)
 
     group_zero = df_merged[df_merged['sum_value_glm'] == 0]['sum_value_hg']
     group_non_zero = df_merged[df_merged['sum_value_glm'] != 0]['sum_value_hg']
