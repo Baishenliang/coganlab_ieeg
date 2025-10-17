@@ -24,56 +24,56 @@ from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_
 from matplotlib import pyplot as plt
 
 # %% Subj list
-# subject_processing_dict_org = {
-#     "D0023": "gamma",
-#     "D0024": "gamma",
-#     "D0026": "gamma",
-#     "D0027": "gamma",
-#     "D0028": "gamma",
-#     "D0029": "gamma",
-#     "D0032": "gamma",
-#     "D0035": "gamma",
-#     "D0038": "gamma",
-#     "D0042": "gamma",
-#     "D0044": "gamma",
-#     "D0047": "gamma",
-#     "D0053": "gamma",
-#     "D0054": "gamma",
-#     "D0055": "gamma",
-#     "D0057": "gamma",
-#     "D0059": "gamma",
-#     "D0063": "gamma",
-#     "D0065": "gamma",
-#     "D0066": "gamma",
-#     "D0068": "gamma",
-#     "D0069": "gamma",
-#     "D0070": "gamma",
-#     "D0071": "gamma",
-#     "D0077": "gamma",
-#     "D0079": "gamma",
-#     "D0080": "gamma",
-#     "D0081": "gamma",
-#     "D0084": "gamma",
-#     "D0086": "gamma",
-#     "D0090": "gamma",
-#     "D0092": "gamma",
-#     "D0094": "gamma",
-#     "D0096": "gamma",
-#     "D0100": "gamma",
-#     "D0101": "gamma",
-#     "D0102": "gamma",
-#     "D0103": "gamma",
-#     "D0107": "gamma",
-#     "D0115": "gamma",
-#     "D0117": "gamma"
-# }
 subject_processing_dict_org = {
-    "D0026": "gamma"
+    "D0023": "gamma",
+    "D0024": "gamma",
+    "D0026": "gamma",
+    "D0027": "gamma",
+    "D0028": "gamma",
+    "D0029": "gamma",
+    "D0032": "gamma",
+    "D0035": "gamma",
+    "D0038": "gamma",
+    "D0042": "gamma",
+    "D0044": "gamma",
+    "D0047": "gamma",
+    "D0053": "gamma",
+    "D0054": "gamma",
+    "D0055": "gamma",
+    "D0057": "gamma",
+    "D0059": "gamma",
+    "D0063": "gamma",
+    "D0065": "gamma",
+    "D0066": "gamma",
+    "D0068": "gamma",
+    "D0069": "gamma",
+    "D0070": "gamma",
+    "D0071": "gamma",
+    "D0077": "gamma",
+    "D0079": "gamma",
+    "D0080": "gamma",
+    "D0081": "gamma",
+    "D0084": "gamma",
+    "D0086": "gamma",
+    "D0090": "gamma",
+    "D0092": "gamma",
+    "D0094": "gamma",
+    "D0096": "gamma",
+    "D0100": "gamma",
+    "D0101": "gamma",
+    "D0102": "gamma",
+    "D0103": "gamma",
+    "D0107": "gamma",
+    "D0115": "gamma",
+    "D0117": "gamma"
 }
+# subject_processing_dict_org = {
+#     "D0026": "gamma"
+# }
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 # %% define task
-#Task_Tag="LexicalDecRepDelay"
-Task_Tag="LexicalDecRepNoDelay"
+Task_Tag="LexicalDecRepDelay"
+#Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
@@ -514,12 +514,22 @@ for subject, processing_type in subject_processing_dict.items():
 
             # gamma and permutation
             if Task_Tag == "LexicalDecRepDelay":
+                # gamma_epoc_zip = zip(
+                #     ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                #     ((-0.5, 3), (-2, 3), (-2, 1), (-2, 1)),
+                #     ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep'),
+                #     (True, False, False, False)
+                # )
+                # Just a temporal option for getting the Cue epochs for auditory and motor onset modeling
+                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                # 我觉得应该好好检查一下这个is_bsl_correct，如果不是两个信号直接比较的话应该选True吧。那么原本的数据会错吗？应该是错的代码没有跑过新的数据吧anyway到时候BIDS完今年的被试应该要认真看看的。
                 gamma_epoc_zip = zip(
-                    ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                    ((-0.5, 3), (-2, 3), (-2, 1), (-2, 1)),
-                    ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep'),
-                    (True, False, False, False)
+                    ('Cue/Repeat/CORRECT', 'Go/Repeat/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                    ((-0.5, 4), (-0.5, 4)),
+                    ('Cue_inRep', 'Go_inRep'),
+                    (True,True)
                 )
             elif Task_Tag == "LexicalDecRepNoDelay":
                 # gamma_epoc_zip=zip(
