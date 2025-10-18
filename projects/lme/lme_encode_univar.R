@@ -135,7 +135,6 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-ana_tag<-'NoDel'
 del_nodel_tags <- c('epoc_LexNoDelay_Cue', 'epoc_LexNoDelay_Cue', 'epoc_LexDelay_Cue', 'epoc_LexDelay_Go')
 elec_grps <- c('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM','Motor_novWM', 'Auditory_novWM', 'Sensorymotor_novWM')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
@@ -264,7 +263,7 @@ for (del_nodel_tag in del_nodel_tags){
         perm_compare_df <- perm_compare_df %>% arrange(time_point)
         
         print(perm_compare_df)
-        write.csv(perm_compare_df,paste(home_dir,"results/",ana_tag,'_',elec_grp,"_",electrode_name,"_",feature,".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",del_nodel_tag,'_',elec_grp,"_",electrode_name,"_",feature,".csv",sep = ''),row.names = FALSE)
       }
     }
   }
