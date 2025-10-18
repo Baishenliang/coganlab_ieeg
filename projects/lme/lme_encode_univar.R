@@ -96,7 +96,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 2e2
+  n_perm <- 2e2#1e2
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -135,13 +135,12 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-ana_tag<-'Del'
-phase<-'full'
-del_nodel_tag <- 'epoc_LexDelay_Go'
-elec_grps <- c('Auditory_Delay','Sensorymotor_delay','Motor_delay','Delay_only')
+ana_tag<-'NoDel'
+del_nodel_tags <- c('epoc_LexNoDelay_Cue', 'epoc_LexNoDelay_Cue', 'epoc_LexDelay_Cue', 'epoc_LexDelay_Go')
+elec_grps <- c('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM','Motor_novWM', 'Auditory_novWM', 'Sensorymotor_novWM')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 # features <- c('aco','pho','wordness','Wordvec')
-features <- c('resp_onset')
+features <- c('aud_onset','resp_onset')
 a = 0
 
 #Load acoustic parameters
@@ -185,80 +184,88 @@ freq_fea<-normalized_freq_fea
 rm(normalized_freq_fea)
 
 #%% Start looping
-for (feature in features){
-  for (elec_grp in elec_grps){
-    
-    #%% Run computations
-    a <- a + 1
-    if (task_ID > 0 && a != task_ID) {
-      next
-    }
-    
-    #%% Load files
-    cat("loading files \n")
-    # slurm task selection
-    file_path_long <- paste(home_dir,
-                            "data/",del_nodel_tag,"_",phase,"_",elec_grp,"_long.csv",
-                            sep = "")
-    long_data <- read.csv(file_path_long)
-    long_data$time <- as.numeric(long_data$time)
-    
-    na_fea_rows <- is.na(long_data[[feature]])
-    long_data <- long_data[!na_fea_rows, ] 
-    
-    long_data <- long_data %>%
-      unite(
-        col = "subj_electrode",
-        c(subject, electrode),
-        sep = "_"
-      ) %>%
-      rename(electrode = subj_electrode)
-    
-    # #%% append acoustic features
-    # long_data <- left_join(long_data,aco_fea_T,by='stim')
-    # 
-    # #%% append phonemic features
-    # long_data <- left_join(long_data,pho_fea_T,by='stim')
-    # 
-    # #%% append word2vec features
-    # long_data <- left_join(long_data,word2vec_fea_T,by='stim')
-    
-    # #%% append word frequency features
-    # long_data <- long_data %>%
-    #   left_join(
-    #     freq_fea %>% select(stim, 'Uni_Pos_SC'),
-    #     by = "stim"
-    #   )
-    
-    long_data$time <- as.numeric(long_data$time)
-    time_points <- unique(long_data$time)
-    
-    # Split electrodes
-    electrode_list <- split(long_data, long_data$electrode)
-    rm(long_data)
-    for (electrode_name in names(electrode_list)) {
+for (del_nodel_tag in del_nodel_tags){
+  for (feature in features){
+    for (elec_grp in elec_grps){
       
-      current_electrode_df <- electrode_list[[electrode_name]]
+      # For lexical delay data, aud_onsets were only predicted in data aligned to Cue, and resp_onsets were only predicted in data aligned to Go
+      if ((del_nodel_tag=='epoc_LexDelay_Cue' && feature=='resp_onset') || (del_nodel_tag=='epoc_LexDelay_Go' && feature=='aud_onset')){
+        next
+      }
       
-      cat("Re-formatting long data \n")
-      data_by_time <- split(current_electrode_df, current_electrode_df$time)
-      rm(current_electrode_df)
+      #%% Run computations
+      a <- a + 1
+      if (task_ID > 0 && a != task_ID) {
+        next
+      }
       
-      cat("Starting modeling \n")
-      #%% Get core environment
-      cl <- makeCluster(num_cores)
-      registerDoParallel(cl)
-      clusterExport(cl, varlist = c("model_func"))
-      # Fot Duke HPC sbatch:
-      # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
-      # 13 tasks can be paralled at once.
-      perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
-      stopCluster(cl)
-      perm_compare_df <- do.call(rbind, perm_compare_df)
-      perm_compare_df <- perm_compare_df %>% arrange(time_point)
+      #%% Load files
+      cat("loading files \n")
       
-      print(perm_compare_df)
-      write.csv(perm_compare_df,paste(home_dir,"results/",ana_tag,'_',elec_grp,"_",electrode_name,"_",phase,"_",feature,".csv",sep = ''),row.names = FALSE)
+      # slurm task selection
+      file_path_long <- paste(home_dir,
+                              "data/",del_nodel_tag,"_",elec_grp,"_long.csv",
+                              sep = "")
+      long_data <- read.csv(file_path_long)
+      long_data$time <- as.numeric(long_data$time)
+      
+      na_fea_rows <- is.na(long_data[[feature]])
+      long_data <- long_data[!na_fea_rows, ] 
+      
+      long_data <- long_data %>%
+        unite(
+          col = "subj_electrode",
+          c(subject, electrode),
+          sep = "_"
+        ) %>%
+        rename(electrode = subj_electrode)
+      
+      # #%% append acoustic features
+      # long_data <- left_join(long_data,aco_fea_T,by='stim')
+      # 
+      # #%% append phonemic features
+      # long_data <- left_join(long_data,pho_fea_T,by='stim')
+      # 
+      # #%% append word2vec features
+      # long_data <- left_join(long_data,word2vec_fea_T,by='stim')
+      
+      # #%% append word frequency features
+      # long_data <- long_data %>%
+      #   left_join(
+      #     freq_fea %>% select(stim, 'Uni_Pos_SC'),
+      #     by = "stim"
+      #   )
+      
+      long_data$time <- as.numeric(long_data$time)
+      time_points <- unique(long_data$time)
+      
+      # Split electrodes
+      electrode_list <- split(long_data, long_data$electrode)
+      rm(long_data)
+      for (electrode_name in names(electrode_list)) {
+        
+        current_electrode_df <- electrode_list[[electrode_name]]
+        
+        cat("Re-formatting long data \n")
+        data_by_time <- split(current_electrode_df, current_electrode_df$time)
+        rm(current_electrode_df)
+        
+        cat("Starting modeling \n")
+        #%% Get core environment
+        cl <- makeCluster(num_cores)
+        registerDoParallel(cl)
+        clusterExport(cl, varlist = c("model_func"))
+        # Fot Duke HPC sbatch:
+        # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
+        # 13 tasks can be paralled at once.
+        perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
+        stopCluster(cl)
+        perm_compare_df <- do.call(rbind, perm_compare_df)
+        perm_compare_df <- perm_compare_df %>% arrange(time_point)
+        
+        print(perm_compare_df)
+        write.csv(perm_compare_df,paste(home_dir,"results/",ana_tag,'_',elec_grp,"_",electrode_name,"_",feature,".csv",sep = ''),row.names = FALSE)
+      }
     }
   }
 }
