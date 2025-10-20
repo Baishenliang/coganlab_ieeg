@@ -98,6 +98,7 @@ elec_typs = ('Sensorymotor_vWM', 'Motor_vWM', 'Auditory_vWM', 'Delay_only_vWM', 
 #%% Plotting
 plot_elec_pic=False
 onset_pred_lags=dict()
+onset_pred_pows=dict()
 cross_corr_lsts=dict()
 r2_lsts=dict()
 for pred_onset in pred_onsets:
@@ -113,6 +114,7 @@ for pred_onset in pred_onsets:
             subj_elec_lst=[]
             subj_elec_onsets=[]
             subj_elec_crosscorr_peak=[]
+            subj_elec_crosscorr_prepow=[]
             hg_filename=f'data\\{del_nodel_tag}_{elec_typ}_long.csv'
             hg_raw = pd.read_csv(hg_filename)
             # read data
@@ -183,6 +185,7 @@ for pred_onset in pred_onsets:
                 cross_corr = np.correlate(time_series,onset_prob_series, mode='full')
                 time_resolution = np.diff(time_point)[0]
                 lags_index = np.arange(-(len(time_point) - 1), len(time_point))
+                # Get peak time loc
                 LOWER_BOUND_SEC = -1.5
                 UPPER_BOUND_SEC = 1.5
                 lags_sec = lags_index * time_resolution
@@ -203,6 +206,13 @@ for pred_onset in pred_onsets:
                 i_ts_peak = np.argmax(onset_prob_series)
                 time_ts_peak = time_point[i_ts_peak]
                 cross_corr_peak = time_ts_peak+optimal_lag_time
+                # Get power of motor prep
+                LOWER_BOUND_SEC_mtrprep = LOWER_BOUND_SEC
+                UPPER_BOUND_SEC_mtrprep = 0
+                start_idx_limit_mtrprep = np.argmax(lags_sec >= LOWER_BOUND_SEC_mtrprep)
+                end_idx_limit_mtrprep = np.argmax(lags_sec > UPPER_BOUND_SEC_mtrprep)-1
+                limited_cross_corr_mtrprep = cross_corr[start_idx_limit_mtrprep: end_idx_limit_mtrprep + 1]
+                mtr_prep_rms = np.sqrt(np.nanmean(limited_cross_corr_mtrprep**2))
 
                 # plot CC indexes
                 if plot_elec_pic:
@@ -233,6 +243,7 @@ for pred_onset in pred_onsets:
                 subj_elec_lst.append(subj_elec)
                 subj_elec_onsets.append(time_ts_peak)
                 subj_elec_crosscorr_peak.append(cross_corr_peak)
+                subj_elec_crosscorr_prepow.append(mtr_prep_rms)
 
                 if plot_elec_pic:
                     ax.legend(loc='upper left')
@@ -268,7 +279,8 @@ for pred_onset in pred_onsets:
             #%% Plot HG signals in Delay/No Delay and R-aquared predicting onsets
 
             cross_corr_lsts[elec_typ]=np.stack(cross_corr_lst, axis=0)
-            r2_lsts[elec]=np.stack(r2_lst, axis=0)
+            r2_lsts[elec_typ]=np.stack(r2_lst, axis=0)
+            onset_pred_pows[elec_typ]=np.array(subj_elec_crosscorr_prepow)
 
             # Generate Label array
             labels=(subj_elec_lst,time_point)
@@ -483,114 +495,119 @@ for pred_onset in pred_onsets:
 
         #%% compare predicting onset r^2 (ttests between each other)
 
-        with open(os.path.join('figs', f'stats_{del_nodel_tag}_{pred_onset}.txt'), 'w', encoding='utf-8') as f:
-            with redirect_stdout(f):
-                # --- 2. Convert Dictionary to Long Format DataFrame ---
-                onset_pred_lags_stats=onset_pred_lags
-                onset_pred_lags_stats.pop('Delay_only_vWM', None)
-                df_long_independent = pd.DataFrame({
-                    'Lag_Value': [],
-                    'Factor_Combined': []
-                })
+        for onset_pred_data,onset_pred_tag,vert_boxplot in zip(
+                (onset_pred_lags,onset_pred_pows),
+                ('peak_lag','pred_pow'),
+                (False,True)
 
-                for factor, values in onset_pred_lags_stats.items():
-                    temp_df = pd.DataFrame({
-                        'Lag_Value': values,
-                        'Factor_Combined': factor
+        ):
+            with open(os.path.join('figs', f'stats_{del_nodel_tag}_{pred_onset}_{onset_pred_tag}.txt'), 'w', encoding='utf-8') as f:
+                with redirect_stdout(f):
+                    # --- 2. Convert Dictionary to Long Format DataFrame ---
+                    onset_pred_lags_stats=onset_pred_data.copy()
+                    onset_pred_lags_stats.pop('Delay_only_vWM', None)
+                    df_long_independent = pd.DataFrame({
+                        'Lag_Value': [],
+                        'Factor_Combined': []
                     })
-                    df_long_independent = pd.concat([df_long_independent, temp_df], ignore_index=True)
 
-                # --- 3. Separate Independent Factors (Electrode and Activity) ---
-                df_long_independent['Activity'] = df_long_independent['Factor_Combined'].apply(lambda x: x.split('_')[-1])
-                df_long_independent['Electrode'] = df_long_independent['Factor_Combined'].apply(
-                    lambda x: '_'.join(x.split('_')[:-1]))
+                    for factor, values in onset_pred_lags_stats.items():
+                        temp_df = pd.DataFrame({
+                            'Lag_Value': values,
+                            'Factor_Combined': factor
+                        })
+                        df_long_independent = pd.concat([df_long_independent, temp_df], ignore_index=True)
 
-                print("--- Long Format Data Head ---")
-                print(df_long_independent.head())
-                print("-" * 50)
+                    # --- 3. Separate Independent Factors (Electrode and Activity) ---
+                    df_long_independent['Activity'] = df_long_independent['Factor_Combined'].apply(lambda x: x.split('_')[-1])
+                    df_long_independent['Electrode'] = df_long_independent['Factor_Combined'].apply(
+                        lambda x: '_'.join(x.split('_')[:-1]))
 
-                # --- 4. Perform Two-Way Independent ANOVA ---
-                aov_results_independent = pg.anova(
-                    data=df_long_independent,
-                    dv='Lag_Value',
-                    between=['Electrode', 'Activity']
-                )
+                    print("--- Long Format Data Head ---")
+                    print(df_long_independent.head())
+                    print("-" * 50)
 
-                print("--- Independent ANOVA Results (Main Effects & Interaction) ---")
-                pg.print_table(aov_results_independent)
-                print("-" * 50)
-
-                # --- 5. Post-Hoc Contrasts ---
-                # --- Simple Effects Analysis with FDR Correction ---
-
-                print("--- Simple Effect 1: Electrode within Activity (FDR corrected) ---")
-                posthoc_results = pd.DataFrame()
-                for activity_level, group_df in df_long_independent.groupby('Activity'):
-                    # Run independent T-tests for all pairs of 'Electrode' within this 'Activity' level
-                    ttests_result = pg.pairwise_tests(
-                        data=group_df,
+                    # --- 4. Perform Two-Way Independent ANOVA ---
+                    aov_results_independent = pg.anova(
+                        data=df_long_independent,
                         dv='Lag_Value',
-                        between='Electrode',  # Compares Electrode levels
-                        padjust='fdr'
+                        between=['Electrode', 'Activity']
                     )
 
-                    ttests_result['Grouping_Factor'] = 'Activity'
-                    ttests_result['Grouping_Level'] = activity_level
-                    posthoc_results = pd.concat([posthoc_results, ttests_result], ignore_index=True)
+                    print("--- Independent ANOVA Results (Main Effects & Interaction) ---")
+                    pg.print_table(aov_results_independent)
+                    print("-" * 50)
 
-                pg.print_table(posthoc_results[posthoc_results['Grouping_Factor'] == 'Activity'])
-                print("-" * 50)
+                    # --- 5. Post-Hoc Contrasts ---
+                    # --- Simple Effects Analysis with FDR Correction ---
 
-                print("--- Simple Effect 2: Activity within Electrode (FDR corrected) ---")
+                    print("--- Simple Effect 1: Electrode within Activity (FDR corrected) ---")
+                    posthoc_results = pd.DataFrame()
+                    for activity_level, group_df in df_long_independent.groupby('Activity'):
+                        # Run independent T-tests for all pairs of 'Electrode' within this 'Activity' level
+                        ttests_result = pg.pairwise_tests(
+                            data=group_df,
+                            dv='Lag_Value',
+                            between='Electrode',  # Compares Electrode levels
+                            padjust='fdr'
+                        )
 
-                for electrode_level, group_df in df_long_independent.groupby('Electrode'):
-                    # Run independent T-tests for all pairs of 'Activity' within this 'Electrode' level
-                    ttests_result = pg.pairwise_tests(
-                        data=group_df,
-                        dv='Lag_Value',
-                        between='Activity',  # Compares Activity levels (only 2 levels, so it's a single T-test)
-                        padjust='fdr'
-                    )
+                        ttests_result['Grouping_Factor'] = 'Activity'
+                        ttests_result['Grouping_Level'] = activity_level
+                        posthoc_results = pd.concat([posthoc_results, ttests_result], ignore_index=True)
 
-                    ttests_result['Grouping_Factor'] = 'Electrode'
-                    ttests_result['Grouping_Level'] = electrode_level
-                    posthoc_results = pd.concat([posthoc_results, ttests_result], ignore_index=True)
+                    pg.print_table(posthoc_results[posthoc_results['Grouping_Factor'] == 'Activity'])
+                    print("-" * 50)
 
-                pg.print_table(posthoc_results[posthoc_results['Grouping_Factor'] == 'Electrode'])
-                print("-" * 50)
+                    print("--- Simple Effect 2: Activity within Electrode (FDR corrected) ---")
 
-        #%% boxplot: compare predicting onset r^2 (ttests between each other)
-        MotorPrep_col = [1.0, 0.0784, 0.5765]  # Motor prepare
-        Sensorimotor_col = [1, 0, 0]  # Sensorimotor
-        Auditory_col = [0, 1, 0]  # Auditory
-        Delay_col = [1, 0.65, 0]  # Delay
-        Motor_col = [0, 0, 1]  # Motor
+                    for electrode_level, group_df in df_long_independent.groupby('Electrode'):
+                        # Run independent T-tests for all pairs of 'Activity' within this 'Electrode' level
+                        ttests_result = pg.pairwise_tests(
+                            data=group_df,
+                            dv='Lag_Value',
+                            between='Activity',  # Compares Activity levels (only 2 levels, so it's a single T-test)
+                            padjust='fdr'
+                        )
 
-        ordered_keys=['Sensorymotor_vWM','Motor_vWM','Auditory_vWM','Delay_only_vWM','Sensorymotor_novWM','Motor_novWM','Auditory_novWM']
-        ordered_keys = list(labels)
-        onset_pred_lags_data = [onset_pred_lags[key] for key in ordered_keys]
+                        ttests_result['Grouping_Factor'] = 'Electrode'
+                        ttests_result['Grouping_Level'] = electrode_level
+                        posthoc_results = pd.concat([posthoc_results, ttests_result], ignore_index=True)
 
-        fig, ax = plt.subplots(figsize=(10, 6))
-        boxplot_parts = ax.boxplot(
-            onset_pred_lags_data,
-            tick_labels=labels,
-            vert=False,
-            patch_artist=True,
-            showmeans=True
-        )
-        colors = [
-            Sensorimotor_col, Motor_col, Auditory_col,Delay_col,
-            Sensorimotor_col, Motor_col, Auditory_col
-        ]
-        for patch, color in zip(boxplot_parts['boxes'], colors):
-            patch.set_facecolor(color)
-            patch.set_edgecolor('black')
-            patch.set_alpha(0.6)
-        ax.set_title('CrossCorr peak distribution')
-        ax.set_xlabel('Lag aligned to speech onset (s)')
-        ax.set_ylabel('Electrode group')
-        plt.tight_layout()
-        plt.savefig(os.path.join('figs', f'boxplot_{del_nodel_tag}_{pred_onset}.tif'), dpi=100)
+                    pg.print_table(posthoc_results[posthoc_results['Grouping_Factor'] == 'Electrode'])
+                    print("-" * 50)
+
+            #%% boxplot: compare predicting onset r^2 (ttests between each other)
+            MotorPrep_col = [1.0, 0.0784, 0.5765]  # Motor prepare
+            Sensorimotor_col = [1, 0, 0]  # Sensorimotor
+            Auditory_col = [0, 1, 0]  # Auditory
+            Delay_col = [1, 0.65, 0]  # Delay
+            Motor_col = [0, 0, 1]  # Motor
+
+            ordered_keys=['Sensorymotor_vWM','Motor_vWM','Auditory_vWM','Delay_only_vWM','Sensorymotor_novWM','Motor_novWM','Auditory_novWM']
+            onset_pred_lags_data = [onset_pred_data[key] for key in ordered_keys]
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            boxplot_parts = ax.boxplot(
+                onset_pred_lags_data,
+                tick_labels=ordered_keys,
+                vert=vert_boxplot,
+                patch_artist=True,
+                showmeans=True
+            )
+            colors = [
+                Sensorimotor_col, Motor_col, Auditory_col,Delay_col,
+                Sensorimotor_col, Motor_col, Auditory_col
+            ]
+            for patch, color in zip(boxplot_parts['boxes'], colors):
+                patch.set_facecolor(color)
+                patch.set_edgecolor('black')
+                patch.set_alpha(0.6)
+            ax.set_title('CrossCorr peak distribution')
+            ax.set_xlabel('Lag aligned to speech onset (s)')
+            ax.set_ylabel('Electrode group')
+            plt.tight_layout()
+            plt.savefig(os.path.join('figs', f'boxplot_{del_nodel_tag}_{pred_onset}_{onset_pred_tag}.tif'), dpi=100)
 
         #%% Traceplots: crosscorr
         results = {}
