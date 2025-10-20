@@ -75,7 +75,7 @@ mode='time_cluster'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
-for elec_grp in ['Auditory_delay','Sensorymotor_delay','Auditory_all']:
+for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
     # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
     #                              ('Embedding','Lexical status','Acoustic','Phonemic'),
     #                             ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
