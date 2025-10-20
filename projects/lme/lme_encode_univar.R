@@ -96,7 +96,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e1#2e2#1e2
+  n_perm <- 1e1
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -137,8 +137,6 @@ model_func <- function(current_data,feature){
 #%% Parameters
 del_nodel_tags <- c('epoc_LexNoDelay_Cue', 'epoc_LexDelay_Cue', 'epoc_LexDelay_Go')
 elec_grps <- c('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM','Motor_novWM', 'Auditory_novWM', 'Sensorymotor_novWM')
-# features <- c('aco','pho','Frq','Uni_Pos_SC')
-# features <- c('aco','pho','wordness','Wordvec')
 features <- c('aud_onset','resp_onset')
 a = 0
 
@@ -219,21 +217,6 @@ for (del_nodel_tag in del_nodel_tags){
         ) %>%
         rename(electrode = subj_electrode)
       
-      # #%% append acoustic features
-      # long_data <- left_join(long_data,aco_fea_T,by='stim')
-      # 
-      # #%% append phonemic features
-      # long_data <- left_join(long_data,pho_fea_T,by='stim')
-      # 
-      # #%% append word2vec features
-      # long_data <- left_join(long_data,word2vec_fea_T,by='stim')
-      
-      # #%% append word frequency features
-      # long_data <- long_data %>%
-      #   left_join(
-      #     freq_fea %>% select(stim, 'Uni_Pos_SC'),
-      #     by = "stim"
-      #   )
       
       long_data$time <- as.numeric(long_data$time)
       time_points <- unique(long_data$time)
