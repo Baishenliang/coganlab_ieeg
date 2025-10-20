@@ -135,7 +135,7 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-del_nodel_tags <- c('epoc_LexNoDelay_Cue', 'epoc_LexNoDelay_Cue', 'epoc_LexDelay_Cue', 'epoc_LexDelay_Go')
+del_nodel_tags <- c('epoc_LexNoDelay_Cue', 'epoc_LexDelay_Cue', 'epoc_LexDelay_Go')
 elec_grps <- c('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM','Motor_novWM', 'Auditory_novWM', 'Sensorymotor_novWM')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 # features <- c('aco','pho','wordness','Wordvec')

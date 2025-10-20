@@ -12,6 +12,10 @@ if current_dir != script_dir:
 sf_dir = 'data'
 with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
+# Get the Aud/SM/Mtr Delay electrodes without vWM:
+LexDelay_twin_idxes['LexDelay_Sensorimotor_novWM_sig_idx']=LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']-LexDelay_twin_idxes['LexDelay_Sensorimotor_in_Delay_sig_idx']
+LexDelay_twin_idxes['LexDelay_Auditory_novWM_sig_idx']=LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx']-LexDelay_twin_idxes['LexDelay_Auditory_in_Delay_sig_idx']
+LexDelay_twin_idxes['LexDelay_Motor_novWM_sig_idx']=LexDelay_twin_idxes['LexDelay_Motor_sig_idx']-LexDelay_twin_idxes['LexDelay_Motor_in_Delay_sig_idx']
 
 import sys
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
@@ -37,8 +41,8 @@ def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
 
 # %% groups of patients
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
-groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -57,21 +61,14 @@ if groupsTag=="LexDelay":
     data_LexDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay)
     elec_labels=data_LexDelay_Aud.labels[0]
     NoDelay_append_startings=False
-    if NoDelay_append_startings:
-        epoc_LexDelay_Go, _ = gp.load_stats('zscore', 'Go_inRep', 'epo', stats_root_delay, stats_root_delay,trial_labels=trial_labels, keeptrials=True, cbind_subjs=cbind_subjs)
-        auditory_stim_dicts, resp_dicts = gp.get_onset_times(epoc_LexDelay_Go, encoding_mode,align_to='Go')
-        with open(os.path.join(sf_dir, 'LexDelay_Go_auditory_stim_dicts.pkl'), 'wb') as f:
-            pickle.dump(auditory_stim_dicts, f)
-        with open(os.path.join(sf_dir, 'LexDelay_Go_resp_dicts.pkl'), 'wb') as f:
-            pickle.dump(resp_dicts, f)
-    else:
-        epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+    epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
 if groupsTag=="LexDelay&LexNoDelay":
     # epoc_LexDelayRep_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
     # epoc_LexNoDelay_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
     data_LexNoDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_nodelay,stats_root_nodelay)
     elec_labels=data_LexNoDelay_Aud.labels[0]
 
+    # Get the LexNoDelay data aligned to Cue
     epoc_LexNoDelay_Cue, _ = gp.load_stats('zscore', 'Cue_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
     # Generate trial-based Auditory and Response onsets
     auditory_stim_dicts, resp_dicts=gp.get_onset_times(epoc_LexNoDelay_Cue,encoding_mode)
@@ -80,6 +77,7 @@ if groupsTag=="LexDelay&LexNoDelay":
     with open(os.path.join(sf_dir,'LexNoDelay_Cue_resp_dicts.pkl'), 'wb') as f:
         pickle.dump(resp_dicts, f)
 
+    # Get the LexDelay data aligned to Go
     epoc_LexDelay_Go, _ = gp.load_stats('zscore', 'Go_inRep', 'epo', stats_root_nodelay, stats_root_delay,
                                         trial_labels=trial_labels, keeptrials=True, cbind_subjs=cbind_subjs)
     auditory_stim_dicts, resp_dicts = gp.get_onset_times(epoc_LexDelay_Go, encoding_mode, align_to='Go',fileTag='BIDS-1.0_LexicalDecRepDelay')
@@ -87,52 +85,90 @@ if groupsTag=="LexDelay&LexNoDelay":
         pickle.dump(auditory_stim_dicts, f)
     with open(os.path.join(sf_dir, 'LexDelay_Go_resp_dicts.pkl'), 'wb') as f:
         pickle.dump(resp_dicts, f)
-    NoDelay_append_startings=True
 
+    # Get the LexDelay data aligned to Cue
+    epoc_LexDelay_Cue, _ = gp.load_stats('zscore', 'Cue_inRep', 'epo', stats_root_nodelay, stats_root_delay,
+                                        trial_labels=trial_labels, keeptrials=True, cbind_subjs=cbind_subjs)
+    auditory_stim_dicts, resp_dicts = gp.get_onset_times(epoc_LexDelay_Go, encoding_mode, align_to='Cue',fileTag='BIDS-1.0_LexicalDecRepDelay')
+    with open(os.path.join(sf_dir, 'LexDelay_Cue_auditory_stim_dicts.pkl'), 'wb') as f:
+        pickle.dump(auditory_stim_dicts, f)
+    with open(os.path.join(sf_dir, 'LexDelay_Cue_resp_dicts.pkl'), 'wb') as f:
+        pickle.dump(resp_dicts, f)
+
+    NoDelay_append_startings=True
 
 # %% Select electrodes
 loaded_data={}
 if groupsTag=="LexDelay":
-    elec_grps=('Delay','Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only')
+    elec_grps=('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only')
              #'Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
-    elec_idxs=('LexDelay_Delay_sig_idx','LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+    elec_idxs=('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
              #'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
     epoc=epoc_LexDelayRep_Aud
     epoc_tag='epoc_LexDelayRep_Aud'
 elif groupsTag=="LexDelay&LexNoDelay":
-    # elec_grps=('Auditory_NoDelay',)#'Auditory_all','Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only')
-    # elec_idxs=('LexNoDelay_Aud_sig_idx',)#'LexDelay_Aud_NoMotor_sig_idx','LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
-    # epoc=epoc_LexNoDelay_Cue
-    # epoc_tag='epoc_LexNoDelay_Cue'
-    elec_grps=('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only')
-    elec_idxs=('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
-    epoc=epoc_LexDelay_Go
-    epoc_tag='epoc_LexDelay_Go'
 
-for t_tag,t_range in zip(
-        ('full',),
-        ([-0.5,6],)
-):
-    for elec_grp,elec_idx in zip(elec_grps,elec_idxs):
-        print(f'Now Doing {t_tag} {elec_grp}')
-        if encoding_mode=='multivariate':
-            m_chs = epoc.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
+    elec_cat= 'vWM' #'vWM','novWM'
+    data_base='Delay_Cue' # NoDelay, Delay_Go, Delay_Cue
+
+    elec_grps_vWM = ('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM')
+    elec_grps_novWM = ('Motor_novWM', 'Auditory_novWM', 'Sensorymotor_novWM')
+    elec_idxs_vWM = ('LexDelay_Motor_in_Delay_sig_idx', 'LexDelay_Auditory_in_Delay_sig_idx', 'LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+    elec_idxs_novWM = ('LexDelay_Motor_novWM_sig_idx', 'LexDelay_Auditory_novWM_sig_idx', 'LexDelay_Sensorimotor_novWM_sig_idx')
+
+    match(elec_cat,data_base):
+        case('vWM','NoDelay'):
+            elec_grps=elec_grps_vWM
+            elec_idxs=elec_idxs_vWM
+            epoc=epoc_LexNoDelay_Cue
+            epoc_tag='epoc_LexNoDelay_Cue'
+        case('novWM','NoDelay'):
+            elec_grps=elec_grps_novWM
+            elec_idxs=elec_idxs_novWM
+            epoc=epoc_LexNoDelay_Cue
+            epoc_tag='epoc_LexNoDelay_Cue'
+        case('vWM','Delay_Go'):
+            elec_grps=elec_grps_vWM
+            elec_idxs=elec_idxs_vWM
+            epoc=epoc_LexDelay_Go
+            epoc_tag='epoc_LexDelay_Go'
+        case('novWM','Delay_Go'):
+            elec_grps=elec_grps_novWM
+            elec_idxs=elec_idxs_novWM
+            epoc=epoc_LexDelay_Go
+            epoc_tag='epoc_LexDelay_Go'
+        case('vWM','Delay_Cue'):
+            elec_grps=elec_grps_vWM
+            elec_idxs=elec_idxs_vWM
+            epoc=epoc_LexDelay_Cue
+            epoc_tag='epoc_LexDelay_Cue'
+        case('novWM','Delay_Cue'):
+            elec_grps=elec_grps_novWM
+            elec_idxs=elec_idxs_novWM
+            epoc=epoc_LexDelay_Cue
+            epoc_tag='epoc_LexDelay_Cue'
+
+t_range=[-0.5,6]
+for elec_grp,elec_idx in zip(elec_grps,elec_idxs):
+    print(f'Now Doing {elec_grp}')
+    if encoding_mode=='multivariate':
+        m_chs = epoc.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
+        m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
+        # mixup(m, 0)
+    elif encoding_mode=='univariate':
+        epoc_dict={}
+        for s,epoc_s in epoc.items():
+            s_ele_sel = [
+                item.replace(f'{s}-', '')
+                for item in elec_labels[list(LexDelay_twin_idxes[elec_idx])]
+                if item.startswith(s)
+            ]
+            if not s_ele_sel:
+                continue
+            m_chs = epoc_s.take(s_ele_sel, axis=1)
             m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
-            # mixup(m, 0)
-        elif encoding_mode=='univariate':
-            epoc_dict={}
-            for s,epoc_s in epoc.items():
-                s_ele_sel = [
-                    item.replace(f'{s}-', '')
-                    for item in elec_labels[list(LexDelay_twin_idxes[elec_idx])]
-                    if item.startswith(s)
-                ]
-                if not s_ele_sel:
-                    continue
-                m_chs = epoc_s.take(s_ele_sel, axis=1)
-                m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
-                epoc_dict[s]=m
-            del m
-            m = epoc_dict
+            epoc_dict[s]=m
+        del m
+        m = epoc_dict
 
-        gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'{epoc_tag}_{t_tag}_{elec_grp}'),win_len=0,append_pho=False,NoDelay_append_startings=NoDelay_append_startings) #100s for phoneme responses
+    gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'),win_len=0,append_pho=False,NoDelay_append_startings=NoDelay_append_startings) #100s for phoneme responses
