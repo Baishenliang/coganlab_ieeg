@@ -46,7 +46,7 @@ model_func <- function(current_data,feature){
     library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   }
   
-  model_type='simple'
+  model_type='full'
   
   tp <- current_data$time[1]
   if (model_type=='simple'){
@@ -54,7 +54,7 @@ model_func <- function(current_data,feature){
     if (feature=='aco'){
       fml<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
     }else if (feature=='pho'){
-      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:5), collapse = " + ")))
+      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:11), collapse = " + ")))
     }else{
       fml<-as.formula(paste0('value ~ 1+',feature))
     }
@@ -66,18 +66,18 @@ model_func <- function(current_data,feature){
       fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
     }else if (feature=='pho'){
       fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:5)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:11)), collapse = ' + ')))
     }else if (feature=='wordness'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:5)), collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:11)), collapse = ' + ')))
       fml <-as.formula(paste0('value ~ 1+',
-                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + "),"+",
+                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:11), collapse = " + "),"+",
                                 paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:9,":",feature), collapse = " + "),"+",feature))
     }else if (feature=='Wordvec'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:5)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:5), paste0('Wordvec', 1:91)),collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:11)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:11), paste0('Wordvec', 1:91)),collapse = ' + ')))
     }else{
-      fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + ")))
-      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + "),"+",feature))
+      fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:11), collapse = " + ")))
+      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:11), collapse = " + "),"+",feature))
     }
   }
 
@@ -86,7 +86,7 @@ model_func <- function(current_data,feature){
   # anova_results <- anova(m_bsl, m)
   # mean_F_stat <- anova_results$`F`[2]
   pattern <- paste0("^", feature)
-  mean_F_stat <- sum(abs(coef(m)[grep(pattern, names(coef(m)))]))
+  mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
   
   perm_compare_df_i <- data.frame(
     perm = 0,
@@ -96,7 +96,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e3
+  n_perm <- 1e2
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -114,7 +114,7 @@ model_func <- function(current_data,feature){
       # anova_results <- anova(m_bsl, m)
       # mean_F_stat <- anova_results$`F`[2]
       pattern <- paste0("^", feature)
-      mean_F_stat <- sum(abs(coef(m)[grep(pattern, names(coef(m)))]))
+      mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
@@ -131,10 +131,7 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-phase<-'full'
-elec_grps <- c('Delay','Sensorymotor_delay','Auditory_all')
-# elec_grps <- c('Sensorymotor_delay','Auditory_delay')
-# elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
+elec_grps <- c('Auditory_delay','Sensorymotor_delay')#,'Motor_delay','Delay_only')
 #elec_grps <- c('Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 #features <- c('aco','pho','wordness','Wordvec')
@@ -190,7 +187,7 @@ for (feature in features){
     cat("loading files \n")
     # slurm task selection
     file_path_long <- paste(home_dir,
-                       "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_long.csv",
+                       "data/epoc_LexDelayRep_Aud_",elec_grp,"_long.csv",
                        sep = "")
     long_data <- read.csv(file_path_long)
     long_data$time <- as.numeric(long_data$time)
@@ -199,7 +196,7 @@ for (feature in features){
     
     if (bsl_corr==TRUE){
     file_path_wide <- paste(home_dir,
-                            "data/epoc_LexDelayRep_Aud_",phase,"_",elec_grp,"_wide.csv",
+                            "data/epoc_LexDelayRep_Aud_",elec_grp,"_wide.csv",
                             sep = "")
     wide_data <- read.csv(file_path_wide)
 
@@ -284,8 +281,7 @@ for (feature in features){
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
     
-    # for (lex in c("Word","Nonword",'All')){
-    for (lex in c("Word","Nonword")){
+    for (lex in c("Word","Nonword",'All')){
       #%% Run computations
       a <- a + 1
       if (task_ID > 0 && a != task_ID) {
@@ -329,7 +325,7 @@ for (feature in features){
       
       print(perm_compare_df)
       
-      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",phase,"_",feature,"_",lex,".csv",sep = ''),row.names = FALSE)
+      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",feature,"_",lex,".csv",sep = ''),row.names = FALSE)
     }
   }
 }

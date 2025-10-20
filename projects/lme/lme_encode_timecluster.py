@@ -70,12 +70,12 @@ def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_
 #%% Plotting
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-is_normalize=False
+is_normalize=True
 mode='time_cluster'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
-for elec_grp in ['Delay', 'Sensorymotor_delay','Auditory_all']:
+for elec_grp in ['Auditory_delay','Sensorymotor_delay','Auditory_all']:
     # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
     #                              ('Embedding','Lexical status','Acoustic','Phonemic'),
     #                             ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
@@ -85,6 +85,9 @@ for elec_grp in ['Delay', 'Sensorymotor_delay','Auditory_all']:
     for fea, fea_tag, para_sig_barbar in zip(('aco','pho'),
                                              ('Acoustic','Phonemic'),
                                              ([2, 0.1],[0.8, 0.03])):
+    # for fea, fea_tag, para_sig_barbar in zip(('pho',),
+    #                                          ('Phonemic',),
+    #                                          ([0.8, 0.03],)):
         i = 0
         j=0
         fig, ax = plt.subplots(figsize=(19, 6))
@@ -92,7 +95,8 @@ for elec_grp in ['Delay', 'Sensorymotor_delay','Auditory_all']:
         ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
         ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
         if 'aco' in fea or 'pho' in fea:
-            wordnesses=('Word','Nonword','Nonword-Word')
+            wordnesses=('All','Word','Nonword','Nonword-Word')
+            # wordnesses=('All','Nonword-Word')
         elif fea=='Frq' or fea=='Uni_Pos_SC' or fea=='Wordvec':
             wordnesses=('Word','Nonword','Word-Nonword')
         else:
@@ -103,11 +107,11 @@ for elec_grp in ['Delay', 'Sensorymotor_delay','Auditory_all']:
             if fea=='wordness' and wordness!='All':
                 continue
             if wordness =='All' or wordness =='Word' or wordness =='Nonword':
-                filename = f"results/{elec_grp}_full_{fea}_{wordness}.csv"
+                filename = f"results/{elec_grp}_{fea}_{wordness}.csv"
                 raw = pd.read_csv(filename)
             else:
-                filename_Word = f"results/{elec_grp}_full_{fea}_Word.csv"
-                filename_Nonword = f"results/{elec_grp}_full_{fea}_Nonword.csv"
+                filename_Word = f"results/{elec_grp}_{fea}_Word.csv"
+                filename_Nonword = f"results/{elec_grp}_{fea}_Nonword.csv"
                 raw_word = pd.read_csv(filename_Word)
                 raw_nonword = pd.read_csv(filename_Nonword)
                 if wordness=='Nonword-Word':
@@ -118,9 +122,9 @@ for elec_grp in ['Delay', 'Sensorymotor_delay','Auditory_all']:
                 raw = raw_word[['perm', 'time_point']].copy()
                 raw['chi_squared_obs'] = chi_squared_diff
             #time_point, time_series, mask_time_clus = get_traces_clus(raw, 1/5e3, 1/5e3,mode=mode)
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 1e-2, 1e-2,mode=mode)
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 5e-2, 5e-2,mode=mode)
 
-            time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
+            time_series=gaussian_filter1d(time_series, sigma=3, mode='nearest')
             # win_len=10
             # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
             if is_normalize:
