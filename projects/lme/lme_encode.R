@@ -54,7 +54,7 @@ model_func <- function(current_data,feature){
     if (feature=='aco'){
       fml<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
     }else if (feature=='pho'){
-      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:11), collapse = " + ")))
+      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:5), collapse = " + ")))
     }else{
       fml<-as.formula(paste0('value ~ 1+',feature))
     }
@@ -66,18 +66,18 @@ model_func <- function(current_data,feature){
       fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
     }else if (feature=='pho'){
       fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:11)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:5)), collapse = ' + ')))
     }else if (feature=='wordness'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:11)), collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:5)), collapse = ' + ')))
       fml <-as.formula(paste0('value ~ 1+',
-                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:11), collapse = " + "),"+",
+                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + "),"+",
                                 paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:9,":",feature), collapse = " + "),"+",feature))
     }else if (feature=='Wordvec'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:11)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:11), paste0('Wordvec', 1:91)),collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:5)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:5), paste0('Wordvec', 1:91)),collapse = ' + ')))
     }else{
-      fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:11), collapse = " + ")))
-      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:11), collapse = " + "),"+",feature))
+      fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + ")))
+      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + "),"+",feature))
     }
   }
 
@@ -96,7 +96,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 2e2
+  n_perm <- 1e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
