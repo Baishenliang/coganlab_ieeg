@@ -297,7 +297,7 @@ for pred_onset in pred_onsets:
             epoc_del, _, sorted_indices,*_ = gp.sort_chs_by_actonset(Mask_Delay_Aud,
                                                           Epoc_Delay_Aud,
                                                           0.011, [-0.2, 5],
-                                                          mask_data=True,
+                                                          mask_data=False,
                                                           select_electrodes=False)
 
             gp.plot_chs(epoc_del, os.path.join('figs', f'Del_{elec_typ}_{pred_onset}.tif'),
@@ -309,7 +309,7 @@ for pred_onset in pred_onsets:
                                                           Epoc_NoDel_Aud,
                                                           0.011, [-0.2, 5],
                                                           sorted_indices=sorted_indices,
-                                                          mask_data=True,
+                                                          mask_data=False,
                                                           select_electrodes=False)
 
             gp.plot_chs(epoc_nodel, os.path.join('figs', f'NoDel_{elec_typ}_{pred_onset}.tif'),
@@ -321,7 +321,7 @@ for pred_onset in pred_onsets:
                                                           r2_arr,
                                                           0.011, [-0.2, 5],
                                                           sorted_indices=sorted_indices,
-                                                          mask_data=True,
+                                                          mask_data=False,
                                                           select_electrodes=False)
             subj_elec_onsets_array = np.array(subj_elec_onsets)
             subj_elec_onsets_array = subj_elec_onsets_array[sorted_indices.tolist()]

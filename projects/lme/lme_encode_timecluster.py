@@ -121,8 +121,7 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 # Create the new 'raw' DataFrame
                 raw = raw_word[['perm', 'time_point']].copy()
                 raw['chi_squared_obs'] = chi_squared_diff
-            #time_point, time_series, mask_time_clus = get_traces_clus(raw, 1/5e3, 1/5e3,mode=mode)
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 1.5/200, 1.5/200,mode=mode)
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 2e-2, 2e-2,mode=mode)
 
             time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
             # win_len=10
