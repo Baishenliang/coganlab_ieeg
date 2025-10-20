@@ -73,9 +73,9 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
 is_normalize=True
 mode='time_cluster'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
-# for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
+for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
-for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
+# for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
     # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
     #                              ('Embedding','Lexical status','Acoustic','Phonemic'),
     #                             ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
@@ -122,9 +122,9 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
                 raw = raw_word[['perm', 'time_point']].copy()
                 raw['chi_squared_obs'] = chi_squared_diff
             #time_point, time_series, mask_time_clus = get_traces_clus(raw, 1/5e3, 1/5e3,mode=mode)
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 5e-2, 5e-2,mode=mode)
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 1.5/200, 1.5/200,mode=mode)
 
-            time_series=gaussian_filter1d(time_series, sigma=3, mode='nearest')
+            time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
             # win_len=10
             # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
             if is_normalize:
