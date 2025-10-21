@@ -96,7 +96,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e3
+  n_perm <- 1e2
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -131,12 +131,12 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
+elec_grps <- c('Auditory_delay','Sensorymotor_delay')#,'Motor_delay','Delay_only')
 #elec_grps <- c('Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 #features <- c('aco','pho','wordness','Wordvec')
-# features <- paste0("pho", 1:9)
-features <- c("aco","pho")
+features <- paste0("pho", 1:5)
+#features <- c("aco","pho")
 a = 0
 
 #Load acoustic parameters
