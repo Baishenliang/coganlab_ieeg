@@ -64,9 +64,12 @@ model_func <- function(current_data,feature){
       # fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('pho', 1:9)), collapse = ' + ')))
       # fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:9)), collapse = ' + ')))
       fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-    }else if (feature=='vow' || feature=='con'){
+    }else if (feature=='vow'){
       fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("vow", 1:6), paste0("con", 1:6)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("vow", 1:6)), collapse = ' + ')))
+    }else if (feature=='con'){
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("con", 1:6)), collapse = ' + ')))
     }else if (feature=='wordness'){
       fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:4)), collapse = ' + ')))
       fml <-as.formula(paste0('value ~ 1+',
