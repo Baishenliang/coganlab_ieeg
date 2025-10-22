@@ -54,7 +54,7 @@ model_func <- function(current_data,feature){
     if (feature=='aco'){
       fml<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
     }else if (feature=='pho'){
-      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:5), collapse = " + ")))
+      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:4), collapse = " + ")))
     }else{
       fml<-as.formula(paste0('value ~ 1+',feature))
     }
@@ -64,20 +64,20 @@ model_func <- function(current_data,feature){
       # fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('pho', 1:9)), collapse = ' + ')))
       # fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:9)), collapse = ' + ')))
       fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-    }else if (feature=='pho'){
+    }else if (feature=='vow' || feature=='con'){
       fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:5)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("vow", 1:6), paste0("con", 1:6)), collapse = ' + ')))
     }else if (feature=='wordness'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:5)), collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:4)), collapse = ' + ')))
       fml <-as.formula(paste0('value ~ 1+',
-                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + "),"+",
+                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:4), collapse = " + "),"+",
                                 paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:9,":",feature), collapse = " + "),"+",feature))
     }else if (feature=='Wordvec'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:5)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:5), paste0('Wordvec', 1:91)),collapse = ' + ')))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:4)), collapse = ' + ')))
+      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:4), paste0('Wordvec', 1:91)),collapse = ' + ')))
     }else{
-      fml_bsl <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + ")))
-      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:5), collapse = " + "),"+",feature))
+      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
+      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:4), collapse = " + ")))
     }
   }
 
@@ -96,7 +96,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e2
+  n_perm <- 1e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -104,7 +104,7 @@ model_func <- function(current_data,feature){
       group_by(subject, electrode) %>%
       mutate(
         perm_indices = sample(1:n()),
-        across(starts_with('aco') | starts_with('pho'), ~ .x[perm_indices]) #across(starts_with(feature), ~ .x[perm_indices])
+        across(starts_with('aco') | starts_with('vow') | starts_with('con'), ~ .x[perm_indices]) #across(starts_with(feature), ~ .x[perm_indices])
       ) %>%
       ungroup() %>%
       select(-perm_indices)
@@ -131,12 +131,12 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-elec_grps <- c('Auditory_delay','Sensorymotor_delay')#,'Motor_delay','Delay_only')
+elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
 #elec_grps <- c('Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
 # features <- c('aco','pho','Frq','Uni_Pos_SC')
 #features <- c('aco','pho','wordness','Wordvec')
-features <- paste0("pho", 1:5)
-#features <- c("aco","pho")
+#features <- paste0("pho", 1:4)
+features <- c("vow","con")
 a = 0
 
 #Load acoustic parameters
@@ -148,14 +148,23 @@ aco_fea_T <- as.data.frame(t(aco_fea))
 aco_fea_T$stim <- rownames(aco_fea_T)
 aco_fea_T <- aco_fea_T[, c("stim", setdiff(names(aco_fea_T), "stim"))]
 
-#Load phonemic parameters
-pho_path <- paste(home_dir,
-                  "data/phoneme_one_hot_dict_pca.csv",
+#Load vowel parameters
+vow_path <- paste(home_dir,
+                  "data/vowel_one_hot_dict_pca.csv",
                   sep = "")
-pho_fea <- read.csv(pho_path,row.names = 1)
-pho_fea_T <- as.data.frame(t(pho_fea))
-pho_fea_T$stim <- rownames(pho_fea_T)
-pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
+vow_fea <- read.csv(vow_path,row.names = 1)
+vow_fea_T <- as.data.frame(t(vow_fea))
+vow_fea_T$stim <- rownames(vow_fea_T)
+vow_fea_T <- vow_fea_T[, c("stim", setdiff(names(vow_fea_T), "stim"))]
+
+#Load consonant parameters
+con_path <- paste(home_dir,
+                  "data/consonant_one_hot_dict_pca.csv",
+                  sep = "")
+con_fea <- read.csv(con_path,row.names = 1)
+con_fea_T <- as.data.frame(t(con_fea))
+con_fea_T$stim <- rownames(con_fea_T)
+con_fea_T <- con_fea_T[, c("stim", setdiff(names(con_fea_T), "stim"))]
 
 #Load Word2vec parameters
 word2vec_path <- paste(home_dir,
@@ -265,8 +274,11 @@ for (feature in features){
     #%% append acoustic features
     long_data <- left_join(long_data,aco_fea_T,by='stim')
     
-    #%% append phonemic features
-    long_data <- left_join(long_data,pho_fea_T,by='stim')
+    #%% append vowel features
+    long_data <- left_join(long_data,vow_fea_T,by='stim')
+
+    #%% append consonant features
+    long_data <- left_join(long_data,con_fea_T,by='stim')
     
     #%% append word2vec features
     long_data <- left_join(long_data,word2vec_fea_T,by='stim')
