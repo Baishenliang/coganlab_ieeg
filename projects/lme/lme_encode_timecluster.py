@@ -75,19 +75,25 @@ mode='time_cluster'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
-# for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
+# for elec_grp in ['Sensorymotor_delay']:
     # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
     #                              ('Embedding','Lexical status','Acoustic','Phonemic'),
     #                             ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
-    # for fea, fea_tag in zip(expand_sequence('pho',9),
-    #                                          expand_sequence('Phonemic',9)):
-    #     para_sig_barbar=[0.3, 0.02]
-    for fea, fea_tag, para_sig_barbar in zip(('aco','pho'),
-                                             ('Acoustic','Phonemic'),
-                                             ([2, 0.1],[0.8, 0.03])):
+    # for fea, fea_tag in zip(expand_sequence('pho',4),
+    #                                          expand_sequence('Phonemic',4)):
+    #     para_sig_barbar=[0.8, 0.02]
+    # for fea, fea_tag, para_sig_barbar in zip(('aco','pho'),
+    #                                          ('Acoustic','Phonemic'),
+    #                                          ([2, 0.1],[0.1, 0.03])):
+    # for fea, fea_tag, para_sig_barbar in zip(('vow','con'),
+    #                                          ('Vowel','Consonant'),
+    #                                          ([0.8, 0.03],[0.8, 0.03])):
     # for fea, fea_tag, para_sig_barbar in zip(('pho',),
     #                                          ('Phonemic',),
     #                                          ([0.8, 0.03],)):
+    for fea, fea_tag, para_sig_barbar in zip(('vow', 'con'),
+                                             ('Vowel', 'Consonant'),
+                                             ([0.8, 0.03], [0.8, 0.03])):
         i = 0
         j=0
         fig, ax = plt.subplots(figsize=(19, 6))
@@ -95,10 +101,12 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
         ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
         ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
         if 'aco' in fea or 'pho' in fea:
-            wordnesses=('All','Word','Nonword','Nonword-Word')
+            wordnesses=('All','Nonword-Word')#,'Word','Nonword','Nonword-Word')
             # wordnesses=('All','Nonword-Word')
         elif fea=='Frq' or fea=='Uni_Pos_SC' or fea=='Wordvec':
             wordnesses=('Word','Nonword','Word-Nonword')
+        elif 'vow' in fea or 'con' in fea:
+            wordnesses=('Word','Nonword','Word-Nonword','Nonword-Word')
         else:
             wordnesses=('All','Word','Nonword','Word-Nonword')
         for wordness in wordnesses:
@@ -121,14 +129,14 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
                 # Create the new 'raw' DataFrame
                 raw = raw_word[['perm', 'time_point']].copy()
                 raw['chi_squared_obs'] = chi_squared_diff
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 2e-2, 2e-2,mode=mode)
+            time_point, time_series, mask_time_clus = get_traces_clus(raw, 2e-3, 2e-3,mode=mode)
 
             time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
             # win_len=10
             # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
             if is_normalize:
                 time_series = (time_series - np.min(time_series[(time_point > -0.2) & (time_point <= 0)]))# / (np.max(time_series) - np.min(time_series))
-                # time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
+                time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
                 para_sig_bar = [1,1e-1]
             else:
                 time_series = time_series
@@ -162,7 +170,7 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
             i+=1
         ax.set_title(f"{fea_tag}", fontsize=24)
         ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
-        ax.set_ylabel("$r^2$")#, fontsize=20)
+        ax.set_ylabel("$r^2$ (Normalized)")#, fontsize=20)
         ax.tick_params(axis='both', which='major')#, labelsize=16)
         if fea!='wordness':
             ax.legend(fontsize=18)
@@ -170,5 +178,5 @@ for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         plt.tight_layout()
-        plt.savefig(os.path.join('figs','a', f'{elec_grp}_{fea_tag}.tif'), dpi=300)
+        plt.savefig(os.path.join('figs','b', f'{elec_grp}_{fea_tag}.tif'), dpi=300)
         plt.close()

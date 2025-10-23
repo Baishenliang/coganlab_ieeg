@@ -85,11 +85,11 @@ model_func <- function(current_data,feature){
   }
 
   m <- lm(fml, data = current_data,na.action = na.exclude)
-  # m_bsl <- lm(fml_bsl, data = current_data,na.action = na.exclude)
-  # anova_results <- anova(m_bsl, m)
-  # mean_F_stat <- anova_results$`F`[2]
-  pattern <- paste0("^", feature)
-  mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
+  m_bsl <- lm(fml_bsl, data = current_data,na.action = na.exclude)
+  anova_results <- anova(m_bsl, m)
+  mean_F_stat <- anova_results$`F`[2]
+  # pattern <- paste0("^", feature)
+  # mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
   
   perm_compare_df_i <- data.frame(
     perm = 0,
@@ -99,7 +99,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e3
+  n_perm <- 10#e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -113,11 +113,11 @@ model_func <- function(current_data,feature){
       select(-perm_indices)
     
       m <- lm(fml, data = current_data_perm,na.action = na.exclude)
-      # m_bsl <- lm(fml_bsl, data = current_data_perm,na.action = na.exclude)
-      # anova_results <- anova(m_bsl, m)
-      # mean_F_stat <- anova_results$`F`[2]
-      pattern <- paste0("^", feature)
-      mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
+      m_bsl <- lm(fml_bsl, data = current_data_perm,na.action = na.exclude)
+      anova_results <- anova(m_bsl, m)
+      mean_F_stat <- anova_results$`F`[2]
+      # pattern <- paste0("^", feature)
+      # mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
