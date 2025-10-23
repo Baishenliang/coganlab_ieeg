@@ -4,7 +4,7 @@ import sys
 import glob
 import numpy as np
 import pandas as pd
-from scipy.stats import pearsonr,ttest_ind
+from scipy.stats import pearsonr,ttest_ind,linregress
 import seaborn as sns
 from ieeg.calc.stats import time_cluster
 import matplotlib.pyplot as plt
@@ -96,15 +96,22 @@ del_nodel_tags = ('epoc_LexNoDelay_Cue', 'epoc_LexDelay_Cue', 'epoc_LexDelay_Go'
 elec_typs = ('Sensorymotor_vWM', 'Motor_vWM', 'Auditory_vWM', 'Delay_only_vWM', 'Sensorymotor_novWM','Motor_novWM', 'Auditory_novWM')
 
 #%% Plotting
+onset_pred_lags_all = dict()
+onset_pred_pows_all = dict()
+subj_elecs_list_all = dict()
 plot_elec_pic=False
-onset_pred_lags=dict()
-onset_pred_pows=dict()
-cross_corr_lsts=dict()
 r2_lsts=dict()
 for pred_onset in pred_onsets:
+    onset_pred_lags_onset = dict()
+    onset_pred_pows_onset = dict()
+    subj_elec_lists_onset = dict()
     for del_nodel_tag in del_nodel_tags:
         if (del_nodel_tag == 'epoc_LexDelay_Cue' and pred_onset == 'resp_onset') or (del_nodel_tag == 'epoc_LexDelay_Go' and pred_onset == 'aud_onset'):
             continue
+        onset_pred_lags = dict()
+        onset_pred_pows = dict()
+        cross_corr_lsts = dict()
+        subj_elec_lists = dict()
         for elec_typ in elec_typs:
             #%% read raw hg data
             r2_lst=[]
@@ -186,8 +193,16 @@ for pred_onset in pred_onsets:
                 time_resolution = np.diff(time_point)[0]
                 lags_index = np.arange(-(len(time_point) - 1), len(time_point))
                 # Get peak time loc
-                LOWER_BOUND_SEC = -1.5
-                UPPER_BOUND_SEC = 1.5
+                if pred_onset=='aud_onset':
+                    LOWER_BOUND_SEC = -0.5
+                    UPPER_BOUND_SEC = 0.5
+                    LOWER_BOUND_SEC_mtrprep = LOWER_BOUND_SEC
+                    UPPER_BOUND_SEC_mtrprep = UPPER_BOUND_SEC
+                elif pred_onset=='resp_onset':
+                    LOWER_BOUND_SEC = -1.5
+                    UPPER_BOUND_SEC = 1.5
+                    LOWER_BOUND_SEC_mtrprep = LOWER_BOUND_SEC
+                    UPPER_BOUND_SEC_mtrprep = 0
                 lags_sec = lags_index * time_resolution
                 start_idx_limit = np.argmax(lags_sec >= LOWER_BOUND_SEC)
                 end_idx_limit = np.argmax(lags_sec > UPPER_BOUND_SEC)-1
@@ -207,8 +222,6 @@ for pred_onset in pred_onsets:
                 time_ts_peak = time_point[i_ts_peak]
                 cross_corr_peak = time_ts_peak+optimal_lag_time
                 # Get power of motor prep
-                LOWER_BOUND_SEC_mtrprep = LOWER_BOUND_SEC
-                UPPER_BOUND_SEC_mtrprep = 0
                 start_idx_limit_mtrprep = np.argmax(lags_sec >= LOWER_BOUND_SEC_mtrprep)
                 end_idx_limit_mtrprep = np.argmax(lags_sec > UPPER_BOUND_SEC_mtrprep)-1
                 limited_cross_corr_mtrprep = cross_corr[start_idx_limit_mtrprep: end_idx_limit_mtrprep + 1]
@@ -277,7 +290,7 @@ for pred_onset in pred_onsets:
                     plt.close()
 
             #%% Plot HG signals in Delay/No Delay and R-aquared predicting onsets
-
+            subj_elec_lists[elec_typ]=subj_elec_lst
             cross_corr_lsts[elec_typ]=np.stack(cross_corr_lst, axis=0)
             r2_lsts[elec_typ]=np.stack(r2_lst, axis=0)
             onset_pred_pows[elec_typ]=np.array(subj_elec_crosscorr_prepow)
@@ -493,6 +506,9 @@ for pred_onset in pred_onsets:
                 print(f"df: {len(group_non_zero)+len(group_zero)-2}")
                 print(f"P-Value: {p_value:.4f}")
 
+        onset_pred_lags_onset[del_nodel_tag] = onset_pred_lags
+        onset_pred_pows_onset[del_nodel_tag] = onset_pred_pows
+        subj_elec_lists_onset[del_nodel_tag] = subj_elec_lists
         #%% compare predicting onset r^2 (ttests between each other)
 
         for onset_pred_data,onset_pred_tag,vert_boxplot in zip(
@@ -584,28 +600,36 @@ for pred_onset in pred_onsets:
             Delay_col = [1, 0.65, 0]  # Delay
             Motor_col = [0, 0, 1]  # Motor
 
-            ordered_keys=['Sensorymotor_vWM','Motor_vWM','Auditory_vWM','Delay_only_vWM','Sensorymotor_novWM','Motor_novWM','Auditory_novWM']
+            ordered_keys=['Sensorymotor_vWM','Sensorymotor_novWM','Auditory_vWM','Auditory_novWM','Motor_vWM','Motor_novWM','Delay_only_vWM']
+            new_tick_labels = ['SM_vWM', 'SM_novWM', 'Aud_vWM','Aud_novWM', 'M_vWM', 'M_novWM', 'DelOnly_vWM']
             onset_pred_lags_data = [onset_pred_data[key] for key in ordered_keys]
+            colors = [Sensorimotor_col,Sensorimotor_col, Auditory_col, Auditory_col, Motor_col,Motor_col, Delay_col]
 
             fig, ax = plt.subplots(figsize=(10, 6))
             boxplot_parts = ax.boxplot(
                 onset_pred_lags_data,
-                tick_labels=ordered_keys,
+                tick_labels=new_tick_labels,
                 vert=vert_boxplot,
                 patch_artist=True,
                 showmeans=True
             )
-            colors = [
-                Sensorimotor_col, Motor_col, Auditory_col,Delay_col,
-                Sensorimotor_col, Motor_col, Auditory_col
-            ]
+
             for patch, color in zip(boxplot_parts['boxes'], colors):
                 patch.set_facecolor(color)
                 patch.set_edgecolor('black')
                 patch.set_alpha(0.6)
-            ax.set_title('CrossCorr peak distribution')
-            ax.set_xlabel('Lag aligned to speech onset (s)')
-            ax.set_ylabel('Electrode group')
+            if onset_pred_tag=='peak_lag':
+                ax.axvline(0, color='gray', linestyle='-', linewidth=0.5)
+                ax.set_title('CrossCorr peak distribution')
+                ax.set_xlabel('Lag aligned to speech onset (s)')
+                ax.set_ylabel('Electrode group')
+            elif onset_pred_tag=='pred_pow':
+                ax.set_title('CrossCorr pre-onset power distribution')
+                ax.set_ylabel('RMS power')
+                ax.set_xlabel('Electrode group')
+                plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+            ax.spines['right'].set_visible(False)
+            ax.spines['top'].set_visible(False)
             plt.tight_layout()
             plt.savefig(os.path.join('figs', f'boxplot_{del_nodel_tag}_{pred_onset}_{onset_pred_tag}.tif'), dpi=100)
 
@@ -624,15 +648,19 @@ for pred_onset in pred_onsets:
 
         fig, ax = plt.subplots(figsize=(12, 6))
 
-        colors = [Sensorimotor_col, Motor_col, Auditory_col, Delay_col,Sensorimotor_col, Motor_col,Auditory_col]
-        ln_stls = ['-','-','-','-','--','--','--']
+        colors = [Sensorimotor_col, Sensorimotor_col, Auditory_col,Auditory_col, Motor_col,Motor_col, Delay_col]
+        ln_stls = ['-','--','-','--','-','--','-']
         color_idx = 0
 
-        for key, res in results.items():
+        for key in ordered_keys:
+            res = results[key]
             mean = res['mean']
             sem = res['sem']
-            color = colors[color_idx % len(colors)]
-            ax.plot(time_lags, mean, label=key, color=color, linewidth=2,linestyle=ln_stls[color_idx])
+
+            color = colors[color_idx]
+            linestyle = ln_stls[color_idx]
+
+            ax.plot(time_lags, mean, label=key, color=color, linewidth=2, linestyle=linestyle)
 
             ax.fill_between(
                 time_lags,
@@ -649,8 +677,75 @@ for pred_onset in pred_onsets:
         ax.set_title('CrossCorr distribution')
         ax.set_xlabel('Lag aligned to speech onset (s)')
         ax.set_ylabel('CrossCorr Value (mean ± SEM)')
-
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
         ax.legend(loc='best')
         ax.grid(axis='y', linestyle=':', alpha=0.6)
         plt.tight_layout()
         plt.savefig(os.path.join('figs', f'cctimetraces_{del_nodel_tag}_{pred_onset}.tif'), dpi=100)
+
+    onset_pred_lags_all[pred_onset] = onset_pred_lags_onset
+    onset_pred_pows_all[pred_onset] = onset_pred_pows_onset
+    subj_elecs_list_all[pred_onset] = subj_elec_lists_onset
+
+#%% Correlation plots of delay vs. nodelay
+
+def plot_crr_scat(x_data, y_data, pred_onset, elec_typ,data_tag):
+
+    r_pearson, p_pearson = pearsonr(x_data, y_data)
+    slope, intercept, r_value, p_value, std_err = linregress(x_data, y_data)
+    x_fit = np.linspace(x_data.min(), x_data.max(), 100)
+    y_fit = slope * x_fit + intercept
+    plt.figure(figsize=(7, 7))
+    plt.plot(x_fit, y_fit, color='red', linewidth=2)
+    plt.scatter(x_data, y_data, alpha=0.6, edgecolors='w', linewidths=0.5)
+    # min_val = min(x_data.min(), y_data.min())
+    # max_val = max(x_data.max(), y_data.max())
+    # plt.plot([min_val, max_val], [min_val, max_val], 'r--', alpha=0.5)
+    plt.title(
+        f'{elec_typ} Correlation ({pred_onset})\n'
+    )
+    plt.xlabel(f'Nodel')
+    plt.ylabel(f'Del')
+    plt.grid(True, linestyle='--', alpha=0.3)
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.savefig(os.path.join('figs', f'corr_{elec_typ}_{pred_onset}_{data_tag}.tif'), dpi=100)
+    plt.close()
+
+    return r_pearson, p_pearson
+
+for pred_onset,del_nodel_tag_noDel,del_nodel_tag_Del in zip(pred_onsets,
+                                                                   ('epoc_LexNoDelay_Cue','epoc_LexNoDelay_Cue'),
+                                                                   ('epoc_LexDelay_Go', 'epoc_LexDelay_Cue')):
+    for elec_typ in elec_typs:
+
+        #!!!!!!!!!!!!!!!!! Just temporal adjustment, SHOULD CHECK why there are non-overlaps!
+        nodel_subj_elecs_list = subj_elecs_list_all[pred_onset][del_nodel_tag_noDel][elec_typ]
+        del_subj_elecs_list = subj_elecs_list_all[pred_onset][del_nodel_tag_Del][elec_typ]
+        overlap_elecs = set(nodel_subj_elecs_list) & set(del_subj_elecs_list)
+
+        nodel_pred_lags = onset_pred_lags_all[pred_onset][del_nodel_tag_noDel][elec_typ]
+        del_pred_lags = onset_pred_lags_all[pred_onset][del_nodel_tag_Del][elec_typ]
+        nodel_pred_lags_ovlp = []
+        for elec, lag in zip(nodel_subj_elecs_list, nodel_pred_lags):
+            if elec in overlap_elecs:
+                nodel_pred_lags_ovlp.append(lag)
+        del_pred_lags_ovlp = []
+        for elec, lag in zip(del_subj_elecs_list, del_pred_lags):
+            if elec in overlap_elecs:
+                del_pred_lags_ovlp.append(lag)
+        r,p=plot_crr_scat(np.array(del_pred_lags_ovlp), np.array(nodel_pred_lags_ovlp), pred_onset, elec_typ,'peak_lag')
+        print(f'Peak lags: corr {elec_typ} {pred_onset}, r = {round(r,3)}, p = {round(p,3)}')
+
+        nodel_pred_pows = onset_pred_pows_all[pred_onset][del_nodel_tag_noDel][elec_typ]
+        del_pred_pows = onset_pred_pows_all[pred_onset][del_nodel_tag_Del][elec_typ]
+        nodel_pred_pows_ovlp = []
+        for elec, lag in zip(nodel_subj_elecs_list, nodel_pred_pows):
+            if elec in overlap_elecs:
+                nodel_pred_pows_ovlp.append(lag)
+        del_pred_pows_ovlp = []
+        for elec, lag in zip(del_subj_elecs_list, del_pred_pows):
+            if elec in overlap_elecs:
+                del_pred_pows_ovlp.append(lag)
+        r,p=plot_crr_scat(np.array(del_pred_pows_ovlp), np.array(nodel_pred_pows_ovlp), pred_onset, elec_typ,'pred_pow')
+        print(f'Peak pows: corr {elec_typ} {pred_onset}, r = {round(r,3)}, p = {round(p,3)}')
