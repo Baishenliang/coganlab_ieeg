@@ -524,13 +524,22 @@ for subject, processing_type in subject_processing_dict.items():
                 # Just a temporal option for getting the Cue epochs for auditory and motor onset modeling
                 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 # 我觉得应该好好检查一下这个is_bsl_correct，如果不是两个信号直接比较的话应该选True吧。那么原本的数据会错吗？应该是错的代码没有跑过新的数据吧anyway到时候BIDS完今年的被试应该要认真看看的。
+                # gamma_epoc_zip = zip(
+                #     ('Cue/Repeat/CORRECT', 'Go/Repeat/CORRECT'),
+                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                #     ((-0.5, 4), (-0.5, 4)),
+                #     ('Cue_inRep', 'Go_inRep'),
+                #     (True,True)
+                # )
+                # Just a temporal option for Greg Hickok's whole trial epoches aligned to different onsets
                 gamma_epoc_zip = zip(
-                    ('Cue/Repeat/CORRECT', 'Go/Repeat/CORRECT'),
-                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                    ((-0.5, 4), (-0.5, 4)),
-                    ('Cue_inRep', 'Go_inRep'),
-                    (True,True)
+                    ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                    ((-0.5, 6), (-2.5, 4), (-4.5, 2), (-5, 1.5)),
+                    ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep'),
+                    (True, True, True, True)
                 )
+
             elif Task_Tag == "LexicalDecRepNoDelay":
                 # gamma_epoc_zip=zip(
                 #     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT','Resp/Repeat/CORRECT','Cue/:=:/CORRECT','Auditory_stim/:=:/CORRECT','Cue/Yes_No/CORRECT','Auditory_stim/Yes_No/CORRECT'),
