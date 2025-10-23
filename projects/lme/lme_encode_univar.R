@@ -96,7 +96,7 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e1
+  n_perm <- 2
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -135,7 +135,7 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-del_nodel_tags <- c('epoc_LexNoDelay_Cue', 'epoc_LexDelay_Cue', 'epoc_LexDelay_Go')
+del_nodel_tags <- c('epoc_LexNoDelay_Cue', 'epoc_LexDelay_Cue')
 elec_grps <- c('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM','Motor_novWM', 'Auditory_novWM', 'Sensorymotor_novWM')
 features <- c('aud_onset','resp_onset')
 a = 0
@@ -184,11 +184,6 @@ rm(normalized_freq_fea)
 for (del_nodel_tag in del_nodel_tags){
   for (feature in features){
     for (elec_grp in elec_grps){
-      
-      # For lexical delay data, aud_onsets were only predicted in data aligned to Cue, and resp_onsets were only predicted in data aligned to Go
-      if ((del_nodel_tag=='epoc_LexDelay_Cue' && feature=='resp_onset') || (del_nodel_tag=='epoc_LexDelay_Go' && feature=='aud_onset')){
-        next
-      }
       
       #%% Run computations
       a <- a + 1
