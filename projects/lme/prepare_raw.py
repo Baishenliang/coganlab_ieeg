@@ -108,17 +108,18 @@ if groupsTag=="LexDelay":
     epoc_tag='epoc_LexDelayRep_Aud'
 elif groupsTag=="LexDelay&LexNoDelay":
 
-    elec_cat= 'vWM' #'vWM','novWM'
-    data_base='Delay_Cue' # NoDelay, Delay_Go, Delay_Cue
+    elec_grps_vWM = ('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM')
+    elec_idxs_vWM = (
+    'LexDelay_Motor_in_Delay_sig_idx', 'LexDelay_Auditory_in_Delay_sig_idx', 'LexDelay_Sensorimotor_in_Delay_sig_idx',
+    'LexDelay_DelayOnly_sig_idx')
+    elec_grps_novWM = ('Motor_novWM', 'Auditory_novWM', 'Sensorymotor_novWM')
+    elec_idxs_novWM = (
+    'LexDelay_Motor_novWM_sig_idx', 'LexDelay_Auditory_novWM_sig_idx', 'LexDelay_Sensorimotor_novWM_sig_idx')
 
     for elec_cat,data_base in zip(
             ('vWM','vWM','vWM','novWM','novWM','novWM'),
             ('NoDelay', 'Delay_Go', 'Delay_Cue','NoDelay', 'Delay_Go', 'Delay_Cue')
     ):
-        elec_grps_vWM = ('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM')
-        elec_grps_novWM = ('Motor_novWM', 'Auditory_novWM', 'Sensorymotor_novWM')
-        elec_idxs_vWM = ('LexDelay_Motor_in_Delay_sig_idx', 'LexDelay_Auditory_in_Delay_sig_idx', 'LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
-        elec_idxs_novWM = ('LexDelay_Motor_novWM_sig_idx', 'LexDelay_Auditory_novWM_sig_idx', 'LexDelay_Sensorimotor_novWM_sig_idx')
 
         match(elec_cat,data_base):
             case('vWM','NoDelay'):
@@ -152,27 +153,27 @@ elif groupsTag=="LexDelay&LexNoDelay":
                 epoc=epoc_LexDelay_Cue
                 epoc_tag='epoc_LexDelay_Cue'
 
-    t_range=[-0.5,6]
-    for elec_grp,elec_idx in zip(elec_grps,elec_idxs):
-        print(f'Now Doing {elec_grp}')
-        if encoding_mode=='multivariate':
-            m_chs = epoc.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
-            m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
-            # mixup(m, 0)
-        elif encoding_mode=='univariate':
-            epoc_dict={}
-            for s,epoc_s in epoc.items():
-                s_ele_sel = [
-                    item.replace(f'{s}-', '')
-                    for item in elec_labels[list(LexDelay_twin_idxes[elec_idx])]
-                    if item.startswith(s)
-                ]
-                if not s_ele_sel:
-                    continue
-                m_chs = epoc_s.take(s_ele_sel, axis=1)
+        t_range=[-0.5,6]
+        for elec_grp,elec_idx in zip(elec_grps,elec_idxs):
+            print(f'Now Doing {elec_grp}')
+            if encoding_mode=='multivariate':
+                m_chs = epoc.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
                 m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
-                epoc_dict[s]=m
-            del m
-            m = epoc_dict
-
-        gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'),win_len=0,append_pho=False,NoDelay_append_startings=NoDelay_append_startings) #100s for phoneme responses
+                # mixup(m, 0)
+            elif encoding_mode=='univariate':
+                epoc_dict={}
+                for s,epoc_s in epoc.items():
+                    s_ele_sel = [
+                        item.replace(f'{s}-', '')
+                        for item in elec_labels[list(LexDelay_twin_idxes[elec_idx])]
+                        if item.startswith(s)
+                    ]
+                    if not s_ele_sel:
+                        continue
+                    m_chs = epoc_s.take(s_ele_sel, axis=1)
+                    m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
+                    epoc_dict[s]=m
+                del m
+                m = epoc_dict
+    
+            gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'),win_len=0,append_pho=False,NoDelay_append_startings=NoDelay_append_startings) #100s for phoneme responses
