@@ -41,8 +41,8 @@ def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
 
 # %% groups of patients
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
-groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -98,14 +98,43 @@ if groupsTag=="LexDelay&LexNoDelay":
     NoDelay_append_startings=True
 
 # %% Select electrodes
+def rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag):
+    t_range = [-0.5, 6]
+    for elec_grp, elec_idx in zip(elec_grps, elec_idxs):
+        print(f'Now Doing {elec_grp}')
+        if encoding_mode == 'multivariate':
+            m_chs = epoc.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
+            m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
+            # mixup(m, 0)
+        elif encoding_mode == 'univariate':
+            epoc_dict = {}
+            for s, epoc_s in epoc.items():
+                s_ele_sel = [
+                    item.replace(f'{s}-', '')
+                    for item in elec_labels[list(LexDelay_twin_idxes[elec_idx])]
+                    if item.startswith(s)
+                ]
+                if not s_ele_sel:
+                    continue
+                m_chs = epoc_s.take(s_ele_sel, axis=1)
+                m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
+                epoc_dict[s] = m
+            del m
+            m = epoc_dict
+
+        gp.win_to_Rdataframe(m, os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'), win_len=0, append_pho=False,
+                             NoDelay_append_startings=NoDelay_append_startings)  # 100s for phoneme responses
+
 loaded_data={}
 if groupsTag=="LexDelay":
-    elec_grps=('Motor_delay','Auditory_delay','Sensorymotor_delay','Delay_only')
+    elec_grps=('Motor_vWM','Auditory_vWM','Sensorymotor_vWM','Delay_only','Motor_novWM','Auditory_novWM','Sensorymotor_novWM','Delay_only')
              #'Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
-    elec_idxs=('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')
+    elec_idxs=('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx',
+               'LexDelay_Motor_not_in_Delay_sig_idx','LexDelay_Auditory_not_in_Delay_sig_idx','LexDelay_Sensorimotor_not_in_Delay_sig_idx')
              #'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
     epoc=epoc_LexDelayRep_Aud
     epoc_tag='epoc_LexDelayRep_Aud'
+    rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag)
 elif groupsTag=="LexDelay&LexNoDelay":
 
     elec_grps_vWM = ('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM')
@@ -153,27 +182,5 @@ elif groupsTag=="LexDelay&LexNoDelay":
                 epoc=epoc_LexDelay_Cue
                 epoc_tag='epoc_LexDelay_Cue'
 
-        t_range=[-0.5,6]
-        for elec_grp,elec_idx in zip(elec_grps,elec_idxs):
-            print(f'Now Doing {elec_grp}')
-            if encoding_mode=='multivariate':
-                m_chs = epoc.take(list(LexDelay_twin_idxes[elec_idx]), axis=1)
-                m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
-                # mixup(m, 0)
-            elif encoding_mode=='univariate':
-                epoc_dict={}
-                for s,epoc_s in epoc.items():
-                    s_ele_sel = [
-                        item.replace(f'{s}-', '')
-                        for item in elec_labels[list(LexDelay_twin_idxes[elec_idx])]
-                        if item.startswith(s)
-                    ]
-                    if not s_ele_sel:
-                        continue
-                    m_chs = epoc_s.take(s_ele_sel, axis=1)
-                    m = m_chs.take(get_time_indexs(m_chs.labels[2], t_range[0], t_range[1]), axis=2)
-                    epoc_dict[s]=m
-                del m
-                m = epoc_dict
-    
-            gp.win_to_Rdataframe(m,os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'),win_len=0,append_pho=False,NoDelay_append_startings=NoDelay_append_startings) #100s for phoneme responses
+        rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag)
+
