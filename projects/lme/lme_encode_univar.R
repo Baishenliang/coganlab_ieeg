@@ -47,6 +47,10 @@ model_func <- function(current_data,feature){
   model_type='simple' #'full'
   model_mode='R-squared' #'comparison'
   
+  # Standardize
+  current_data$value <- as.vector(scale(current_data$value))
+  current_data$value[abs(current_data$value) > 2] <- NA
+  
   tp <- current_data$time[1]
   if (model_type=='simple'){
     fml_bsl<-as.formula(paste0(feature,' ~ 1'))
