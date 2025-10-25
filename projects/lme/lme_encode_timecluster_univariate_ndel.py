@@ -9,6 +9,7 @@ import seaborn as sns
 from ieeg.calc.stats import time_cluster
 import matplotlib.pyplot as plt
 from statsmodels.stats.multitest import multipletests
+import statsmodels.api as sm
 from ieeg.arrays.label import LabeledArray
 import pingouin as pg
 from contextlib import redirect_stdout
@@ -92,24 +93,25 @@ def get_subj_elec(filename,del_nodel_tag,elec_typ,pred_onset):
 
 #%% Get data
 pred_onsets=('resp_onset','aud_onset')
-del_nodel_tags = ('epoc_LexNoDelay_Cue', 'epoc_LexDelay_Cue', 'epoc_LexDelay_Go')
+del_nodel_tags = ('epoc_LexDelay_Cue','epoc_LexNoDelay_Cue')#, 'epoc_LexDelay_Go')
 elec_typs = ('Sensorymotor_vWM', 'Motor_vWM', 'Auditory_vWM', 'Delay_only_vWM', 'Sensorymotor_novWM','Motor_novWM', 'Auditory_novWM')
 
 #%% Plotting
 onset_pred_lags_all = dict()
 onset_pred_pows_all = dict()
+onset_hg_rmss_all = dict()
 subj_elecs_list_all = dict()
 plot_elec_pic=False
 r2_lsts=dict()
 for pred_onset in pred_onsets:
     onset_pred_lags_onset = dict()
     onset_pred_pows_onset = dict()
+    onset_hg_rmss_onset = dict()
     subj_elec_lists_onset = dict()
     for del_nodel_tag in del_nodel_tags:
-        if (del_nodel_tag == 'epoc_LexDelay_Cue' and pred_onset == 'resp_onset') or (del_nodel_tag == 'epoc_LexDelay_Go' and pred_onset == 'aud_onset'):
-            continue
         onset_pred_lags = dict()
         onset_pred_pows = dict()
+        onset_hg_rmss = dict()
         cross_corr_lsts = dict()
         subj_elec_lists = dict()
         for elec_typ in elec_typs:
@@ -122,6 +124,7 @@ for pred_onset in pred_onsets:
             subj_elec_onsets=[]
             subj_elec_crosscorr_peak=[]
             subj_elec_crosscorr_prepow=[]
+            subj_elec_hg_rmss=[]
             hg_filename=f'data\\{del_nodel_tag}_{elec_typ}_long.csv'
             hg_raw = pd.read_csv(hg_filename)
             # read data
@@ -174,8 +177,8 @@ for pred_onset in pred_onsets:
                     (hg_raw['electrode'] == elec)
                 ]
                 subj_elec_hg_series = hg_raw_subj_elec_rep.groupby('time_point')['value'].mean().tolist()
-                subj_elec_hg_series = (np.max(time_series)*(subj_elec_hg_series-np.min(subj_elec_hg_series))/
-                                       (np.max(subj_elec_hg_series)-np.min(subj_elec_hg_series)))
+                # subj_elec_hg_series = (np.max(time_series)*(subj_elec_hg_series-np.min(subj_elec_hg_series))/
+                #                        (np.max(subj_elec_hg_series)-np.min(subj_elec_hg_series)))
                 # if len(time_point)!=len(subj_elec_hg_series):
                 #     continue
                 if plot_elec_pic:
@@ -202,7 +205,7 @@ for pred_onset in pred_onsets:
                     LOWER_BOUND_SEC = -1.5
                     UPPER_BOUND_SEC = 1.5
                     LOWER_BOUND_SEC_mtrprep = LOWER_BOUND_SEC
-                    UPPER_BOUND_SEC_mtrprep = 0
+                    UPPER_BOUND_SEC_mtrprep = UPPER_BOUND_SEC
                 lags_sec = lags_index * time_resolution
                 start_idx_limit = np.argmax(lags_sec >= LOWER_BOUND_SEC)
                 end_idx_limit = np.argmax(lags_sec > UPPER_BOUND_SEC)-1
@@ -221,11 +224,16 @@ for pred_onset in pred_onsets:
                 i_ts_peak = np.argmax(onset_prob_series)
                 time_ts_peak = time_point[i_ts_peak]
                 cross_corr_peak = time_ts_peak+optimal_lag_time
-                # Get power of motor prep
+                # Get power of motor prediction responses
                 start_idx_limit_mtrprep = np.argmax(lags_sec >= LOWER_BOUND_SEC_mtrprep)
                 end_idx_limit_mtrprep = np.argmax(lags_sec > UPPER_BOUND_SEC_mtrprep)-1
                 limited_cross_corr_mtrprep = cross_corr[start_idx_limit_mtrprep: end_idx_limit_mtrprep + 1]
                 mtr_prep_rms = np.sqrt(np.nanmean(limited_cross_corr_mtrprep**2))
+                # Get power of HG traces
+                start_idx_limit_mtrprep = np.argmax(time_point >= time_ts_peak+LOWER_BOUND_SEC_mtrprep)
+                end_idx_limit_mtrprep = np.argmax(time_point > time_ts_peak+UPPER_BOUND_SEC_mtrprep)-1
+                limited_hg_mtrprep = np.array(subj_elec_hg_series[start_idx_limit_mtrprep: end_idx_limit_mtrprep + 1])
+                hg_rms = np.sqrt(np.nanmean(limited_hg_mtrprep**2))
 
                 # plot CC indexes
                 if plot_elec_pic:
@@ -257,6 +265,7 @@ for pred_onset in pred_onsets:
                 subj_elec_onsets.append(time_ts_peak)
                 subj_elec_crosscorr_peak.append(cross_corr_peak)
                 subj_elec_crosscorr_prepow.append(mtr_prep_rms)
+                subj_elec_hg_rmss.append(hg_rms)
 
                 if plot_elec_pic:
                     ax.legend(loc='upper left')
@@ -294,6 +303,7 @@ for pred_onset in pred_onsets:
             cross_corr_lsts[elec_typ]=np.stack(cross_corr_lst, axis=0)
             r2_lsts[elec_typ]=np.stack(r2_lst, axis=0)
             onset_pred_pows[elec_typ]=np.array(subj_elec_crosscorr_prepow)
+            onset_hg_rmss[elec_typ]=np.array(subj_elec_hg_rmss)
 
             # Generate Label array
             labels=(subj_elec_lst,time_point)
@@ -506,19 +516,32 @@ for pred_onset in pred_onsets:
                 print(f"df: {len(group_non_zero)+len(group_zero)-2}")
                 print(f"P-Value: {p_value:.4f}")
 
+
+        # Regress out the HG responses for pow cross-corr (get the residuals)
+        onset_pred_pows_res = {}
+        for group_name in elec_typs:
+            Y = onset_pred_pows[group_name]
+            X = onset_hg_rmss[group_name]
+            X = sm.add_constant(X)
+            model = sm.OLS(Y, X).fit()
+            residuals_sm = model.resid
+            onset_pred_pows_res[group_name] = residuals_sm
+
         onset_pred_lags_onset[del_nodel_tag] = onset_pred_lags
         onset_pred_pows_onset[del_nodel_tag] = onset_pred_pows
+        onset_hg_rmss_onset[del_nodel_tag] = onset_hg_rmss
         subj_elec_lists_onset[del_nodel_tag] = subj_elec_lists
         #%% compare predicting onset r^2 (ttests between each other)
 
         for onset_pred_data,onset_pred_tag,vert_boxplot in zip(
-                (onset_pred_lags,onset_pred_pows),
-                ('peak_lag','pred_pow'),
-                (False,True)
+                (onset_pred_lags,onset_pred_pows,onset_pred_pows_res,onset_hg_rmss),
+                ('peak_lag','pred_pow','pred_pow_res','hg_pow'),
+                (False,True,True,True)
 
         ):
             with open(os.path.join('figs', f'stats_{del_nodel_tag}_{pred_onset}_{onset_pred_tag}.txt'), 'w', encoding='utf-8') as f:
                 with redirect_stdout(f):
+
                     # --- 2. Convert Dictionary to Long Format DataFrame ---
                     onset_pred_lags_stats=onset_pred_data.copy()
                     onset_pred_lags_stats.pop('Delay_only_vWM', None)
@@ -623,8 +646,8 @@ for pred_onset in pred_onsets:
                 ax.set_title('CrossCorr peak distribution')
                 ax.set_xlabel('Lag aligned to speech onset (s)')
                 ax.set_ylabel('Electrode group')
-            elif onset_pred_tag=='pred_pow':
-                ax.set_title('CrossCorr pre-onset power distribution')
+            else:
+                # ax.set_title('Power')
                 ax.set_ylabel('RMS power')
                 ax.set_xlabel('Electrode group')
                 plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
@@ -686,6 +709,7 @@ for pred_onset in pred_onsets:
 
     onset_pred_lags_all[pred_onset] = onset_pred_lags_onset
     onset_pred_pows_all[pred_onset] = onset_pred_pows_onset
+    onset_hg_rmss_all[pred_onset] = onset_hg_rmss_onset
     subj_elecs_list_all[pred_onset] = subj_elec_lists_onset
 
 #%% Correlation plots of delay vs. nodelay
@@ -723,6 +747,18 @@ for pred_onset,del_nodel_tag_noDel,del_nodel_tag_Del in zip(pred_onsets,
         nodel_subj_elecs_list = subj_elecs_list_all[pred_onset][del_nodel_tag_noDel][elec_typ]
         del_subj_elecs_list = subj_elecs_list_all[pred_onset][del_nodel_tag_Del][elec_typ]
         overlap_elecs = set(nodel_subj_elecs_list) & set(del_subj_elecs_list)
+
+        # Get HG signals
+        nodel_hg = onset_hg_rmss_all[pred_onset][del_nodel_tag_noDel][elec_typ]
+        del_hg = onset_hg_rmss_all[pred_onset][del_nodel_tag_Del][elec_typ]
+        nodel_hg_ovlp = []
+        for elec, lag in zip(nodel_subj_elecs_list, nodel_hg):
+            if elec in overlap_elecs:
+                nodel_hg_ovlp.append(float(lag))
+        del_hg_ovlp = []
+        for elec, lag in zip(del_subj_elecs_list, del_hg):
+            if elec in overlap_elecs:
+                del_hg_ovlp.append(float(lag))
 
         nodel_pred_lags = onset_pred_lags_all[pred_onset][del_nodel_tag_noDel][elec_typ]
         del_pred_lags = onset_pred_lags_all[pred_onset][del_nodel_tag_Del][elec_typ]
