@@ -46,50 +46,11 @@ model_func <- function(current_data,feature){
     library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   }
   
-  model_type='full'
-  
-  tp <- current_data$time[1]
-  if (model_type=='simple'){
-    fml_bsl<-as.formula(paste0('value ~ 1'))
-    if (feature=='aco'){
-      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + ")))
-    }else if (feature=='pho'){
-      fml<-as.formula(paste0('value ~ 1+',paste0(paste0("pho", 1:4), collapse = " + ")))
-    }else{
-      fml<-as.formula(paste0('value ~ 1+',feature))
-    }
-  }else if (model_type=='full'){
-    if (feature=='aco'){
-      fml_bsl<-as.formula(paste0('value ~ 1'))
-      # fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('pho', 1:9)), collapse = ' + ')))
-      # fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0('pho', 1:9)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-    }else if (feature=='vow'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("vow", 1:6)), collapse = ' + ')))
-    }else if (feature=='con'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("con", 1:6)), collapse = ' + ')))
-    }else if (feature=='wordness'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:4)), collapse = ' + ')))
-      fml <-as.formula(paste0('value ~ 1+',
-                              paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:4), collapse = " + "),"+",
-                                paste0(paste0("aco", 1:9,":",feature), collapse = " + "),"+",paste0(paste0("pho", 1:9,":",feature), collapse = " + "),"+",feature))
-    }else if (feature=='Wordvec'){
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:4)), collapse = ' + ')))
-      fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:4), paste0('Wordvec', 1:91)),collapse = ' + ')))
-    }else{
-      fml_bsl <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9)), collapse = ' + ')))
-      fml <-as.formula(paste0('value ~ 1+',paste0(paste0("aco", 1:9), collapse = " + "),"+",paste0(paste0("pho", 1:4), collapse = " + ")))
-    }
-  }
+  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:4)), collapse = ' + ')))
 
   m <- lm(fml, data = current_data,na.action = na.exclude)
-  m_bsl <- lm(fml_bsl, data = current_data,na.action = na.exclude)
-  anova_results <- anova(m_bsl, m)
-  mean_F_stat <- anova_results$`F`[2]
-  # pattern <- paste0("^", feature)
-  # mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
+  pattern <- paste0("^", feature)
+  mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
   
   perm_compare_df_i <- data.frame(
     perm = 0,
@@ -135,10 +96,6 @@ model_func <- function(current_data,feature){
 
 #%% Parameters
 elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
-#elec_grps <- c('Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
-# features <- c('aco','pho','Frq','Uni_Pos_SC')
-#features <- c('aco','pho','wordness','Wordvec')
-#features <- paste0("pho", 1:4)
 features <- c("vow","con")
 a = 0
 
@@ -169,27 +126,6 @@ con_fea_T <- as.data.frame(t(con_fea))
 con_fea_T$stim <- rownames(con_fea_T)
 con_fea_T <- con_fea_T[, c("stim", setdiff(names(con_fea_T), "stim"))]
 
-#Load Word2vec parameters
-word2vec_path <- paste(home_dir,
-                  "data/word_to_embedding_pca.csv",
-                  sep = "")
-word2vec_fea <- read.csv(word2vec_path,row.names = 1)
-word2vec_fea_T <- as.data.frame(t(word2vec_fea))
-word2vec_fea_T$stim <- rownames(word2vec_fea_T)
-word2vec_fea_T <- word2vec_fea_T[, c("stim", setdiff(names(word2vec_fea_T), "stim"))]
-
-#Load word freq parameters
-freq_path <- paste(home_dir,"data/word_freq.csv",sep = "")
-freq_fea <- read.csv(freq_path)
-cols_to_normalize <- c(
-  "Frq", "Uni_SC", "Uni_Pos_SC", "Uni_FW", "Uni_Pos_FW",
-  "Bi_SC", "Bi_Pos_SC", "Bi_FW", "Bi_Pos_FW", "Tri_SC",
-  "Tri_Pos_SC", "Tri_FW", "Tri_Pos_FW"
-)
-normalized_freq_fea <- freq_fea
-normalized_freq_fea[, cols_to_normalize] <- lapply(freq_fea[, cols_to_normalize], scale)
-freq_fea<-normalized_freq_fea
-rm(normalized_freq_fea)
 
 #%% Start looping
 for (feature in features){
@@ -204,75 +140,11 @@ for (feature in features){
     long_data <- read.csv(file_path_long)
     long_data$time <- as.numeric(long_data$time)
     
-    bsl_corr=FALSE
-    
-    if (bsl_corr==TRUE){
-    file_path_wide <- paste(home_dir,
-                            "data/epoc_LexDelayRep_Aud_",elec_grp,"_wide.csv",
-                            sep = "")
-    wide_data <- read.csv(file_path_wide)
-
-    #%% Baseline correction
-    cat("correcting baseline \n")
-    windowed_means <- long_data %>%
-      filter(time > -0.4 & time <= 0) %>%
-      mutate(
-        time_window = floor((time - (-0.4)) / 0.1)
-      ) %>%
-      group_by(subject, electrode, stim, time_window) %>%
-      summarise(mean_val = mean(value, na.rm = TRUE), .groups = 'drop') %>%
-      pivot_wider(
-        names_from = time_window,
-        values_from = mean_val,
-        names_prefix = "mean_window_"
-      )
-    rm(long_data)
-    wide_data <- wide_data %>%
-      left_join(windowed_means, by = c("subject", "electrode", "stim"))
-    all_time_col_names <- names(wide_data)[str_detect(names(wide_data), "^X")]
-    baseline_predictor_cols <- names(wide_data)[str_detect(names(wide_data), "mean_window_")]
-    regression_data <- wide_data
-    for (y_col in all_time_col_names) {
-      fml <- as.formula(paste(y_col, "~", paste(baseline_predictor_cols, collapse = " + ")))
-      model <- lm(fml, data = wide_data,na.action = na.exclude)
-      regression_data[[y_col]] <- residuals(model)
-    }
-    wide_data <- regression_data %>%
-      select(-starts_with("mean_window"))
-    rm(regression_data)
-    
-    #%% transform to long
-    cat("transforming to long \n")
-    long_data <- wide_data %>%
-      pivot_longer(
-        cols = starts_with("X"),
-        names_to = "time_label",
-        values_to = "value"
-      ) %>%
-      mutate(
-        time = case_when(
-          str_detect(time_label, "X\\.") ~ as.numeric(str_replace(time_label, "X\\.", "-")),
-          TRUE ~ as.numeric(str_replace(time_label, "X", ""))
-        )
-      )%>%
-      select(-time_label)
-    }
-    
     #%% get only word part of the "stim"
     long_data <- long_data %>%
       mutate(
         stim = str_split_fixed(string = stim, pattern = "-", n = 2)[, 1]
       )
-    
-    #%% average across stim
-    # long_data <- long_data %>%
-    #   group_by(subject, electrode, time, wordness,stim) %>%
-    #   summarise(
-    #     value = mean(value, na.rm = TRUE),
-    #     .groups = 'drop'
-    #   ) %>%
-    #   ungroup()
-
 
     #%% append acoustic features
     long_data <- left_join(long_data,aco_fea_T,by='stim')
@@ -282,16 +154,6 @@ for (feature in features){
 
     #%% append consonant features
     long_data <- left_join(long_data,con_fea_T,by='stim')
-    
-    #%% append word2vec features
-    long_data <- left_join(long_data,word2vec_fea_T,by='stim')
-    
-    #%% append word frequency features
-    long_data <- long_data %>%
-      left_join(
-        freq_fea %>% select(stim, 'Uni_Pos_SC'),
-        by = "stim"
-      )
     
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
