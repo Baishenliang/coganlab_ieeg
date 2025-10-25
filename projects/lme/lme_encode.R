@@ -46,11 +46,20 @@ model_func <- function(current_data,feature){
     library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   }
   
-  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:4)), collapse = ' + ')))
+  tp <- current_data$time[1]
+  
+  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:15)), collapse = ' + ')))
 
-  m <- lm(fml, data = current_data,na.action = na.exclude)
+  current_data_vWM <- current_data[current_data$vWM == 1, ]
+  current_data_novWM <- current_data[current_data$vWM == 0, ]
+  
+  m_vWM <- lm(fml, data = current_data_vWM,na.action = na.exclude)
+  m_novWM <- lm(fml, data = current_data_novWM,na.action = na.exclude)
+  
   pattern <- paste0("^", feature)
-  mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
+  mean_F_stat_vWM <- mean(abs(coef(m_vWM)[grep(pattern, names(coef(m_vWM)))]),na.rm =T)
+  mean_F_stat_novWM <- mean(abs(coef(m_novWM)[grep(pattern, names(coef(m_novWM)))]),na.rm =T)
+  mean_F_stat <- mean_F_stat_vWM-mean_F_stat_novWM
   
   perm_compare_df_i <- data.frame(
     perm = 0,
@@ -60,32 +69,43 @@ model_func <- function(current_data,feature){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 10#e3
+  n_perm <- 1e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
-    current_data_perm <- current_data %>%
-      group_by(subject, electrode) %>%
-      mutate(
-        perm_indices = sample(1:n()),
-        across(starts_with('aco') | starts_with('vow') | starts_with('con'), ~ .x[perm_indices]) #across(starts_with(feature), ~ .x[perm_indices])
-      ) %>%
-      ungroup() %>%
-      select(-perm_indices)
     
-      m <- lm(fml, data = current_data_perm,na.action = na.exclude)
-      m_bsl <- lm(fml_bsl, data = current_data_perm,na.action = na.exclude)
-      anova_results <- anova(m_bsl, m)
-      mean_F_stat <- anova_results$`F`[2]
-      # pattern <- paste0("^", feature)
-      # mean_F_stat <- mean(abs(coef(m)[grep(pattern, names(coef(m)))]))
+    original_map <- current_data %>%
+      distinct(subject, electrode, vWM)
+    
+    vwm_list_to_shuffle <- original_map$vWM
+    shuffled_vwm <- sample(vwm_list_to_shuffle)
+    
+    permuted_vwm_map <- original_map %>%
+      mutate(vWM_permuted = shuffled_vwm) %>%
+      select(subject, electrode, vWM_permuted)
+    
+    current_data_perm <- current_data %>%
+      left_join(permuted_vwm_map, by = c("subject", "electrode"), relationship = "many-to-one") %>%
+      mutate(vWM = vWM_permuted) %>%
+      select(-vWM_permuted)
+    
+    current_data_vWM_perm <- current_data_perm[current_data_perm$vWM == 1, ]
+    current_data_novWM_perm <- current_data_perm[current_data_perm$vWM == 0, ]
+    
+    m_vWM_perm <- lm(fml, data = current_data_vWM_perm,na.action = na.exclude)
+    m_novWM_perm <- lm(fml, data = current_data_novWM_perm,na.action = na.exclude)
+    
+    pattern <- paste0("^", feature)
+    mean_F_stat_vWM_perm <- mean(abs(coef(m_vWM_perm)[grep(pattern, names(coef(m_vWM_perm)))]),na.rm =T)
+    mean_F_stat_novWM_perm <- mean(abs(coef(m_novWM_perm)[grep(pattern, names(coef(m_novWM_perm)))]),na.rm =T)
+    mean_F_stat_perm <- mean_F_stat_vWM_perm-mean_F_stat_novWM_perm
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
       data.frame(
         perm = i_perm,
         time_point = tp,
-        chi_squared_obs = mean_F_stat
+        chi_squared_obs = mean_F_stat_perm
       )
     )
     
@@ -95,8 +115,8 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-elec_grps <- c('Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only')
-features <- c("vow","con")
+elec_grps <- c('Auditory','Sensorymotor','Motor','Delay')
+features <- c("pho")
 a = 0
 
 #Load acoustic parameters
@@ -109,22 +129,13 @@ aco_fea_T$stim <- rownames(aco_fea_T)
 aco_fea_T <- aco_fea_T[, c("stim", setdiff(names(aco_fea_T), "stim"))]
 
 #Load vowel parameters
-vow_path <- paste(home_dir,
-                  "data/vowel_one_hot_dict_pca.csv",
+pho_path <- paste(home_dir,
+                  "data/phoneme_one_hot_dict.csv",
                   sep = "")
-vow_fea <- read.csv(vow_path,row.names = 1)
-vow_fea_T <- as.data.frame(t(vow_fea))
-vow_fea_T$stim <- rownames(vow_fea_T)
-vow_fea_T <- vow_fea_T[, c("stim", setdiff(names(vow_fea_T), "stim"))]
-
-#Load consonant parameters
-con_path <- paste(home_dir,
-                  "data/consonant_one_hot_dict_pca.csv",
-                  sep = "")
-con_fea <- read.csv(con_path,row.names = 1)
-con_fea_T <- as.data.frame(t(con_fea))
-con_fea_T$stim <- rownames(con_fea_T)
-con_fea_T <- con_fea_T[, c("stim", setdiff(names(con_fea_T), "stim"))]
+pho_fea <- read.csv(pho_path,row.names = 1)
+pho_fea_T <- as.data.frame(t(pho_fea))
+pho_fea_T$stim <- rownames(pho_fea_T)
+pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
 
 #%% Start looping
@@ -134,11 +145,27 @@ for (feature in features){
     #%% Load files
     cat("loading files \n")
     # slurm task selection
-    file_path_long <- paste(home_dir,
-                       "data/epoc_LexDelayRep_Aud_",elec_grp,"_long.csv",
+    # vwm electrodes
+    file_path_long_vwm <- paste(home_dir,
+                       "data/epoc_LexDelayRep_Aud_",elec_grp,"_vWM_long.csv",
                        sep = "")
-    long_data <- read.csv(file_path_long)
-    long_data$time <- as.numeric(long_data$time)
+    long_data_vwm <- read.csv(file_path_long_vwm)
+    long_data_vwm$time <- as.numeric(long_data_vwm$time)
+    
+    # no vWM electrodes
+    file_path_long_novwm <- paste(home_dir,
+                                "data/epoc_LexDelayRep_Aud_",elec_grp,"_novWM_long.csv",
+                                sep = "")
+    long_data_novwm <- read.csv(file_path_long_novwm)
+    long_data_novwm$time <- as.numeric(long_data_novwm$time)
+    
+    # Merge
+    data_vwm_labeled <- long_data_vwm %>%
+      mutate(vWM = 1)
+    data_novwm_labeled <- long_data_novwm %>%
+      mutate(vWM = 0)
+    long_data <- bind_rows(data_vwm_labeled, data_novwm_labeled)
+    
     
     #%% get only word part of the "stim"
     long_data <- long_data %>%
@@ -150,10 +177,7 @@ for (feature in features){
     long_data <- left_join(long_data,aco_fea_T,by='stim')
     
     #%% append vowel features
-    long_data <- left_join(long_data,vow_fea_T,by='stim')
-
-    #%% append consonant features
-    long_data <- left_join(long_data,con_fea_T,by='stim')
+    long_data <- left_join(long_data,pho_fea_T,by='stim')
     
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
