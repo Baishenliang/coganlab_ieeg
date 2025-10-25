@@ -48,7 +48,7 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
   
-  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:15)), collapse = ' + ')))
+  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:15),"wordness"), collapse = ' + ')))
 
   current_data_vWM <- current_data[current_data$vWM == 1, ]
   current_data_novWM <- current_data[current_data$vWM == 0, ]
@@ -56,16 +56,21 @@ model_func <- function(current_data,feature){
   m_vWM <- lm(fml, data = current_data_vWM,na.action = na.exclude)
   m_novWM <- lm(fml, data = current_data_novWM,na.action = na.exclude)
   
-  pattern <- paste0("^", feature)
-  mean_F_stat_vWM <- mean(abs(coef(m_vWM)[grep(pattern, names(coef(m_vWM)))]),na.rm =T)
-  mean_F_stat_novWM <- mean(abs(coef(m_novWM)[grep(pattern, names(coef(m_novWM)))]),na.rm =T)
-  mean_F_stat <- mean_F_stat_vWM-mean_F_stat_novWM
+  coef_vWM <- coef(m_vWM)
+  coef_novWM <- coef(m_novWM)
+  
+  non_intercept_names <- names(coef_vWM)[names(coef_vWM) != '(Intercept)']
+  
+  diff_coef <- coef_vWM[non_intercept_names] - coef_novWM[non_intercept_names]
+  
+  diff_coef_df <- as.data.frame(as.list(diff_coef))
   
   perm_compare_df_i <- data.frame(
     perm = 0,
-    time_point = tp,
-    chi_squared_obs = mean_F_stat
+    time_point = tp
   )
+  
+  perm_compare_df_i <- bind_cols(perm_compare_df_i, diff_coef_df)
   
   # Permutation
   cat('Start perm \n')
@@ -95,18 +100,21 @@ model_func <- function(current_data,feature){
     m_vWM_perm <- lm(fml, data = current_data_vWM_perm,na.action = na.exclude)
     m_novWM_perm <- lm(fml, data = current_data_novWM_perm,na.action = na.exclude)
     
-    pattern <- paste0("^", feature)
-    mean_F_stat_vWM_perm <- mean(abs(coef(m_vWM_perm)[grep(pattern, names(coef(m_vWM_perm)))]),na.rm =T)
-    mean_F_stat_novWM_perm <- mean(abs(coef(m_novWM_perm)[grep(pattern, names(coef(m_novWM_perm)))]),na.rm =T)
-    mean_F_stat_perm <- mean_F_stat_vWM_perm-mean_F_stat_novWM_perm
+    coef_vWM_perm <- coef(m_vWM_perm)
+    coef_novWM_perm <- coef(m_novWM_perm)
+    
+    diff_coef_perm <- coef_vWM_perm[non_intercept_names] - coef_novWM_perm[non_intercept_names]
+    
+    diff_coef_df_perm <- as.data.frame(as.list(diff_coef_perm))
+    
+    perm_compare_df_i_perm <- data.frame(
+      perm = i_perm,
+      time_point = tp
+    )
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
-      data.frame(
-        perm = i_perm,
-        time_point = tp,
-        chi_squared_obs = mean_F_stat_perm
-      )
+      bind_cols(perm_compare_df_i_perm, diff_coef_df_perm)
     )
     
   }
@@ -115,7 +123,7 @@ model_func <- function(current_data,feature){
 }
 
 #%% Parameters
-elec_grps <- c('Auditory','Sensorymotor','Motor','Delay')
+elec_grps <- c('Auditory','Sensorymotor','Motor')
 features <- c("pho")
 a = 0
 
@@ -182,51 +190,52 @@ for (feature in features){
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
     
-    for (lex in c("Word","Nonword",'All')){
-      #%% Run computations
-      a <- a + 1
-      if (task_ID > 0 && a != task_ID) {
-        next
-      }
-      # If it is nonword then skip the Frq
-      if (lex=='Nonword' && feature=='Frq'){
-        next
-      }
-      # If it is not for all word and nonword data then skip the wordness
-      # Although now we don't do 'Alls's
-      if (lex!='All' && feature=='wordness'){
-        next
-      }
-      
-      if (lex=='Word' || lex=='Nonword'){
-        word_data <- long_data %>%
-          filter(wordness == lex)
-      }else{
-        word_data <- long_data
-      }
-      
-      if (task_ID > 0){rm(long_data)}
-      
-      cat("Re-formatting long data \n")
-      data_by_time <- split(word_data, word_data$time)
-      rm(word_data)
-      
-      cat("Starting modeling \n")
-      #%% Get core environment
-      cl <- makeCluster(num_cores)
-      registerDoParallel(cl)
-      clusterExport(cl, varlist = c("model_func"))
-      # Fot Duke HPC sbatch:
-      # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
-      # 13 tasks can be paralled at once.
-      perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
-      stopCluster(cl)
-      perm_compare_df <- do.call(rbind, perm_compare_df)
-      perm_compare_df <- perm_compare_df %>% arrange(time_point)
-      
-      print(perm_compare_df)
-      
-      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",feature,"_",lex,".csv",sep = ''),row.names = FALSE)
+    #for (lex in c("Word","Nonword",'All')){
+    lex<-'All'
+    #%% Run computations
+    a <- a + 1
+    if (task_ID > 0 && a != task_ID) {
+      next
     }
+    # If it is nonword then skip the Frq
+    if (lex=='Nonword' && feature=='Frq'){
+      next
+    }
+    # If it is not for all word and nonword data then skip the wordness
+    # Although now we don't do 'Alls's
+    if (lex!='All' && feature=='wordness'){
+      next
+    }
+    
+    if (lex=='Word' || lex=='Nonword'){
+      word_data <- long_data %>%
+        filter(wordness == lex)
+    }else{
+      word_data <- long_data
+    }
+    
+    if (task_ID > 0){rm(long_data)}
+    
+    cat("Re-formatting long data \n")
+    data_by_time <- split(word_data, word_data$time)
+    rm(word_data)
+    
+    cat("Starting modeling \n")
+    #%% Get core environment
+    cl <- makeCluster(num_cores)
+    registerDoParallel(cl)
+    clusterExport(cl, varlist = c("model_func"))
+    # Fot Duke HPC sbatch:
+    # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
+    # 13 tasks can be paralled at once.
+    perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
+    stopCluster(cl)
+    perm_compare_df <- do.call(rbind, perm_compare_df)
+    perm_compare_df <- perm_compare_df %>% arrange(time_point)
+    
+    print(perm_compare_df)
+    
+    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",feature,"_",lex,".csv",sep = ''),row.names = FALSE)
+    #}
   }
 }
