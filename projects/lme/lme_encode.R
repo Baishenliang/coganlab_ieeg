@@ -56,21 +56,24 @@ model_func <- function(current_data,feature){
   m_vWM <- lm(fml, data = current_data_vWM,na.action = na.exclude)
   m_novWM <- lm(fml, data = current_data_novWM,na.action = na.exclude)
   
-  coef_vWM <- coef(m_vWM)
-  coef_novWM <- coef(m_novWM)
+  coef_vWM <- abs(coef(m_vWM))
+  se_vWM <- summary(m_vWM)$coefficients[, "Std. Error"]
+  
+  coef_novWM <- abs(coef(m_novWM))
+  se_novWM <- summary(m_novWM)$coefficients[, "Std. Error"]
   
   non_intercept_names <- names(coef_vWM)[names(coef_vWM) != '(Intercept)']
-  
   diff_coef <- coef_vWM[non_intercept_names] - coef_novWM[non_intercept_names]
-  
-  diff_coef_df <- as.data.frame(as.list(diff_coef))
+  var_diff <- se_vWM[non_intercept_names]^2 + se_novWM[non_intercept_names]^2
+  Z_statistic <- diff_coef / sqrt(var_diff)
+  Z_statistic_df <- as.data.frame(as.list(Z_statistic))
   
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp
   )
   
-  perm_compare_df_i <- bind_cols(perm_compare_df_i, diff_coef_df)
+  perm_compare_df_i <- bind_cols(perm_compare_df_i, Z_statistic_df)
   
   # Permutation
   cat('Start perm \n')
@@ -100,12 +103,16 @@ model_func <- function(current_data,feature){
     m_vWM_perm <- lm(fml, data = current_data_vWM_perm,na.action = na.exclude)
     m_novWM_perm <- lm(fml, data = current_data_novWM_perm,na.action = na.exclude)
     
-    coef_vWM_perm <- coef(m_vWM_perm)
-    coef_novWM_perm <- coef(m_novWM_perm)
+    coef_vWM_perm <- abs(coef(m_vWM_perm))
+    se_vWM_perm <- summary(m_vWM_perm)$coefficients[, "Std. Error"]
+    
+    coef_novWM_perm <- abs(coef(m_novWM_perm))
+    se_novWM_perm <- summary(m_novWM_perm)$coefficients[, "Std. Error"]
     
     diff_coef_perm <- coef_vWM_perm[non_intercept_names] - coef_novWM_perm[non_intercept_names]
-    
-    diff_coef_df_perm <- as.data.frame(as.list(diff_coef_perm))
+    var_diff_perm <- se_vWM_perm[non_intercept_names]^2 + se_novWM_perm[non_intercept_names]^2
+    Z_statistic_perm <- diff_coef_perm / sqrt(var_diff_perm)
+    Z_statistic_df_perm <- as.data.frame(as.list(Z_statistic_perm))
     
     perm_compare_df_i_perm <- data.frame(
       perm = i_perm,
@@ -114,7 +121,7 @@ model_func <- function(current_data,feature){
     
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
-      bind_cols(perm_compare_df_i_perm, diff_coef_df_perm)
+      bind_cols(perm_compare_df_i_perm, Z_statistic_df_perm)
     )
     
   }
