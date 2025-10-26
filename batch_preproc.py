@@ -67,22 +67,25 @@ from matplotlib import pyplot as plt
 #     "D0115": "gamma",
 #     "D0117": "gamma"
 # }
+# subject_processing_dict_org = {
+#     "D0038": "gamma",
+#     "D0044": "gamma",
+#     "D0053": "gamma",
+#     "D0063": "gamma",
+#     "D0065": "gamma",
+#     "D0070": "gamma",
+#     "D0080": "gamma",
+#     "D0081": "gamma",
+#     "D0084": "gamma",
+#     "D0086": "gamma",
+#     "D0094": "gamma",
+#     "D0102": "gamma",
+#     "D0103": "gamma",
+#     "D0107": "gamma",
+#     "D0115": "gamma"
+# }
 subject_processing_dict_org = {
-    "D0038": "gamma",
-    "D0044": "gamma",
-    "D0053": "gamma",
-    "D0063": "gamma",
-    "D0065": "gamma",
-    "D0070": "gamma",
-    "D0080": "gamma",
-    "D0081": "gamma",
-    "D0084": "gamma",
-    "D0086": "gamma",
-    "D0094": "gamma",
-    "D0102": "gamma",
-    "D0103": "gamma",
-    "D0107": "gamma",
-    "D0115": "gamma"
+    "D0107": "gamma"
 }
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 # %% define task
@@ -553,12 +556,19 @@ for subject, processing_type in subject_processing_dict.items():
                 #     ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep'),
                 #     (True, True, True, True)
                 # )
+                # gamma_epoc_zip = zip(
+                #     ('Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                #     ((-4.5, 2), (-5, 1.5)),
+                #     ('Go_inRep', 'Resp_inRep'),
+                #     (True, True)
+                # )
                 gamma_epoc_zip = zip(
-                    ('Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                    ((-4.5, 2), (-5, 1.5)),
-                    ('Go_inRep', 'Resp_inRep'),
-                    (True, True)
+                    ('Auditory_stim/Repeat/CORRECT',),
+                    ('Cue/Repeat/CORRECT',),
+                    ((-2.5, 4),),
+                    ('Auditory_inRep',),
+                    (True,)
                 )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
