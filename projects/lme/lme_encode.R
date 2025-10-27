@@ -48,7 +48,7 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
   
-  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:15),"wordness"), collapse = ' + ')))
+  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:16), paste0("pho", 1:32),"wordness"), collapse = ' + ')))
 
   current_data_vWM <- current_data[current_data$vWM == 1, ]
   current_data_novWM <- current_data[current_data$vWM == 0, ]
@@ -136,7 +136,7 @@ a = 0
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
-                   "data/envelope_feature_dict_pca.csv",
+                   "data/envelope_feature_dict.csv",
                    sep = "")
 aco_fea <- read.csv(aco_path,row.names = 1)
 aco_fea_T <- as.data.frame(t(aco_fea))
