@@ -48,7 +48,7 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
   
-  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:16), paste0("pho", 1:32),"wordness"), collapse = ' + ')))
+  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:11),"wordness"), collapse = ' + ')))
 
   current_data_vWM <- current_data[current_data$vWM == 1, ]
   current_data_novWM <- current_data[current_data$vWM == 0, ]
@@ -57,27 +57,38 @@ model_func <- function(current_data,feature){
   m_novWM <- lm(fml, data = current_data_novWM,na.action = na.exclude)
   
   coef_vWM <- abs(coef(m_vWM))
-  se_vWM <- summary(m_vWM)$coefficients[, "Std. Error"]
+  R2_vWM <- summary(m_vWM)$r.squared
   
   coef_novWM <- abs(coef(m_novWM))
-  se_novWM <- summary(m_novWM)$coefficients[, "Std. Error"]
-  
-  non_intercept_names <- names(coef_vWM)[names(coef_vWM) != '(Intercept)']
-  diff_coef <- coef_vWM[non_intercept_names] - coef_novWM[non_intercept_names]
-  var_diff <- se_vWM[non_intercept_names]^2 + se_novWM[non_intercept_names]^2
-  Z_statistic <- diff_coef / sqrt(var_diff)
-  Z_statistic_df <- as.data.frame(as.list(Z_statistic))
+  R2_novWM <- summary(m_novWM)$r.squared
   
   perm_compare_df_i <- data.frame(
     perm = 0,
-    time_point = tp
+    time_point = tp,
+    R2_vWM = R2_vWM,
+    R2_novWM = R2_novWM
   )
   
-  perm_compare_df_i <- bind_cols(perm_compare_df_i, Z_statistic_df)
+  coef_vWM_rn <- coef_vWM
+  names(coef_vWM_rn) <- paste0(names(coef_vWM_rn), 'vWM')
+  coef_vWM_rn <- as.data.frame(as.list(coef_vWM_rn))
+  coef_novWM_rn <- coef_novWM
+  names(coef_novWM_rn) <- paste0(names(coef_novWM_rn), 'novWM')
+  coef_novWM_rn <- as.data.frame(as.list(coef_novWM_rn))
+  perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
+  
+  # se_vWM <- summary(m_vWM)$coefficients[, "Std. Error"]
+  # se_novWM <- summary(m_novWM)$coefficients[, "Std. Error"]
+  # non_intercept_names <- names(coef_vWM)[names(coef_vWM) != '(Intercept)']
+  # diff_coef <- coef_vWM[non_intercept_names] - coef_novWM[non_intercept_names]
+  # var_diff <- se_vWM[non_intercept_names]^2 + se_novWM[non_intercept_names]^2
+  # Z_statistic <- diff_coef / sqrt(var_diff)
+  # Z_statistic_df <- as.data.frame(as.list(Z_statistic))
+  # perm_compare_df_i <- bind_cols(perm_compare_df_i, Z_statistic_df)
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 5e2
+  n_perm <- 1e2
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -104,25 +115,40 @@ model_func <- function(current_data,feature){
     m_novWM_perm <- lm(fml, data = current_data_novWM_perm,na.action = na.exclude)
     
     coef_vWM_perm <- abs(coef(m_vWM_perm))
-    se_vWM_perm <- summary(m_vWM_perm)$coefficients[, "Std. Error"]
+    R2_vWM_perm <- summary(m_vWM_perm)$r.squared
     
     coef_novWM_perm <- abs(coef(m_novWM_perm))
-    se_novWM_perm <- summary(m_novWM_perm)$coefficients[, "Std. Error"]
-    
-    diff_coef_perm <- coef_vWM_perm[non_intercept_names] - coef_novWM_perm[non_intercept_names]
-    var_diff_perm <- se_vWM_perm[non_intercept_names]^2 + se_novWM_perm[non_intercept_names]^2
-    Z_statistic_perm <- diff_coef_perm / sqrt(var_diff_perm)
-    Z_statistic_df_perm <- as.data.frame(as.list(Z_statistic_perm))
+    R2_novWM_perm <- summary(m_novWM_perm)$r.squared
     
     perm_compare_df_i_perm <- data.frame(
       perm = i_perm,
-      time_point = tp
+      time_point = tp,
+      R2_vWM = R2_vWM_perm,
+      R2_novWM = R2_novWM_perm
     )
     
+    coef_vWM_rn_perm <- coef_vWM_perm
+    names(coef_vWM_rn_perm) <- paste0(names(coef_vWM_rn_perm), 'vWM')
+    coef_vWM_rn_perm <- as.data.frame(as.list(coef_vWM_rn_perm))
+    coef_novWM_rn_perm <- coef_novWM_perm
+    names(coef_novWM_rn_perm) <- paste0(names(coef_novWM_rn_perm), 'novWM')
+    coef_novWM_rn_perm <- as.data.frame(as.list(coef_novWM_rn_perm))
+    perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm,coef_novWM_rn_perm)
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
-      bind_cols(perm_compare_df_i_perm, Z_statistic_df_perm)
+      perm_compare_df_i_perm
     )
+    
+    # se_vWM_perm <- summary(m_vWM_perm)$coefficients[, "Std. Error"]
+    # se_novWM_perm <- summary(m_novWM_perm)$coefficients[, "Std. Error"]
+    # diff_coef_perm <- coef_vWM_perm[non_intercept_names] - coef_novWM_perm[non_intercept_names]
+    # var_diff_perm <- se_vWM_perm[non_intercept_names]^2 + se_novWM_perm[non_intercept_names]^2
+    # Z_statistic_perm <- diff_coef_perm / sqrt(var_diff_perm)
+    # Z_statistic_df_perm <- as.data.frame(as.list(Z_statistic_perm))
+    # perm_compare_df_i <- rbind(
+    #   perm_compare_df_i,
+    #   bind_cols(perm_compare_df_i_perm, Z_statistic_df_perm)
+    # )
     
   }
 
@@ -136,7 +162,7 @@ a = 0
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
-                   "data/envelope_feature_dict.csv",
+                   "data/envelope_feature_dict_pca.csv",
                    sep = "")
 aco_fea <- read.csv(aco_path,row.names = 1)
 aco_fea_T <- as.data.frame(t(aco_fea))
@@ -145,7 +171,7 @@ aco_fea_T <- aco_fea_T[, c("stim", setdiff(names(aco_fea_T), "stim"))]
 
 #Load vowel parameters
 pho_path <- paste(home_dir,
-                  "data/phoneme_one_hot_dict.csv",
+                  "data/phoneme_one_hot_dict_pca.csv",
                   sep = "")
 pho_fea <- read.csv(pho_path,row.names = 1)
 pho_fea_T <- as.data.frame(t(pho_fea))
