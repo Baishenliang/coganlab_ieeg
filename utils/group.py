@@ -991,9 +991,23 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
         ax.yaxis.set_visible(False)
 
     # Set time stamps with adjusted gap
-    time_stamps = [round(t, 3) for t in times[::time_gap]]
-    ax.set_xticks(range(0, len(time_stamps) * time_gap, time_gap))
-    ax.set_xticklabels(time_stamps)
+    # time_stamps = [round(t, 3) for t in times[::time_gap]]
+    # ax.set_xticks(range(0, len(time_stamps) * time_gap, time_gap))
+    # ax.set_xticklabels(time_stamps)
+
+    visible_indices = []
+    visible_labels = []
+
+    for i, t in enumerate(times):
+        val_times_two = t * 2
+
+        if abs(val_times_two - round(val_times_two)) < 1e-5:
+            visible_indices.append(i)
+            visible_labels.append(t)
+
+    # visible_x_positions = [i * time_gap for i in visible_indices]
+    ax.set_xticks(visible_indices)
+    ax.set_xticklabels(visible_labels,rotation=45)
 
     # Find the zero time index and add a vertical line
     try:
@@ -1878,7 +1892,8 @@ def hickok_roi_sphere(df_coords,thres: float=15):
         'lIFG': (-56, 8, 20),
         'Spt': (-54, -40, 20),
         'lPMC': (-50, -4, 46),
-        'lIPL': (-42, -50, 42)
+        'lIPL': (-42, -50, 42),
+        'Wgw_55b': (-48, 4, 52),
     }
 
     hickok_roi_labels = {}
