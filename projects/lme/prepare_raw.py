@@ -41,8 +41,8 @@ def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
 
 # %% groups of patients
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
-#groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
