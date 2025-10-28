@@ -93,7 +93,7 @@ def get_subj_elec(filename,del_nodel_tag,elec_typ,pred_onset):
 
 #%% Get data
 pred_onsets=('resp_onset','aud_onset')
-del_nodel_tags = ('epoc_LexDelay_Cue','epoc_LexNoDelay_Cue')#, 'epoc_LexDelay_Go')
+del_nodel_tags = ('epoc_LexNoDelay_Cue','epoc_LexDelay_Cue')#, 'epoc_LexDelay_Go')
 elec_typs = ('Sensorymotor_vWM', 'Motor_vWM', 'Auditory_vWM', 'Delay_only_vWM', 'Sensorymotor_novWM','Motor_novWM', 'Auditory_novWM')
 
 #%% Plotting
@@ -202,8 +202,8 @@ for pred_onset in pred_onsets:
                     LOWER_BOUND_SEC_mtrprep = LOWER_BOUND_SEC
                     UPPER_BOUND_SEC_mtrprep = UPPER_BOUND_SEC
                 elif pred_onset=='resp_onset':
-                    LOWER_BOUND_SEC = -1.5
-                    UPPER_BOUND_SEC = 1.5
+                    LOWER_BOUND_SEC = -2
+                    UPPER_BOUND_SEC = 2
                     LOWER_BOUND_SEC_mtrprep = LOWER_BOUND_SEC
                     UPPER_BOUND_SEC_mtrprep = UPPER_BOUND_SEC
                 lags_sec = lags_index * time_resolution
@@ -319,30 +319,30 @@ for pred_onset in pred_onsets:
             # Plot HG activity for Delay
             epoc_del, _, sorted_indices,*_ = gp.sort_chs_by_actonset(Mask_Delay_Aud,
                                                           Epoc_Delay_Aud,
-                                                          0.011, [-0.2, 5],
+                                                          0.011, [-0.2, 6],
                                                           mask_data=False,
                                                           select_electrodes=False)
 
-            gp.plot_chs(epoc_del, os.path.join('figs', f'Del_{elec_typ}_{pred_onset}.tif'),
+            gp.plot_chs(epoc_del, os.path.join('figs', f'{del_nodel_tag}_{elec_typ}_{pred_onset}.tif'),
                      f'{pred_onset}', percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
                      fig_size=[4, 20 * (np.shape(epoc_del)[0] / 250)])
 
             # Plot HG activity for NoDelay
             epoc_nodel, *_ = gp.sort_chs_by_actonset(Mask_NoDel_Aud,
                                                           Epoc_NoDel_Aud,
-                                                          0.011, [-0.2, 5],
+                                                          0.011, [-0.2, 6],
                                                           sorted_indices=sorted_indices,
                                                           mask_data=False,
                                                           select_electrodes=False)
 
-            gp.plot_chs(epoc_nodel, os.path.join('figs', f'NoDel_{elec_typ}_{pred_onset}.tif'),
+            gp.plot_chs(epoc_nodel, os.path.join('figs', f'{del_nodel_tag}_{elec_typ}_{pred_onset}.tif'),
                      f'{pred_onset}', percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
                      fig_size=[3, 20 * (np.shape(epoc_del)[0] / 250)])
 
             # Plot R-2: aligned to onsets in Delay
             epoch_sort_mask, *_ = gp.sort_chs_by_actonset(clus_arr,
                                                           r2_arr,
-                                                          0.011, [-0.2, 5],
+                                                          0.011, [-0.2, 6],
                                                           sorted_indices=sorted_indices,
                                                           mask_data=False,
                                                           select_electrodes=False)
@@ -518,14 +518,14 @@ for pred_onset in pred_onsets:
 
 
         # Regress out the HG responses for pow cross-corr (get the residuals)
-        onset_pred_pows_res = {}
-        for group_name in elec_typs:
-            Y = onset_pred_pows[group_name]
-            X = onset_hg_rmss[group_name]
-            X = sm.add_constant(X)
-            model = sm.OLS(Y, X).fit()
-            residuals_sm = model.resid
-            onset_pred_pows_res[group_name] = residuals_sm
+        # onset_pred_pows_res = {}
+        # for group_name in elec_typs:
+        #     Y = onset_pred_pows[group_name]
+        #     X = onset_hg_rmss[group_name]
+        #     X = sm.add_constant(X)
+        #     model = sm.OLS(Y, X).fit()
+        #     residuals_sm = model.resid
+        #     onset_pred_pows_res[group_name] = residuals_sm
 
         onset_pred_lags_onset[del_nodel_tag] = onset_pred_lags
         onset_pred_pows_onset[del_nodel_tag] = onset_pred_pows
@@ -534,9 +534,9 @@ for pred_onset in pred_onsets:
         #%% compare predicting onset r^2 (ttests between each other)
 
         for onset_pred_data,onset_pred_tag,vert_boxplot in zip(
-                (onset_pred_lags,onset_pred_pows,onset_pred_pows_res,onset_hg_rmss),
-                ('peak_lag','pred_pow','pred_pow_res','hg_pow'),
-                (False,True,True,True)
+                (onset_pred_lags,onset_pred_pows),
+                ('peak_lag','pred_pow'),
+                (False,True)
 
         ):
             with open(os.path.join('figs', f'stats_{del_nodel_tag}_{pred_onset}_{onset_pred_tag}.txt'), 'w', encoding='utf-8') as f:
@@ -740,7 +740,7 @@ def plot_crr_scat(x_data, y_data, pred_onset, elec_typ,data_tag):
 
 for pred_onset,del_nodel_tag_noDel,del_nodel_tag_Del in zip(pred_onsets,
                                                                    ('epoc_LexNoDelay_Cue','epoc_LexNoDelay_Cue'),
-                                                                   ('epoc_LexDelay_Go', 'epoc_LexDelay_Cue')):
+                                                                   ('epoc_LexDelay_Cue', 'epoc_LexDelay_Cue')):
     for elec_typ in elec_typs:
 
         #!!!!!!!!!!!!!!!!! Just temporal adjustment, SHOULD CHECK why there are non-overlaps!
