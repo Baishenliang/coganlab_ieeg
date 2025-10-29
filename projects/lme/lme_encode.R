@@ -76,6 +76,7 @@ model_func <- function(current_data,feature){
   names(coef_novWM_rn) <- paste0(names(coef_novWM_rn), 'novWM')
   coef_novWM_rn <- as.data.frame(as.list(coef_novWM_rn))
   perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
+  # perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn)
   
   # se_vWM <- summary(m_vWM)$coefficients[, "Std. Error"]
   # se_novWM <- summary(m_novWM)$coefficients[, "Std. Error"]
@@ -85,10 +86,10 @@ model_func <- function(current_data,feature){
   # Z_statistic <- diff_coef / sqrt(var_diff)
   # Z_statistic_df <- as.data.frame(as.list(Z_statistic))
   # perm_compare_df_i <- bind_cols(perm_compare_df_i, Z_statistic_df)
-  
+
   # Permutation
   cat('Start perm \n')
-  n_perm <- 5e2
+  n_perm <- 1e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -111,12 +112,53 @@ model_func <- function(current_data,feature){
     current_data_vWM_perm <- current_data_perm[current_data_perm$vWM == 1, ]
     current_data_novWM_perm <- current_data_perm[current_data_perm$vWM == 0, ]
     
+    # 2. 确定 vWM=1 和 vWM=0 的行数
+    n_vWM_perm <- nrow(current_data_vWM_perm)
+    n_novWM_perm <- nrow(current_data_novWM_perm)
+    
+    # 3. 设定目标行数：以 vWM=1 的行数 n_vWM_perm 为基准
+    target_n <- n_vWM_perm
+    
+    if (n_novWM_perm < target_n) {
+      # 欠样本组 (vWM=0) 需要过采样 (Over-sampling)
+      # 目标：从 current_data_novWM_perm 中有放回地抽取 target_n 行。
+      
+      # 抽取索引，replace = TRUE 启用有放回抽取
+      sample_indices <- sample(
+        x = 1:n_novWM_perm, 
+        size = target_n, 
+        replace = TRUE
+      )
+      
+      # 基于抽取索引生成平衡后的 vWM=0 数据集
+      current_data_novWM_base <- current_data_novWM_perm[sample_indices, ]
+      
+    } else if (n_novWM_perm > target_n) {
+      # 过样本组 (vWM=0) 需要欠采样 (Under-sampling)
+      # 目标：从 current_data_novWM_perm 中无放回地抽取 target_n 行。
+      # 抽取索引，replace = FALSE 启用无放回抽取
+      sample_indices <- sample(
+        x = 1:n_novWM_perm, 
+        size = target_n, 
+        replace = FALSE
+      )
+      
+      # 基于抽取索引生成平衡后的 vWM=0 数据集
+      current_data_novWM_base <- current_data_novWM_perm[sample_indices, ]
+      
+    } else {
+      # 行数相等，直接赋值
+      current_data_novWM_base <- current_data_novWM_perm
+    }
+    
+    current_data_novWM_perm <- current_data_novWM_base
+    
     m_vWM_perm <- lm(fml, data = current_data_vWM_perm,na.action = na.exclude)
     m_novWM_perm <- lm(fml, data = current_data_novWM_perm,na.action = na.exclude)
-    
+
     coef_vWM_perm <- abs(coef(m_vWM_perm))
     R2_vWM_perm <- summary(m_vWM_perm)$r.squared
-    
+
     coef_novWM_perm <- abs(coef(m_novWM_perm))
     R2_novWM_perm <- summary(m_novWM_perm)$r.squared
     
@@ -134,6 +176,7 @@ model_func <- function(current_data,feature){
     names(coef_novWM_rn_perm) <- paste0(names(coef_novWM_rn_perm), 'novWM')
     coef_novWM_rn_perm <- as.data.frame(as.list(coef_novWM_rn_perm))
     perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm,coef_novWM_rn_perm)
+    # perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm)
     perm_compare_df_i <- rbind(
       perm_compare_df_i,
       perm_compare_df_i_perm
