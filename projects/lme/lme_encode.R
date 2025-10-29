@@ -48,7 +48,7 @@ model_func <- function(current_data,feature){
   
   tp <- current_data$time[1]
   
-  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9), paste0("pho", 1:11),"wordness"), collapse = ' + ')))
+  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
 
   current_data_vWM <- current_data[current_data$vWM == 1, ]
   current_data_novWM <- current_data[current_data$vWM == 0, ]
