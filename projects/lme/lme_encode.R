@@ -89,12 +89,55 @@ model_func <- function(current_data,feature){
 
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e3
+  n_perm <- 2e2
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
     
-    original_map <- current_data %>%
+    current_data_base<-current_data
+
+    current_data_vWM_base <- current_data_base[current_data_base$vWM == 1, ]
+    current_data_novWM_base <- current_data_base[current_data_base$vWM == 0, ] 
+    
+    n_vWM <- nrow(current_data_vWM_base)
+    n_novWM <- nrow(current_data_novWM_base)
+    
+    target_n <- n_vWM
+    
+    if (n_novWM < target_n) {
+      # 欠样本组 (vWM=0) 需要过采样 (Over-sampling)
+      # 目标：从 current_data_novWM_perm 中有放回地抽取 target_n 行。
+      # 抽取索引，replace = TRUE 启用有放回抽取
+      sample_indices <- sample(
+        x = 1:n_novWM, 
+        size = target_n, 
+        replace = TRUE
+      )
+      
+      # 基于抽取索引生成平衡后的 vWM=0 数据集
+      current_data_novWM_base <- current_data_novWM_base[sample_indices, ]
+      
+    } else if (n_novWM > target_n) {
+      # 过样本组 (vWM=0) 需要欠采样 (Under-sampling)
+      # 目标：从 current_data_novWM_perm 中无放回地抽取 target_n 行。
+      # 抽取索引，replace = FALSE 启用无放回抽取
+      sample_indices <- sample(
+        x = 1:n_novWM, 
+        size = target_n, 
+        replace = FALSE
+      )
+      
+      # 基于抽取索引生成平衡后的 vWM=0 数据集
+      current_data_novWM_base <- current_data_novWM_base[sample_indices, ]
+      
+    } else {
+      # 行数相等，直接赋值
+      current_data_novWM_base <- current_data_novWM_base
+    }
+    
+    current_data_base<-rbind(current_data_vWM_base,current_data_novWM_base)
+    
+    original_map <- current_data_base %>%
       distinct(subject, electrode, vWM)
     
     vwm_list_to_shuffle <- original_map$vWM
@@ -104,54 +147,13 @@ model_func <- function(current_data,feature){
       mutate(vWM_permuted = shuffled_vwm) %>%
       select(subject, electrode, vWM_permuted)
     
-    current_data_perm <- current_data %>%
+    current_data_perm <- current_data_base %>%
       left_join(permuted_vwm_map, by = c("subject", "electrode"), relationship = "many-to-one") %>%
       mutate(vWM = vWM_permuted) %>%
       select(-vWM_permuted)
     
     current_data_vWM_perm <- current_data_perm[current_data_perm$vWM == 1, ]
-    current_data_novWM_perm <- current_data_perm[current_data_perm$vWM == 0, ]
-    
-    # 2. 确定 vWM=1 和 vWM=0 的行数
-    n_vWM_perm <- nrow(current_data_vWM_perm)
-    n_novWM_perm <- nrow(current_data_novWM_perm)
-    
-    # 3. 设定目标行数：以 vWM=1 的行数 n_vWM_perm 为基准
-    target_n <- n_vWM_perm
-    
-    if (n_novWM_perm < target_n) {
-      # 欠样本组 (vWM=0) 需要过采样 (Over-sampling)
-      # 目标：从 current_data_novWM_perm 中有放回地抽取 target_n 行。
-      
-      # 抽取索引，replace = TRUE 启用有放回抽取
-      sample_indices <- sample(
-        x = 1:n_novWM_perm, 
-        size = target_n, 
-        replace = TRUE
-      )
-      
-      # 基于抽取索引生成平衡后的 vWM=0 数据集
-      current_data_novWM_base <- current_data_novWM_perm[sample_indices, ]
-      
-    } else if (n_novWM_perm > target_n) {
-      # 过样本组 (vWM=0) 需要欠采样 (Under-sampling)
-      # 目标：从 current_data_novWM_perm 中无放回地抽取 target_n 行。
-      # 抽取索引，replace = FALSE 启用无放回抽取
-      sample_indices <- sample(
-        x = 1:n_novWM_perm, 
-        size = target_n, 
-        replace = FALSE
-      )
-      
-      # 基于抽取索引生成平衡后的 vWM=0 数据集
-      current_data_novWM_base <- current_data_novWM_perm[sample_indices, ]
-      
-    } else {
-      # 行数相等，直接赋值
-      current_data_novWM_base <- current_data_novWM_perm
-    }
-    
-    current_data_novWM_perm <- current_data_novWM_base
+    current_data_novWM_perm <- current_data_perm[current_data_perm$vWM == 0, ] 
     
     m_vWM_perm <- lm(fml, data = current_data_vWM_perm,na.action = na.exclude)
     m_novWM_perm <- lm(fml, data = current_data_novWM_perm,na.action = na.exclude)
