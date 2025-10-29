@@ -89,7 +89,7 @@ model_func <- function(current_data,feature){
 
   # Permutation
   cat('Start perm \n')
-  n_perm <- 2e2
+  n_perm <- 1e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
