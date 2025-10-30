@@ -32,7 +32,7 @@ if (os_type == "Windows") {
 }
 
 #%% Modeling func
-model_func <- function(current_data,feature){
+model_func <- function(current_data){
   
   # Loading packages
   os_type <- Sys.info()['sysname']
@@ -202,7 +202,7 @@ model_func <- function(current_data,feature){
 
 #%% Parameters
 elec_grps <- c('Auditory','Sensorymotor','Motor')
-features <- c("pho")
+alignments <- c("Aud","Cue","Resp")
 a = 0
 
 #Load acoustic parameters
@@ -225,7 +225,7 @@ pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
 
 #%% Start looping
-for (feature in features){
+for (alignment in alignments){
   for (elec_grp in elec_grps){
     
     #%% Load files
@@ -233,14 +233,14 @@ for (feature in features){
     # slurm task selection
     # vwm electrodes
     file_path_long_vwm <- paste(home_dir,
-                       "data/epoc_LexDelayRep_Aud_",elec_grp,"_vWM_long.csv",
+                       "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_long.csv",
                        sep = "")
     long_data_vwm <- read.csv(file_path_long_vwm)
     long_data_vwm$time <- as.numeric(long_data_vwm$time)
     
     # no vWM electrodes
     file_path_long_novwm <- paste(home_dir,
-                                "data/epoc_LexDelayRep_Aud_",elec_grp,"_novWM_long.csv",
+                                "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_long.csv",
                                 sep = "")
     long_data_novwm <- read.csv(file_path_long_novwm)
     long_data_novwm$time <- as.numeric(long_data_novwm$time)
@@ -275,22 +275,8 @@ for (feature in features){
     if (task_ID > 0 && a != task_ID) {
       next
     }
-    # If it is nonword then skip the Frq
-    if (lex=='Nonword' && feature=='Frq'){
-      next
-    }
-    # If it is not for all word and nonword data then skip the wordness
-    # Although now we don't do 'Alls's
-    if (lex!='All' && feature=='wordness'){
-      next
-    }
     
-    if (lex=='Word' || lex=='Nonword'){
-      word_data <- long_data %>%
-        filter(wordness == lex)
-    }else{
-      word_data <- long_data
-    }
+    word_data <- long_data
     
     if (task_ID > 0){rm(long_data)}
     
@@ -306,14 +292,14 @@ for (feature in features){
     # Fot Duke HPC sbatch:
     # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
     # 13 tasks can be paralled at once.
-    perm_compare_df<-parLapply(cl, data_by_time, model_func,feature=feature)
+    perm_compare_df<-parLapply(cl, data_by_time, model_func)
     stopCluster(cl)
     perm_compare_df <- do.call(rbind, perm_compare_df)
     perm_compare_df <- perm_compare_df %>% arrange(time_point)
     
     print(perm_compare_df)
     
-    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",feature,"_",lex,".csv",sep = ''),row.names = FALSE)
+    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",alignment,"_",lex,".csv",sep = ''),row.names = FALSE)
     #}
   }
 }
