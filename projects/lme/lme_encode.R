@@ -201,8 +201,8 @@ model_func <- function(current_data){
 }
 
 #%% Parameters
+alignments <- c("Aud","Go","Resp")
 elec_grps <- c('Auditory','Sensorymotor','Motor')
-alignments <- c("Aud","Cue","Resp")
 a = 0
 
 #Load acoustic parameters
