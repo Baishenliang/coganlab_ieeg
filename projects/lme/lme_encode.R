@@ -89,7 +89,7 @@ model_func <- function(current_data){
 
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e3
+  n_perm <- 10
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
@@ -227,6 +227,11 @@ pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 #%% Start looping
 for (alignment in alignments){
   for (elec_grp in elec_grps){
+    a <- a + 1
+    if (task_ID > 0 && a != task_ID) {
+      next
+    }
+    
     
     #%% Load files
     cat("loading files \n")
@@ -267,18 +272,12 @@ for (alignment in alignments){
     
     long_data$time <- as.numeric(long_data$time)
     time_points <- unique(long_data$time)
+    word_data <- long_data
+    rm(long_data)
     
     #for (lex in c("Word","Nonword",'All')){
     lex<-'All'
     #%% Run computations
-    a <- a + 1
-    if (task_ID > 0 && a != task_ID) {
-      next
-    }
-    
-    word_data <- long_data
-    
-    if (task_ID > 0){rm(long_data)}
     
     cat("Re-formatting long data \n")
     data_by_time <- split(word_data, word_data$time)
