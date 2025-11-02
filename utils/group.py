@@ -1743,9 +1743,9 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normaliz
         # Add shaded region for SEM
         plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)
     else:
-        cols_lst=create_gradient(col,np.shape(data_selected)[0]+1)
+        cols_lst=create_gradient(col,np.shape(data_selected)[0]+6)
         for trace_idx_selected in range(np.shape(data_selected)[0]):
-            plt.plot(times, data_selected[trace_idx_selected,:].T, color=cols_lst[trace_idx_selected], alpha=0.5)
+            plt.plot(times, data_selected[trace_idx_selected,:].T, color=cols_lst[trace_idx_selected], alpha=1)
 
     plt.xlabel('Time (s)',fontsize=10)
     plt.ylim(ylim)
