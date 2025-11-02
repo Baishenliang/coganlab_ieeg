@@ -6,9 +6,10 @@ import numpy as np
 import pandas as pd
 from ieeg.calc.stats import time_cluster
 import matplotlib.pyplot as plt
+from partd.utils import suffix
 from requests.packages import target
 from statsmodels.stats.multitest import multipletests
-from pyparsing import alphas
+
 
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
 current_dir = os.getcwd()
@@ -28,8 +29,14 @@ plt.rcParams['xtick.labelsize'] = 12*font_scale
 plt.rcParams['ytick.labelsize'] = 12*font_scale
 plt.rcParams['legend.fontsize'] = 12*font_scale
 
-def expand_sequence(prefix: str, max_number: int) -> tuple:
-    expanded_list = [f'{prefix}{i}' for i in range(1, max_number + 1)]
+MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
+Sensorimotor_col = [1, 0, 0]  # Sensorimotor
+Auditory_col = [0, 1, 0]  # Auditory
+Delay_col = [1, 0.65, 0]  # Delay
+Motor_col = [0, 0, 1]  # Motor
+
+def expand_sequence(prefix: str, suffix: str, max_number: int) -> tuple:
+    expanded_list = [f'{prefix}{i}{suffix}' for i in range(1, max_number + 1)]
     return tuple(expanded_list)
 
 def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster',target_fea:str=None):
@@ -97,129 +104,111 @@ is_normalize=False
 mode='time_cluster'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
-for elec_grp in ['Auditory','Sensorymotor','Motor']:
-# for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
-# for elec_grp in ['Sensorymotor_delay']:
-    # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
-    #                              ('Embedding','Lexical status','Acoustic','Phonemic'),
-    #                             ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
-    # for fea, fea_tag in zip(expand_sequence('aco',16)+expand_sequence('pho',32)+('wordnessWord',),
-    #                                          expand_sequence('Acoustic',16)+expand_sequence('Phonemic',32)+('LexStatus',)):
-    # # # for fea, fea_tag in zip(('wordnessWord',),
-    # # #                         ('LexStatus',)):
-    #     para_sig_barbar=[0.8, 0.02]
-    for fea, fea_tag, para_sig_barbar in zip(('aco','pho','wordnessWord'),
-                                             ('Acoustic','Phonemic','LexStatus'),
-                                             ([3, 0.1],[3, 0.1],[3, 0.1])):
-    # for fea, fea_tag, para_sig_barbar in zip(('aco','pho'),
-    #                                          ('Acoustic','Phonemic'),
-    #                                          ([2, 0.1],[0.1, 0.03])):
-    # for fea, fea_tag, para_sig_barbar in zip(('vow','con'),
-    #                                          ('Vowel','Consonant'),
-    #                                          ([0.8, 0.03],[0.8, 0.03])):
-    # for fea, fea_tag, para_sig_barbar in zip(('aco1',),
-    #                                          ('Phonemic1',),
-    #                                          ([0.8, 0.03],)):
-    # for fea, fea_tag, para_sig_barbar in zip(('vow', 'con'),
-    #                                          ('Vowel', 'Consonant'),
-    #                                          ([0.8, 0.03], [0.8, 0.03])):
-        i = 0
-        j=0
-        if elec_grp == 'Motor':
-            fig, ax = plt.subplots(figsize=(19*1.5/2.2, 6))
-        else:
-            fig, ax = plt.subplots(figsize=(19, 6))
-        ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
-        ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
-        ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
-        if 'aco' in fea or 'pho' in fea:
-            wordnesses=('All',)
-            # wordnesses=('All','Nonword-Word')
-        elif fea=='Frq' or fea=='Uni_Pos_SC' or fea=='Wordvec':
-            wordnesses=('Word','Nonword','Word-Nonword')
-        elif 'vow' in fea or 'con' in fea:
-            wordnesses=('Word','Nonword','Word-Nonword','Nonword-Word')
-        else:
-            wordnesses=('All',)
-        for wordness in wordnesses:
-            if (fea=='Frq' or fea=='Wordvec') and wordness!='Word':
-                continue
-            if fea=='wordness' and wordness!='All':
-                continue
-            if wordness =='All' or wordness =='Word' or wordness =='Nonword':
-                filename = f"results/{elec_grp}_pho_{wordness}.csv"
-                raw = pd.read_csv(filename)
+for alignment in ('pho','resp'):
+    baselines = dict()
+    for elec_grp,elec_col in zip(('Auditory','Sensorymotor','Motor'),
+                                 (Auditory_col,Sensorimotor_col,Motor_col))  :
+    # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
+    # for elec_grp in ['Sensorymotor_delay']:
+        # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
+        #                              ('Embedding','Lexical status','Acoustic','Phonemic'),
+        #                             ([6,1.2],[8,1.2],[20,1.2],[20,1.2])):
+        # for fea, fea_tag in zip(expand_sequence('aco','vWM',9)+expand_sequence('pho','vWM',11)+('wordnessWord',),
+        #                                          expand_sequence('Acoustic','vWM',9)+expand_sequence('Phonemic','vWM',11)+('LexStatus',)):
+        # # # for fea, fea_tag in zip(('wordnessWord',),
+        # # #                         ('LexStatus',)):
+        #     para_sig_barbar=[0.8, 0.02]
+        # for fea, fea_tag, para_sig_barbar in zip(('aco','pho','wordnessWord','pho_wordnessWord','R2'),
+        #                                          ('Acoustic','Phonemic','LexStatus','pho_wordnessWord','R2'),
+        #                                          ([0.13, 0.001],[0.13, 0.001],[0.13, 0.001],[0.13, 0.001],[0.01, 0.001])):
+        for fea, fea_tag, para_sig_barbar in zip(('R2',),
+                                                 ('R2',),
+                                                 ([0.015, 0.001],)):
+        # for fea, fea_tag, para_sig_barbar in zip(('aco','pho'),
+        #                                          ('Acoustic','Phonemic'),
+        #                                          ([2, 0.1],[0.1, 0.03])):
+        # for fea, fea_tag, para_sig_barbar in zip(('vow','con'),
+        #                                          ('Vowel','Consonant'),
+        #                                          ([0.8, 0.03],[0.8, 0.03])):
+        # for fea, fea_tag, para_sig_barbar in zip(('aco1',),
+        #                                          ('Phonemic1',),
+        #                                          ([0.8, 0.03],)):
+        # for fea, fea_tag, para_sig_barbar in zip(('vow', 'con'),
+        #                                          ('Vowel', 'Consonant'),
+        #                                          ([0.8, 0.03], [0.8, 0.03])):
+
+            fig, ax = plt.subplots(figsize=(15, 5))
+            ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
+            ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
+            ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
+
+            filename = f"results/{elec_grp}_{alignment}_All.csv"
+            raw = pd.read_csv(filename)
+
+            j = 0
+            for vWM,vwm_linestyle,vwm_text in zip(('vWM','novWM'),('-','--'),(' with delay',' without delay')):
+                if fea == 'aco':
+                    target_fea = list(expand_sequence('aco',vWM,9))
+                elif fea == 'pho':
+                    target_fea = list(expand_sequence('pho',vWM,11))
+                elif fea == 'pho_wordnessWord':
+                    target_fea = list(expand_sequence('wordnessWord.pho',vWM,11))
+                elif fea == 'wordnessWord':
+                    target_fea = fea+vWM
+                else:
+                    target_fea = fea+f'_{vWM}'
+                time_point, time_series, mask_time_clus = get_traces_clus(raw, 2.5e-2, 1e-1,mode=mode,target_fea=target_fea)
+
+                time_series=gaussian_filter1d(time_series, sigma=2, mode='nearest')
+                # win_len=10
+                # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
+                if is_normalize:
+                    time_series = (time_series - np.min(time_series[(time_point > -0.2) & (time_point <= 0)]))# / (np.max(time_series) - np.min(time_series))
+                    time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
+                    para_sig_bar = [1,1e-1]
+                else:
+                    if alignment == 'pho':
+                        baselines[elec_grp] = np.min(time_series[(time_point > -0.2) & (time_point <= 0)])
+                    elif alignment == 'resp':
+                        baselines[elec_grp] = np.min(time_series[(time_point > -0.75) & (time_point <= 1.25)])
+                    time_series = (time_series - baselines[elec_grp])  # / (np.max(time_series) - np.min(time_series))
+                    para_sig_bar = para_sig_barbar
+
+                ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
+                true_indices = np.where(mask_time_clus)[0]
+                if true_indices.size > 0:
+                    split_points = np.where(np.diff(true_indices) != 1)[0] + 1
+                    clusters_indices = np.split(true_indices, split_points)
+
+                    for k, cluster in enumerate(clusters_indices):
+                        start_index = cluster[0]
+                        end_index = cluster[-1]
+
+                        time_step = time_point[1] - time_point[0]
+                        start_time = time_point[start_index] - time_step / 2
+                        end_time = time_point[end_index] + time_step / 2
+
+                        label = f'clust{k} of pho'
+
+                        ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(j-1),para_sig_bar[0]-para_sig_bar[1]*(j-1)],
+                                color=elec_col,alpha=0.4,
+                                linewidth=10,  # Make the line thick like a bar
+                                solid_capstyle='butt')  # Makes the line ends flat
+                j=j+1
+
+            # ax.set_title(f"{fea_tag}", fontsize=24)
+            ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
+            if 'R2' in fea:
+                ax.set_ylabel("Model $R^2$ (normalized)")
             else:
-                filename_Word = f"results/{elec_grp}_{fea}_Word.csv"
-                filename_Nonword = f"results/{elec_grp}_{fea}_Nonword.csv"
-                raw_word = pd.read_csv(filename_Word)
-                raw_nonword = pd.read_csv(filename_Nonword)
-                if wordness=='Nonword-Word':
-                    chi_squared_diff = raw_nonword['chi_squared_obs'] - raw_word['chi_squared_obs']
-                elif wordness=='Word-Nonword':
-                    chi_squared_diff = raw_word['chi_squared_obs'] - raw_nonword['chi_squared_obs']
-                # Create the new 'raw' DataFrame
-                raw = raw_word[['perm', 'time_point']].copy()
-                raw['chi_squared_obs'] = chi_squared_diff
-            if fea == 'aco':
-                target_fea = list(expand_sequence('aco',9))
-            elif fea == 'pho':
-                target_fea = list(expand_sequence('pho',15))
-            else:
-                target_fea = fea
-            time_point, time_series, mask_time_clus = get_traces_clus(raw, 5e-2, 5e-2,mode=mode,target_fea=target_fea)
-
-            time_series=gaussian_filter1d(time_series, sigma=2, mode='nearest')
-            # win_len=10
-            # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
-            if is_normalize:
-                time_series = (time_series - np.min(time_series[(time_point > -0.2) & (time_point <= 0)]))# / (np.max(time_series) - np.min(time_series))
-                time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
-                para_sig_bar = [1,1e-1]
-            else:
-                time_series = time_series
-                para_sig_bar = para_sig_barbar
-
-            if wordness == 'All' or wordness == 'Word' or wordness == 'Nonword':
-                ax.plot(time_point, time_series, label=f"{wordness}", color=colors[i-1], linewidth=5)
-            true_indices = np.where(mask_time_clus)[0]
-            if true_indices.size > 0:
-                split_points = np.where(np.diff(true_indices) != 1)[0] + 1
-                clusters_indices = np.split(true_indices, split_points)
-
-                for k, cluster in enumerate(clusters_indices):
-                    start_index = cluster[0]
-                    end_index = cluster[-1]
-
-                    time_step = time_point[1] - time_point[0]
-                    start_time = time_point[start_index] - time_step / 2
-                    end_time = time_point[end_index] + time_step / 2
-
-                    label = f'clust{k} of pho'
-                    if wordness == 'Nonword-Word' or wordness == 'Word-Nonword':
-                        colcol=[1,0,0]
-                    else:
-                        colcol=colors[i-1]
-                    ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(j-1),para_sig_bar[0]-para_sig_bar[1]*(j-1)],
-                            color=colcol,alpha=0.4,
-                            linewidth=10,  # Make the line thick like a bar
-                            solid_capstyle='butt')  # Makes the line ends flat
-            j+=1
-            i+=1
-        ax.set_title(f"{fea_tag}", fontsize=24)
-        ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
-        ax.set_ylabel("|beta|: vWM - novWM")#, fontsize=20)
-        ax.tick_params(axis='both', which='major')#, labelsize=16)
-        if fea!='wordness':
+                ax.set_ylabel("feature $β$")#, fontsize=20)
+            ax.tick_params(axis='both', which='major')#, labelsize=16)
             ax.legend(fontsize=18)
-        if elec_grp=='Motor':
-            ax.set_xlim(0.5, 2)  # time_point.max())
-        else:
-            ax.set_xlim(-0.2, 2)#time_point.max())
-        ax.legend().set_visible(False)
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.set_ylim(-2,para_sig_barbar[0]+2*para_sig_barbar[1])
-        plt.tight_layout()
-        plt.savefig(os.path.join('figs','b', f'{elec_grp}_{fea_tag}.tif'), dpi=300)
-        plt.close()
+            ax.set_xlim(-0.2, 1.75)#time_point.max())
+            #ax.legend().set_visible(False)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.set_ylim(-0.005,para_sig_barbar[0]+2*para_sig_barbar[1])
+            plt.tight_layout()
+            plt.savefig(os.path.join('figs','b', f'{elec_grp}_{fea_tag}_{alignment}.tif'), dpi=300)
+            plt.close()
