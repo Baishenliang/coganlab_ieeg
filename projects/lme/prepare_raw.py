@@ -62,6 +62,15 @@ if groupsTag=="LexDelay":
     elec_labels=data_LexDelay_Aud.labels[0]
     NoDelay_append_startings=False
     epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+
+    data_LexDelayRep_Resp, _ = gp.load_stats('mask', 'Resp_inRep', contrast, stats_root_delay, stats_root_delay)
+    epoc_LexDelayRep_Resp, _ = gp.load_stats('zscore', 'Resp_inRep', 'epo', stats_root_delay, stats_root_delay,
+                                       trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+
+    data_LexDelayRep_Go, _ = gp.load_stats('mask', 'Go_inRep', contrast, stats_root_delay, stats_root_delay)
+    epoc_LexDelayRep_Go, _ = gp.load_stats('zscore', 'Go_inRep', 'epo', stats_root_delay, stats_root_delay,
+                                       trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+
 if groupsTag=="LexDelay&LexNoDelay":
     # epoc_LexDelayRep_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
     # epoc_LexNoDelay_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
@@ -127,14 +136,14 @@ def rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag):
 
 loaded_data={}
 if groupsTag=="LexDelay":
-    elec_grps=('Motor_vWM','Auditory_vWM','Sensorymotor_vWM','Delay_only','Motor_novWM','Auditory_novWM','Sensorymotor_novWM','Delay_only')
+    elec_grps=('Motor_vWM','Auditory_vWM','Sensorymotor_vWM','Delay_only','Motor_novWM','Auditory_novWM','Sensorymotor_novWM')#,'Delay_only')
              #'Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
     elec_idxs=('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx',
                'LexDelay_Motor_not_in_Delay_sig_idx','LexDelay_Auditory_not_in_Delay_sig_idx','LexDelay_Sensorimotor_not_in_Delay_sig_idx')
              #'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
-    epoc=epoc_LexDelayRep_Aud
-    epoc_tag='epoc_LexDelayRep_Aud'
-    rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag)
+    for epoc,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
+                             ('epoc_LexDelayRep_Aud','epoc_LexDelayRep_Go','epoc_LexDelayRep_Resp')):
+        rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag)
 elif groupsTag=="LexDelay&LexNoDelay":
 
     elec_grps_vWM = ('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM')
@@ -181,6 +190,9 @@ elif groupsTag=="LexDelay&LexNoDelay":
                 elec_idxs=elec_idxs_novWM
                 epoc=epoc_LexDelay_Cue
                 epoc_tag='epoc_LexDelay_Cue'
-
+        # print('==========================')
+        # print(elec_grps)
+        # print(elec_idxs)
+        # print(epoc_tag)
         rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag)
 
