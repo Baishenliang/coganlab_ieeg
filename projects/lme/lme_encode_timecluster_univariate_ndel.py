@@ -202,8 +202,8 @@ for pred_onset in pred_onsets:
                     LOWER_BOUND_SEC_mtrprep = LOWER_BOUND_SEC
                     UPPER_BOUND_SEC_mtrprep = UPPER_BOUND_SEC
                 elif pred_onset=='resp_onset':
-                    LOWER_BOUND_SEC = -2
-                    UPPER_BOUND_SEC = 2
+                    LOWER_BOUND_SEC = -1.5
+                    UPPER_BOUND_SEC = 1.5
                     LOWER_BOUND_SEC_mtrprep = LOWER_BOUND_SEC
                     UPPER_BOUND_SEC_mtrprep = UPPER_BOUND_SEC
                 lags_sec = lags_index * time_resolution
@@ -628,7 +628,7 @@ for pred_onset in pred_onsets:
             onset_pred_lags_data = [onset_pred_data[key] for key in ordered_keys]
             colors = [Sensorimotor_col,Sensorimotor_col, Auditory_col, Auditory_col, Motor_col,Motor_col, Delay_col]
 
-            fig, ax = plt.subplots(figsize=(10, 6))
+            fig, ax = plt.subplots(figsize=(8, 5))
             boxplot_parts = ax.boxplot(
                 onset_pred_lags_data,
                 tick_labels=new_tick_labels,
@@ -637,19 +637,23 @@ for pred_onset in pred_onsets:
                 showmeans=True
             )
 
+
             for patch, color in zip(boxplot_parts['boxes'], colors):
                 patch.set_facecolor(color)
                 patch.set_edgecolor('black')
                 patch.set_alpha(0.6)
             if onset_pred_tag=='peak_lag':
                 ax.axvline(0, color='gray', linestyle='-', linewidth=0.5)
-                ax.set_title('CrossCorr peak distribution')
-                ax.set_xlabel('Lag aligned to speech onset (s)')
+                ax.set_title('Peak')
+                ax.set_xlabel('Peak within ±1.5s window')
                 ax.set_ylabel('Electrode group')
+                ax.set_yticklabels([])
+                ax.grid(False)
             else:
-                # ax.set_title('Power')
-                ax.set_ylabel('RMS power')
+                ax.set_title('$R^2$')
+                ax.set_ylabel('RMS within ±1.5s window')
                 ax.set_xlabel('Electrode group')
+                ax.set_xticklabels([])
                 plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
             ax.spines['right'].set_visible(False)
             ax.spines['top'].set_visible(False)
@@ -669,7 +673,7 @@ for pred_onset in pred_onsets:
                 'sem': sem_curve
             }
 
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(8, 5))
 
         colors = [Sensorimotor_col, Sensorimotor_col, Auditory_col,Auditory_col, Motor_col,Motor_col, Delay_col]
         ln_stls = ['-','--','-','--','-','--','-']
@@ -697,13 +701,14 @@ for pred_onset in pred_onsets:
 
         ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7, linewidth=1)
 
-        ax.set_title('CrossCorr distribution')
+        ax.set_title('Cross-correlation')
         ax.set_xlabel('Lag aligned to speech onset (s)')
-        ax.set_ylabel('CrossCorr Value (mean ± SEM)')
+        ax.set_ylabel('$R^2$ (mean ± SEM)')
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
-        ax.legend(loc='best')
-        ax.grid(axis='y', linestyle=':', alpha=0.6)
+        # ax.legend(loc='best')
+        # ax.grid(axis='y', linestyle=':', alpha=0.6)
+        ax.set_xlim(-4,4)
         plt.tight_layout()
         plt.savefig(os.path.join('figs', f'cctimetraces_{del_nodel_tag}_{pred_onset}.tif'), dpi=100)
 
