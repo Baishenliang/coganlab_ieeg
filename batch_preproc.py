@@ -68,8 +68,8 @@ from matplotlib import pyplot as plt
 #     "D0117": "gamma"
 # }
 subject_processing_dict_org = {
-    "D0055": "gamma",
-    "D0065": "gamma"
+    "D0079": "gamma",
+    "D0080": "gamma"
 }
 
 
