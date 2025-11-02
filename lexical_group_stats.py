@@ -169,7 +169,7 @@ if "LexDelay" in groupsTag:
     data_LexDelay_sorted,_,_,LexDelay_sig_idx,*_ = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[-10,10])
 
     # Get pre-onset activations:
-    data_LexDelay_sorted_preonset,_,_,LexDelay_sig_idx_preonset,*_ = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,pre_stimonset_win)
+    # data_LexDelay_sorted_preonset,_,_,LexDelay_sig_idx_preonset,*_ = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,pre_stimonset_win)
 
     # (Auditory)
     data_LexDelay_Aud_sorted,_,_,LexDelay_Aud_sig_idx,*_ = sort_chs_by_actonset(data_LexDelay_Aud,epoc_LexDelay_Aud,cluster_twin,[0,mean_word_len+auditory_decay])
@@ -778,6 +778,16 @@ if groupsTag == "LexDelay":
                     ('Resp','Cue','Stim','Go')
             ):
 
+                # for testing:
+                # Hickok_roi_gp=Spt_sig_idx
+                # col=Auditory_col
+                # tag='Spt'
+                # data_epoch=data_LexDelay_Resp
+                # epoc_epoch=epoc_LexDelay_Resp
+                # wav_fig_size=(Waveplot_wth, Waveplot_hgt)
+                # wav_x_lim=[-5, 1.5]
+                # epoch_tag='Resp'
+
                 # Clus plots
                 Hickok_ROI_data = select_electrodes(data_epoch, Hickok_roi_gp)
                 Hickok_ROI_epoch = select_electrodes(epoc_epoch, Hickok_roi_gp)
@@ -808,15 +818,15 @@ if groupsTag == "LexDelay":
 
 
                 # wave
-                Hickok_ROI_epoch_sort_unmask,*_ = sort_chs_by_actonset(Hickok_ROI_data,
-                                                                       Hickok_ROI_epoch,
-                                                                       cluster_twin, wav_x_lim,
-                                                                       sorted_indices=Hickok_ROI_epoch_sort_idx,
-                                                                       mask_data=False,
-                                                                       select_electrodes=False)
+                # Hickok_ROI_epoch_sort_unmask,*_ = sort_chs_by_actonset(Hickok_ROI_data,
+                #                                                        Hickok_ROI_epoch,
+                #                                                        cluster_twin, wav_x_lim,
+                #                                                        sorted_indices=Hickok_ROI_epoch_sort_idx,
+                #                                                        mask_data=False,
+                #                                                        select_electrodes=False)
                 plt.figure(figsize=wav_fig_size)
                 wav_bsl_corr = False
-                plot_wave(Hickok_ROI_epoch_sort_unmask, Hickok_ROI_epoch_sort_idx,f'',col, '-', wav_bsl_corr, ylim=[-0.4, 5.5],average_trace=False)
+                plot_wave(Hickok_ROI_epoch, Hickok_ROI_epoch_sort_idx,f'',col, '-', wav_bsl_corr, ylim=[-0.4, 5.5],average_trace=False)
                 plt.axvline(x=0, linestyle='--', color='k')
                 plt.axhline(y=0, linestyle='--', color='gray')
                 plt.title(tag, fontsize=20)
@@ -827,6 +837,38 @@ if groupsTag == "LexDelay":
                 plt.tight_layout()
                 plt.savefig(os.path.join(fig_save_dir, f'Hickok_wave_alg_resp_{tag}_{epoch_tag}.tif'), dpi=300)
                 plt.close()
+
+                # For Spt only: wave plots for different categories of electrodes
+                if tag == 'Spt':
+                    hickok_sub_idx_aud_mtr=np.concatenate((np.arange(7),np.arange(9,13)))
+                    hickok_sub_idx_aud_onset = np.concatenate((np.arange(19,23), np.arange(24,27)))
+                    hickok_sub_idx_aud_contin = np.concatenate((np.arange(18,19),np.arange(27,29), np.arange(30,34)))
+
+                    for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col in zip(
+                            (hickok_sub_idx_aud_mtr,hickok_sub_idx_aud_onset,hickok_sub_idx_aud_contin),
+                            ('auditory motor','auditory onset','auditory continuous'),
+                            ([0,1,0],[1,165/255,0],[1,0,0])):
+
+                        Hickok_ROI_epoch_sort_sub = select_electrodes(Hickok_ROI_epoch_sort, hickok_sub_idx)
+                        plot_chs(Hickok_ROI_epoch_sort_sub, os.path.join(fig_save_dir,
+                                                                     f'Hickok_sig_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.jpg'),
+                                 f'{tag} {hickok_sub_idx_tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
+                                 fig_size=[4, 20 * (len(Hickok_ROI_epoch_sort_sub) / 250)])
+
+                        plt.figure(figsize=wav_fig_size)
+                        wav_bsl_corr = False
+                        plot_wave(Hickok_ROI_epoch, Hickok_ROI_epoch_sort_idx[hickok_sub_idx], f'', hickok_sub_idx_col, '-', wav_bsl_corr,
+                                  ylim=[-0.4, 4], average_trace=False)
+                        plt.axvline(x=0, linestyle='--', color='k')
+                        plt.axhline(y=0, linestyle='--', color='gray')
+                        plt.title(f'{tag} {hickok_sub_idx_tag}', fontsize=20)
+                        plt.tick_params(axis='both', labelsize=16)
+                        plt.xticks(rotation=45)
+                        plt.xlim(wav_x_lim)
+                        plt.gca().spines[['top', 'right']].set_visible(False)
+                        plt.tight_layout()
+                        plt.savefig(os.path.join(fig_save_dir, f'Hickok_wave_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.tif'), dpi=300)
+                        plt.close()
 
                 # brain plot (sig vs. nonsig before onset)
                 cols = np.full((len_d, 3), 0.5)
