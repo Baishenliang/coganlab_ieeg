@@ -24,52 +24,53 @@ from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_
 from matplotlib import pyplot as plt
 
 # %% Subj list
-subject_processing_dict_org = {
-    "D0023": "gamma",
-    "D0024": "gamma",
-    "D0026": "gamma",
-    "D0027": "gamma",
-    "D0028": "gamma",
-    "D0029": "gamma",
-    "D0032": "gamma",
-    "D0035": "gamma",
-    "D0038": "gamma",
-    "D0042": "gamma",
-    "D0044": "gamma",
-    "D0047": "gamma",
-    "D0053": "gamma",
-    "D0054": "gamma",
-    "D0055": "gamma",
-    "D0057": "gamma",
-    "D0059": "gamma",
-    "D0063": "gamma",
-    "D0065": "gamma",
-    "D0066": "gamma",
-    "D0068": "gamma",
-    "D0069": "gamma",
-    "D0070": "gamma",
-    "D0071": "gamma",
-    "D0077": "gamma",
-    "D0079": "gamma",
-    "D0080": "gamma",
-    "D0081": "gamma",
-    "D0084": "gamma",
-    "D0086": "gamma",
-    "D0090": "gamma",
-    "D0092": "gamma",
-    "D0094": "gamma",
-    "D0096": "gamma",
-    "D0100": "gamma",
-    "D0101": "gamma",
-    "D0102": "gamma",
-    "D0103": "gamma",
-    "D0107": "gamma",
-    "D0115": "gamma",
-    "D0117": "gamma"
-}
 # subject_processing_dict_org = {
+#     "D0023": "gamma",
+#     "D0024": "gamma",
+#     "D0026": "gamma",
 #     "D0027": "gamma",
+#     "D0028": "gamma",
+#     "D0029": "gamma",
+#     "D0032": "gamma",
+#     "D0035": "gamma",
+#     "D0038": "gamma",
+#     "D0042": "gamma",
+#     "D0044": "gamma",
+#     "D0047": "gamma",
+#     "D0053": "gamma",
+#     "D0054": "gamma",
+#     "D0055": "gamma",
+#     "D0057": "gamma",
+#     "D0059": "gamma",
+#     "D0063": "gamma",
+#     "D0065": "gamma",
+#     "D0066": "gamma",
+#     "D0068": "gamma",
+#     "D0069": "gamma",
+#     "D0070": "gamma",
+#     "D0071": "gamma",
+#     "D0077": "gamma",
+#     "D0079": "gamma",
+#     "D0080": "gamma",
+#     "D0081": "gamma",
+#     "D0084": "gamma",
+#     "D0086": "gamma",
+#     "D0090": "gamma",
+#     "D0092": "gamma",
+#     "D0094": "gamma",
+#     "D0096": "gamma",
+#     "D0100": "gamma",
+#     "D0101": "gamma",
+#     "D0102": "gamma",
+#     "D0103": "gamma",
+#     "D0107": "gamma",
+#     "D0115": "gamma",
+#     "D0117": "gamma"
 # }
+subject_processing_dict_org = {
+    "D0055": "gamma",
+    "D0065": "gamma"
+}
 
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
@@ -534,12 +535,19 @@ for subject, processing_type in subject_processing_dict.items():
                 #     ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep'),
                 #     (True, True, True, True)
                 # )
+                # gamma_epoc_zip = zip(
+                #     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT'),
+                #     ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT'),
+                #     ((-0.5, 8),(-2.5, 4)),
+                #     ('Cue_inRep','Auditory_inRep'),
+                #     (True,True)
+                # )
                 gamma_epoc_zip = zip(
-                    ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT'),
-                    ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT'),
-                    ((-0.5, 8),(-2.5, 4)),
-                    ('Cue_inRep','Auditory_inRep'),
-                    (True,True)
+                    ('Auditory_stim/Repeat/CORRECT',),
+                    ('Cue/Repeat/CORRECT',),
+                    ((-2.5, 4),),
+                    ('Auditory_inRep',),
+                    (True,)
                 )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
