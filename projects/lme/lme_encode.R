@@ -58,15 +58,20 @@ model_func <- function(current_data){
   
   coef_vWM <- abs(coef(m_vWM))
   R2_vWM <- summary(m_vWM)$r.squared
+  pvalues_vWM <- R2_vWM$coefficients[, "Pr(>|t|)"]
   
   coef_novWM <- abs(coef(m_novWM))
   R2_novWM <- summary(m_novWM)$r.squared
+  pvalues_novWM <- R2_novWM$coefficients[, "Pr(>|t|)"]
   
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
     R2_vWM = R2_vWM,
-    R2_novWM = R2_novWM
+    R2_vWM_relable = R2_vWM,
+    p_vWM = pvalues_vWM,
+    R2_novWM = R2_novWM,
+    p_novWM = pvalues_novWM
   )
   
   coef_vWM_rn <- coef_vWM
@@ -89,13 +94,27 @@ model_func <- function(current_data){
 
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e2
+  n_perm <- 1e3
   
   for (i_perm in 1:n_perm) {
     set.seed(10000 + i_perm)
     
+    # Permutation 1: permute word-trial mapping
+    current_data_perm_relable <- current_data_vWM %>%
+      group_by(subject, electrode) %>%
+      mutate(
+        perm_indices = sample(1:n()),
+        across(starts_with('aco') | starts_with('pho') | starts_with('word'), ~ .x[perm_indices]) #across(starts_with(feature), ~ .x[perm_indices])
+      ) %>%
+      ungroup() %>%
+      select(-perm_indices)
+    
+    m_vWM_perm_relable <- lm(fml, data = current_data_perm_relable,na.action = na.exclude)
+    coef_vWM_perm_relable <- abs(coef(m_vWM_perm_relable))
+    R2_vWM_perm_relable <- summary(coef_vWM_perm_relable)$r.squared
+    
+    # Permutation 2: permute delay and nodelay electrodes (balancing electrode numbers)
     current_data_base<-current_data
-
     current_data_vWM_base <- current_data_base[current_data_base$vWM == 1, ]
     current_data_novWM_base <- current_data_base[current_data_base$vWM == 0, ] 
     
@@ -159,16 +178,21 @@ model_func <- function(current_data){
     m_novWM_perm <- lm(fml, data = current_data_novWM_perm,na.action = na.exclude)
 
     coef_vWM_perm <- abs(coef(m_vWM_perm))
-    R2_vWM_perm <- summary(m_vWM_perm)$r.squared
+    R2_vWM_perm_vWM <- summary(m_vWM_perm)$r.squared
 
     coef_novWM_perm <- abs(coef(m_novWM_perm))
-    R2_novWM_perm <- summary(m_novWM_perm)$r.squared
+    R2_novWM_perm_vWM <- summary(m_novWM_perm)$r.squared
+    
+    # Store permutation data
     
     perm_compare_df_i_perm <- data.frame(
       perm = i_perm,
       time_point = tp,
-      R2_vWM = R2_vWM_perm,
-      R2_novWM = R2_novWM_perm
+      R2_vWM = R2_vWM_perm_vWM,
+      R2_vWM_relable = R2_vWM_perm_relable,
+      p_vWM = NA,
+      R2_novWM = R2_novWM_perm_vWM,
+      p_novWM = NA
     )
     
     coef_vWM_rn_perm <- coef_vWM_perm
