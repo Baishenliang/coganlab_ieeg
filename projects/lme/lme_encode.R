@@ -58,20 +58,22 @@ model_func <- function(current_data){
   
   coef_vWM <- abs(coef(m_vWM))
   R2_vWM <- summary(m_vWM)$r.squared
-  pvalues_vWM <- summary(m_vWM)$coefficients[, "Pr(>|t|)"]
+  fstat_vWM <- summary(m_vWM)$fstatistic
+  P_overall_vWM <- 1 - pf(fstat_vWM["value"], fstat_vWM["numdf"], fstat_vWM["dendf"])
   
   coef_novWM <- abs(coef(m_novWM))
   R2_novWM <- summary(m_novWM)$r.squared
-  pvalues_novWM <- summary(m_novWM)$coefficients[, "Pr(>|t|)"]
+  fstat_novWM <- summary(m_novWM)$fstatistic
+  P_overall_novWM <- 1 - pf(fstat_novWM["value"], fstat_novWM["numdf"], fstat_novWM["dendf"])
   
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
     R2_vWM = R2_vWM,
     R2_vWM_relable = R2_vWM,
-    p_vWM = pvalues_vWM,
+    p_vWM = P_overall_vWM,
     R2_novWM = R2_novWM,
-    p_novWM = pvalues_novWM
+    p_novWM = P_overall_novWM
   )
   
   coef_vWM_rn <- coef_vWM
@@ -110,8 +112,7 @@ model_func <- function(current_data){
       select(-perm_indices)
     
     m_vWM_perm_relable <- lm(fml, data = current_data_perm_relable,na.action = na.exclude)
-    coef_vWM_perm_relable <- abs(coef(m_vWM_perm_relable))
-    R2_vWM_perm_relable <- summary(coef_vWM_perm_relable)$r.squared
+    R2_vWM_perm_relable <- summary(m_vWM_perm_relable)$r.squared
     
     # Permutation 2: permute delay and nodelay electrodes (balancing electrode numbers)
     current_data_base<-current_data
