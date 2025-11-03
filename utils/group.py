@@ -1317,7 +1317,7 @@ def create_gradient(base_rgb, steps):
         b = base_rgb[2] + (target_rgb[2] - base_rgb[2]) * interp_factor
 
         # Append the new color to the list, rounding for cleaner output
-        gradient_colors.append((round(r, 4), round(g, 4), round(b, 4)))
+        gradient_colors.append([round(r, 4), round(g, 4), round(b, 4)])
 
     return gradient_colors
 
