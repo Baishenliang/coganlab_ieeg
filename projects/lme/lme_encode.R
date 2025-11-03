@@ -58,11 +58,11 @@ model_func <- function(current_data){
   
   coef_vWM <- abs(coef(m_vWM))
   R2_vWM <- summary(m_vWM)$r.squared
-  pvalues_vWM <- R2_vWM$coefficients[, "Pr(>|t|)"]
+  pvalues_vWM <- summary(m_vWM)$coefficients[, "Pr(>|t|)"]
   
   coef_novWM <- abs(coef(m_novWM))
   R2_novWM <- summary(m_novWM)$r.squared
-  pvalues_novWM <- R2_novWM$coefficients[, "Pr(>|t|)"]
+  pvalues_novWM <- summary(m_novWM)$coefficients[, "Pr(>|t|)"]
   
   perm_compare_df_i <- data.frame(
     perm = 0,
