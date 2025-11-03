@@ -844,10 +844,11 @@ if groupsTag == "LexDelay":
                     hickok_sub_idx_aud_onset = np.concatenate((np.arange(19,23), np.arange(24,27)))
                     hickok_sub_idx_aud_contin = np.concatenate((np.arange(18,19),np.arange(27,29), np.arange(30,34)))
 
-                    for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col in zip(
+                    for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col,wave_y_lim in zip(
                             (hickok_sub_idx_aud_mtr,hickok_sub_idx_aud_onset,hickok_sub_idx_aud_contin),
                             ('auditory motor','auditory onset','auditory continuous'),
-                            ([0,1,0],[1,165/255,0],[1,0,0])):
+                            ([0,1,0],[1,165/255,0],[1,0,0]),
+                            ([-0.4,3],[-0.4,4],[-0.4,7])):
 
                         Hickok_ROI_epoch_sort_sub = select_electrodes(Hickok_ROI_epoch_sort, hickok_sub_idx)
                         plot_chs(Hickok_ROI_epoch_sort_sub, os.path.join(fig_save_dir,
@@ -858,7 +859,7 @@ if groupsTag == "LexDelay":
                         plt.figure(figsize=wav_fig_size)
                         wav_bsl_corr = False
                         plot_wave(Hickok_ROI_epoch, Hickok_ROI_epoch_sort_idx[hickok_sub_idx], f'', hickok_sub_idx_col, '-', wav_bsl_corr,
-                                  ylim=[-0.4, 4], average_trace=False)
+                                  ylim=wave_y_lim, average_trace=False)
                         plt.axvline(x=0, linestyle='--', color='k')
                         plt.axhline(y=0, linestyle='--', color='gray')
                         plt.title(f'{tag} {hickok_sub_idx_tag}', fontsize=20)
@@ -869,6 +870,24 @@ if groupsTag == "LexDelay":
                         plt.tight_layout()
                         plt.savefig(os.path.join(fig_save_dir, f'Hickok_wave_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.tif'), dpi=300)
                         plt.close()
+
+                    # Brain plots of Spt clusters
+                    Hickok_roi_gp_arr = np.array(list(Hickok_roi_gp))
+                    Hickok_roi_gp_arr_sorted = Hickok_roi_gp_arr[list(Hickok_ROI_epoch_sort_idx)]
+                    Hickok_roi_gp_arr_sorted_aud_mtr = set(Hickok_roi_gp_arr_sorted[list(hickok_sub_idx_aud_mtr)])
+                    Hickok_roi_gp_arr_sorted_aud_onset = set(Hickok_roi_gp_arr_sorted[list(hickok_sub_idx_aud_onset)])
+                    Hickok_roi_gp_arr_sorted_aud_contin = set(Hickok_roi_gp_arr_sorted[list(hickok_sub_idx_aud_contin)])
+                    len_d = len(data_LexDelay_Aud.labels[0])
+                    TypeLabel = f'Hikock'
+                    cols = np.full((len_d, 3), 0.5)
+                    cols[list(Hickok_roi_gp_arr_sorted_aud_mtr), :] = create_gradient([0,1,0], len(Hickok_roi_gp_arr_sorted_aud_mtr) + 1)[:-1]
+                    cols[list(Hickok_roi_gp_arr_sorted_aud_onset), :] = create_gradient([1,165/255,0], len(Hickok_roi_gp_arr_sorted_aud_onset) + 1)[:-1]
+                    cols[list(Hickok_roi_gp_arr_sorted_aud_contin), :] = create_gradient([1,0,0], len(Hickok_roi_gp_arr_sorted_aud_contin) + 1)[:-1]
+                    cols_lst = cols[
+                        list(Hickok_roi_gp_arr_sorted_aud_mtr | Hickok_roi_gp_arr_sorted_aud_onset | Hickok_roi_gp_arr_sorted_aud_contin)].tolist()
+                    pick_labels = list(data_LexDelay_Aud.labels[0][list(Hickok_roi_gp_arr_sorted_aud_mtr | Hickok_roi_gp_arr_sorted_aud_onset | Hickok_roi_gp_arr_sorted_aud_contin)])
+                    plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'),
+                               0.3, 0.2)
 
                 # brain plot (sig vs. nonsig before onset)
                 cols = np.full((len_d, 3), 0.5)
