@@ -104,8 +104,11 @@ is_normalize=False
 mode='time_cluster'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
-for alignment in ('pho','resp'):
-    baselines = dict()
+baseline=dict()
+baseline_std=dict()
+for alignment,xlim_align in zip(
+        ('aud','go','resp'),
+        ([-0.2, 1.75],[-0.2, 1],[-0.2, 1])):
     for elec_grp,elec_col in zip(('Auditory','Sensorymotor','Motor'),
                                  (Auditory_col,Sensorimotor_col,Motor_col))  :
     # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
@@ -123,7 +126,7 @@ for alignment in ('pho','resp'):
         #                                          ([0.13, 0.001],[0.13, 0.001],[0.13, 0.001],[0.13, 0.001],[0.01, 0.001])):
         for fea, fea_tag, para_sig_barbar in zip(('R2',),
                                                  ('R2',),
-                                                 ([0.015, 0.001],)):
+                                                 ([0.012, 0.001],)):
         # for fea, fea_tag, para_sig_barbar in zip(('aco','pho'),
         #                                          ('Acoustic','Phonemic'),
         #                                          ([2, 0.1],[0.1, 0.03])):
@@ -137,10 +140,12 @@ for alignment in ('pho','resp'):
         #                                          ('Vowel', 'Consonant'),
         #                                          ([0.8, 0.03], [0.8, 0.03])):
 
-            fig, ax = plt.subplots(figsize=(15, 5))
+            fig, ax = plt.subplots(figsize=(6*(xlim_align[1]-xlim_align[0]), 5))
+
             ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
-            ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
-            ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
+            if alignment == 'aud':
+                ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
+                ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
 
             filename = f"results/{elec_grp}_{alignment}_All.csv"
             raw = pd.read_csv(filename)
@@ -162,16 +167,15 @@ for alignment in ('pho','resp'):
                 time_series=gaussian_filter1d(time_series, sigma=2, mode='nearest')
                 # win_len=10
                 # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
+                if alignment == 'aud':
+                    baseline[elec_grp] = np.min(time_series[(time_point > -0.2) & (time_point <= 0)])
+                    baseline_std[elec_grp]=np.std(time_series[(time_point > -0.2) & (time_point <= 0)])
                 if is_normalize:
-                    time_series = (time_series - np.min(time_series[(time_point > -0.2) & (time_point <= 0)]))# / (np.max(time_series) - np.min(time_series))
-                    time_series = (time_series - np.mean(time_series[time_point<=0])) / (np.max(time_series) - np.min(time_series[time_point<=0]))
+                    time_series = (time_series - baseline[elec_grp]) / baseline_std[elec_grp]
+                    time_series = time_series/ (np.max(time_series[(time_point > xlim_align[0]) & (time_point <= xlim_align[1])]) - np.min((time_point > xlim_align[0]) & (time_point <= xlim_align[1])))
                     para_sig_bar = [1,1e-1]
                 else:
-                    if alignment == 'pho':
-                        baselines[elec_grp] = np.min(time_series[(time_point > -0.2) & (time_point <= 0)])
-                    elif alignment == 'resp':
-                        baselines[elec_grp] = np.min(time_series[(time_point > -0.75) & (time_point <= 1.25)])
-                    time_series = (time_series - baselines[elec_grp])  # / (np.max(time_series) - np.min(time_series))
+                    time_series = (time_series - baseline[elec_grp])  # / (np.max(time_series) - np.min(time_series))
                     para_sig_bar = para_sig_barbar
 
                 ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
@@ -197,18 +201,18 @@ for alignment in ('pho','resp'):
                 j=j+1
 
             # ax.set_title(f"{fea_tag}", fontsize=24)
-            ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
-            if 'R2' in fea:
-                ax.set_ylabel("Model $R^2$ (normalized)")
-            else:
-                ax.set_ylabel("feature $β$")#, fontsize=20)
+            # ax.set_xlabel("Time (seconds) aligned to stim onset", fontsize=20)
+            # if 'R2' in fea:
+            #     ax.set_ylabel("Model $R^2$ (normalized)")
+            # else:
+            #     ax.set_ylabel("feature $β$")#, fontsize=20)
             ax.tick_params(axis='both', which='major')#, labelsize=16)
             ax.legend(fontsize=18)
-            ax.set_xlim(-0.2, 1.75)#time_point.max())
-            #ax.legend().set_visible(False)
+            ax.set_xlim(xlim_align)#time_point.max())
+            ax.legend().set_visible(False)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
-            ax.set_ylim(-0.005,para_sig_barbar[0]+2*para_sig_barbar[1])
+            ax.set_ylim(-0.005,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','b', f'{elec_grp}_{fea_tag}_{alignment}.tif'), dpi=300)
+            plt.savefig(os.path.join('figs', f'{elec_grp}_{fea_tag}_{alignment}.tif'), dpi=300)
             plt.close()
