@@ -40,49 +40,93 @@ model_func <- function(current_data){
     library(lme4)
     library(lmerTest)
     library(tidyverse)
+    library(glmnet)
   }else if (os_type == "Linux"){
     library(lme4, lib.loc = "~/lab/bl314/rlib")
     library(lmerTest, lib.loc = "~/lab/bl314/rlib")
     library(tidyverse, lib.loc = "~/lab/bl314/rlib")
   }
   
-  tp <- current_data$time[1]
+  # Ridge regression model
+  ridge_unified <- function(fml, current_data, alpha, lambda_val) {
+    
+    mf <- model.frame(fml, data = current_data, na.action = na.exclude)
+    X <- model.matrix(fml, data = mf)[, -1]
+    y <- model.response(mf)
+    
+    final_lambda <- NULL
+    
+    if (lambda_val <= 0) {
+      
+      lambda_seq <- 10^seq(4, -4, by = -.1) 
+      
+      ridge_cv <- cv.glmnet(
+        x = X, 
+        y = y, 
+        alpha = alpha,
+        lambda = lambda_seq,
+        nfolds = 10 
+      )
+      
+      final_lambda <- ridge_cv$lambda.min
+      
+      pred <- predict(object = ridge_cv, s = final_lambda, newx = X)
+      
+    } else {
+      
+      final_lambda <- lambda_val
+      
+      fit <- glmnet(
+        x = X, 
+        y = y, 
+        alpha = alpha,
+        lambda = final_lambda
+      )
+      
+      pred <- predict(object = fit, s = final_lambda, newx = X)
+    }
+    
+    actual <- y
+    rss <- sum((pred - actual) ^ 2)
+    tss <- sum((actual - mean(actual)) ^ 2)
+    rsq <- 1 - rss/tss
+    
+    result_list <- list(R2_Train = rsq)
+    
+    if (!is.null(final_lambda)) {
+      result_list$Lambda_Used <- final_lambda
+    }
+    
+    return(result_list)
+  }
   
+  tp <- current_data$time[1]
   fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
-
   current_data_vWM <- current_data[current_data$vWM == 1, ]
   current_data_novWM <- current_data[current_data$vWM == 0, ]
   
-  m_vWM <- lm(fml, data = current_data_vWM,na.action = na.exclude)
-  m_novWM <- lm(fml, data = current_data_novWM,na.action = na.exclude)
-  
-  coef_vWM <- abs(coef(m_vWM))
-  R2_vWM <- summary(m_vWM)$r.squared
-  fstat_vWM <- summary(m_vWM)$fstatistic
-  P_overall_vWM <- 1 - pf(fstat_vWM["value"], fstat_vWM["numdf"], fstat_vWM["dendf"])
-  
-  coef_novWM <- abs(coef(m_novWM))
-  R2_novWM <- summary(m_novWM)$r.squared
-  fstat_novWM <- summary(m_novWM)$fstatistic
-  P_overall_novWM <- 1 - pf(fstat_novWM["value"], fstat_novWM["numdf"], fstat_novWM["dendf"])
+  ridge_vWM<-ridge(fml, current_data_vWM, 0,-1)
+  ridge_novWM<-ridge(fml, current_data_novWM, 0,-1)
   
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
-    R2_vWM = R2_vWM,
-    R2_vWM_relable = R2_vWM,
-    p_vWM = P_overall_vWM,
-    R2_novWM = R2_novWM,
-    p_novWM = P_overall_novWM
+    R2_vWM = ridge_vWM$R2_Train,
+    lambda_vWM = ridge_vWM$Lambda_Min,
+    #R2_vWM_relable = R2_vWM,
+    #p_vWM = P_overall_vWM,
+    R2_novWM = ridge_novWM$R2_Train,
+    lambda_novWM = ridge_novWM$Lambda_Min
+    #p_novWM = P_overall_novWM
   )
   
-  coef_vWM_rn <- coef_vWM
-  names(coef_vWM_rn) <- paste0(names(coef_vWM_rn), 'vWM')
-  coef_vWM_rn <- as.data.frame(as.list(coef_vWM_rn))
-  coef_novWM_rn <- coef_novWM
-  names(coef_novWM_rn) <- paste0(names(coef_novWM_rn), 'novWM')
-  coef_novWM_rn <- as.data.frame(as.list(coef_novWM_rn))
-  perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
+  # coef_vWM_rn <- coef_vWM
+  # names(coef_vWM_rn) <- paste0(names(coef_vWM_rn), 'vWM')
+  # coef_vWM_rn <- as.data.frame(as.list(coef_vWM_rn))
+  # coef_novWM_rn <- coef_novWM
+  # names(coef_novWM_rn) <- paste0(names(coef_novWM_rn), 'novWM')
+  # coef_novWM_rn <- as.data.frame(as.list(coef_novWM_rn))
+  # perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
   # perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn)
   
   # se_vWM <- summary(m_vWM)$coefficients[, "Std. Error"]
@@ -93,135 +137,136 @@ model_func <- function(current_data){
   # Z_statistic <- diff_coef / sqrt(var_diff)
   # Z_statistic_df <- as.data.frame(as.list(Z_statistic))
   # perm_compare_df_i <- bind_cols(perm_compare_df_i, Z_statistic_df)
-
+  
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e3
+  n_perm <- 0#1e3
   
-  for (i_perm in 1:n_perm) {
-    set.seed(10000 + i_perm)
-    
-    # Permutation 1: permute word-trial mapping
-    current_data_perm_relable <- current_data_vWM %>%
-      group_by(subject, electrode) %>%
-      mutate(
-        perm_indices = sample(1:n()),
-        across(starts_with('aco') | starts_with('pho') | starts_with('word'), ~ .x[perm_indices]) #across(starts_with(feature), ~ .x[perm_indices])
-      ) %>%
-      ungroup() %>%
-      select(-perm_indices)
-    
-    m_vWM_perm_relable <- lm(fml, data = current_data_perm_relable,na.action = na.exclude)
-    R2_vWM_perm_relable <- summary(m_vWM_perm_relable)$r.squared
-    
-    # Permutation 2: permute delay and nodelay electrodes (balancing electrode numbers)
-    current_data_base<-current_data
-    current_data_vWM_base <- current_data_base[current_data_base$vWM == 1, ]
-    current_data_novWM_base <- current_data_base[current_data_base$vWM == 0, ] 
-    
-    n_vWM <- nrow(current_data_vWM_base)
-    n_novWM <- nrow(current_data_novWM_base)
-    
-    target_n <- n_vWM
-    
-    if (n_novWM < target_n) {
-      # 欠样本组 (vWM=0) 需要过采样 (Over-sampling)
-      # 目标：从 current_data_novWM_perm 中有放回地抽取 target_n 行。
-      # 抽取索引，replace = TRUE 启用有放回抽取
-      sample_indices <- sample(
-        x = 1:n_novWM, 
-        size = target_n, 
-        replace = TRUE
+  if (n_perm>0){
+    for (i_perm in 1:n_perm) {
+      set.seed(10000 + i_perm)
+      
+      # Permutation 1: permute word-trial mapping
+      current_data_perm_relable <- current_data_vWM %>%
+        group_by(subject, electrode) %>%
+        mutate(
+          perm_indices = sample(1:n()),
+          across(starts_with('aco') | starts_with('pho') | starts_with('word'), ~ .x[perm_indices]) #across(starts_with(feature), ~ .x[perm_indices])
+        ) %>%
+        ungroup() %>%
+        select(-perm_indices)
+      
+      m_vWM_perm_relable <- lm(fml, data = current_data_perm_relable,na.action = na.exclude)
+      R2_vWM_perm_relable <- summary(m_vWM_perm_relable)$r.squared
+      
+      # Permutation 2: permute delay and nodelay electrodes (balancing electrode numbers)
+      current_data_base<-current_data
+      current_data_vWM_base <- current_data_base[current_data_base$vWM == 1, ]
+      current_data_novWM_base <- current_data_base[current_data_base$vWM == 0, ] 
+      
+      n_vWM <- nrow(current_data_vWM_base)
+      n_novWM <- nrow(current_data_novWM_base)
+      
+      target_n <- n_vWM
+      
+      if (n_novWM < target_n) {
+        # 欠样本组 (vWM=0) 需要过采样 (Over-sampling)
+        # 目标：从 current_data_novWM_perm 中有放回地抽取 target_n 行。
+        # 抽取索引，replace = TRUE 启用有放回抽取
+        sample_indices <- sample(
+          x = 1:n_novWM, 
+          size = target_n, 
+          replace = TRUE
+        )
+        
+        # 基于抽取索引生成平衡后的 vWM=0 数据集
+        current_data_novWM_base <- current_data_novWM_base[sample_indices, ]
+        
+      } else if (n_novWM > target_n) {
+        # 过样本组 (vWM=0) 需要欠采样 (Under-sampling)
+        # 目标：从 current_data_novWM_perm 中无放回地抽取 target_n 行。
+        # 抽取索引，replace = FALSE 启用无放回抽取
+        sample_indices <- sample(
+          x = 1:n_novWM, 
+          size = target_n, 
+          replace = FALSE
+        )
+        
+        # 基于抽取索引生成平衡后的 vWM=0 数据集
+        current_data_novWM_base <- current_data_novWM_base[sample_indices, ]
+        
+      } else {
+        # 行数相等，直接赋值
+        current_data_novWM_base <- current_data_novWM_base
+      }
+      
+      current_data_base<-rbind(current_data_vWM_base,current_data_novWM_base)
+      
+      original_map <- current_data_base %>%
+        distinct(subject, electrode, vWM)
+      
+      vwm_list_to_shuffle <- original_map$vWM
+      shuffled_vwm <- sample(vwm_list_to_shuffle)
+      
+      permuted_vwm_map <- original_map %>%
+        mutate(vWM_permuted = shuffled_vwm) %>%
+        select(subject, electrode, vWM_permuted)
+      
+      current_data_perm <- current_data_base %>%
+        left_join(permuted_vwm_map, by = c("subject", "electrode"), relationship = "many-to-one") %>%
+        mutate(vWM = vWM_permuted) %>%
+        select(-vWM_permuted)
+      
+      current_data_vWM_perm <- current_data_perm[current_data_perm$vWM == 1, ]
+      current_data_novWM_perm <- current_data_perm[current_data_perm$vWM == 0, ] 
+      
+      m_vWM_perm <- lm(fml, data = current_data_vWM_perm,na.action = na.exclude)
+      m_novWM_perm <- lm(fml, data = current_data_novWM_perm,na.action = na.exclude)
+      
+      coef_vWM_perm <- abs(coef(m_vWM_perm))
+      R2_vWM_perm_vWM <- summary(m_vWM_perm)$r.squared
+      
+      coef_novWM_perm <- abs(coef(m_novWM_perm))
+      R2_novWM_perm_vWM <- summary(m_novWM_perm)$r.squared
+      
+      # Store permutation data
+      
+      perm_compare_df_i_perm <- data.frame(
+        perm = i_perm,
+        time_point = tp,
+        R2_vWM = R2_vWM_perm_vWM,
+        R2_vWM_relable = R2_vWM_perm_relable,
+        p_vWM = NA,
+        R2_novWM = R2_novWM_perm_vWM,
+        p_novWM = NA
       )
       
-      # 基于抽取索引生成平衡后的 vWM=0 数据集
-      current_data_novWM_base <- current_data_novWM_base[sample_indices, ]
-      
-    } else if (n_novWM > target_n) {
-      # 过样本组 (vWM=0) 需要欠采样 (Under-sampling)
-      # 目标：从 current_data_novWM_perm 中无放回地抽取 target_n 行。
-      # 抽取索引，replace = FALSE 启用无放回抽取
-      sample_indices <- sample(
-        x = 1:n_novWM, 
-        size = target_n, 
-        replace = FALSE
+      coef_vWM_rn_perm <- coef_vWM_perm
+      names(coef_vWM_rn_perm) <- paste0(names(coef_vWM_rn_perm), 'vWM')
+      coef_vWM_rn_perm <- as.data.frame(as.list(coef_vWM_rn_perm))
+      coef_novWM_rn_perm <- coef_novWM_perm
+      names(coef_novWM_rn_perm) <- paste0(names(coef_novWM_rn_perm), 'novWM')
+      coef_novWM_rn_perm <- as.data.frame(as.list(coef_novWM_rn_perm))
+      perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm,coef_novWM_rn_perm)
+      # perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm)
+      perm_compare_df_i <- rbind(
+        perm_compare_df_i,
+        perm_compare_df_i_perm
       )
       
-      # 基于抽取索引生成平衡后的 vWM=0 数据集
-      current_data_novWM_base <- current_data_novWM_base[sample_indices, ]
+      # se_vWM_perm <- summary(m_vWM_perm)$coefficients[, "Std. Error"]
+      # se_novWM_perm <- summary(m_novWM_perm)$coefficients[, "Std. Error"]
+      # diff_coef_perm <- coef_vWM_perm[non_intercept_names] - coef_novWM_perm[non_intercept_names]
+      # var_diff_perm <- se_vWM_perm[non_intercept_names]^2 + se_novWM_perm[non_intercept_names]^2
+      # Z_statistic_perm <- diff_coef_perm / sqrt(var_diff_perm)
+      # Z_statistic_df_perm <- as.data.frame(as.list(Z_statistic_perm))
+      # perm_compare_df_i <- rbind(
+      #   perm_compare_df_i,
+      #   bind_cols(perm_compare_df_i_perm, Z_statistic_df_perm)
+      # )
       
-    } else {
-      # 行数相等，直接赋值
-      current_data_novWM_base <- current_data_novWM_base
     }
-    
-    current_data_base<-rbind(current_data_vWM_base,current_data_novWM_base)
-    
-    original_map <- current_data_base %>%
-      distinct(subject, electrode, vWM)
-    
-    vwm_list_to_shuffle <- original_map$vWM
-    shuffled_vwm <- sample(vwm_list_to_shuffle)
-    
-    permuted_vwm_map <- original_map %>%
-      mutate(vWM_permuted = shuffled_vwm) %>%
-      select(subject, electrode, vWM_permuted)
-    
-    current_data_perm <- current_data_base %>%
-      left_join(permuted_vwm_map, by = c("subject", "electrode"), relationship = "many-to-one") %>%
-      mutate(vWM = vWM_permuted) %>%
-      select(-vWM_permuted)
-    
-    current_data_vWM_perm <- current_data_perm[current_data_perm$vWM == 1, ]
-    current_data_novWM_perm <- current_data_perm[current_data_perm$vWM == 0, ] 
-    
-    m_vWM_perm <- lm(fml, data = current_data_vWM_perm,na.action = na.exclude)
-    m_novWM_perm <- lm(fml, data = current_data_novWM_perm,na.action = na.exclude)
-
-    coef_vWM_perm <- abs(coef(m_vWM_perm))
-    R2_vWM_perm_vWM <- summary(m_vWM_perm)$r.squared
-
-    coef_novWM_perm <- abs(coef(m_novWM_perm))
-    R2_novWM_perm_vWM <- summary(m_novWM_perm)$r.squared
-    
-    # Store permutation data
-    
-    perm_compare_df_i_perm <- data.frame(
-      perm = i_perm,
-      time_point = tp,
-      R2_vWM = R2_vWM_perm_vWM,
-      R2_vWM_relable = R2_vWM_perm_relable,
-      p_vWM = NA,
-      R2_novWM = R2_novWM_perm_vWM,
-      p_novWM = NA
-    )
-    
-    coef_vWM_rn_perm <- coef_vWM_perm
-    names(coef_vWM_rn_perm) <- paste0(names(coef_vWM_rn_perm), 'vWM')
-    coef_vWM_rn_perm <- as.data.frame(as.list(coef_vWM_rn_perm))
-    coef_novWM_rn_perm <- coef_novWM_perm
-    names(coef_novWM_rn_perm) <- paste0(names(coef_novWM_rn_perm), 'novWM')
-    coef_novWM_rn_perm <- as.data.frame(as.list(coef_novWM_rn_perm))
-    perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm,coef_novWM_rn_perm)
-    # perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm)
-    perm_compare_df_i <- rbind(
-      perm_compare_df_i,
-      perm_compare_df_i_perm
-    )
-    
-    # se_vWM_perm <- summary(m_vWM_perm)$coefficients[, "Std. Error"]
-    # se_novWM_perm <- summary(m_novWM_perm)$coefficients[, "Std. Error"]
-    # diff_coef_perm <- coef_vWM_perm[non_intercept_names] - coef_novWM_perm[non_intercept_names]
-    # var_diff_perm <- se_vWM_perm[non_intercept_names]^2 + se_novWM_perm[non_intercept_names]^2
-    # Z_statistic_perm <- diff_coef_perm / sqrt(var_diff_perm)
-    # Z_statistic_df_perm <- as.data.frame(as.list(Z_statistic_perm))
-    # perm_compare_df_i <- rbind(
-    #   perm_compare_df_i,
-    #   bind_cols(perm_compare_df_i_perm, Z_statistic_df_perm)
-    # )
-    
   }
-
   return(perm_compare_df_i)
 }
 
@@ -232,8 +277,8 @@ a = 0
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
-                   "data/envelope_feature_dict_pca.csv",
-                   sep = "")
+                  "data/envelope_feature_dict_pca.csv",
+                  sep = "")
 aco_fea <- read.csv(aco_path,row.names = 1)
 aco_fea_T <- as.data.frame(t(aco_fea))
 aco_fea_T$stim <- rownames(aco_fea_T)
@@ -263,15 +308,15 @@ for (alignment in alignments){
     # slurm task selection
     # vwm electrodes
     file_path_long_vwm <- paste(home_dir,
-                       "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_long.csv",
-                       sep = "")
+                                "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_long.csv",
+                                sep = "")
     long_data_vwm <- read.csv(file_path_long_vwm)
     long_data_vwm$time <- as.numeric(long_data_vwm$time)
     
     # no vWM electrodes
     file_path_long_novwm <- paste(home_dir,
-                                "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_long.csv",
-                                sep = "")
+                                  "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_long.csv",
+                                  sep = "")
     long_data_novwm <- read.csv(file_path_long_novwm)
     long_data_novwm$time <- as.numeric(long_data_novwm$time)
     
@@ -288,7 +333,7 @@ for (alignment in alignments){
       mutate(
         stim = str_split_fixed(string = stim, pattern = "-", n = 2)[, 1]
       )
-
+    
     #%% append acoustic features
     long_data <- left_join(long_data,aco_fea_T,by='stim')
     
