@@ -113,8 +113,8 @@ mode='time_cluster'
 baseline=dict()
 baseline_std=dict()
 for alignment,xlim_align in zip(
-        ('aud',),#'go','resp'),
-        ([-0.2, 1.75],)):#[-0.2, 1],[-0.2, 1])):
+        ('Aud','Go','Resp'),
+        ([-0.2, 1.75],[-0.2, 1],[-0.2, 1])):
     for elec_grp,elec_col in zip(('Auditory','Sensorymotor','Motor'),
                                  (Auditory_col,Sensorimotor_col,Motor_col))  :
     # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
@@ -130,9 +130,9 @@ for alignment,xlim_align in zip(
         # for fea, fea_tag, para_sig_barbar in zip(('aco','pho','wordnessWord','pho_wordnessWord','R2'),
         #                                          ('Acoustic','Phonemic','LexStatus','pho_wordnessWord','R2'),
         #                                          ([0.13, 0.001],[0.13, 0.001],[0.13, 0.001],[0.13, 0.001],[0.01, 0.001])):
-        for fea, fea_tag, para_sig_barbar in zip(('R2',),
-                                                 ('R2',),
-                                                 ([0.011, 0.001],)):
+        for fea, fea_tag, para_sig_barbar in zip(('ACC',),
+                                                 ('ACC',),
+                                                 ([0.1, 0.01],)):
         # for fea, fea_tag, para_sig_barbar in zip(('aco','pho'),
         #                                          ('Acoustic','Phonemic'),
         #                                          ([2, 0.1],[0.1, 0.03])):
@@ -158,12 +158,12 @@ for alignment,xlim_align in zip(
 
             j = 0
             for vWM,vwm_linestyle,input,pthres,vwm_text,sig_bar_col in zip(
-                    ('vWM','novWM','diff'),
-                    ('-','--','-.'),
-                    ('R2','R2','R2'),
-                    ([5e-2,9e-1],[5e-2,9e-1],[5e-2,9e-1]),
-                    ('vWM','nvWM','diff'),
-                    (elec_col,elec_col,[0.5,0.5,0.5])):
+                    ('vWM_ACC','vWM_p','novWM_ACC','novWM_p'),
+                    ('-','-','--','--'),
+                    ('p','p','p','p'),
+                    ([5e-2,5e-2],[5e-2,1e-12],[5e-2,5e-2],[5e-2,1e-12]),
+                    ('ACC','p','ACC','p'),
+                    (elec_col,elec_col,elec_col,elec_col)):
                 if fea == 'aco':
                     target_fea = list(expand_sequence('aco',vWM,9))
                 elif fea == 'pho':
@@ -174,6 +174,8 @@ for alignment,xlim_align in zip(
                     target_fea = fea+vWM
                 elif fea == 'R2':
                     target_fea = fea+f'_{vWM}'
+                elif fea == 'ACC':
+                    target_fea = vWM
                 time_point, time_series, mask_time_clus = get_traces_clus(raw, pthres[0], pthres[1],mode=mode,target_fea=target_fea,input=input)
 
                 time_series=gaussian_filter1d(time_series, sigma=2, mode='nearest')
@@ -191,9 +193,10 @@ for alignment,xlim_align in zip(
                         time_series = (time_series - baseline[elec_grp])
                     para_sig_bar = para_sig_barbar
 
-                ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
+                if vWM=='vWM_ACC' or vWM=='novWM_ACC':
+                    ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
-                if true_indices.size > 0:
+                if true_indices.size > 0 and ('p' in vWM):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
@@ -206,7 +209,7 @@ for alignment,xlim_align in zip(
                         end_time = time_point[end_index] + time_step / 2
 
                         label = f'clust{k} of pho'
-                        if vWM == 'vWM' or  vWM == 'novWM' :
+                        if 'p' in vWM:
                             ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(j-1),para_sig_bar[0]-para_sig_bar[1]*(j-1)],
                                     color=sig_bar_col,alpha=0.4,
                                     linewidth=10,  # Make the line thick like a bar

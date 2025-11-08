@@ -99,6 +99,7 @@ model_func <- function(current_data){
     tss <- sum((actual - mean(actual)) ^ 2)
     rsq <- 1 - rss/tss
     n <- length(y)
+    mse_train <- rss / n
     p <- ncol(X)
     adj_rsq <- 1 - ((1 - rsq) * (n - 1) / (n - p - 1))
     
@@ -111,22 +112,99 @@ model_func <- function(current_data){
     return(result_list)
   }
   
+  ridge_cv_predict <- function(fml, current_data, alpha, lambda_val, k_folds = 10) {
+    
+    mf <- model.frame(fml, data = current_data, na.action = na.exclude)
+    X <- model.matrix(fml, data = mf)[, -1] 
+    y <- model.response(mf)                
+    n <- length(y)
+    
+    final_lambda <- NULL
+    if (lambda_val <= 0) {
+      lambda_seq <- 10^seq(4, -4, by = -.1) 
+      ridge_cv <- cv.glmnet(
+        x = X, 
+        y = y, 
+        alpha = alpha,
+        lambda = lambda_seq,
+        nfolds = 10 
+      )
+      final_lambda <- ridge_cv$lambda.min
+    } else {
+      final_lambda <- lambda_val
+    }
+    
+    fold_id <- sample(rep(1:k_folds, length.out = n))
+    pred_cv <- numeric(n) 
+    
+    for (i in 1:k_folds) {
+      train_idx <- which(fold_id != i)
+      test_idx <- which(fold_id == i)
+      
+      X_train <- X[train_idx, ]
+      y_train <- y[train_idx]
+      X_test <- X[test_idx, ]
+      
+      fit_fold <- glmnet(
+        x = X_train, 
+        y = y_train, 
+        alpha = alpha, 
+        lambda = final_lambda 
+      )
+      
+      pred_test <- predict(object = fit_fold, s = final_lambda, newx = X_test)
+      
+      pred_cv[test_idx] <- pred_test
+    }
+    
+    cor_result <- cor.test(pred_cv, y)
+    
+    rho <- cor_result$estimate
+    p_value <- cor_result$p.value
+    
+    result_list <- list(
+      Lambda_Used = final_lambda,
+      Correlation_Coefficient = as.numeric(rho),
+      P_Value = p_value
+    )
+    
+    return(result_list)
+  }
+  
   tp <- current_data$time[1]
   fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
   ridge_alpha <- 0
-  ridge_lambda <- 1e0
+  ridge_lambda <- -1
+  # lambda < 0: do CV and get optimal lambda
+  # lambda > 0 : do ridge with fixed lambda 
   current_data_vWM <- current_data[current_data$vWM == 1, ]
   current_data_novWM <- current_data[current_data$vWM == 0, ]
   
-  ridge_vWM<-ridge(fml, current_data_vWM, ridge_alpha,ridge_lambda)
-  ridge_novWM<-ridge(fml, current_data_novWM, ridge_alpha,ridge_lambda)
+  # regression version
+  # ridge_vWM<-ridge(fml, current_data_vWM, ridge_alpha,ridge_lambda)
+  # ridge_novWM<-ridge(fml, current_data_novWM, ridge_alpha,ridge_lambda)
+  # perm_compare_df_i <- data.frame(
+  #   perm = 0,
+  #   time_point = tp,
+  #   R2_vWM = ridge_vWM$R2_Train,
+  #   R2_novWM = ridge_novWM$R2_Train,
+  #   R2_diff = ridge_vWM$R2_Train-ridge_novWM$R2_Train
+  # )
+  # 
+  
+  # machine learning version
+  ridge_vWM<-ridge_cv_predict(fml, current_data_vWM, ridge_alpha,ridge_lambda)
+  ridge_novWM<-ridge_cv_predict(fml, current_data_novWM, ridge_alpha,ridge_lambda)
   
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
-    R2_vWM = ridge_vWM$R2_Train,
-    R2_novWM = ridge_novWM$R2_Train,
-    R2_diff = ridge_vWM$R2_Train-ridge_novWM$R2_Train
+    vWM_ACC = ridge_vWM$Correlation_Coefficient,
+    vWM_p = ridge_vWM$P_Value,
+    vWM_lambda = ridge_vWM$Lambda_Used,
+    novWM_ACC = ridge_novWM$Correlation_Coefficient,
+    novWM_p = ridge_novWM$P_Value,
+    novWM_lambda = ridge_novWM$Lambda_Used
   )
   
   # coef_vWM_rn <- ridge_vWM$Coefficients
@@ -138,18 +216,10 @@ model_func <- function(current_data){
   # perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
   # perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn)
   # 
-  # se_vWM <- summary(m_vWM)$coefficients[, "Std. Error"]
-  # se_novWM <- summary(m_novWM)$coefficients[, "Std. Error"]
-  # non_intercept_names <- names(coef_vWM)[names(coef_vWM) != '(Intercept)']
-  # diff_coef <- coef_vWM[non_intercept_names] - coef_novWM[non_intercept_names]
-  # var_diff <- se_vWM[non_intercept_names]^2 + se_novWM[non_intercept_names]^2
-  # Z_statistic <- diff_coef / sqrt(var_diff)
-  # Z_statistic_df <- as.data.frame(as.list(Z_statistic))
-  # perm_compare_df_i <- bind_cols(perm_compare_df_i, Z_statistic_df)
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e3#1e3
+  n_perm <- 0#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -284,17 +354,7 @@ model_func <- function(current_data){
         perm_compare_df_i,
         perm_compare_df_i_perm
       )
-      
-      # se_vWM_perm <- summary(m_vWM_perm)$coefficients[, "Std. Error"]
-      # se_novWM_perm <- summary(m_novWM_perm)$coefficients[, "Std. Error"]
-      # diff_coef_perm <- coef_vWM_perm[non_intercept_names] - coef_novWM_perm[non_intercept_names]
-      # var_diff_perm <- se_vWM_perm[non_intercept_names]^2 + se_novWM_perm[non_intercept_names]^2
-      # Z_statistic_perm <- diff_coef_perm / sqrt(var_diff_perm)
-      # Z_statistic_df_perm <- as.data.frame(as.list(Z_statistic_perm))
-      # perm_compare_df_i <- rbind(
-      #   perm_compare_df_i,
-      #   bind_cols(perm_compare_df_i_perm, Z_statistic_df_perm)
-      # )
+  
       
     }
   }
@@ -305,6 +365,16 @@ model_func <- function(current_data){
 alignments <- c("Aud","Go","Resp")
 elec_grps <- c('Auditory','Sensorymotor','Motor')
 a = 0
+ridge_lambda <- data.frame(
+  vWM = c(0.125892541179417,  # Auditory vWM
+          0.0158489319246111, # Sensorymotor vWM
+          0.158489319246111), # Motor vWM
+  
+  novWM = c(0.0158489319246111, # Auditory novWM
+            0.0794328234724281, # Sensorymotor novWM
+            0.0001)             # Motor novWM
+)
+rownames(ridge_lambda) <- c("Auditory", "Sensorymotor", "Motor")
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
@@ -379,6 +449,11 @@ for (alignment in alignments){
     #for (lex in c("Word","Nonword",'All')){
     lex<-'All'
     #%% Run computations
+    
+    #%% append ridge lambdas
+    word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
+    word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
+    
     
     cat("Re-formatting long data \n")
     data_by_time <- split(word_data, word_data$time)
