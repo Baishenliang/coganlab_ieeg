@@ -161,10 +161,13 @@ model_func <- function(current_data){
     
     rho <- cor_result$estimate
     p_value <- cor_result$p.value
-    
+    rho<-as.numeric(rho)
+    if (rho<0){
+      rhp=0
+    }
     result_list <- list(
       Lambda_Used = final_lambda,
-      Correlation_Coefficient = as.numeric(rho),
+      Correlation_Coefficient = rho,
       P_Value = p_value
     )
     
@@ -174,7 +177,8 @@ model_func <- function(current_data){
   tp <- current_data$time[1]
   fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
   ridge_alpha <- 0
-  ridge_lambda <- -1
+  ridge_lambda_vWM <- current_data$ridge_lambda_vWM[1]
+  ridge_lambda_novWM <- current_data$ridge_lambda_novWM[1]
   # lambda < 0: do CV and get optimal lambda
   # lambda > 0 : do ridge with fixed lambda 
   current_data_vWM <- current_data[current_data$vWM == 1, ]
@@ -193,18 +197,19 @@ model_func <- function(current_data){
   # 
   
   # machine learning version
-  ridge_vWM<-ridge_cv_predict(fml, current_data_vWM, ridge_alpha,ridge_lambda)
-  ridge_novWM<-ridge_cv_predict(fml, current_data_novWM, ridge_alpha,ridge_lambda)
+  ridge_vWM<-ridge_cv_predict(fml, current_data_vWM, ridge_alpha,ridge_lambda_vWM)
+  ridge_novWM<-ridge_cv_predict(fml, current_data_novWM, ridge_alpha,ridge_lambda_novWM)
   
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
-    vWM_ACC = ridge_vWM$Correlation_Coefficient,
-    vWM_p = ridge_vWM$P_Value,
+    ACC_vWM = ridge_vWM$Correlation_Coefficient,
+    ACC_vWM_p = ridge_vWM$P_Value,
     vWM_lambda = ridge_vWM$Lambda_Used,
-    novWM_ACC = ridge_novWM$Correlation_Coefficient,
-    novWM_p = ridge_novWM$P_Value,
-    novWM_lambda = ridge_novWM$Lambda_Used
+    ACC_novWM = ridge_novWM$Correlation_Coefficient,
+    ACC_novWM_p = ridge_novWM$P_Value,
+    novWM_lambda = ridge_novWM$Lambda_Used,
+    ACC_diff = ridge_vWM$Correlation_Coefficient - ridge_novWM$Correlation_Coefficient
   )
   
   # coef_vWM_rn <- ridge_vWM$Coefficients
@@ -219,13 +224,14 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 0#1e3
-  
+  n_perm <- 1e2#1e3
+
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
       set.seed(10000 + i_perm)
       
       # Permutation 1: permute word-trial mapping
+      
       relable_perm <- function(data) {
         
         data_perm_relabeled <- data %>%
@@ -246,9 +252,8 @@ model_func <- function(current_data){
       current_data_vWM_perm_relable <- relable_perm(current_data_vWM)
       current_data_novWM_perm_relable <- relable_perm(current_data_novWM)
       
-      ridge_vWM_relable_perm<-ridge(fml, current_data_vWM_perm_relable, ridge_alpha,ridge_lambda)
-      ridge_novWM_relable_perm<-ridge(fml, current_data_novWM_perm_relable, ridge_alpha,ridge_lambda)
-      
+      ridge_vWM_relable_perm<-ridge_cv_predict(fml, current_data_vWM_perm_relable, ridge_alpha,ridge_lambda_vWM)
+      ridge_novWM_relable_perm<-ridge_cv_predict(fml, current_data_novWM_perm_relable, ridge_alpha,ridge_lambda_novWM)
       
       # Permutation 2: permute delay and nodelay electrodes (balancing electrode numbers)
       sample_control_strategy<-'adjustR' # 'adjustSample'
@@ -307,8 +312,6 @@ model_func <- function(current_data){
         current_data_vWM_perm_shufflevWM <- current_data_perm_shufflevWM[current_data_perm_shufflevWM$vWM == 1, ]
         current_data_novWM_perm_shufflevWM <- current_data_perm_shufflevWM[current_data_perm_shufflevWM$vWM == 0, ] 
         
-        ridge_vWM_shufflevWM_perm<-ridge(fml, current_data_vWM_perm_shufflevWM, ridge_alpha,ridge_lambda)
-        ridge_novWM_shufflevWM_perm<-ridge(fml, current_data_novWM_perm_shufflevWM, ridge_alpha,ridge_lambda)
       }
       else if (sample_control_strategy=='adjustR'){
         original_map <- current_data %>%
@@ -329,17 +332,23 @@ model_func <- function(current_data){
         current_data_vWM_perm_shufflevWM <- current_data_perm_shufflevWM[current_data_perm_shufflevWM$vWM == 1, ]
         current_data_novWM_perm_shufflevWM <- current_data_perm_shufflevWM[current_data_perm_shufflevWM$vWM == 0, ] 
         
-        ridge_vWM_shufflevWM_perm<-ridge(fml, current_data_vWM_perm_shufflevWM, ridge_alpha,ridge_lambda)
-        ridge_novWM_shufflevWM_perm<-ridge(fml, current_data_novWM_perm_shufflevWM, ridge_alpha,ridge_lambda)
       }
+      
+      ridge_vWM_shufflevWM_perm<-ridge_cv_predict(fml, current_data_vWM_perm_shufflevWM, ridge_alpha,ridge_lambda_vWM)
+      ridge_novWM_shufflevWM_perm<-ridge_cv_predict(fml, current_data_novWM_perm_shufflevWM, ridge_alpha,ridge_lambda_novWM)
+      
       # Store permutation data
       
       perm_compare_df_i_perm <- data.frame(
         perm = i_perm,
         time_point = tp,
-        R2_vWM = ridge_vWM_relable_perm$R2_Train,
-        R2_novWM = ridge_novWM_relable_perm$R2_Train,
-        R2_diff =  ridge_vWM_shufflevWM_perm$R2_Train-ridge_novWM_shufflevWM_perm$R2_Train
+        ACC_vWM = ridge_vWM_relable_perm$Correlation_Coefficient,
+        ACC_vWM_p = ridge_vWM_relable_perm$P_Value,
+        vWM_lambda = ridge_vWM_relable_perm$Lambda_Used,
+        ACC_novWM = ridge_novWM_relable_perm$Correlation_Coefficient,
+        ACC_novWM_p = ridge_novWM_relable_perm$P_Value,
+        novWM_lambda = ridge_novWM_relable_perm$Lambda_Used,
+        ACC_diff = ridge_vWM_shufflevWM_perm$Correlation_Coefficient - ridge_novWM_shufflevWM_perm$Correlation_Coefficient
       )
       
       # coef_vWM_rn_perm <- coef_vWM_perm
