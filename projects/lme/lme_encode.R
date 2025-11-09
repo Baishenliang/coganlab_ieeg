@@ -179,6 +179,8 @@ model_func <- function(current_data){
   ridge_alpha <- 0
   ridge_lambda_vWM <- current_data$ridge_lambda_vWM[1]
   ridge_lambda_novWM <- current_data$ridge_lambda_novWM[1]
+  # ridge_lambda_vWM <- -1
+  # ridge_lambda_novWM <- -1
   # lambda < 0: do CV and get optimal lambda
   # lambda > 0 : do ridge with fixed lambda 
   current_data_vWM <- current_data[current_data$vWM == 1, ]
@@ -225,7 +227,7 @@ model_func <- function(current_data){
   # Permutation
   cat('Start perm \n')
   n_perm <- 4e2#1e3
-
+  
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
       set.seed(10000 + i_perm)
@@ -363,7 +365,7 @@ model_func <- function(current_data){
         perm_compare_df_i,
         perm_compare_df_i_perm
       )
-  
+      
       
     }
   }
@@ -372,18 +374,22 @@ model_func <- function(current_data){
 
 #%% Parameters
 alignments <- c("Aud","Go","Resp")
-elec_grps <- c('Auditory','Sensorymotor','Motor')
+# elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')
+elec_grps <- c('Delay_only')
+
 a = 0
 ridge_lambda <- data.frame(
   vWM = c(0.125892541179417,  # Auditory vWM
           0.0158489319246111, # Sensorymotor vWM
-          0.158489319246111), # Motor vWM
+          0.158489319246111, # Motor vWM
+          1.99526231496888), # Delay only vWM
   
   novWM = c(0.0158489319246111, # Auditory novWM
             0.0794328234724281, # Sensorymotor novWM
-            0.0001)             # Motor novWM
+            0.0001,# Motor novWM
+            0.0794328234724281)  # Delay only novWM (Sensorymotor novWM)       
 )
-rownames(ridge_lambda) <- c("Auditory", "Sensorymotor", "Motor")
+rownames(ridge_lambda) <- c("Auditory", "Sensorymotor", "Motor","Delay_only")
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
@@ -417,16 +423,28 @@ for (alignment in alignments){
     cat("loading files \n")
     # slurm task selection
     # vwm electrodes
-    file_path_long_vwm <- paste(home_dir,
-                                "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_long.csv",
-                                sep = "")
+    if (elec_grp=='Delay_only'){
+      file_path_long_vwm <- paste(home_dir,
+                                  "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_long.csv",
+                                  sep = "")
+    }else{
+      file_path_long_vwm <- paste(home_dir,
+                                  "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_long.csv",
+                                  sep = "")
+    }
     long_data_vwm <- read.csv(file_path_long_vwm)
     long_data_vwm$time <- as.numeric(long_data_vwm$time)
     
     # no vWM electrodes
-    file_path_long_novwm <- paste(home_dir,
-                                  "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_long.csv",
-                                  sep = "")
+    if (elec_grp=='Delay_only'){
+      file_path_long_novwm <- paste(home_dir,
+                                    "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_long.csv",
+                                    sep = "")
+    }else{
+      file_path_long_novwm <- paste(home_dir,
+                                    "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_long.csv",
+                                    sep = "")
+    }
     long_data_novwm <- read.csv(file_path_long_novwm)
     long_data_novwm$time <- as.numeric(long_data_novwm$time)
     
