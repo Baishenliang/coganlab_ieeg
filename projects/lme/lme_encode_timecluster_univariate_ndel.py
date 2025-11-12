@@ -31,6 +31,7 @@ LAB_root = os.path.join(HOME, "Box", "CoganLab")
 stats_root_delay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS', "derivatives", "stats")
 stats_root_nodelay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BIDS', "derivatives", "stats")
 trial_labels='CORRECT'
+do_time_cluster=False
 # with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "rb") as f:
 #     LexDelay_twin_idxes = pickle.load(f)
 data_LexNoDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_nodelay,stats_root_nodelay)
@@ -40,7 +41,7 @@ epoc_LexDelay_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_ro
 
 #%% Run time cluster
 
-font_scale=1.5
+font_scale=1.8
 plt.rcParams['font.size'] = 14*font_scale
 plt.rcParams['axes.titlesize'] = 16*font_scale
 plt.rcParams['axes.labelsize'] = 12*font_scale
@@ -48,7 +49,7 @@ plt.rcParams['xtick.labelsize'] = 12*font_scale
 plt.rcParams['ytick.labelsize'] = 12*font_scale
 plt.rcParams['legend.fontsize'] = 12*font_scale
 
-def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster'):
+def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_cluster',do_time_cluster:bool=True):
     # Load data
     # aud_delay_org = pd.read_csv('Aud_delay_org.csv')
     # aud_delay_perm = pd.read_csv('Aud_delay_perm.csv')
@@ -65,24 +66,27 @@ def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_
     # null_r2_i, 2-d time series of original glm values: n_perm*time
     r2_i=r2s_i[0,:]
     r2_i = np.expand_dims(r2_i, axis=0)
-    null_r2_i=r2s_i[1:,:]
+    if do_time_cluster:
+        null_r2_i=r2s_i[1:,:]
 
-    # Get original mask
-    org_p_i = glm.aaron_perm_gt_1d(r2s_i, axis=0)[0] # 1-d time series
-    mask_i_org = (org_p_i > (1 - alpha)).astype(int) # 1-d time series (binary)
+        # Get original mask
+        org_p_i = glm.aaron_perm_gt_1d(r2s_i, axis=0)[0] # 1-d time series
+        mask_i_org = (org_p_i > (1 - alpha)).astype(int) # 1-d time series (binary)
 
-    # Get null mask
-    null_p_i = glm.aaron_perm_gt_1d(null_r2_i, axis=0) # 2-d time series: n_perm*time
-    mask_null_i=(null_p_i>(1-alpha)).astype(int) # # 2-d time series: n_perm*time (binary)
+        # Get null mask
+        null_p_i = glm.aaron_perm_gt_1d(null_r2_i, axis=0) # 2-d time series: n_perm*time
+        mask_null_i=(null_p_i>(1-alpha)).astype(int) # # 2-d time series: n_perm*time (binary)
 
-    if mode == 'time_cluster':
-        # Time perm cluster
-        stat_out = time_cluster(mask_i_org, mask_null_i,1 - alpha_clus)
-    elif mode == 'fdr':
-        #fdr
-        stat_out, p_fdr, _, _ = multipletests(1-org_p_i, alpha=alpha_clus, method='fdr_bh')
+        if mode == 'time_cluster':
+            # Time perm cluster
+            stat_out = time_cluster(mask_i_org, mask_null_i,1 - alpha_clus)
+        elif mode == 'fdr':
+            #fdr
+            stat_out, p_fdr, _, _ = multipletests(1-org_p_i, alpha=alpha_clus, method='fdr_bh')
 
-    return time_point,r2_i[0],stat_out
+        return time_point,r2_i[0],stat_out
+    else:
+        return time_point,r2_i[0],r2_i[0]
 
 def get_subj_elec(filename,del_nodel_tag,elec_typ,pred_onset):
     prefix = f'results\\{del_nodel_tag}_{elec_typ}_'
@@ -93,7 +97,7 @@ def get_subj_elec(filename,del_nodel_tag,elec_typ,pred_onset):
 
 #%% Get data
 pred_onsets=('resp_onset','aud_onset')
-del_nodel_tags = ('epoc_LexNoDelay_Cue','epoc_LexDelay_Cue')#, 'epoc_LexDelay_Go')
+del_nodel_tags = ('epoc_LexDelay_Cue','epoc_LexNoDelay_Cue')#, 'epoc_LexDelay_Go')
 elec_typs = ('Sensorymotor_vWM', 'Motor_vWM', 'Auditory_vWM', 'Delay_only_vWM', 'Sensorymotor_novWM','Motor_novWM', 'Auditory_novWM')
 
 #%% Plotting
@@ -165,7 +169,7 @@ for pred_onset in pred_onsets:
                     ax.scatter(resp_onset_data_subj_elec, random_y_values, color='red', s=50, alpha=0.7)
 
                 # Plot predicting time series
-                time_point, time_series, mask_time_clus = get_traces_clus(raw, 5e-2, 5e-2,mode='time_cluster')
+                time_point, time_series, mask_time_clus = get_traces_clus(raw, 5e-2, 5e-2,mode='time_cluster',do_time_cluster=do_time_cluster)
                 time_series=gaussian_filter1d(time_series, sigma=1, mode='nearest')
 
                 if plot_elec_pic:
@@ -628,7 +632,7 @@ for pred_onset in pred_onsets:
             onset_pred_lags_data = [onset_pred_data[key] for key in ordered_keys]
             colors = [Sensorimotor_col,Sensorimotor_col, Auditory_col, Auditory_col, Motor_col,Motor_col, Delay_col]
 
-            fig, ax = plt.subplots(figsize=(8, 5))
+            fig, ax = plt.subplots(figsize=(8, 7))
             boxplot_parts = ax.boxplot(
                 onset_pred_lags_data,
                 tick_labels=new_tick_labels,
@@ -636,12 +640,16 @@ for pred_onset in pred_onsets:
                 patch_artist=True,
                 showmeans=True
             )
-
-
-            for patch, color in zip(boxplot_parts['boxes'], colors):
+            # --- Modification for "nonvWM" boxes (Indices 1, 3, 5) ---
+            novWM_indices = [1, 3, 5]
+            for i, (patch, color) in enumerate(zip(boxplot_parts['boxes'], colors)):
                 patch.set_facecolor(color)
                 patch.set_edgecolor('black')
                 patch.set_alpha(0.6)
+                # Apply hatch to 'novWM' boxes
+                if i in novWM_indices:
+                    patch.set_hatch('//')
+
             if onset_pred_tag=='peak_lag':
                 ax.axvline(0, color='gray', linestyle='-', linewidth=0.5)
                 ax.set_title('Peak')
@@ -650,8 +658,8 @@ for pred_onset in pred_onsets:
                 ax.set_yticklabels([])
                 ax.grid(False)
             else:
-                ax.set_title('$R^2$')
-                ax.set_ylabel('RMS within ±1.5s window')
+                ax.set_title('CC $R^2$ at motor onsets')
+                ax.set_ylabel('Power at ±1.5s')
                 ax.set_xlabel('Electrode group')
                 ax.set_xticklabels([])
                 plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
@@ -673,7 +681,7 @@ for pred_onset in pred_onsets:
                 'sem': sem_curve
             }
 
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(8, 7))
 
         colors = [Sensorimotor_col, Sensorimotor_col, Auditory_col,Auditory_col, Motor_col,Motor_col, Delay_col]
         ln_stls = ['-','--','-','--','-','--','-']
@@ -701,9 +709,9 @@ for pred_onset in pred_onsets:
 
         ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7, linewidth=1)
 
-        ax.set_title('Cross-correlation')
+        ax.set_title('CC $R^2$ traces')
         ax.set_xlabel('Lag aligned to speech onset (s)')
-        ax.set_ylabel('$R^2$ (mean ± SEM)')
+        ax.set_ylabel('$R^2$ mean ± SEM')
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         # ax.legend(loc='best')
@@ -719,6 +727,7 @@ for pred_onset in pred_onsets:
 
 #%% Correlation plots of delay vs. nodelay
 
+from matplotlib.ticker import MultipleLocator, ScalarFormatter
 def plot_crr_scat(x_data, y_data, pred_onset, elec_typ,data_tag):
 
     r_pearson, p_pearson = pearsonr(x_data, y_data)
@@ -728,16 +737,32 @@ def plot_crr_scat(x_data, y_data, pred_onset, elec_typ,data_tag):
     plt.figure(figsize=(7, 7))
     plt.plot(x_fit, y_fit, color='red', linewidth=2)
     plt.scatter(x_data, y_data, alpha=0.6, edgecolors='w', linewidths=0.5)
+    ax=plt.gca()
+
+    major_interval = 0.05
+    ax.xaxis.set_major_locator(MultipleLocator(major_interval))
+    ax.yaxis.set_major_locator(MultipleLocator(major_interval))
+
+    minor_interval = 0.01
+    ax.xaxis.set_minor_locator(MultipleLocator(minor_interval))
+    ax.yaxis.set_minor_locator(MultipleLocator(minor_interval))
+
+    formatter = ScalarFormatter(useMathText=True)
+    formatter.set_powerlimits((-3, 3))
+    ax.xaxis.set_major_formatter(formatter)
+    ax.yaxis.set_major_formatter(formatter)
     # min_val = min(x_data.min(), y_data.min())
     # max_val = max(x_data.max(), y_data.max())
     # plt.plot([min_val, max_val], [min_val, max_val], 'r--', alpha=0.5)
-    plt.title(
-        f'{elec_typ} Correlation ({pred_onset})\n'
-    )
-    plt.xlabel(f'Nodel')
-    plt.ylabel(f'Del')
+    # plt.title(
+    #     f'{elec_typ} ({pred_onset})\n'
+    # )
+    plt.xlabel(f'NoDelay')
+    plt.ylabel(f'Cross-correlation $R^2$ in Delay')
     plt.grid(True, linestyle='--', alpha=0.3)
     plt.gca().set_aspect('equal', adjustable='box')
+    plt.gca().set_box_aspect(1.3)
+    plt.tight_layout()
     plt.savefig(os.path.join('figs', f'corr_{elec_typ}_{pred_onset}_{data_tag}.tif'), dpi=100)
     plt.close()
 
@@ -747,6 +772,12 @@ for pred_onset,del_nodel_tag_noDel,del_nodel_tag_Del in zip(pred_onsets,
                                                                    ('epoc_LexNoDelay_Cue','epoc_LexNoDelay_Cue'),
                                                                    ('epoc_LexDelay_Cue', 'epoc_LexDelay_Cue')):
     for elec_typ in elec_typs:
+
+        # For testing only
+        # pred_onset=pred_onsets[0]
+        # del_nodel_tag_noDel='epoc_LexNoDelay_Cue'
+        # del_nodel_tag_Del='epoc_LexDelay_Cue'
+        # elec_typ=elec_typs[0]
 
         #!!!!!!!!!!!!!!!!! Just temporal adjustment, SHOULD CHECK why there are non-overlaps!
         nodel_subj_elecs_list = subj_elecs_list_all[pred_onset][del_nodel_tag_noDel][elec_typ]
