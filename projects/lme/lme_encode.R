@@ -380,25 +380,25 @@ elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')
 
 a = 0
 #Make fixed lambda (from cv or anything optimized)
-# ridge_lambda <- data.frame(
-#   vWM = c(0.125892541179417,  # Auditory vWM
-#           0.0158489319246111, # Sensorymotor vWM
-#           0.158489319246111, # Motor vWM
-#           1.99526231496888), # Delay only vWM
-#   
-#   novWM = c(0.0158489319246111, # Auditory novWM
-#             0.0794328234724281, # Sensorymotor novWM
-#             0.0001,# Motor novWM
-#             0.0794328234724281)  # Delay only novWM (Sensorymotor novWM)       
-# )
-# rownames(ridge_lambda) <- c("Auditory", "Sensorymotor", "Motor","Delay_only")
+ridge_lambda <- data.frame( # lambda adjusted according to electrode size
+  vWM = c(10,  # Auditory vWM
+          20, # Sensorymotor vWM
+          10, # Motor vWM
+          5), # Delay only vWM
+
+  novWM = c(10, # Auditory novWM
+            10, # Sensorymotor novWM
+            50,# Motor novWM
+            10)  # Delay only novWM (Sensorymotor novWM)
+)
+rownames(ridge_lambda) <- c("Auditory", "Sensorymotor", "Motor","Delay_only")
 
 #Make lambda combinations (for testing lambda effects by looping)
-powers <- seq(from = -2, to = 3, by = 1)
-S <- 10^powers
-print(S)
-all_pairs <- expand.grid(First_Number = S, Second_Number = S)
-num_pairs <- nrow(all_pairs)
+# powers <- seq(from = -2, to = 3, by = 1)
+# S <- 10^powers
+# print(S)
+# all_pairs <- expand.grid(First_Number = S, Second_Number = S)
+# num_pairs <- nrow(all_pairs)
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
@@ -419,7 +419,7 @@ pho_fea_T$stim <- rownames(pho_fea_T)
 pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
 #%% Start looping
-for (lambda_pair in 1:num_pairs){
+#for (lambda_pair in 1:num_pairs){
   for (alignment in alignments){
     for (elec_grp in elec_grps){
       a <- a + 1
@@ -487,12 +487,12 @@ for (lambda_pair in 1:num_pairs){
       #%% Run computations
       
       #%% append ridge lambdas
-      # word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
-      # word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
-      current_pair <- all_pairs[lambda_pair, ]
-      word_data$ridge_lambda_vWM <- current_pair$First_Number
-      word_data$ridge_lambda_novWM <- current_pair$Second_Number
-      
+      word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
+      word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
+      # current_pair <- all_pairs[lambda_pair, ]
+      # word_data$ridge_lambda_vWM <- current_pair$First_Number
+      # word_data$ridge_lambda_novWM <- current_pair$Second_Number
+      # 
       cat("Re-formatting long data \n")
       data_by_time <- split(word_data, word_data$time)
       rm(word_data)
@@ -512,8 +512,8 @@ for (lambda_pair in 1:num_pairs){
       
       print(perm_compare_df)
       
-      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",alignment,"_",lex,"_vWMλ_",current_pair$First_Number,"_novWMλ_",current_pair$Second_Number,".csv",sep = ''),row.names = FALSE)
+      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
       #}
     }
   }
-}
+#}
