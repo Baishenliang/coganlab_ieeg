@@ -1463,7 +1463,7 @@ def atlas2_hist(label2atlas_raw, chs_sel, col, fig_save_dir_fm, ylim: list=[0,25
 
     elif hist_or_pie=='pie':
         plt.figure()
-        visible_till=10
+        visible_till=6
         counts_f = counts[0:visible_till]
         counts_f.append(int(np.sum(counts[visible_till:])))
         labels_f = atlas_labels[0:visible_till]
@@ -1690,7 +1690,7 @@ def align_channel_data(subj_data, good_labeled_chs, org_labeled_chs, glm_out: st
 
     return aligned_data, aligned_chs
 
-def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normalize=False,ylim: list=[-0.5,3.5],average_trace:bool=True):
+def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr=None,errtype='se',normalize=False,ylim: list=[-0.5,3.5],average_trace:bool=True):
 
     import numpy as np
     import matplotlib.pyplot as plt
@@ -1731,8 +1731,10 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr,errtype='se',normaliz
             mean_waveform = rowwise_normalize(mean_waveform,0)
 
         # Baseline correction (should remove this)
-        if bsl_crr:
+        if bsl_crr==True:
             mean_waveform = mean_waveform - np.nanmin(mean_waveform[:51])
+        elif bsl_crr:
+            mean_waveform = mean_waveform - np.nanmin(mean_waveform[bsl_crr])
         if errtype == 'std':
             sem_waveform = np.nanstd(data_selected, axis=0)
         elif errtype == 'se':
