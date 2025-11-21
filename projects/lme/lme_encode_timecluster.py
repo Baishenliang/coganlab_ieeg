@@ -157,17 +157,17 @@ for alignment,xlim_align in zip(
                 ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
 
             #filename = f"results/{elec_grp}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.csv"
-            filename = f"results/{elec_grp}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_.csv"
+            filename = f"results/{elec_grp}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.csv"
             raw = pd.read_csv(filename)
 
             j = 0
             for vWM,vwm_linestyle,input,pthres,vwm_text,sig_bar_col in zip(
-                    ('vWM','vWM_p','novWM','novWM_p'),#,'diff'),
-                    ('-','-','--','--'),#,'--'),
-                    ('p','p','p','p'),#,'R2'),
-                    ([2.5e-2,1e-4],[2.5e-2,1e-4],[2.5e-2,1e-4],[2.5e-2,1e-4]),#,[5e-2,5e-1]),
-                    ('ACC','p','ACC','p'),#,'diff'),
-                    (elec_col,elec_col,elec_col,elec_col)):#,[0.5,0.5,0.5])):
+                    ('vWM','vWM_p','novWM','novWM_p','diff'),
+                    ('-','-','--','--','--'),
+                    ('R2','p','R2','p','R2'),
+                    ([2.5e-2,1e-2],[2.5e-2,1e-4],[2.5e-2,1e-2],[2.5e-2,1e-4],[5e-2,1e-1]),
+                    ('ACC','p','ACC','p','diff'),
+                    (elec_col,elec_col,elec_col,elec_col,[0.5,0.5,0.5])):
                 if fea == 'aco':
                     target_fea = list(expand_sequence('aco',vWM,9))
                 elif fea == 'pho':
@@ -195,10 +195,10 @@ for alignment,xlim_align in zip(
                         time_series = (time_series - baseline[elec_grp])
                     para_sig_bar = para_sig_barbar
 
-                if vWM=='vWM' or vWM=='novWM':
+                if vWM=='vWM':
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
-                if true_indices.size > 0 and (vWM == 'vWM_p' or vWM == 'diff' or vWM == 'novWM_p'):
+                if true_indices.size > 0 and (vWM == 'vWM' or vWM == 'diff'):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
