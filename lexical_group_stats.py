@@ -42,7 +42,8 @@ Sensorimotor_col = [1, 0, 0]  # Sensorimotor
 Auditory_col = [0, 1, 0]  # Auditory
 Delay_col = [1, 0.65, 0]  # Delay
 Motor_col = [0, 0, 1]  # Motor
-WGW_55b_col=[0.74901961, 0.25098039, 0.74901961] # WGW 55b
+WGW_p55b_col=[0.74901961, 0.25098039, 0.74901961] # WGW 55b
+WGW_a55b_col=[0, 0.5, 0.5] # WGW a55b
 Sensorimotor_Delay_col = Sensorimotor_col#[1, 0, 1]  # Sensorimotor-Delay
 Auditory_Delay_col = Auditory_col#[1, 1, 0]  # Auditory-Delay
 Delay_Motor_col = Motor_col#[0, 1, 1]  # Delay-Motor
@@ -321,14 +322,15 @@ Spt_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Spt']
 lPMC_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lPMC']
 lIPL_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL']
 lIFG_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG']
-Wgw_55b_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Wgw_55b']
-
+Wgw_p55b_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Wgw_p55b']
+Wgw_a55b_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Wgw_a55b']
 
 Lex_idxes['Hikock_Spt']=Spt_sig_idx
 Lex_idxes['Hikock_lPMC']=lPMC_sig_idx
 Lex_idxes['Hikock_lIPL']=lIPL_sig_idx
 Lex_idxes['Hikock_lIFG']=lIFG_sig_idx
-Lex_idxes['Wgw_55b']=Wgw_55b_sig_idx
+Lex_idxes['Wgw_p55b']=Wgw_p55b_sig_idx
+Lex_idxes['Wgw_a55b']=Wgw_a55b_sig_idx
 
 with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.npy'), "wb") as f:
     pickle.dump(Lex_idxes, f)
@@ -690,9 +692,10 @@ if groupsTag == "LexDelay":
     cols[list(lPMC_sig_idx), :] = Sensorimotor_col
     cols[list(lIPL_sig_idx), :] = Delay_col
     cols[list(lIFG_sig_idx), :] = Motor_col
-    cols[list(Wgw_55b_sig_idx),:] = WGW_55b_col
-    cols_lst = cols[list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_55b_sig_idx)].tolist()
-    pick_labels = list(data_LexDelay_Aud.labels[0][list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_55b_sig_idx)])
+    cols[list(Wgw_p55b_sig_idx),:] = Wgw_p55b_col
+    cols[list(Wgw_a55b_sig_idx),:] = Wgw_a55b_col
+    cols_lst = cols[list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_p55b_sig_idx | Wgw_a55b_sig_idx)].tolist()
+    pick_labels = list(data_LexDelay_Aud.labels[0][list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_p55b_sig_idx | Wgw_a55b_sig_idx)])
     plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.3, 0.2)
 
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
@@ -764,9 +767,9 @@ if groupsTag == "LexDelay":
     #             ('Spt', 'lPMC', 'lIFG')
     #     ):
     for Hickok_roi_gp, col, tag in zip(
-            (Spt_sig_idx, lPMC_sig_idx, lIFG_sig_idx,Wgw_55b_sig_idx),
-            (Auditory_col, Sensorimotor_col, Motor_col,WGW_55b_col),
-            ('Spt', 'lPMC (dPCSA)', 'lIFG (vPCSA)','posterior 55b')
+            (Spt_sig_idx, lPMC_sig_idx, lIFG_sig_idx,Wgw_p55b_sig_idx,Wgw_a55b_sig_idx),
+            (Auditory_col, Sensorimotor_col, Motor_col,Wgw_p55b_col,Wgw_a55b_col),
+            ('Spt', 'lPMC (dPCSA)', 'lIFG (vPCSA)','posterior 55b','anterior 55b')
     ):
 
         if Hickok_roi_gp:

@@ -1895,7 +1895,8 @@ def hickok_roi_sphere(df_coords,thres: float=15):
         'Spt': (-54, -40, 20),
         'lPMC': (-50, -4, 46),
         'lIPL': (-42, -50, 42),
-        'Wgw_55b': (-48, 4, 52),
+        'Wgw_p55b': (-48, 4, 52),
+        'Wgw_a55b':(-39, 8, 50)
     }
 
     hickok_roi_labels = {}
