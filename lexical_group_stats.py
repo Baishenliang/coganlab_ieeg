@@ -692,8 +692,8 @@ if groupsTag == "LexDelay":
     cols[list(lPMC_sig_idx), :] = Sensorimotor_col
     cols[list(lIPL_sig_idx), :] = Delay_col
     cols[list(lIFG_sig_idx), :] = Motor_col
-    cols[list(Wgw_p55b_sig_idx),:] = Wgw_p55b_col
-    cols[list(Wgw_a55b_sig_idx),:] = Wgw_a55b_col
+    cols[list(Wgw_p55b_sig_idx),:] = WGW_p55b_col
+    cols[list(Wgw_a55b_sig_idx),:] = WGW_a55b_col
     cols_lst = cols[list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_p55b_sig_idx | Wgw_a55b_sig_idx)].tolist()
     pick_labels = list(data_LexDelay_Aud.labels[0][list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_p55b_sig_idx | Wgw_a55b_sig_idx)])
     plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.3, 0.2)
@@ -766,13 +766,52 @@ if groupsTag == "LexDelay":
     #             (Auditory_col, Sensorimotor_col, Motor_col),
     #             ('Spt', 'lPMC', 'lIFG')
     #     ):
+    def Hickok_aud_resp_corr(x, y, fig_save_dir, tag, col, 
+                        xlabel='Onset response duration (s)', 
+                        ylabel='Self speech response magnitude (z-score)',
+                        fname = 'Hickok_aud_resp_corr'):
+        from scipy.stats import pearsonr
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import os
+
+        valid_mask = ~np.isnan(x) & ~np.isnan(y)
+        x_valid = x[valid_mask]
+        y_valid = y[valid_mask]
+
+        if len(x_valid) > 2:  # pearsonr 需要至少2个数据点
+            corr_coefficient, p_value = pearsonr(x_valid, y_valid)
+            df = len(x_valid) - 2  # 自由度
+            print(tag)
+            print(f"Pearson correlation: r({df}) = {corr_coefficient:.4f}, p = {p_value:.4f}")
+            
+            plt.figure(figsize=(8, 6))
+            # 使用传入的 col 参数为散点图上色
+            plt.scatter(x_valid, y_valid, alpha=0.6, label='Data points', color=col)
+            
+            m, b = np.polyfit(x_valid, y_valid, 1)
+            plt.plot(x_valid, m * x_valid + b, color='red', label='Line of best fit')
+            
+            plt.title(f'Correlation for {tag}', fontsize=20)
+            plt.xlabel(xlabel, fontsize=16)
+            plt.ylabel(ylabel, fontsize=16)
+            
+            ax = plt.gca()
+            ax.spines[['top', 'right']].set_visible(False)
+            
+            plt.savefig(os.path.join(fig_save_dir, f'{fname}_{tag}.jpg'), dpi=300)
+            plt.close()
+
     for Hickok_roi_gp, col, tag in zip(
             (Spt_sig_idx, lPMC_sig_idx, lIFG_sig_idx,Wgw_p55b_sig_idx,Wgw_a55b_sig_idx),
-            (Auditory_col, Sensorimotor_col, Motor_col,Wgw_p55b_col,Wgw_a55b_col),
+            (Auditory_col, Sensorimotor_col, Motor_col,WGW_p55b_col,WGW_a55b_col),
             ('Spt', 'lPMC (dPCSA)', 'lIFG (vPCSA)','posterior 55b','anterior 55b')
     ):
 
         if Hickok_roi_gp:
+
+            cluster_paras={}
+            cluster_paras_Spt={}
 
             for data_epoch,epoc_epoch,wav_fig_size,wav_x_lim,epoch_tag in zip(
                     (data_LexDelay_Resp,data_LexDelay_Cue,data_LexDelay_Aud,data_LexDelay_Go),
@@ -796,11 +835,13 @@ if groupsTag == "LexDelay":
                 Hickok_ROI_data = select_electrodes(data_epoch, Hickok_roi_gp)
                 Hickok_ROI_epoch = select_electrodes(epoc_epoch, Hickok_roi_gp)
                 if epoch_tag == 'Resp':
-                    _, _, Hickok_ROI_epoch_sort_idx, *_ = sort_chs_by_actonset(Hickok_ROI_data,
+                    _, _, Hickok_ROI_epoch_sort_idx, _,_,Hickok_ROI_epoch_sort_paras_tab = sort_chs_by_actonset(Hickok_ROI_data,
                                                                                Hickok_ROI_epoch,
                                                                                cluster_twin, [-1,wav_x_lim[1]],
                                                                                mask_data=True,
                                                                                select_electrodes=False)
+                    cluster_paras[epoch_tag] = Hickok_ROI_epoch_sort_paras_tab
+
                     Hickok_ROI_epoch_sort, *_ = sort_chs_by_actonset(Hickok_ROI_data,
                                                                      Hickok_ROI_epoch,
                                                                      cluster_twin, wav_x_lim,
@@ -808,18 +849,30 @@ if groupsTag == "LexDelay":
                                                                      mask_data=True,
                                                                      select_electrodes=False)
                 else:
+                    if epoch_tag == 'Stim':
+                        # Get parameters from Auditory responses
+                        _, _, _, _,_,Hickok_ROI_epoch_sort_paras_tab = sort_chs_by_actonset(Hickok_ROI_data,
+                                                                        Hickok_ROI_epoch,
+                                                                        cluster_twin, [0,1],
+                                                                        sorted_indices=Hickok_ROI_epoch_sort_idx,
+                                                                        mask_data=True,
+                                                                        select_electrodes=False)            
+                        cluster_paras[epoch_tag] = Hickok_ROI_epoch_sort_paras_tab
+
                     Hickok_ROI_epoch_sort, *_ = sort_chs_by_actonset(Hickok_ROI_data,
                                                                      Hickok_ROI_epoch,
                                                                      cluster_twin, wav_x_lim,
                                                                      sorted_indices=Hickok_ROI_epoch_sort_idx,
                                                                      mask_data=True,
                                                                      select_electrodes=False)
+                Hickok_ROI_data_sort = select_electrodes(Hickok_ROI_data, Hickok_ROI_epoch_sort_idx)
                 plot_chs(Hickok_ROI_epoch_sort, os.path.join(fig_save_dir,
                                                              f'Hickok_sig_alg_resp_{tag}_{epoch_tag}.jpg'),
                          f'{tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
                          fig_size=[4, 20 * (len(Hickok_roi_gp) / 250)])
 
 
+            # Correlation between auditory response duration and motor response magnitude
 
                 # wave
                 # Hickok_ROI_epoch_sort_unmask,*_ = sort_chs_by_actonset(Hickok_ROI_data,
@@ -853,7 +906,8 @@ if groupsTag == "LexDelay":
                             ('auditory motor','auditory onset','auditory continuous'),
                             ([0,1,0],[1,165/255,0],[1,0,0]),
                             ([-0.4,3],[-0.4,4],[-0.4,7])):
-
+                        
+                        Hickok_ROI_data_sort_sub = select_electrodes(Hickok_ROI_data_sort, hickok_sub_idx)
                         Hickok_ROI_epoch_sort_sub = select_electrodes(Hickok_ROI_epoch_sort, hickok_sub_idx)
                         plot_chs(Hickok_ROI_epoch_sort_sub, os.path.join(fig_save_dir,
                                                                      f'Hickok_sig_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.jpg'),
@@ -874,6 +928,24 @@ if groupsTag == "LexDelay":
                         plt.tight_layout()
                         plt.savefig(os.path.join(fig_save_dir, f'Hickok_wave_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.tif'), dpi=300)
                         plt.close()
+
+                        # Duration-resp correlation:
+                        if epoch_tag == 'Stim':
+                            Spt_wav_x_lim=[0,1]
+                        elif epoch_tag == 'Resp':
+                            Spt_wav_x_lim=[-1,1.5]
+                        
+                        if epoch_tag == 'Resp' or epoch_tag == 'Stim':
+                            _, _, _, _,_,Hickok_ROI_epoch_sort_paras_tab = sort_chs_by_actonset(Hickok_ROI_data_sort_sub,
+                                                                Hickok_ROI_epoch_sort_sub,
+                                                                cluster_twin, Spt_wav_x_lim,
+                                                                mask_data=True,
+                                                                sorted_indices=np.arange(len(hickok_sub_idx)),
+                                                                select_electrodes=False)
+                            
+                            if hickok_sub_idx_tag not in cluster_paras_Spt:
+                                cluster_paras_Spt[hickok_sub_idx_tag] = {}
+                            cluster_paras_Spt[hickok_sub_idx_tag][epoch_tag] = Hickok_ROI_epoch_sort_paras_tab
 
                     # Brain plots of Spt clusters
                     Hickok_roi_gp_arr = np.array(list(Hickok_roi_gp))
@@ -900,6 +972,16 @@ if groupsTag == "LexDelay":
                 cols_lst = cols[list(Hickok_roi_gp)].tolist()
                 pick_labels = list(data_LexDelay_Resp.labels[0][list(Hickok_roi_gp)])
                 plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain.tif'), 0.3, hemi='both')
+
+            x=cluster_paras['Stim']['activity_length']
+            y=cluster_paras['Resp']['rms_value']
+            Hickok_aud_resp_corr(x, y, fig_save_dir, tag, col, fname = 'Hickok_aud_resp_corr')
+
+            if tag == 'Spt':
+                for hickok_sub_idx_tag in ('auditory motor','auditory onset','auditory continuous'):
+                    x=cluster_paras_Spt[hickok_sub_idx_tag]['Stim']['activity_length']
+                    y=cluster_paras_Spt[hickok_sub_idx_tag]['Resp']['rms_value']
+                    Hickok_aud_resp_corr(x, y, fig_save_dir, f"{tag}_{hickok_sub_idx_tag}", col, fname = f'Hickok_aud_resp_corr_Spt_{hickok_sub_idx_tag}')
 
     # Count subj electrods in each Hickok region
     Spt_subj_elec = data_LexDelay_Aud.labels[0][list(Lex_idxes['Hikock_Spt'])]
