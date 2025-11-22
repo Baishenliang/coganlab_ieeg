@@ -1913,6 +1913,8 @@ def hickok_roi_sphere(df_coords,thres: float=15):
         for roi_name, peak_coord in activation_peaks.items():
             distance = euclidean(electrode_coord, peak_coord)
             if distance <= thres:
+                assigned_roi = roi_name
+                hickok_roi_sig_idx[assigned_roi].add(index)
                 # If multiple peaks are within the threshold, assign to the closest one
                 if distance < min_distance:
                     min_distance = distance
@@ -1921,7 +1923,6 @@ def hickok_roi_sphere(df_coords,thres: float=15):
         # Create a unique identifier for the electrode
         electrode_id = f"{subj}-{label}"
         hickok_roi_labels[electrode_id] = assigned_roi
-        hickok_roi_sig_idx[assigned_roi].add(index)
 
     return hickok_roi_labels, hickok_roi_sig_idx
 
