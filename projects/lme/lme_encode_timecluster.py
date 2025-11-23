@@ -17,6 +17,8 @@ if current_dir != script_dir:
 sys.path.append(os.path.abspath(os.path.join("..", "GLM")))
 import glm_utils as glm
 from scipy.ndimage import gaussian_filter1d,uniform_filter1d
+sys.path.append(os.path.abspath(os.path.join("..", "..")))
+import utils.group as gp
 
 #%% Run time cluster
 
@@ -33,6 +35,11 @@ Sensorimotor_col = [1, 0, 0]  # Sensorimotor
 Auditory_col = [0, 1, 0]  # Auditory
 Delay_col = [1, 0.65, 0]  # Delay
 Motor_col = [0, 0, 1]  # Motor
+
+# Feature colors
+aco_col = [0, 0.502, 0.502]      # Teal (青色)
+pho_col = [0.502, 0, 0.502]      # Purple (紫色)
+wordness_col = [1, 0, 1] # Magenta (洋红色)
 
 def expand_sequence(prefix: str, suffix: str, max_number: int) -> tuple:
     expanded_list = [f'{prefix}{i}{suffix}' for i in range(1, max_number + 1)]
@@ -106,20 +113,23 @@ def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 is_normalize=False
-is_bsl_correct=False
+is_bsl_correct=True
 mode='time_cluster'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 baseline=dict()
+baseline_beta_rms=dict()
 baseline_std=dict()
+baseline_beta_rms_std=dict()
 # test_lamndas=[1e-2,1e-1,'1','10','100','1000']
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
         ([-0.2, 1.75],[-0.2, 1],[-0.2, 1])):
-    for elec_grp,elec_col,vWM_lambda,novWM_lambda in zip(('Auditory','Sensorymotor','Motor','Delay_only'),
+    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),
                                                          (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
                                                          (10, 20, 10, 5),
-                                                         (10, 10, 50, 10)):
+                                                         (10, 10, 50, 10),
+                                                         (4,4,1,1.5)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
         # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
@@ -149,6 +159,17 @@ for alignment,xlim_align in zip(
             #                                          ('Vowel', 'Consonant'),
             #                                          ([0.8, 0.03], [0.8, 0.03])):
 
+            # For testing only:
+            # alignment='Aud'
+            # xlim_align=[-0.2, 1.75]
+            # elec_grp='Motor'
+            # elec_col=Motor_col
+            # vWM_lambda=10
+            # novWM_lambda=50
+            # fea='ACC'
+            # fea_tag='ACC'
+            # para_sig_barbar=[0.1,0.01]
+            
             fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
 
             ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
@@ -248,5 +269,122 @@ for alignment,xlim_align in zip(
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','multencode', f'{elec_grp}_{fea_tag}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=300)
+            # plt.savefig(os.path.join('figs','multencode', f'{elec_grp}_{fea_tag}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=300)
             plt.close()
+
+            # %%  Now plot the beta traces for each feature
+            
+            raw_org = raw[raw['perm'] == 0]
+            
+            all_rms_data = {}
+            time_points_plot = None
+                        # Define a color map for features for better visualization
+            feature_colors = {
+                'aco': aco_col,
+                'pho': pho_col,
+                'wordnessWord': wordness_col,
+                'wordnessWord:aco': aco_col,
+                'wordnessWord:pho': pho_col
+            }
+
+            for fea in ('aco','pho','wordnessWord','wordnessWord:aco','wordnessWord:pho'):
+                print(f'Feature beta plots for {fea}')
+                if ":" in fea:
+                    fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(fea)]
+                else:
+                    fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(fea) and ':' not in col]
+                raw_org_fea = raw[fea_columns].copy()
+
+                # Calculate the root-mean-square across all 'aco' columns
+                rms_cols = [col for col in fea_columns if col != 'time_point']
+                raw_org_fea['rms'] = np.sqrt(raw_org_fea[rms_cols].pow(2).mean(axis=1))
+                all_rms_data[fea] = raw_org_fea.groupby('time_point')['rms'].mean()
+
+                # Plotting the acoustic features from raw_org_aco
+                fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
+                ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
+                if alignment == 'Aud':
+                    ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
+                    ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
+
+                if time_points_plot is None:
+                    time_points_plot = sorted(raw_org_fea['time_point'].unique())
+
+                # Pivot the table to have time_point as index and features as columns
+                plot_cols = [col for col in fea_columns if col != 'time_point'] + ['rms']
+                raw_org_fea_plot = raw_org_fea.pivot_table(index='time_point', columns=None, values=plot_cols)
+
+                fea_cols=gp.create_gradient(feature_colors[fea], raw_org_fea_plot.shape[1])[:-1]
+                for i, col in enumerate(raw_org_fea_plot.columns):
+                    if col == 'rms':
+                        ax.plot(time_points_plot, raw_org_fea_plot[col], label='RMS', color='grey', linewidth=4, alpha=0.8)
+                    else:
+                        ax.plot(time_points_plot, raw_org_fea_plot[col], label=col,color=fea_cols[i-1])
+
+                # ax.set_xlabel("Time (secs)")
+                # ax.set_ylabel("β")
+                ax.tick_params(axis='both', which='major')#, labelsize=16)
+                ax.ticklabel_format(
+                    axis='y',
+                    style='sci',
+                    scilimits=(-2, -2),  # 将指数固定为 10^-3
+                    useMathText=True  # 使用 LaTeX 格式显示指数，如 10⁻³
+                )
+                ax.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
+                ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
+                # ax.legend(fontsize=18)
+                ax.set_xlim(xlim_align)#time_point.max())
+                ax.spines['top'].set_visible(False)
+                ax.spines['right'].set_visible(False)
+                ax.set_ylim(-1e-2*fea_plot_yscale,1e-2*fea_plot_yscale)
+                plt.tight_layout()
+                plt.savefig(os.path.join('figs', 'multencode', f'{elec_grp}_{alignment}_{fea.replace(":", "_")}_betas.tif'), dpi=100)
+                plt.close(fig)
+
+            # %% Plot all collected RMS traces
+            fig_rms, ax_rms = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
+            ax_rms.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
+            if alignment == 'Aud':
+                ax_rms.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
+                ax_rms.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
+
+            for fea, rms_series in all_rms_data.items():
+                # Normalize or baseline correction
+                if alignment == 'Aud':
+                    if elec_grp not in baseline_beta_rms: # Initialize inner dicts if they don't exist
+                        baseline_beta_rms[elec_grp] = {}
+                        baseline_beta_rms_std[elec_grp] = {}
+                    baseline_beta_rms[elec_grp][fea] = np.min(rms_series[(np.array(time_points_plot) > -0.2) & (np.array(time_points_plot) <= 0)])
+                    baseline_beta_rms_std[elec_grp][fea]=np.std(rms_series[(np.array(time_points_plot) > -0.2) & (np.array(time_points_plot) <= 0)])
+                if is_normalize:
+                    rms_series = (rms_series - baseline_beta_rms[elec_grp][fea]) / baseline_beta_rms_std[elec_grp][fea]
+                    rms_series = rms_series/ (np.max(rms_series[(np.array(time_points_plot) > xlim_align[0]) & (np.array(time_points_plot) <= xlim_align[1])]) - np.min((np.array(time_points_plot) > xlim_align[0]) & (np.array(time_points_plot) <= xlim_align[1])))
+                else:
+                    if is_bsl_correct:
+                        rms_series = (rms_series - baseline_beta_rms[elec_grp][fea])
+                rms_series=gaussian_filter1d(rms_series, sigma=2, mode='nearest')
+                # Use the defined color for the feature, or a default color if not specified
+                color = feature_colors.get(fea, '#333333')  # Default to a dark grey
+                # Use dashed lines for interaction terms
+                linestyle = '--' if ':' in fea else '-'
+                ax_rms.plot(time_points_plot, rms_series, label=fea, linewidth=3, color=color, linestyle=linestyle)
+
+            # ax_rms.set_xlabel("Time (secs)")
+            # ax_rms.set_ylabel("RMS of βs")
+            # ax_rms.set_title(f"Feature Set RMS ({elec_grp} - {alignment})")
+            ax_rms.tick_params(axis='both', which='major')
+            ax_rms.ticklabel_format(
+                axis='y',
+                style='sci',
+                scilimits=(-2, -2),
+                useMathText=True
+            )
+            ax_rms.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
+            ax_rms.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
+            # ax_rms.legend(fontsize=18)
+            ax_rms.set_xlim(xlim_align)
+            ax_rms.spines['top'].set_visible(False)
+            ax_rms.spines['right'].set_visible(False)
+            plt.tight_layout()
+            plt.savefig(os.path.join('figs', 'multencode', f'{elec_grp}_{alignment}_all_rms_betas.tif'), dpi=100)
+            plt.close(fig_rms)
