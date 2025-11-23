@@ -115,7 +115,7 @@ model_func <- function(current_data){
   ridge_cv_predict <- function(fml, current_data, alpha, lambda_val, k_folds = 10) {
     
     mf <- model.frame(fml, data = current_data, na.action = na.exclude)
-    X <- model.matrix(fml, data = mf)[, -1] 
+    X <- model.matrix(fml, data = mf)[, -1]  
     y <- model.response(mf)                
     n <- length(y)
     
@@ -127,7 +127,7 @@ model_func <- function(current_data){
         y = y, 
         alpha = alpha,
         lambda = lambda_seq,
-        nfolds = 10 
+        nfolds = k_folds  
       )
       final_lambda <- ridge_cv$lambda.min
     } else {
@@ -157,18 +157,29 @@ model_func <- function(current_data){
       pred_cv[test_idx] <- pred_test
     }
     
+    fit_final <- glmnet(
+      x = X, 
+      y = y, 
+      alpha = alpha, 
+      lambda = final_lambda 
+    )
+    
+    coefficients <- coef(fit_final, s = final_lambda)
+    
     cor_result <- cor.test(pred_cv, y)
     
     rho <- cor_result$estimate
     p_value <- cor_result$p.value
-    rho<-as.numeric(rho)
-    if (rho<0){
-      rhp=0
+    rho <- as.numeric(rho)
+    if (rho < 0){
+      rho = 0
     }
+    
     result_list <- list(
       Lambda_Used = final_lambda,
       Correlation_Coefficient = rho,
-      P_Value = p_value
+      P_Value = p_value,
+      Coefficients = coefficients
     )
     
     return(result_list)
@@ -214,16 +225,19 @@ model_func <- function(current_data){
     ACC_diff = ridge_vWM$Correlation_Coefficient - ridge_novWM$Correlation_Coefficient
   )
   
-  # coef_vWM_rn <- ridge_vWM$Coefficients
-  # names(coef_vWM_rn) <- paste0(names(coef_vWM_rn), 'vWM')
-  # coef_vWM_rn <- as.data.frame(as.list(coef_vWM_rn))
-  # coef_novWM_rn <- ridge_novWM$Coefficients
-  # names(coef_novWM_rn) <- paste0(names(coef_novWM_rn), 'novWM')
-  # coef_novWM_rn <- as.data.frame(as.list(coef_novWM_rn))
-  # perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
-  # perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn)
-  # 
+  coef_vWM_rn_sparse <- ridge_vWM$Coefficients
+  coef_vWM_vec <- as.numeric(coef_vWM_rn_sparse)
+  names(coef_vWM_vec) <- rownames(coef_vWM_rn_sparse)
+  names(coef_vWM_vec) <- paste0(names(coef_vWM_vec), '_vWM')
+  coef_vWM_rn <- as_tibble_row(coef_vWM_vec)
   
+  # coef_novWM_rn <- ridge_novWM$Coefficients
+  # names(coef_novWM_rn) <- paste0(names(coef_novWM_rn), '_novWM')
+  # coef_novWM_rn <- as.data.frame(as.list(coef_novWM_rn))
+  
+  # perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
+  perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn)
+
   # Permutation
   cat('Start perm \n')
   n_perm <- 3e2#1e3
@@ -353,14 +367,19 @@ model_func <- function(current_data){
         ACC_diff = ridge_vWM_shufflevWM_perm$Correlation_Coefficient - ridge_novWM_shufflevWM_perm$Correlation_Coefficient
       )
       
-      # coef_vWM_rn_perm <- coef_vWM_perm
-      # names(coef_vWM_rn_perm) <- paste0(names(coef_vWM_rn_perm), 'vWM')
-      # coef_vWM_rn_perm <- as.data.frame(as.list(coef_vWM_rn_perm))
-      # coef_novWM_rn_perm <- coef_novWM_perm
-      # names(coef_novWM_rn_perm) <- paste0(names(coef_novWM_rn_perm), 'novWM')
+      coef_vWM_rn_sparse <- ridge_vWM_relable_perm$Coefficients
+      coef_vWM_vec <- as.numeric(coef_vWM_rn_sparse)
+      names(coef_vWM_vec) <- rownames(coef_vWM_rn_sparse)
+      names(coef_vWM_vec) <- paste0(names(coef_vWM_vec), '_vWM')
+      coef_vWM_rn_perm <- as_tibble_row(coef_vWM_vec)
+      
+      # coef_novWM_rn_perm <- ridge_novWM_relable_perm$Coefficients
+      # names(coef_novWM_rn_perm) <- paste0(names(coef_novWM_rn_perm), '_novWM')
       # coef_novWM_rn_perm <- as.data.frame(as.list(coef_novWM_rn_perm))
+      
       # perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm,coef_novWM_rn_perm)
-      # # perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm)
+      perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm)
+      
       perm_compare_df_i <- rbind(
         perm_compare_df_i,
         perm_compare_df_i_perm
