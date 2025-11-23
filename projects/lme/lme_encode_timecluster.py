@@ -129,7 +129,7 @@ for alignment,xlim_align in zip(
                                                          (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
                                                          (10, 20, 10, 5),
                                                          (10, 10, 50, 10),
-                                                         (4,4,1,1.5)):
+                                                         (2.5,2.5,1,1.5)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
         # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
@@ -287,9 +287,10 @@ for alignment,xlim_align in zip(
                 'wordnessWord:pho': pho_col
             }
 
-            for fea in ('aco','pho','wordnessWord','wordnessWord:aco','wordnessWord:pho'):
+            for fea in ('aco','pho','wordnessWord'):#','wordnessWord:aco','wordnessWord:pho'):
                 print(f'Feature beta plots for {fea}')
-                if ":" in fea:
+                if fea=="wordnessWord":
+                    # add interaction terms to lex status
                     fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(fea)]
                 else:
                     fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(fea) and ':' not in col]
