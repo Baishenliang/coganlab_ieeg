@@ -812,6 +812,9 @@ if groupsTag == "LexDelay":
 
             cluster_paras={}
             cluster_paras_Spt={}
+            cluster_paras_lPMC={}
+            cluster_paras_lIFG={}
+
 
             for data_epoch,epoc_epoch,wav_fig_size,wav_x_lim,epoch_tag in zip(
                     (data_LexDelay_Resp,data_LexDelay_Cue,data_LexDelay_Aud,data_LexDelay_Go),
@@ -822,9 +825,9 @@ if groupsTag == "LexDelay":
             ):
 
                 # for testing:
-                # Hickok_roi_gp=Spt_sig_idx
-                # col=Auditory_col
-                # tag='Spt'
+                # Hickok_roi_gp=lIFG_sig_idx
+                # col=Motor_col
+                # tag='lIFG (vPCSA)'
                 # data_epoch=data_LexDelay_Resp
                 # epoc_epoch=epoc_LexDelay_Resp
                 # wav_fig_size=(Waveplot_wth, Waveplot_hgt)
@@ -897,9 +900,9 @@ if groupsTag == "LexDelay":
 
                 # For Spt only: wave plots for different categories of electrodes
                 if tag == 'Spt':
-                    hickok_sub_idx_aud_mtr=np.concatenate((np.arange(7),np.arange(9,13)))
-                    hickok_sub_idx_aud_onset = np.concatenate((np.arange(19,23), np.arange(24,27)))
-                    hickok_sub_idx_aud_contin = np.concatenate((np.arange(18,19),np.arange(27,29), np.arange(30,34)))
+                    hickok_sub_idx_aud_mtr=np.array([3,4,6,10,11,12,13,14,15])-1
+                    hickok_sub_idx_aud_onset = np.array([20,21,22,23,25,26,27])-1
+                    hickok_sub_idx_aud_contin = np.array([19,28,29,31,32,33,34])-1
 
                     for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col,wave_y_lim in zip(
                             (hickok_sub_idx_aud_mtr,hickok_sub_idx_aud_onset,hickok_sub_idx_aud_contin),
@@ -946,6 +949,107 @@ if groupsTag == "LexDelay":
                             if hickok_sub_idx_tag not in cluster_paras_Spt:
                                 cluster_paras_Spt[hickok_sub_idx_tag] = {}
                             cluster_paras_Spt[hickok_sub_idx_tag][epoch_tag] = Hickok_ROI_epoch_sort_paras_tab
+
+                elif tag == 'lPMC (dPCSA)':
+                    hickok_sub_idx_aud_onset = np.array([8,11,18,24,26,33,35])-1
+                    hickok_sub_idx_aud_contin = np.array([3,4,7,13,14,15,16,17,20,21,22,28,31])-1
+
+                    for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col,wave_y_lim in zip(
+                            (hickok_sub_idx_aud_onset,hickok_sub_idx_aud_contin),
+                            ('auditory onset','auditory continuous'),
+                            ([1,165/255,0],[1,0,0]),
+                            ([-0.4,3],[-0.4,3])):
+                        
+                        Hickok_ROI_data_sort_sub = select_electrodes(Hickok_ROI_data_sort, hickok_sub_idx)
+                        Hickok_ROI_epoch_sort_sub = select_electrodes(Hickok_ROI_epoch_sort, hickok_sub_idx)
+                        plot_chs(Hickok_ROI_epoch_sort_sub, os.path.join(fig_save_dir,
+                                                                     f'Hickok_sig_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.jpg'),
+                                 f'{tag} {hickok_sub_idx_tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
+                                 fig_size=[4, 20 * (len(Hickok_ROI_epoch_sort_sub) / 250)])
+
+                        plt.figure(figsize=wav_fig_size)
+                        wav_bsl_corr = False
+                        plot_wave(Hickok_ROI_epoch, Hickok_ROI_epoch_sort_idx[hickok_sub_idx], f'', hickok_sub_idx_col, '-', wav_bsl_corr,
+                                  ylim=wave_y_lim, average_trace=False)
+                        plt.axvline(x=0, linestyle='--', color='k')
+                        plt.axhline(y=0, linestyle='--', color='gray')
+                        plt.title(f'{tag} {hickok_sub_idx_tag}', fontsize=20)
+                        plt.tick_params(axis='both', labelsize=16)
+                        plt.xticks(rotation=45)
+                        plt.xlim(wav_x_lim)
+                        plt.gca().spines[['top', 'right']].set_visible(False)
+                        plt.tight_layout()
+                        plt.savefig(os.path.join(fig_save_dir, f'Hickok_wave_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.tif'), dpi=300)
+                        plt.close()
+
+                        # Duration-resp correlation:
+                        if epoch_tag == 'Stim':
+                            Spt_wav_x_lim=[0,1]
+                        elif epoch_tag == 'Resp':
+                            Spt_wav_x_lim=[-1,1.5]
+                        
+                        if epoch_tag == 'Resp' or epoch_tag == 'Stim':
+                            _, _, _, _,_,Hickok_ROI_epoch_sort_paras_tab = sort_chs_by_actonset(Hickok_ROI_data_sort_sub,
+                                                                Hickok_ROI_epoch_sort_sub,
+                                                                cluster_twin, Spt_wav_x_lim,
+                                                                mask_data=True,
+                                                                sorted_indices=np.arange(len(hickok_sub_idx)),
+                                                                select_electrodes=False)
+                            
+                            if hickok_sub_idx_tag not in cluster_paras_lPMC:
+                                cluster_paras_lPMC[hickok_sub_idx_tag] = {}
+                            cluster_paras_lPMC[hickok_sub_idx_tag][epoch_tag] = Hickok_ROI_epoch_sort_paras_tab
+                
+                elif tag == 'lIFG (vPCSA)':
+                    hickok_sub_idx_delay = np.array([5,8,17,18])-1
+                    hickok_sub_idx_articulation = np.array([3,6,13,14])-1
+                    hickok_sub_idx_both = np.array([2,4,9,10,11])-1
+
+                    for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col,wave_y_lim in zip(
+                            (hickok_sub_idx_delay,hickok_sub_idx_articulation,hickok_sub_idx_both),
+                            ('delay pre-articulation','articulation','both delay and articulation'),
+                            ([191/255,191/255,191/255],[0,0,0],[127/255,127/255,127/255]),
+                            ([-0.4,2],[-0.4,2],[-0.4,3])):
+                        
+                        Hickok_ROI_data_sort_sub = select_electrodes(Hickok_ROI_data_sort, hickok_sub_idx)
+                        Hickok_ROI_epoch_sort_sub = select_electrodes(Hickok_ROI_epoch_sort, hickok_sub_idx)
+                        plot_chs(Hickok_ROI_epoch_sort_sub, os.path.join(fig_save_dir,
+                                                                     f'Hickok_sig_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.jpg'),
+                                 f'{tag} {hickok_sub_idx_tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
+                                 fig_size=[4, 20 * (len(Hickok_ROI_epoch_sort_sub) / 250)])
+
+                        plt.figure(figsize=wav_fig_size)
+                        wav_bsl_corr = False
+                        plot_wave(Hickok_ROI_epoch, Hickok_ROI_epoch_sort_idx[hickok_sub_idx], f'', hickok_sub_idx_col, '-', wav_bsl_corr,
+                                  ylim=wave_y_lim, average_trace=False)
+                        plt.axvline(x=0, linestyle='--', color='k')
+                        plt.axhline(y=0, linestyle='--', color='gray')
+                        plt.title(f'{tag} {hickok_sub_idx_tag}', fontsize=20)
+                        plt.tick_params(axis='both', labelsize=16)
+                        plt.xticks(rotation=45)
+                        plt.xlim(wav_x_lim)
+                        plt.gca().spines[['top', 'right']].set_visible(False)
+                        plt.tight_layout()
+                        plt.savefig(os.path.join(fig_save_dir, f'Hickok_wave_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.tif'), dpi=300)
+                        plt.close()
+
+                        # Duration-resp correlation:
+                        if epoch_tag == 'Stim':
+                            Spt_wav_x_lim=[0,1]
+                        elif epoch_tag == 'Resp':
+                            Spt_wav_x_lim=[-1,1.5]
+                        
+                        if epoch_tag == 'Resp' or epoch_tag == 'Stim':
+                            _, _, _, _,_,Hickok_ROI_epoch_sort_paras_tab = sort_chs_by_actonset(Hickok_ROI_data_sort_sub,
+                                                                Hickok_ROI_epoch_sort_sub,
+                                                                cluster_twin, Spt_wav_x_lim,
+                                                                mask_data=True,
+                                                                sorted_indices=np.arange(len(hickok_sub_idx)),
+                                                                select_electrodes=False)
+                            
+                            if hickok_sub_idx_tag not in cluster_paras_lIFG:
+                                cluster_paras_lIFG[hickok_sub_idx_tag] = {}
+                            cluster_paras_lIFG[hickok_sub_idx_tag][epoch_tag] = Hickok_ROI_epoch_sort_paras_tab
 
                     # Brain plots of Spt clusters
                     Hickok_roi_gp_arr = np.array(list(Hickok_roi_gp))
