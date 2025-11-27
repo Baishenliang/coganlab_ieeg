@@ -187,3 +187,5 @@ sbatch sbatch_preproc.sh
 
 **6.** Synchronze the derivatives back to Box.  
 ![save files to box 3](materials/sync_derivatives_stats.png)  
+
+cool
