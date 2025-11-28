@@ -1,4 +1,4 @@
-# Set dir
+#%% Set dir
 import os
 import re
 import sys
@@ -129,7 +129,7 @@ for alignment,xlim_align in zip(
                                                          (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
                                                          (10, 20, 10, 5),
                                                          (10, 10, 50, 10),
-                                                         (2.5,2.5,1,1.5)):
+                                                         (3.5,1.6,1.3,1.3)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
         # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
@@ -162,10 +162,10 @@ for alignment,xlim_align in zip(
             # For testing only:
             # alignment='Aud'
             # xlim_align=[-0.2, 1.75]
-            # elec_grp='Motor'
-            # elec_col=Motor_col
+            # elec_grp='Auditory'
+            # elec_col=Auditory_col
             # vWM_lambda=10
-            # novWM_lambda=50
+            # novWM_lambda=10
             # fea='ACC'
             # fea_tag='ACC'
             # para_sig_barbar=[0.1,0.01]
@@ -273,10 +273,11 @@ for alignment,xlim_align in zip(
             plt.close()
 
             # %%  Now plot the beta traces for each feature
-            
+            group_beta_type='max' # 'rms' or 'max'
             raw_org = raw[raw['perm'] == 0]
             
             all_rms_data = {}
+            all_rms_data_sig = {}
             time_points_plot = None
                         # Define a color map for features for better visualization
             feature_colors = {
@@ -294,12 +295,31 @@ for alignment,xlim_align in zip(
                     fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(fea)]
                 else:
                     fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(fea) and ':' not in col]
-                raw_org_fea = raw[fea_columns].copy()
+                raw_org_fea = raw_org[fea_columns].copy()
 
                 # Calculate the root-mean-square across all 'aco' columns
                 rms_cols = [col for col in fea_columns if col != 'time_point']
-                raw_org_fea['rms'] = np.sqrt(raw_org_fea[rms_cols].pow(2).mean(axis=1))
+                if group_beta_type == 'rms':
+                    raw_org_fea['rms'] = np.sqrt(raw_org_fea[rms_cols].pow(2).mean(axis=1))
+                elif group_beta_type == 'max':
+                    max_abs_beta = raw_org_fea[rms_cols].abs().max(axis=1)
+                    n_cols = len(rms_cols)
+                    raw_org_fea['rms'] = max_abs_beta / np.sqrt(n_cols)
                 all_rms_data[fea] = raw_org_fea.groupby('time_point')['rms'].mean()
+                # Also for data with permutations
+                fea_columns_perm = ['perm']+fea_columns
+                raw_fea = raw[fea_columns_perm].copy()
+                if group_beta_type == 'rms':
+                    raw_fea['rms'] = np.sqrt(raw_fea[rms_cols].pow(2).mean(axis=1))
+                elif group_beta_type == 'max':
+                    max_abs_beta = raw_fea[rms_cols].abs().max(axis=1)
+                    n_cols = len(rms_cols)
+                    raw_fea['rms'] = max_abs_beta / np.sqrt(n_cols)
+                raw_fea = raw_fea[['perm', 'time_point', 'rms']]
+                pthres=[2.5e-2,2.5e-2]
+                time_point, time_series, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1],mode=mode,target_fea='rms',input='R2')
+                true_indices = np.where(mask_time_clus)[0]
+                all_rms_data_sig[fea] = true_indices
 
                 # Plotting the acoustic features from raw_org_aco
                 fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
@@ -349,6 +369,7 @@ for alignment,xlim_align in zip(
                 ax_rms.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
                 ax_rms.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
 
+            j=0
             for fea, rms_series in all_rms_data.items():
                 # Normalize or baseline correction
                 if alignment == 'Aud':
@@ -370,6 +391,26 @@ for alignment,xlim_align in zip(
                 linestyle = '--' if ':' in fea else '-'
                 ax_rms.plot(time_points_plot, rms_series, label=fea, linewidth=3, color=color, linestyle=linestyle)
 
+                true_indices = all_rms_data_sig[fea]
+                if true_indices.size > 0:
+                    split_points = np.where(np.diff(true_indices) != 1)[0] + 1
+                    clusters_indices = np.split(true_indices, split_points)
+
+                    for k, cluster in enumerate(clusters_indices):
+                        start_index = cluster[0]
+                        end_index = cluster[-1]
+
+                        time_step = time_points_plot[1] - time_points_plot[0]
+                        start_time = time_points_plot[start_index] - time_step / 2
+                        end_time = time_points_plot[end_index] + time_step / 2
+
+                        label = f'clust{k} of pho'
+                        ax_rms.plot([start_time, end_time], [1e-2*fea_plot_yscale-(1e-3)*(j-1),1e-2*fea_plot_yscale-(1e-3)*(j-1)],
+                                color=color,alpha=0.4,
+                                linewidth=5,  # Make the line thick like a bar
+                                solid_capstyle='butt')  # Makes the line ends flat
+                    j=j+1
+
             # ax_rms.set_xlabel("Time (secs)")
             # ax_rms.set_ylabel("RMS of βs")
             # ax_rms.set_title(f"Feature Set RMS ({elec_grp} - {alignment})")
@@ -389,3 +430,5 @@ for alignment,xlim_align in zip(
             plt.tight_layout()
             plt.savefig(os.path.join('figs', 'multencode', f'{elec_grp}_{alignment}_all_rms_betas.tif'), dpi=100)
             plt.close(fig_rms)
+
+# %%
