@@ -240,7 +240,7 @@ model_func <- function(current_data){
 
   # Permutation
   cat('Start perm \n')
-  n_perm <- 5e2#1e3
+  n_perm <- 3e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -392,10 +392,10 @@ model_func <- function(current_data){
 }
 
 #%% Parameters
-alignments <- c("Aud","Go","Resp")
-#alignments <- c("Aud")
-elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')
-#elec_grps <- c('Motor')
+# alignments <- c("Aud","Go","Resp")
+alignments <- c("Aud")
+# elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')
+elec_grps <- c('Motor')
 
 a = 0
 #Make fixed lambda (from cv or anything optimized)
