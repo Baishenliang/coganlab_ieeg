@@ -221,9 +221,7 @@ model_func <- function(current_data){
     vWM_lambda = ridge_vWM$Lambda_Used,
     ACC_novWM = ridge_novWM$Correlation_Coefficient,
     ACC_novWM_p = ridge_novWM$P_Value,
-    novWM_lambda = ridge_novWM$Lambda_Used,
-    ACC_diff = ridge_vWM$Correlation_Coefficient - ridge_novWM$Correlation_Coefficient
-  )
+    novWM_lambda = ridge_novWM$Lambda_Used)
   
   coef_vWM_rn_sparse <- ridge_vWM$Coefficients
   coef_vWM_vec <- as.numeric(coef_vWM_rn_sparse)
@@ -231,16 +229,17 @@ model_func <- function(current_data){
   names(coef_vWM_vec) <- paste0(names(coef_vWM_vec), '_vWM')
   coef_vWM_rn <- as_tibble_row(coef_vWM_vec)
   
-  # coef_novWM_rn <- ridge_novWM$Coefficients
-  # names(coef_novWM_rn) <- paste0(names(coef_novWM_rn), '_novWM')
-  # coef_novWM_rn <- as.data.frame(as.list(coef_novWM_rn))
+  coef_novWM_rn_sparse <- ridge_novWM$Coefficients
+  coef_novWM_vec <- as.numeric(coef_novWM_rn_sparse)
+  names(coef_novWM_vec) <- rownames(coef_novWM_rn_sparse)
+  names(coef_novWM_vec) <- paste0(names(coef_novWM_vec), '_novWM')
+  coef_novWM_rn <- as_tibble_row(coef_novWM_vec)
   
-  # perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
-  perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn)
-
+  perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
+  
   # Permutation
   cat('Start perm \n')
-  n_perm <- 3e2#1e3
+  n_perm <- 1e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -271,88 +270,6 @@ model_func <- function(current_data){
       ridge_vWM_relable_perm<-ridge_cv_predict(fml, current_data_vWM_perm_relable, ridge_alpha,ridge_lambda_vWM)
       ridge_novWM_relable_perm<-ridge_cv_predict(fml, current_data_novWM_perm_relable, ridge_alpha,ridge_lambda_novWM)
       
-      # Permutation 2: permute delay and nodelay electrodes (balancing electrode numbers)
-      sample_control_strategy<-'adjustR' # 'adjustSample'
-      
-      if (sample_control_strategy=='adjustSample'){
-        current_data_base<-current_data
-        current_data_vWM_base <- current_data_base[current_data_base$vWM == 1, ]
-        current_data_novWM_base <- current_data_base[current_data_base$vWM == 0, ] 
-        
-        n_vWM <- nrow(current_data_vWM_base)
-        n_novWM <- nrow(current_data_novWM_base)
-        
-        target_n <- n_vWM
-        
-        if (n_novWM < target_n) {
-          
-          sample_indices <- sample(
-            x = 1:n_novWM, 
-            size = target_n, 
-            replace = TRUE
-          )
-          
-          current_data_novWM_base <- current_data_novWM_base[sample_indices, ]
-          
-        } else if (n_novWM > target_n) {
-          
-          sample_indices <- sample(
-            x = 1:n_novWM, 
-            size = target_n, 
-            replace = FALSE
-          )
-          
-          current_data_novWM_base <- current_data_novWM_base[sample_indices, ]
-          
-        } else {
-          current_data_novWM_base <- current_data_novWM_base
-        }
-        
-        current_data_base<-rbind(current_data_vWM_base,current_data_novWM_base)
-        
-        original_map <- current_data_base %>%
-          distinct(subject, electrode, vWM)
-        
-        vwm_list_to_shuffle <- original_map$vWM
-        shuffled_vwm <- sample(vwm_list_to_shuffle)
-        
-        permuted_vwm_map <- original_map %>%
-          mutate(vWM_permuted = shuffled_vwm) %>%
-          select(subject, electrode, vWM_permuted)
-        
-        current_data_perm_shufflevWM <- current_data_base %>%
-          left_join(permuted_vwm_map, by = c("subject", "electrode"), relationship = "many-to-one") %>%
-          mutate(vWM = vWM_permuted) %>%
-          select(-vWM_permuted)
-        
-        current_data_vWM_perm_shufflevWM <- current_data_perm_shufflevWM[current_data_perm_shufflevWM$vWM == 1, ]
-        current_data_novWM_perm_shufflevWM <- current_data_perm_shufflevWM[current_data_perm_shufflevWM$vWM == 0, ] 
-        
-      }
-      else if (sample_control_strategy=='adjustR'){
-        original_map <- current_data %>%
-          distinct(subject, electrode, vWM)
-        
-        vwm_list_to_shuffle <- original_map$vWM
-        shuffled_vwm <- sample(vwm_list_to_shuffle)
-        
-        permuted_vwm_map <- original_map %>%
-          mutate(vWM_permuted = shuffled_vwm) %>%
-          select(subject, electrode, vWM_permuted)
-        
-        current_data_perm_shufflevWM <- current_data %>%
-          left_join(permuted_vwm_map, by = c("subject", "electrode"), relationship = "many-to-one") %>%
-          mutate(vWM = vWM_permuted) %>%
-          select(-vWM_permuted)
-        
-        current_data_vWM_perm_shufflevWM <- current_data_perm_shufflevWM[current_data_perm_shufflevWM$vWM == 1, ]
-        current_data_novWM_perm_shufflevWM <- current_data_perm_shufflevWM[current_data_perm_shufflevWM$vWM == 0, ] 
-        
-      }
-      
-      ridge_vWM_shufflevWM_perm<-ridge_cv_predict(fml, current_data_vWM_perm_shufflevWM, ridge_alpha,ridge_lambda_vWM)
-      ridge_novWM_shufflevWM_perm<-ridge_cv_predict(fml, current_data_novWM_perm_shufflevWM, ridge_alpha,ridge_lambda_novWM)
-      
       # Store permutation data
       
       perm_compare_df_i_perm <- data.frame(
@@ -363,9 +280,7 @@ model_func <- function(current_data){
         vWM_lambda = ridge_vWM_relable_perm$Lambda_Used,
         ACC_novWM = ridge_novWM_relable_perm$Correlation_Coefficient,
         ACC_novWM_p = ridge_novWM_relable_perm$P_Value,
-        novWM_lambda = ridge_novWM_relable_perm$Lambda_Used,
-        ACC_diff = ridge_vWM_shufflevWM_perm$Correlation_Coefficient - ridge_novWM_shufflevWM_perm$Correlation_Coefficient
-      )
+        novWM_lambda = ridge_novWM_relable_perm$Lambda_Used)
       
       coef_vWM_rn_sparse <- ridge_vWM_relable_perm$Coefficients
       coef_vWM_vec <- as.numeric(coef_vWM_rn_sparse)
@@ -373,12 +288,13 @@ model_func <- function(current_data){
       names(coef_vWM_vec) <- paste0(names(coef_vWM_vec), '_vWM')
       coef_vWM_rn_perm <- as_tibble_row(coef_vWM_vec)
       
-      # coef_novWM_rn_perm <- ridge_novWM_relable_perm$Coefficients
-      # names(coef_novWM_rn_perm) <- paste0(names(coef_novWM_rn_perm), '_novWM')
-      # coef_novWM_rn_perm <- as.data.frame(as.list(coef_novWM_rn_perm))
+      coef_novWM_rn_sparse <- ridge_novWM_relable_perm$Coefficients
+      coef_novWM_vec <- as.numeric(coef_novWM_rn_sparse)
+      names(coef_novWM_vec) <- rownames(coef_novWM_rn_sparse)
+      names(coef_novWM_vec) <- paste0(names(coef_novWM_vec), '_novWM')
+      coef_novWM_rn_perm <- as_tibble_row(coef_novWM_vec)
       
-      # perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm,coef_novWM_rn_perm)
-      perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm)
+      perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm,coef_novWM_rn_perm)
       
       perm_compare_df_i <- rbind(
         perm_compare_df_i,
@@ -392,10 +308,10 @@ model_func <- function(current_data){
 }
 
 #%% Parameters
-# alignments <- c("Aud","Go","Resp")
-alignments <- c("Aud")
-# elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')
-elec_grps <- c('Motor')
+alignments <- c("Aud","Go","Resp")
+# alignments <- c("Aud")
+elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')
+# elec_grps <- c('Motor')
 
 a = 0
 #Make fixed lambda (from cv or anything optimized)
@@ -404,7 +320,7 @@ ridge_lambda <- data.frame( # lambda adjusted according to electrode size
           20, # Sensorymotor vWM
           10, # Motor vWM
           5), # Delay only vWM
-
+  
   novWM = c(10, # Auditory novWM
             10, # Sensorymotor novWM
             50,# Motor novWM
@@ -439,100 +355,100 @@ pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
 #%% Start looping
 #for (lambda_pair in 1:num_pairs){
-  for (alignment in alignments){
-    for (elec_grp in elec_grps){
-      a <- a + 1
-      if (task_ID > 0 && a != task_ID) {
-        next
-      }
-      
-      
-      #%% Load files
-      cat("loading files \n")
-      # slurm task selection
-      # vwm electrodes
-      if (elec_grp=='Delay_only'){
-        file_path_long_vwm <- paste(home_dir,
-                                    "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_long.csv",
-                                    sep = "")
-      }else{
-        file_path_long_vwm <- paste(home_dir,
-                                    "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_long.csv",
-                                    sep = "")
-      }
-      long_data_vwm <- read.csv(file_path_long_vwm)
-      long_data_vwm$time <- as.numeric(long_data_vwm$time)
-      
-      # no vWM electrodes
-      if (elec_grp=='Delay_only'){
-        file_path_long_novwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_long.csv",
-                                      sep = "")
-      }else{
-        file_path_long_novwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_long.csv",
-                                      sep = "")
-      }
-      long_data_novwm <- read.csv(file_path_long_novwm)
-      long_data_novwm$time <- as.numeric(long_data_novwm$time)
-      
-      # Merge
-      data_vwm_labeled <- long_data_vwm %>%
-        mutate(vWM = 1)
-      data_novwm_labeled <- long_data_novwm %>%
-        mutate(vWM = 0)
-      long_data <- bind_rows(data_vwm_labeled, data_novwm_labeled)
-      
-      
-      #%% get only word part of the "stim"
-      long_data <- long_data %>%
-        mutate(
-          stim = str_split_fixed(string = stim, pattern = "-", n = 2)[, 1]
-        )
-      
-      #%% append acoustic features
-      long_data <- left_join(long_data,aco_fea_T,by='stim')
-      
-      #%% append vowel features
-      long_data <- left_join(long_data,pho_fea_T,by='stim')
-      
-      long_data$time <- as.numeric(long_data$time)
-      time_points <- unique(long_data$time)
-      word_data <- long_data
-      rm(long_data)
-      
-      #for (lex in c("Word","Nonword",'All')){
-      lex<-'All'
-      #%% Run computations
-      
-      #%% append ridge lambdas
-      word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
-      word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
-      # current_pair <- all_pairs[lambda_pair, ]
-      # word_data$ridge_lambda_vWM <- current_pair$First_Number
-      # word_data$ridge_lambda_novWM <- current_pair$Second_Number
-      # 
-      cat("Re-formatting long data \n")
-      data_by_time <- split(word_data, word_data$time)
-      rm(word_data)
-      
-      cat("Starting modeling \n")
-      #%% Get core environment
-      cl <- makeCluster(num_cores)
-      registerDoParallel(cl)
-      clusterExport(cl, varlist = c("model_func"))
-      # Fot Duke HPC sbatch:
-      # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
-      # 13 tasks can be paralled at once.
-      perm_compare_df<-parLapply(cl, data_by_time, model_func)
-      stopCluster(cl)
-      perm_compare_df <- do.call(rbind, perm_compare_df)
-      perm_compare_df <- perm_compare_df %>% arrange(time_point)
-      
-      print(perm_compare_df)
-      
-      write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
-      #}
+for (alignment in alignments){
+  for (elec_grp in elec_grps){
+    a <- a + 1
+    if (task_ID > 0 && a != task_ID) {
+      next
     }
+    
+    
+    #%% Load files
+    cat("loading files \n")
+    # slurm task selection
+    # vwm electrodes
+    if (elec_grp=='Delay_only'){
+      file_path_long_vwm <- paste(home_dir,
+                                  "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_long.csv",
+                                  sep = "")
+    }else{
+      file_path_long_vwm <- paste(home_dir,
+                                  "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_long.csv",
+                                  sep = "")
+    }
+    long_data_vwm <- read.csv(file_path_long_vwm)
+    long_data_vwm$time <- as.numeric(long_data_vwm$time)
+    
+    # no vWM electrodes
+    if (elec_grp=='Delay_only'){
+      file_path_long_novwm <- paste(home_dir,
+                                    "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_long.csv",
+                                    sep = "")
+    }else{
+      file_path_long_novwm <- paste(home_dir,
+                                    "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_long.csv",
+                                    sep = "")
+    }
+    long_data_novwm <- read.csv(file_path_long_novwm)
+    long_data_novwm$time <- as.numeric(long_data_novwm$time)
+    
+    # Merge
+    data_vwm_labeled <- long_data_vwm %>%
+      mutate(vWM = 1)
+    data_novwm_labeled <- long_data_novwm %>%
+      mutate(vWM = 0)
+    long_data <- bind_rows(data_vwm_labeled, data_novwm_labeled)
+    
+    
+    #%% get only word part of the "stim"
+    long_data <- long_data %>%
+      mutate(
+        stim = str_split_fixed(string = stim, pattern = "-", n = 2)[, 1]
+      )
+    
+    #%% append acoustic features
+    long_data <- left_join(long_data,aco_fea_T,by='stim')
+    
+    #%% append vowel features
+    long_data <- left_join(long_data,pho_fea_T,by='stim')
+    
+    long_data$time <- as.numeric(long_data$time)
+    time_points <- unique(long_data$time)
+    word_data <- long_data
+    rm(long_data)
+    
+    #for (lex in c("Word","Nonword",'All')){
+    lex<-'All'
+    #%% Run computations
+    
+    #%% append ridge lambdas
+    word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
+    word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
+    # current_pair <- all_pairs[lambda_pair, ]
+    # word_data$ridge_lambda_vWM <- current_pair$First_Number
+    # word_data$ridge_lambda_novWM <- current_pair$Second_Number
+    # 
+    cat("Re-formatting long data \n")
+    data_by_time <- split(word_data, word_data$time)
+    rm(word_data)
+    
+    cat("Starting modeling \n")
+    #%% Get core environment
+    cl <- makeCluster(num_cores)
+    registerDoParallel(cl)
+    clusterExport(cl, varlist = c("model_func"))
+    # Fot Duke HPC sbatch:
+    # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
+    # 13 tasks can be paralled at once.
+    perm_compare_df<-parLapply(cl, data_by_time, model_func)
+    stopCluster(cl)
+    perm_compare_df <- do.call(rbind, perm_compare_df)
+    perm_compare_df <- perm_compare_df %>% arrange(time_point)
+    
+    print(perm_compare_df)
+    
+    write.csv(perm_compare_df,paste(home_dir,"results/",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
+    #}
   }
+}
 #}
