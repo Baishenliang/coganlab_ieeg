@@ -41,8 +41,8 @@ def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
 
 # %% groups of patients
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
-groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -131,7 +131,7 @@ def rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag):
             del m
             m = epoc_dict
 
-        gp.win_to_Rdataframe(m, os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'), win_len=0, append_pho=False,
+        gp.win_to_Rdataframe(m, os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'), win_len=10, append_pho=False,
                              NoDelay_append_startings=NoDelay_append_startings)  # 100s for phoneme responses
 
 loaded_data={}
