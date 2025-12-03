@@ -239,7 +239,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 5e2#1e3
+  n_perm <- 3e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -311,7 +311,7 @@ model_func <- function(current_data){
 delay_nodelays <- c("LexDelayRep")#c("LexDelayRep","LexNoDelay")
 alignments <- c("Aud","Go","Resp")
 # alignments <- c("Aud")
-elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')
+elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b')
 # elec_grps <- c('Motor')
 
 a = 0
@@ -320,14 +320,18 @@ ridge_lambda <- data.frame( # lambda adjusted according to electrode size
   vWM = c(10,  # Auditory vWM
           20, # Sensorymotor vWM
           10, # Motor vWM
-          5), # Delay only vWM
+          5, # Delay only vWM
+          1,# Wgw_p55b
+          1),# Wgw_a55b
   
   novWM = c(10, # Auditory novWM
             10, # Sensorymotor novWM
             50,# Motor novWM
-            10)  # Delay only novWM (Sensorymotor novWM)
+            10,  # Delay only novWM (Sensorymotor novWM)
+            1,  # Wgw_p55b
+            1), # Wgw_a55b
 )
-rownames(ridge_lambda) <- c("Auditory", "Sensorymotor", "Motor","Delay_only")
+rownames(ridge_lambda) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')
 
 #Make lambda combinations (for testing lambda effects by looping)
 # powers <- seq(from = -2, to = 3, by = 1)
@@ -378,7 +382,7 @@ for (delay_nodelay in delay_nodelays){
       cat("loading files \n")
       # slurm task selection
       # vwm electrodes
-      if (elec_grp=='Delay_only'){
+      if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b'){
         file_path_long_vwm <- paste(home_dir,
                                     "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_long.csv",
                                     sep = "")
@@ -391,7 +395,7 @@ for (delay_nodelay in delay_nodelays){
       long_data_vwm$time <- as.numeric(long_data_vwm$time)
       
       # no vWM electrodes
-      if (elec_grp=='Delay_only'){
+      if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b'){
         file_path_long_novwm <- paste(home_dir,
                                       "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_long.csv",
                                       sep = "")
@@ -409,7 +413,6 @@ for (delay_nodelay in delay_nodelays){
       data_novwm_labeled <- long_data_novwm %>%
         mutate(vWM = 0)
       long_data <- bind_rows(data_vwm_labeled, data_novwm_labeled)
-      
       
       #%% get only word part of the "stim"
       long_data <- long_data %>%

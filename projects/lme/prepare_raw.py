@@ -107,7 +107,7 @@ if groupsTag=="LexDelay&LexNoDelay":
     NoDelay_append_startings=True
 
 # %% Select electrodes
-def rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag):
+def rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag, win_len:int=10):
     t_range = [-0.5, 6]
     for elec_grp, elec_idx in zip(elec_grps, elec_idxs):
         print(f'Now Doing {elec_grp}')
@@ -131,19 +131,19 @@ def rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag):
             del m
             m = epoc_dict
 
-        gp.win_to_Rdataframe(m, os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'), win_len=10, append_pho=False,
+        gp.win_to_Rdataframe(m, os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'), win_len=win_len, append_pho=False,
                              NoDelay_append_startings=NoDelay_append_startings)  # 100s for phoneme responses
 
 loaded_data={}
 if groupsTag=="LexDelay":
-    elec_grps=('Motor_vWM','Auditory_vWM','Sensorymotor_vWM','Delay_only','Motor_novWM','Auditory_novWM','Sensorymotor_novWM')#,'Delay_only')
+    elec_grps=('Motor_vWM','Auditory_vWM','Sensorymotor_vWM','Delay_only','Motor_novWM','Auditory_novWM','Sensorymotor_novWM','Wgw_p55b','Wgw_a55b')#,'Delay_only')
              #'Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
     elec_idxs=('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx',
-               'LexDelay_Motor_not_in_Delay_sig_idx','LexDelay_Auditory_not_in_Delay_sig_idx','LexDelay_Sensorimotor_not_in_Delay_sig_idx')
+               'LexDelay_Motor_not_in_Delay_sig_idx','LexDelay_Auditory_not_in_Delay_sig_idx','LexDelay_Sensorimotor_not_in_Delay_sig_idx','Wgw_p55b','Wgw_a55b')
              #'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
     for epoc,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ('epoc_LexDelayRep_Aud','epoc_LexDelayRep_Go','epoc_LexDelayRep_Resp')):
-        rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag)
+        rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag, win_len=20)
 elif groupsTag=="LexDelay&LexNoDelay":
 
     elec_grps_vWM = ('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM')
@@ -194,5 +194,5 @@ elif groupsTag=="LexDelay&LexNoDelay":
         # print(elec_grps)
         # print(elec_idxs)
         # print(epoc_tag)
-        rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag)
+        rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag, win_len=0)
 
