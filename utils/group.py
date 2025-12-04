@@ -398,8 +398,12 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDe
         data_in_array = data_in_value.__array__()
         # data_i: eeg data matrix, observations * channels * times
         if win_len > 0:
-            data_in_array_smoothed = uniform_filter1d(data_in_array, size=win_len, axis=2, mode='nearest',
-                                                      origin=(win_len - 1) // 2)
+            data_in_array_smoothed = uniform_filter1d(data_in_array, size=win_len, axis=2, mode='nearest',origin=0)
+                                                      #origin=(win_len - 1) // 2)
+            # https://scipy.github.io/devdocs/reference/generated/scipy.ndimage.uniform_filter1d.html
+            #Controls the placement of the filter on the input array’s pixels. 
+            #A value of 0 (the default) centers the filter over the pixel, with positive values shifting the filter to the left, and negative ones to the right.
+            
         else:
             data_in_array_smoothed = data_in_array
         data_in_smoothed = LabeledArray(data_in_array_smoothed, data_in_labels)
