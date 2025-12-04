@@ -239,7 +239,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 3e2#1e3
+  n_perm <- 1e3#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -309,7 +309,8 @@ model_func <- function(current_data){
 
 #%% Parameters
 delay_nodelays <- c("LexDelayRep")#c("LexDelayRep","LexNoDelay")
-alignments <- c("Aud","Go","Resp")
+#alignments <- c("Aud","Go","Resp")
+alignments <- c("Resp")
 # alignments <- c("Aud")
 elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b')
 # elec_grps <- c('Motor')
