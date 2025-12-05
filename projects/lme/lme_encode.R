@@ -360,7 +360,7 @@ pho_fea_T$stim <- rownames(pho_fea_T)
 pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
 #%% Start looping
-for (lambda_test in c(0.01,0.1,1,10,20,30,40,50,60,70,80,90,100,1000)){
+for (lambda_test in c(200,300,400,500,600,700,800,900)){
   for (delay_nodelay in delay_nodelays){
     for (alignment in alignments){
       for (elec_grp in elec_grps){
