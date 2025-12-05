@@ -108,6 +108,34 @@ def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05,mode:str='time_
 
         return time_point,r2_i[0],stat_out
 
+def add_alignment_vlines(ax, alignment):
+    """
+    Adds vertical lines for specific event markers to a matplotlib Axes object
+    based on the alignment type.
+
+    Args:
+        ax (matplotlib.axes.Axes): The Axes object to draw the lines on.
+        alignment (str): The alignment type ('Aud', 'Go', or 'Resp').
+    """
+    if alignment == 'Aud':
+        # Stim offsets
+        ax.axvline(x=0.59, color='red', linestyle='--', alpha=0.7, linewidth=3)
+        # ax.axvline(x=0.59 + 0.1480 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
+        # ax.axvline(x=0.59 - 0.1480 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
+        # Delay offsets
+        ax.axvline(x=1.7201, color='red', linestyle='--', alpha=0.7, linewidth=3)
+        # ax.axvline(x=1.7201 + 0.1459 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
+        # ax.axvline(x=1.7201 - 0.1459 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
+    elif alignment == 'Go':
+        # Motor onsets
+        ax.axvline(x=0.7961, color='red', linestyle='--', alpha=0.7, linewidth=3)
+        # ax.axvline(x=0.7961 + 1.0532 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
+        # ax.axvline(x=0.7961 - 1.0532 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
+    elif alignment == 'Resp':
+        # Motor offsets
+        ax.axvline(x=0.6096, color='red', linestyle='--', alpha=0.7, linewidth=3)
+        ax.axvline(x=0.6096 + 0.2190, color='red', linestyle='--', alpha=0.7, linewidth=1)
+        ax.axvline(x=0.6096 - 0.2190, color='red', linestyle='--', alpha=0.7, linewidth=1)
 
 #%% Plotting
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
@@ -124,7 +152,7 @@ baseline_beta_rms_std=dict()
 # test_lamndas=[1e-2,1e-1,'1','10','100','1000']
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
-        ([-0.2, 1.75],[-0.2, 1],[-0.2, 1])):
+        ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
     for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),
                                                          (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
                                                          (10, 20, 10, 5),
@@ -173,9 +201,7 @@ for alignment,xlim_align in zip(
             fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
 
             ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
-            if alignment == 'Aud':
-                ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
-                ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
+            add_alignment_vlines(ax, alignment)
 
             #filename = f"results/{elec_grp}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.csv"
             filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.csv"
@@ -264,7 +290,7 @@ for alignment,xlim_align in zip(
             ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
             ax.legend(fontsize=18)
             ax.set_xlim(xlim_align)#time_point.max())
-            if elec_grp=='Motor':
+            if elec_grp=='Motor' and alignment=='Aud':
                 ax.set_xlim([0.5,xlim_align[1]])
             ax.legend().set_visible(False)
             ax.spines['top'].set_visible(False)
@@ -331,10 +357,7 @@ for alignment,xlim_align in zip(
                     # Plotting the acoustic features from raw_org_aco
                     fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
                     ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
-                    if alignment == 'Aud':
-                        ax.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
-                        ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
-
+                    add_alignment_vlines(ax, alignment)
                     if time_points_plot is None:
                         time_points_plot = sorted(raw_org_fea['time_point'].unique())
 
@@ -370,14 +393,12 @@ for alignment,xlim_align in zip(
                     plt.close(fig)
 
                 # %% Plot all collected RMS traces
-                if elec_grp!='Motor':
+                if elec_grp!='Motor' or alignment!='Aud':
                     fig_rms, ax_rms = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
-                elif elec_grp=='Motor':
-                    fig_rms, ax_rms = plt.subplots(figsize=(5.6*(1/1.75)*(xlim_align[1]-xlim_align[0]), 5))
+                elif elec_grp=='Motor' and alignment=='Aud':
+                    fig_rms, ax_rms = plt.subplots(figsize=(5.6*(1.4/2.15)*(xlim_align[1]-xlim_align[0]), 5))
                 ax_rms.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
-                if alignment == 'Aud':
-                    ax_rms.axvline(x=0.65, color='red', linestyle='--', alpha=0.7,linewidth=3)
-                    ax_rms.axvline(x=1.5, color='red', linestyle='--', alpha=0.7,linewidth=3)
+                add_alignment_vlines(ax_rms, alignment)
 
                 j=0
                 for fea, rms_series in all_rms_data.items():
@@ -435,7 +456,7 @@ for alignment,xlim_align in zip(
                 ax_rms.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
                 # ax_rms.legend(fontsize=18)
                 ax_rms.set_xlim(xlim_align)
-                if elec_grp=='Motor':
+                if elec_grp=='Motor' and alignment=='Aud':
                     ax_rms.set_xlim([0.5,xlim_align[1]])
                 ax_rms.spines['top'].set_visible(False)
                 ax_rms.spines['right'].set_visible(False)

@@ -297,57 +297,137 @@ def get_onset_times(epoc,encoding_mode,align_to:str='Cue',fileTag='BIDS-1.0_Lexi
         subjs = list(unique_padded_ids)
 
     auditory_stim_dicts = {}
+    go_dicts = {}
     resp_dicts = {}
+    auditory_stim_duration_dicts = {}
+    resp_duration_dicts = {}
 
     for subj in subjs:
         print(subj)
-        HOME = os.path.expanduser("~")
-        LAB_root = os.path.join(HOME, "Box", "CoganLab")
-        clean_root = os.path.join(LAB_root, fileTag, 'BIDS', "derivatives", "clean")
+        try:
+            HOME = os.path.expanduser("~")
+            LAB_root = os.path.join(HOME, "Box", "CoganLab")
+            clean_root = os.path.join(LAB_root, fileTag, 'BIDS', "derivatives", "clean")
 
-        subj_gamma_clean_dir = os.path.join(clean_root, f'sub-{subj}', 'ieeg')
-        files = glob.glob(os.path.join(subj_gamma_clean_dir, '*acq-*_run-*_desc-clean_events.tsv'))
-        files_sorted = sorted(files, key=lambda x: [int(i) for i in re.findall(r'acq-(\d+)_run-(\d+)', x)[0]])
-        dfs = [pd.read_csv(f, sep='\t') for f in files_sorted]
-        events_df = pd.concat(dfs, ignore_index=True)
+            subj_gamma_clean_dir = os.path.join(clean_root, f'sub-{subj}', 'ieeg')
+            files = glob.glob(os.path.join(subj_gamma_clean_dir, '*acq-*_run-*_desc-clean_events.tsv'))
+            files_sorted = sorted(files, key=lambda x: [int(i) for i in re.findall(r'acq-(\d+)_run-(\d+)', x)[0]])
+            dfs = [pd.read_csv(f, sep='\t') for f in files_sorted]
+            events_df = pd.concat(dfs, ignore_index=True)
 
-        filtered_df = events_df[
-            events_df['trial_type'].str.contains('CORRECT') & events_df['trial_type'].str.contains('Repeat')].copy()
-        filtered_df['trial_id'] = filtered_df['trial_type'].str.contains('Cue').cumsum()
-        filtered_df['key_segment'] = filtered_df['trial_type'].str.split('/').str[3]
-        auditory_stim_dict = {}
-        resp_dict = {}
+            filtered_df = events_df[
+                events_df['trial_type'].str.contains('CORRECT') & events_df['trial_type'].str.contains('Repeat')].copy()
+            filtered_df['trial_id'] = filtered_df['trial_type'].str.contains('Cue').cumsum()
+            filtered_df['key_segment'] = filtered_df['trial_type'].str.split('/').str[3]
+            auditory_stim_dict = {}
+            go_dict = {}
+            resp_dict = {}
+            auditory_stim_duration_dict = {}
+            resp_duration_dict = {}
 
-        seen_counts = {}
-        for trial_id in filtered_df['trial_id'].unique():
-            trial_data = filtered_df[filtered_df['trial_id'] == trial_id]
+            seen_counts = {}
+            for trial_id in filtered_df['trial_id'].unique():
+                trial_data = filtered_df[filtered_df['trial_id'] == trial_id]
 
-            cue_onset = trial_data[trial_data['trial_type'].str.contains(align_to)]['onset'].iloc[0]
+                cue_onset = trial_data[trial_data['trial_type'].str.contains(align_to)]['onset'].iloc[0]
 
-            auditory_stim_row = trial_data[trial_data['trial_type'].str.contains('Auditory_stim')]
-            resp_row = trial_data[trial_data['trial_type'].str.contains('Resp')]
+                auditory_stim_row = trial_data[trial_data['trial_type'].str.contains('Auditory_stim')]
+                go_row = trial_data[trial_data['trial_type'].str.contains('Go')]
+                resp_row = trial_data[trial_data['trial_type'].str.contains('Resp')]
 
-            key = trial_data['key_segment'].iloc[0]
+                key = trial_data['key_segment'].iloc[0]
 
-            count = seen_counts.get(key, -1) + 1
-            seen_counts[key] = count
-            key_count = f"{key}-{count}"
+                count = seen_counts.get(key, -1) + 1
+                seen_counts[key] = count
+                key_count = f"{key}-{count}"
 
-            if key_count not in auditory_stim_dict:
-                auditory_stim_dict[key_count] = []
-            if key_count not in resp_dict:
-                resp_dict[key_count] = []
+                if key_count not in auditory_stim_dict:
+                    auditory_stim_dict[key_count] = []
+            if key_count not in go_dict:
+                go_dict[key_count] = []
+                if key_count not in resp_dict:
+                    resp_dict[key_count] = []
+                if key_count not in auditory_stim_duration_dict:
+                    auditory_stim_duration_dict[key_count] = []
+                if key_count not in resp_duration_dict:
+                    resp_duration_dict[key_count] = []
 
-            auditory_stim_diff = [float(auditory_stim_row['onset'].iloc[0] - cue_onset)]
-            resp_diff = [float(resp_row['onset'].iloc[0] - cue_onset)]
+                go_diff = [float(go_row['onset'].iloc[0] - cue_onset)]
+                auditory_stim_diff = [float(auditory_stim_row['onset'].iloc[0] - cue_onset)]
+                resp_diff = [float(resp_row['onset'].iloc[0] - cue_onset)]
 
-            auditory_stim_dict[key_count] = auditory_stim_dict[key_count] + auditory_stim_diff
-            resp_dict[key_count] = resp_dict[key_count] + resp_diff
+                auditory_stim_duration = [float(auditory_stim_row['duration'].iloc[0])]
+                auditory_resp_duration = [float(resp_row['duration'].iloc[0])]
 
-        auditory_stim_dicts[subj] = auditory_stim_dict
-        resp_dicts[subj] = resp_dict
+                go_dict[key_count] = go_dict[key_count] + go_diff
+                auditory_stim_dict[key_count] = auditory_stim_dict[key_count] + auditory_stim_diff
+                resp_dict[key_count] = resp_dict[key_count] + resp_diff
+                auditory_stim_duration_dict[key_count] = auditory_stim_duration_dict[key_count] + auditory_stim_duration
+                resp_duration_dict[key_count] = resp_duration_dict[key_count] + auditory_resp_duration
 
-    return auditory_stim_dicts, resp_dicts
+            auditory_stim_dicts[subj] = auditory_stim_dict
+            go_dicts[subj] = go_dict
+            resp_dicts[subj] = resp_dict
+            auditory_stim_duration_dicts[subj] = auditory_stim_duration_dict
+            resp_duration_dicts[subj] = resp_duration_dict
+        except Exception as e:
+            print(f"Could not process subject {subj} due to error: {e}")
+            continue
+    
+    return auditory_stim_dicts, resp_dicts, go_dicts, auditory_stim_duration_dicts, resp_duration_dicts
+
+import numpy as np
+from collections import deque
+
+def get_stats_from_nested_dict(nested_dict):
+    """
+    Traverses a nested dictionary to find all numerical values and 
+    calculates their mean, standard deviation, and count.
+
+    This implementation is non-recursive and uses a queue for iteration,
+    which is robust against deep nesting.
+
+    Args:
+        nested_dict (dict): The dictionary to process. It can contain other
+                            dictionaries, lists, and numerical values.
+
+    Returns:
+        tuple: A tuple containing:
+            - mean (float): The mean of all numbers found.
+            - std_dev (float): The standard deviation of all numbers found.
+            - count (int): The total count of numbers found.
+        Returns (0, 0, 0) if no numbers are found.
+    """
+    numbers = []
+    
+    # Use a deque for an efficient queue
+    queue = deque([nested_dict])
+
+    while queue:
+        current_item = queue.popleft()
+
+        if isinstance(current_item, dict):
+            for value in current_item.values():
+                queue.append(value)
+        elif isinstance(current_item, list):
+            for item in current_item:
+                queue.append(item)
+        elif isinstance(current_item, (int, float)):
+            numbers.append(current_item)
+
+    if not numbers:
+        return 0, 0, 0
+
+    # np.mean and np.std are efficient for these calculations
+    mean = np.mean(numbers)
+    
+    # ddof=0 for population standard deviation, or ddof=1 for sample.
+    # Given we have all data points, population is appropriate.
+    std_dev = np.std(numbers, ddof=0) 
+    
+    count = len(numbers)
+
+    return mean, std_dev, count
 
 def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDelay_append_startings=False):
 
