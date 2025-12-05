@@ -141,7 +141,7 @@ def add_alignment_vlines(ax, alignment):
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 is_normalize=False
-is_bsl_correct=True
+is_bsl_correct=False
 mode='time_cluster'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
@@ -212,7 +212,7 @@ for alignment,xlim_align in zip(
                     ('vWM','vWM_p','novWM','novWM_p'),#,'diff'),
                     ('-','-','--','--'),#,'--'),
                     ('R2','p','R2','p'),#,'R2'),
-                    ([2.5e-2,2.5e-2],[2.5e-2,2.5e-2],[2.5e-2,2.5e-2],[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
+                    ([1e-2,1e-2],[5e-2,2.5e-2],[1e-2,1e-2],[2.5e-2,2.5e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
                     ('ACC','p','ACC','p'),#,'diff'),
                     (elec_col,elec_col,elec_col,elec_col)):#,[0.5,0.5,0.5])):
                 if fea == 'aco':
@@ -245,7 +245,7 @@ for alignment,xlim_align in zip(
                 if vWM=='vWM' or vWM=='novWM':
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
-                if true_indices.size > 0 and (vWM == 'vWM' or vWM == 'diff'):
+                if true_indices.size > 0 and (vWM == 'vWM' or vWM == 'novWM'):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
