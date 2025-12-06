@@ -148,7 +148,7 @@ baseline=dict()
 baseline_beta_rms=dict()
 baseline_std=dict()
 baseline_beta_rms_std=dict()
-test_lambdas=[0.1, 1, 10, 20, 40, 60, 80,100, 1000]
+test_lambdas=[10, 20, 40, 60, 80,100, 200,500]
 for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
     for alignment,xlim_align in zip(
             ('Aud','Resp','Go'),
@@ -195,7 +195,7 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
                         time_series_r2 = (time_series_r2 - baseline[elec_grp])
                     para_sig_bar = para_sig_barbar
                 
-                ax.plot(time_point, time_series_r2, label=f"{elec_grp}{vwm_text_r2}", color=fea_cols[i], linewidth=5, linestyle=vwm_linestyle)
+                ax.plot(time_point, time_series_r2, label=f"λ={test_lambda}", color=fea_cols[i], linewidth=5, linestyle=vwm_linestyle)
 
                 true_indices = np.where(mask_time_clus)[0]
                 if true_indices.size > 0:
@@ -226,14 +226,13 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
             )
             ax.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
             ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
-            ax.legend(fontsize=18)
+            ax.legend(title='λ values', bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0., fontsize=12)
             ax.set_xlim(xlim_align)#time_point.max())
             # if elec_grp=='Motor' and alignment=='Aud':
             #     ax.set_xlim([0.5,xlim_align[1]])
-            ax.legend().set_visible(False)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','multencode', f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_testλ.tif'), dpi=300)
+            plt.savefig(os.path.join('figs','test_lambda', f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_testλ.tif'), dpi=300)
             plt.close()
