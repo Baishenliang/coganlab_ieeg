@@ -378,7 +378,7 @@ pho_fea_T$stim <- rownames(pho_fea_T)
 pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
 #%% Start looping
-for (ridge_lambda in list(ridge_lambda1,ridge_lambda2)){
+for (ridge_lambda in list(ridge_lambda2)){#list(ridge_lambda1,ridge_lambda2)){
 #for (lambda_test in c(200,300,400,500,600,700,800,900)){
   for (delay_nodelay in delay_nodelays){
     for (alignment in alignments){

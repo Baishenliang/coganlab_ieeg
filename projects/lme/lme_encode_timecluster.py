@@ -155,8 +155,10 @@ for alignment,xlim_align in zip(
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
     for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),
                                                          (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
-                                                         (10, 20, 10, 5),
-                                                         (10, 10, 50, 10),
+                                                        #  (10, 20, 20, 10), # looser vWM lambdas
+                                                        #  (60, 20, 200, 10), # looser novWM lambdas
+                                                         (20, 40, 40, 20), # stricter vWM lambdas
+                                                         (80, 40, 500, 20), # stricter novWM lambdas
                                                          (3.5,1.6,1.3,1.3)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
@@ -192,11 +194,12 @@ for alignment,xlim_align in zip(
             # xlim_align=[-0.2, 1.75]
             # elec_grp='Auditory'
             # elec_col=Auditory_col
-            # vWM_lambda=10
-            # novWM_lambda=10
+            # vWM_lambda=20
+            # novWM_lambda=80
             # fea='ACC'
             # fea_tag='ACC'
             # para_sig_barbar=[0.1,0.01]
+            # vWM='vWM'
             
             fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
 
@@ -208,11 +211,12 @@ for alignment,xlim_align in zip(
             raw = pd.read_csv(filename)
 
             j = 0
+            true_indices_by_vWM = {}
             for vWM,vwm_linestyle,input,pthres,vwm_text,sig_bar_col in zip(
                     ('vWM','vWM_p','novWM','novWM_p'),#,'diff'),
                     ('-','-','--','--'),#,'--'),
                     ('R2','p','R2','p'),#,'R2'),
-                    ([1e-2,1e-2],[5e-2,2.5e-2],[1e-2,1e-2],[2.5e-2,2.5e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
+                    ([1e-2,1e-2],[5e-2,1e-2],[1e-2,1e-2],[2.5e-2,1e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
                     ('ACC','p','ACC','p'),#,'diff'),
                     (elec_col,elec_col,elec_col,elec_col)):#,[0.5,0.5,0.5])):
                 if fea == 'aco':
@@ -227,7 +231,7 @@ for alignment,xlim_align in zip(
                     target_fea = fea+f'_{vWM}'
                 time_point, time_series, mask_time_clus = get_traces_clus(raw, pthres[0], pthres[1],mode=mode,target_fea=target_fea,input=input)
 
-                time_series=gaussian_filter1d(time_series, sigma=2, mode='nearest')
+                # time_series=gaussian_filter1d(time_series, sigma=2, mode='nearest')
                 # win_len=10
                 # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
                 if alignment == 'Aud':
@@ -245,7 +249,8 @@ for alignment,xlim_align in zip(
                 if vWM=='vWM' or vWM=='novWM':
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
-                if true_indices.size > 0 and (vWM == 'vWM' or vWM == 'novWM'):
+                true_indices_by_vWM[vWM] = true_indices
+                if true_indices.size > 0 and (vWM == 'vWM_p' or vWM == 'novWM_p'):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
@@ -423,6 +428,12 @@ for alignment,xlim_align in zip(
                     ax_rms.plot(time_points_plot, rms_series, label=fea, linewidth=3, color=color, linestyle=linestyle)
 
                     true_indices = all_rms_data_sig[fea]
+                    if is_vWM == '_vWM':
+                        is_vWM_label = 'vWM_p'
+                    elif is_vWM == '_novWM':
+                        is_vWM_label = 'novWM_p'
+                    true_indices_mask=true_indices_by_vWM[is_vWM_label]
+                    true_indices = np.intersect1d(true_indices, true_indices_mask)
                     if true_indices.size > 0:
                         split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                         clusters_indices = np.split(true_indices, split_points)
