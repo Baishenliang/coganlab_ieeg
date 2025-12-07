@@ -434,7 +434,7 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDe
     import pandas as pd
     import os
     import pickle
-    from scipy.ndimage import uniform_filter1d
+    from scipy.ndimage import gaussian_filter1d
     from ieeg.arrays.label import LabeledArray
 
     if NoDelay_append_startings:
@@ -478,12 +478,13 @@ def win_to_Rdataframe(data_in,safe_dir,win_len:int=10,append_pho:bool=False,NoDe
         data_in_array = data_in_value.__array__()
         # data_i: eeg data matrix, observations * channels * times
         if win_len > 0:
-            data_in_array_smoothed = uniform_filter1d(data_in_array, size=win_len, axis=2, mode='nearest',origin=0)
-                                                      #origin=(win_len - 1) // 2)
-            # https://scipy.github.io/devdocs/reference/generated/scipy.ndimage.uniform_filter1d.html
-            #Controls the placement of the filter on the input array’s pixels. 
-            #A value of 0 (the default) centers the filter over the pixel, with positive values shifting the filter to the left, and negative ones to the right.
-            
+           # To convert the window length of a uniform filter to a comparable
+            # sigma for a Gaussian filter, a common method is to match their
+            # standard deviations. The standard deviation of a uniform
+            # distribution of length L is L / sqrt(12).
+            # sqrt(12) is approximately 3.464.
+            sigma = win_len / np.sqrt(12)
+            data_in_array_smoothed = gaussian_filter1d(data_in_array, sigma=sigma, axis=2, mode='nearest')
         else:
             data_in_array_smoothed = data_in_array
         data_in_smoothed = LabeledArray(data_in_array_smoothed, data_in_labels)
