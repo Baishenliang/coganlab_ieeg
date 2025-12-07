@@ -186,7 +186,8 @@ model_func <- function(current_data){
   }
   
   tp <- current_data$time[1]
-  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
+  #fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
+  fml <- as.formula(paste("value ~ 1 +", paste(paste0("sem", 1:67), collapse = " + ")))
   ridge_alpha <- 0
   ridge_lambda_vWM <- current_data$ridge_lambda_vWM[1]
   ridge_lambda_novWM <- current_data$ridge_lambda_novWM[1]
@@ -368,7 +369,7 @@ aco_fea_T <- as.data.frame(t(aco_fea))
 aco_fea_T$stim <- rownames(aco_fea_T)
 aco_fea_T <- aco_fea_T[, c("stim", setdiff(names(aco_fea_T), "stim"))]
 
-#Load vowel parameters
+#Load phonetic parameters
 pho_path <- paste(home_dir,
                   "data/phoneme_one_hot_dict_pca.csv",
                   sep = "")
@@ -376,6 +377,15 @@ pho_fea <- read.csv(pho_path,row.names = 1)
 pho_fea_T <- as.data.frame(t(pho_fea))
 pho_fea_T$stim <- rownames(pho_fea_T)
 pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
+
+#Load semantic parameters
+sem_path <- paste(home_dir,
+                  "data/syllables_sem_pca.csv",
+                  sep = "")
+sem_fea <- read.csv(sem_path,row.names = 1)
+sem_fea_T <- as.data.frame(t(sem_fea))
+sem_fea_T$stim <- rownames(sem_fea_T)
+sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 
 #%% Start looping
 for (ridge_lambda in list(ridge_lambda2)){#list(ridge_lambda1,ridge_lambda2)){
@@ -443,16 +453,22 @@ for (ridge_lambda in list(ridge_lambda2)){#list(ridge_lambda1,ridge_lambda2)){
         #%% append acoustic features
         long_data <- left_join(long_data,aco_fea_T,by='stim')
         
-        #%% append vowel features
+        #%% append phonemic features
         long_data <- left_join(long_data,pho_fea_T,by='stim')
         
         long_data$time <- as.numeric(long_data$time)
         time_points <- unique(long_data$time)
-        word_data <- long_data
-        rm(long_data)
         
         #for (lex in c("Word","Nonword",'All')){
-        lex<-'All'
+        lex<-'Word'
+        if (lex!='All'){
+          word_data <- long_data[long_data['wordness']==lex,]
+          #%% append semantic features
+          word_data <- left_join(word_data,sem_fea_T,by='stim')
+        } else {
+          word_data <- long_data
+        }
+        rm(long_data)
         #%% Run computations
         
         #%% append ridge lambdas
