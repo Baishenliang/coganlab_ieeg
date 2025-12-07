@@ -35,6 +35,8 @@ Sensorimotor_col = [1, 0, 0]  # Sensorimotor
 Auditory_col = [0, 1, 0]  # Auditory
 Delay_col = [1, 0.65, 0]  # Delay
 Motor_col = [0, 0, 1]  # Motor
+Wgw_p55b_col=[0.74901961, 0.25098039, 0.74901961] # WGW 55b
+Wgw_a55b_col=[0, 0.5, 0.5] # WGW a55b
 
 # Feature colors
 aco_col = [0, 0.502, 0.502]      # Teal (青色)
@@ -153,11 +155,9 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
     for alignment,xlim_align in zip(
             ('Aud','Resp','Go'),
             ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-        for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),
-                                                            (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
-                                                            (10, 20, 10, 5),
-                                                            (10, 10, 50, 10),
-                                                            (3.5,1.6,1.3,1.3)):
+        for elec_grp,elec_col,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b'),
+                                                            (Auditory_col,Sensorimotor_col,Motor_col,Delay_col,Wgw_p55b_col,Wgw_a55b_col),
+                                                            (3.5,1.6,1.3,1.3,2.0,2.0)):
             fea = 'ACC'
             fea_tag = 'ACC'
             para_sig_barbar = [0.2, 0.01]
