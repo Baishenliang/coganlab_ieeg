@@ -155,7 +155,7 @@ if groupsTag=="LexDelay":
              #'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
     for epoc,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ('epoc_LexDelayRep_Aud','epoc_LexDelayRep_Go','epoc_LexDelayRep_Resp')):
-        rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag, win_len=10)
+        rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag, win_len=20)
 elif groupsTag=="LexDelay&LexNoDelay":
 
     elec_grps_vWM = ('Motor_vWM', 'Auditory_vWM', 'Sensorymotor_vWM', 'Delay_only_vWM')
