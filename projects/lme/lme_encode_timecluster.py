@@ -155,10 +155,10 @@ for alignment,xlim_align in zip(
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
     for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),
                                                          (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
-                                                         (10, 20, 20, 10), # looser vWM lambdas
-                                                         (100, 20, 400, 10), # looser novWM lambdas
-                                                        #  (20, 40, 40, 20), # stricter vWM lambdas
-                                                        #  (80, 40, 500, 20), # stricter novWM lambdas
+                                                        #  (10, 20, 20, 10), # looser vWM lambdas
+                                                        #  (60, 20, 200, 10), # looser novWM lambdas
+                                                         (20, 40, 40, 20), # stricter vWM lambdas
+                                                         (100, 40, 400, 20), # stricter novWM lambdas
                                                          (3.5,1.6,1.3,1.3)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
