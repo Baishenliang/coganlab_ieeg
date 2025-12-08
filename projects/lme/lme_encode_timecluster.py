@@ -155,10 +155,10 @@ for alignment,xlim_align in zip(
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
     for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),
                                                          (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
-                                                        #  (10, 20, 20, 10), # looser vWM lambdas
-                                                        #  (60, 20, 200, 10), # looser novWM lambdas
-                                                         (20, 40, 40, 20), # stricter vWM lambdas
-                                                         (80, 40, 500, 20), # stricter novWM lambdas
+                                                         (10, 20, 20, 10), # looser vWM lambdas
+                                                         (100, 20, 400, 10), # looser novWM lambdas
+                                                        #  (20, 40, 40, 20), # stricter vWM lambdas
+                                                        #  (80, 40, 500, 20), # stricter novWM lambdas
                                                          (3.5,1.6,1.3,1.3)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
@@ -216,7 +216,7 @@ for alignment,xlim_align in zip(
                     ('vWM','vWM_p','novWM','novWM_p'),#,'diff'),
                     ('-','-','--','--'),#,'--'),
                     ('R2','p','R2','p'),#,'R2'),
-                    ([1e-2,1e-2],[5e-2,1e-2],[1e-2,1e-2],[2.5e-2,1e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
+                    ([5e-2,5e-2],[2.5e-2,2.5e-2],[5e-2,5e-2],[2.5e-2,2.5e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
                     ('ACC','p','ACC','p'),#,'diff'),
                     (elec_col,elec_col,elec_col,elec_col)):#,[0.5,0.5,0.5])):
                 if fea == 'aco':
@@ -250,7 +250,7 @@ for alignment,xlim_align in zip(
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
                 true_indices_by_vWM[vWM] = true_indices
-                if true_indices.size > 0 and (vWM == 'vWM_p' or vWM == 'novWM_p'):
+                if true_indices.size > 0 and (vWM == 'vWM' or vWM == 'novWM'):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
@@ -320,7 +320,6 @@ for alignment,xlim_align in zip(
                     'pho': pho_col,
                     'wordnessWord': wordness_col,
                     'wordnessWord:aco': aco_col,
-                    'wordnessWord:pho': [0.5,0.5,0.5]
                 }
 
                 for fea in ('aco','pho','wordnessWord'):#,'wordnessWord:pho'):#,'wordnessWord:aco'
