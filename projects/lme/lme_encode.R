@@ -186,8 +186,8 @@ model_func <- function(current_data){
   }
   
   tp <- current_data$time[1]
-  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
-  #fml <- as.formula(paste("value ~ 1 +", paste(paste0("sem", 1:67), collapse = " + ")))
+  #fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
+  fml <- as.formula(paste("value ~ 1 +", paste(paste0("sem", 1:67), collapse = " + ")))
   ridge_alpha <- 0
   ridge_lambda_vWM <- current_data$ridge_lambda_vWM[1]
   ridge_lambda_novWM <- current_data$ridge_lambda_novWM[1]
@@ -255,7 +255,8 @@ model_func <- function(current_data){
           mutate(
             perm_indices = sample(1:n()),
             across(
-              starts_with('aco') | starts_with('pho') | starts_with('word'), 
+              #starts_with('aco') | starts_with('pho') | starts_with('word'), 
+              starts_with('sem'), 
               ~ .x[perm_indices]
             )
           ) %>%
@@ -460,7 +461,7 @@ for (ridge_lambda in list(ridge_lambda2)){#list(ridge_lambda1,ridge_lambda2)){
         time_points <- unique(long_data$time)
         
         #for (lex in c("Word","Nonword",'All')){
-        lex<-'All'
+        lex<-'Word'
         if (lex!='All'){
           word_data <- long_data[long_data['wordness']==lex,]
           #%% append semantic features
