@@ -150,14 +150,14 @@ baseline=dict()
 baseline_beta_rms=dict()
 baseline_std=dict()
 baseline_beta_rms_std=dict()
-test_lambdas=[10, 20, 40, 60, 80,100, 200,500]
+test_lambdas=[1,10,20,20,40,60,80,100,200,300,400,500,600,700,800,900]
 for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
     for alignment,xlim_align in zip(
             ('Aud','Resp','Go'),
             ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-        for elec_grp,elec_col,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b'),
-                                                            (Auditory_col,Sensorimotor_col,Motor_col,Delay_col,Wgw_p55b_col,Wgw_a55b_col),
-                                                            (3.5,1.6,1.3,1.3,2.0,2.0)):
+        for elec_grp,elec_col,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),#'Wgw_p55b','Wgw_a55b'),
+                                                            (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),#,Wgw_p55b_col,Wgw_a55b_col),
+                                                            (3.5,1.6,1.3,1.3)):#,2.0,2.0)):
             fea = 'ACC'
             fea_tag = 'ACC'
             para_sig_barbar = [0.2, 0.01]
@@ -169,7 +169,7 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
             fea_cols=gp.create_gradient(elec_col, len(test_lambdas)+1)[:-1]
             for i,test_lambda in enumerate(test_lambdas):
 
-                filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All_testλ_{test_lambda}.csv"
+                filename = f"results/LexDelayRep_{elec_grp}_{alignment}_Word_testλ_{test_lambda}.csv"
                 raw = pd.read_csv(filename)
 
                 input_r2 = 'p'
@@ -234,5 +234,5 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','test_lambda', f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_testλ.tif'), dpi=300)
+            plt.savefig(os.path.join('figs','test_lambda_semantics', f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_testλ.tif'), dpi=300)
             plt.close()
