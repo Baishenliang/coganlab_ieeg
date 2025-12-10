@@ -157,8 +157,8 @@ for alignment,xlim_align in zip(
                                                          (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
                                                         #  (10, 20, 20, 10), # looser vWM lambdas
                                                         #  (60, 20, 200, 10), # looser novWM lambdas
-                                                         (60, 80, 80, 20), # stricter vWM lambdas
-                                                         (100, 60, 450, 20), # stricter novWM lambdas
+                                                         (60, 80, 100, 20), # stricter vWM lambdas
+                                                         (150, 60, 450, 20), # stricter novWM lambdas
                                                          (3.5,1.6,1.3,1.3)):
 
         for fea, fea_tag, para_sig_barbar in zip(('ACC',),
@@ -195,7 +195,7 @@ for alignment,xlim_align in zip(
                     ('vWM','vWM_p','novWM','novWM_p'),#,'diff'),
                     ('-','-','--','--'),#,'--'),
                     ('R2','p','R2','p'),#,'R2'),
-                    ([1e-2,1e-2],[1e-2,1e-2],[1e-2,1e-2],[1e-2,1e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
+                    ([0.5e-2,0.5e-2],[1e-2,1e-2],[0.5e-2,0.5e-2],[1e-2,1e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
                     ('ACC','p','ACC','p'),#,'diff'),
                     (elec_col,elec_col,elec_col,elec_col)):#,[0.5,0.5,0.5])):
                 if fea == 'aco':
@@ -265,8 +265,8 @@ for alignment,xlim_align in zip(
             ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
             ax.legend(fontsize=18)
             ax.set_xlim(xlim_align)#time_point.max())
-            if elec_grp=='Motor' and alignment=='Aud':
-                ax.set_xlim([0.5,xlim_align[1]])
+            # if elec_grp=='Motor' and alignment=='Aud':
+            #     ax.set_xlim([0.5,xlim_align[1]])
             ax.legend().set_visible(False)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)

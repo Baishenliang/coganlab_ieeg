@@ -357,7 +357,7 @@ rownames(ridge_lambda2) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'W
 ridge_lambda2_semantics <- data.frame( # lambda adjusted according to electrode size
   vWM = c(60,  # Auditory vWM
           80, # Sensorymotor vWM
-          80, # Motor vWM
+          100, # Motor vWM
           20, # Delay only vWM
           1,# Wgw_p55b
           1),# Wgw_a55b
