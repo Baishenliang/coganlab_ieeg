@@ -157,8 +157,8 @@ for alignment,xlim_align in zip(
                                                          (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
                                                         #  (10, 20, 20, 10), # looser vWM lambdas
                                                         #  (60, 20, 200, 10), # looser novWM lambdas
-                                                         (20, 40, 40, 20), # stricter vWM lambdas
-                                                         (100, 40, 400, 20), # stricter novWM lambdas
+                                                         (60, 80, 80, 20), # stricter vWM lambdas
+                                                         (200, 80, 400, 20), # stricter novWM lambdas
                                                          (3.5,1.6,1.3,1.3)):
 
         for fea, fea_tag, para_sig_barbar in zip(('ACC',),
@@ -195,7 +195,7 @@ for alignment,xlim_align in zip(
                     ('vWM','vWM_p','novWM','novWM_p'),#,'diff'),
                     ('-','-','--','--'),#,'--'),
                     ('R2','p','R2','p'),#,'R2'),
-                    ([1e-1,1e-1],[2.5e-2,2.5e-2],[1e-1,1e-1],[2.5e-2,2.5e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
+                    ([2/300,2/300],[2/300,2/300],[2/300,2/300],[2/300,2/300]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
                     ('ACC','p','ACC','p'),#,'diff'),
                     (elec_col,elec_col,elec_col,elec_col)):#,[0.5,0.5,0.5])):
                 if fea == 'aco':
@@ -226,7 +226,7 @@ for alignment,xlim_align in zip(
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
                 true_indices_by_vWM[vWM] = true_indices
-                if true_indices.size > 0 and (vWM == 'vWM' or vWM == 'novWM'):
+                if true_indices.size > 0 and (vWM == 'vWM_p'):# or vWM == 'novWM_p'):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
@@ -272,5 +272,5 @@ for alignment,xlim_align in zip(
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','multencode', f'{elec_grp}_{fea_tag}_{alignment}_Word_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=100)
+            plt.savefig(os.path.join('figs','semantics', f'{elec_grp}_{fea_tag}_{alignment}_Word_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=100)
             plt.close()
