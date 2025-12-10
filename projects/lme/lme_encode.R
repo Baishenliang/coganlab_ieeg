@@ -362,7 +362,7 @@ ridge_lambda2_semantics <- data.frame( # lambda adjusted according to electrode 
           1,# Wgw_p55b
           1),# Wgw_a55b
   
-  novWM = c(100, # Auditory novWM
+  novWM = c(150, # Auditory novWM
             60, # Sensorymotor novWM
             450,# Motor novWM
             20,  # Delay only novWM (Sensorymotor novWM)
