@@ -159,7 +159,7 @@ for alignment,xlim_align in zip(
                                                         #  (60, 20, 200, 10), # looser novWM lambdas
                                                          (20, 40, 40, 20), # stricter vWM lambdas
                                                          (100, 40, 400, 20), # stricter novWM lambdas
-                                                         (3.5,1.6,1.3,1.3)):
+                                                         (2,0.8,0.7,1.3)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
         # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
@@ -231,7 +231,7 @@ for alignment,xlim_align in zip(
                     target_fea = fea+f'_{vWM}'
                 time_point, time_series, mask_time_clus = get_traces_clus(raw, pthres[0], pthres[1],mode=mode,target_fea=target_fea,input=input)
 
-                # time_series=gaussian_filter1d(time_series, sigma=2, mode='nearest')
+                time_series=gaussian_filter1d(time_series, sigma=2, mode='nearest')
                 # win_len=10
                 # time_series=uniform_filter1d(time_series, size=win_len, axis=0, mode='nearest',origin=(win_len - 1) // 2)
                 if alignment == 'Aud':
@@ -428,9 +428,9 @@ for alignment,xlim_align in zip(
 
                     true_indices = all_rms_data_sig[fea]
                     if is_vWM == '_vWM':
-                        is_vWM_label = 'vWM_p'
+                        is_vWM_label = 'vWM'
                     elif is_vWM == '_novWM':
-                        is_vWM_label = 'novWM_p'
+                        is_vWM_label = 'novWM'
                     true_indices_mask=true_indices_by_vWM[is_vWM_label]
                     true_indices = np.intersect1d(true_indices, true_indices_mask)
                     if true_indices.size > 0:
