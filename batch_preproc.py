@@ -8,6 +8,7 @@
 # %% Preparation:
 
 import os
+import sys
 import mne
 import datetime
 import numpy as np
@@ -175,8 +176,19 @@ for subject, processing_type in subject_processing_dict.items():
             log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter %%% completed %%% \n")
 
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            lineno = exc_tb.tb_lineno
+    
+            error_msg = f"Error Type: {exc_type.__name__}, Error: {e}, File: {fname}, Line: {lineno}"
+            while exc_tb.tb_next:
+                exc_tb = exc_tb.tb_next
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            lineno = exc_tb.tb_lineno
             log_file.write(f"{datetime.datetime.now()}, {subject}, Line noise filter !!! failed with error !!! : {str(e)}\n")
-        log_file.close()
+            log_file.write(f"{datetime.datetime.now()}, {subject}, !!! Error !!! : {error_msg}\n")
+            log_file.write(f"real error: {fname} line {lineno}\n")
+            log_file.close()
 
     if "outlierchs" in processing_type:
 
