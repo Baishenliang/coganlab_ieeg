@@ -295,8 +295,8 @@ for alignment,xlim_align in zip(
             ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
             ax.legend(fontsize=18)
             ax.set_xlim(xlim_align)#time_point.max())
-            if elec_grp=='Motor' and alignment=='Aud':
-                ax.set_xlim([0.5,xlim_align[1]])
+            # if elec_grp=='Motor' and alignment=='Aud':
+            #     ax.set_xlim([0.5,xlim_align[1]])
             ax.legend().set_visible(False)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
@@ -397,10 +397,10 @@ for alignment,xlim_align in zip(
                     plt.close(fig)
 
                 # %% Plot all collected RMS traces
-                if elec_grp!='Motor' or alignment!='Aud':
-                    fig_rms, ax_rms = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
-                elif elec_grp=='Motor' and alignment=='Aud':
-                    fig_rms, ax_rms = plt.subplots(figsize=(5.6*(1.4/2.15)*(xlim_align[1]-xlim_align[0]), 5))
+                # if elec_grp!='Motor' or alignment!='Aud':
+                fig_rms, ax_rms = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
+                # elif elec_grp=='Motor' and alignment=='Aud':
+                #     fig_rms, ax_rms = plt.subplots(figsize=(5.6*(1.4/2.15)*(xlim_align[1]-xlim_align[0]), 5))
                 ax_rms.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
                 add_alignment_vlines(ax_rms, alignment)
 
@@ -466,8 +466,8 @@ for alignment,xlim_align in zip(
                 ax_rms.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
                 # ax_rms.legend(fontsize=18)
                 ax_rms.set_xlim(xlim_align)
-                if elec_grp=='Motor' and alignment=='Aud':
-                    ax_rms.set_xlim([0.5,xlim_align[1]])
+                # if elec_grp=='Motor' and alignment=='Aud':
+                #     ax_rms.set_xlim([0.5,xlim_align[1]])
                 ax_rms.spines['top'].set_visible(False)
                 ax_rms.spines['right'].set_visible(False)
                 plt.tight_layout()
