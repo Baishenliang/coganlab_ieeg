@@ -94,8 +94,10 @@ final_chs = None
 final_grps = None
 
 if groupsTag=="LexDelay":
-    elec_grps=('Spt','lPMC','lIPL','lIFG')
-    elec_idxs=('Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
+    # elec_grps=('Spt','lPMC','lIPL','lIFG')
+    # elec_idxs=('Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
+    elec_grps=('Sensorymotor_in_Delay',)
+    elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
     for epoc,t_range in zip((data_LexDelay_Aud,data_LexDelay_Go,data_LexDelay_Resp),
                              ([-0.5, 2], [-0.5, 1.5], [-0.5, 2])):
         curr_arr, curr_chs, curr_grps = rearrange_elects(elec_grps, elec_idxs, epoc,t_range=t_range)
@@ -245,7 +247,7 @@ if X.min() < 0:
     X = X - X.min()
 
 # --- 2. Run NMF ---
-n_components = 7
+n_components = 6
 # init='nndsvd' typically yields more consistent and sparse results
 model = NMF(n_components=n_components, init='nndsvd', random_state=42, max_iter=500)
 
@@ -311,7 +313,7 @@ color_dict = dict(zip(groups, colors))
 # --- 3. Plot Pie Charts ---
 fig, axes = plt.subplots(1, 3, figsize=(18, 6))
 
-components_to_plot = [4, 5, 6]  # Corresponds to Components 4, 5, and 6
+components_to_plot = [0,1,2,3]  # Corresponds to Components 4, 5, and 6
 
 for i, comp_idx in enumerate(components_to_plot):
     col_name = f'Comp_{comp_idx+1}_Weight'
