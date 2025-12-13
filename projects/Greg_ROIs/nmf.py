@@ -82,6 +82,10 @@ if groupsTag=="LexDelay":
     data_LexDelay_Go, _ = gp.load_stats('mask', 'Go_inRep', 'ave', stats_root_delay, stats_root_delay,cbind_subjs=False)
     data_LexDelay_Resp, _ = gp.load_stats('mask', 'Resp_inRep', 'ave', stats_root_delay, stats_root_delay,cbind_subjs=False)
 
+    epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=False,cbind_subjs=False)
+    epoc_LexDelayRep_Go,_=gp.load_stats('zscore','Go_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=False,cbind_subjs=False)
+    epoc_LexDelayRep_Resp,_=gp.load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=False,cbind_subjs=False)
+
 
 if groupsTag=="LexDelay&LexNoDelay":
     # epoc_LexDelayRep_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
@@ -94,11 +98,11 @@ final_chs = None
 final_grps = None
 
 if groupsTag=="LexDelay":
-    # elec_grps=('Spt','lPMC','lIPL','lIFG')
-    # elec_idxs=('Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
-    elec_grps=('Sensorymotor_in_Delay',)
-    elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
-    for epoc,t_range in zip((data_LexDelay_Aud,data_LexDelay_Go,data_LexDelay_Resp),
+    elec_grps=('Spt','lPMC','lIFG')
+    elec_idxs=('Hikock_Spt','Hikock_lPMC','Hikock_lIFG')
+    # elec_grps=('Sensorymotor_in_Delay',)
+    # elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
+    for epoc,t_range in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ([-0.5, 2], [-0.5, 1.5], [-0.5, 2])):
         curr_arr, curr_chs, curr_grps = rearrange_elects(elec_grps, elec_idxs, epoc,t_range=t_range)
         arrays_to_hstack.append(curr_arr)
@@ -108,6 +112,10 @@ if groupsTag=="LexDelay":
             final_grps = curr_grps
 
     final_array = np.hstack(arrays_to_hstack)
+
+if final_array.min() < 0:
+    print(f"Negative values detected (min={final_array.min():.2f}). Shifting data to satisfy NMF non-negativity constraint...")
+    final_array = final_array - final_array.min()
 
 #%% NMF verification
 import numpy as np
@@ -247,7 +255,7 @@ if X.min() < 0:
     X = X - X.min()
 
 # --- 2. Run NMF ---
-n_components = 6
+n_components = 4
 # init='nndsvd' typically yields more consistent and sparse results
 model = NMF(n_components=n_components, init='nndsvd', random_state=42, max_iter=500)
 
@@ -311,7 +319,7 @@ colors = plt.get_cmap('tab20')(np.linspace(0, 1, len(groups)))
 color_dict = dict(zip(groups, colors))
 
 # --- 3. Plot Pie Charts ---
-fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+fig, axes = plt.subplots(1, 4, figsize=(18, 6))
 
 components_to_plot = [0,1,2,3]  # Corresponds to Components 4, 5, and 6
 
@@ -341,4 +349,194 @@ plt.show()
 # # Display the numerical table as well for reference
 # print("Mean Weights per Group:")
 # display(df_mean_weights)
+# %%
+import pandas as pd
+import numpy as np
+
+def export_electrode_weights(W, electrode_names=None):
+    """
+    Export NMF spatial weights (W matrix) into a detailed DataFrame.
+    
+    Parameters:
+    -----------
+    W : numpy.ndarray
+        The NMF spatial weight matrix with shape (n_electrodes, n_components).
+    electrode_names : list of str, optional
+        List of electrode names (e.g., ['LA1', 'LA2']). 
+        If None, indices are used.
+    
+    Returns:
+    --------
+    df : pd.DataFrame
+        DataFrame containing absolute weights, relative weights (%), 
+        and dominant cluster assignments.
+    """
+    n_electrodes, n_components = W.shape
+    
+    # 1. Create the base DataFrame with absolute weights
+    comp_cols = [f'Comp_{i+1}' for i in range(n_components)]
+    df = pd.DataFrame(W, columns=comp_cols)
+    
+    # 2. Add electrode identifiers
+    if electrode_names is not None:
+        if len(electrode_names) != n_electrodes:
+            print(f"Warning: Number of names ({len(electrode_names)}) "
+                  f"does not match W rows ({n_electrodes}).")
+        else:
+            df.insert(0, 'Electrode', electrode_names)
+    else:
+        df.insert(0, 'Electrode_Idx', range(n_electrodes))
+
+    # 3. Determine 'Hard Clustering' (Dominant Component)
+    # Identifies which component has the highest weight for each electrode
+    df['Dominant_Cluster'] = df[comp_cols].idxmax(axis=1)
+    
+    # 4. Calculate Relative Weights (Percentage contribution)
+    # Useful for analyzing network composition regardless of signal amplitude
+    # Add epsilon to avoid division by zero
+    row_sums = df[comp_cols].sum(axis=1) + 1e-9 
+    
+    for col in comp_cols:
+        # Create new columns like 'Comp_1_Percent'
+        df[f'{col}_Percent'] = df[col] / row_sums
+    
+    # 5. Calculate Selectivity (Confidence)
+    # Metric: Ratio of the dominant weight to the total weight sum.
+    # Range: [1/k, 1.0]. Higher values indicate the electrode is exclusive to one cluster.
+    df['Selectivity'] = df[comp_cols].max(axis=1) / row_sums
+
+    return df
+
+# --- Usage Example ---
+
+# Assuming 'W' is your spatial matrix from model.fit_transform(X)
+# and 'elec_names' is your list of channel labels
+
+# df_weights = export_electrode_weights(W, electrode_names=elec_names)
+
+# View the first few rows
+print(df_weights.head().round(3))
+
+# Export to CSV for further analysis
+# df_weights.to_csv('NMF_Electrode_Weights.csv', index=False)
+#%% Plot NMF Components by ROI Group
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
+def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col='Group', fs=100):
+    """
+    Plots weighted NMF component traces separated by anatomical/functional ROI groups.
+    
+    Fix:
+    - Converts 'times' to float to ensure numerical x-axis ticks work correctly.
+    """
+    
+    # --- 1. Data Preparation ---
+    
+    # Handle 3D Epochs data
+    if sig.ndim == 3:
+        print("Detected 3D data, averaging over trials...")
+        sig = np.mean(sig, axis=0)
+        
+    ch_to_idx = {name: i for i, name in enumerate(chs)}
+    
+    # --- CRITICAL FIX: Ensure Time Axis is Float ---
+    if times is not None:
+        # Convert strings to floats to allow numerical ticking (0.25s)
+        try:
+            time_axis = np.array(times, dtype=float)
+        except ValueError:
+            print("Warning: Could not convert 'times' to float. Using index-based time.")
+            time_axis = np.arange(sig.shape[1]) / fs
+    else:
+        time_axis = np.arange(sig.shape[1]) / fs
+    
+    comp_cols = [c for c in df_weights.columns if c.startswith('Comp_') and not c.endswith('Percent')]
+    
+    if group_col not in df_weights.columns:
+        raise KeyError(f"Column '{group_col}' not found in df_weights.")
+        
+    unique_groups = df_weights[group_col].dropna().unique()
+    n_groups = len(unique_groups)
+    
+    # Setup Figure
+    fig, axes = plt.subplots(nrows=n_groups, ncols=1, figsize=(10, 4 * n_groups), sharex=True)
+    if n_groups == 1: axes = [axes]
+    
+    colors = plt.cm.tab10.colors 
+    
+    # --- 2. Iterate Groups ---
+    for i, group_name in enumerate(unique_groups):
+        ax = axes[i]
+        roi_df = df_weights[df_weights[group_col] == group_name]
+        has_data = False 
+        
+        # --- 3. Iterate Components ---
+        for j, comp_name in enumerate(comp_cols):
+            color = colors[j % len(colors)]
+            valid_traces = []
+            valid_weights = []
+            
+            for _, row in roi_df.iterrows():
+                ch_name = row['Channel']
+                weight = row[comp_name]
+                
+                if weight < 0.01 or ch_name not in ch_to_idx:
+                    continue
+                    
+                idx = ch_to_idx[ch_name]
+                raw_trace = sig[idx, :]
+                
+                if not np.isnan(raw_trace).any():
+                    valid_traces.append(raw_trace)
+                    valid_weights.append(weight)
+            
+            # --- 4. Weighted Average ---
+            if len(valid_traces) > 0:
+                has_data = True
+                traces_arr = np.array(valid_traces)
+                weights_arr = np.array(valid_weights)
+                
+                total_weight = np.sum(weights_arr)
+                weighted_mean = np.sum(traces_arr * weights_arr[:, np.newaxis], axis=0) / total_weight
+                
+                ax.plot(time_axis, weighted_mean, color=color, linewidth=2, label=f"{comp_name}")
+                
+        # --- 5. Formatting ---
+        ax.set_title(f"ROI Group: {group_name} (n={len(roi_df)} electrodes)", fontweight='bold')
+        ax.set_ylabel('Weighted Amplitude')
+        
+        # Style updates
+        ax.grid(False)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        
+        # Set Ticks: Every 0.25s
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
+        
+        if has_data:
+            ax.legend(loc='upper right', fontsize='small', ncol=1, frameon=False)
+        else:
+            ax.text(0.5, 0.5, 'No valid data', ha='center', transform=ax.transAxes)
+
+    axes[-1].set_xlabel('Time (s)')
+    plt.tight_layout()
+    plt.show()
+
+# 2. Prepare Data
+# Extract time range -0.5 to 2.0
+# Assuming 'get_time_indexs' returns indices for slicing
+for n,t_range in zip((epoc_LexDelayRep_Aud, epoc_LexDelayRep_Go, epoc_LexDelayRep_Resp),
+                      ([-0.5, 2], [-0.5, 2], [-0.5, 2])):
+    m = n.take(get_time_indexs(n.labels[1], t_range[0], t_range[1]), axis=1)
+
+    sig = m.__array__()  # Signal data
+    chs = m.labels[0]    # Channel names
+    times = m.labels[1]  # Time points array
+
+    # 3. Run plotting with the 'times' argument
+    plot_nmf_components_by_roi_group(sig, chs, df_weights, times=times, group_col='Group')# %%
+
 # %%
