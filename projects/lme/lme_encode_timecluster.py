@@ -175,7 +175,7 @@ for alignment,xlim_align in zip(
         #                                          ([0.13, 0.001],[0.13, 0.001],[0.13, 0.001],[0.13, 0.001],[0.01, 0.001])):
         for fea, fea_tag, para_sig_barbar in zip(('ACC',),
                                                  ('ACC',),
-                                                 ([0.1, 0.01],)):
+                                                 ([0.07, 0.007],)):
             # for fea, fea_tag, para_sig_barbar in zip(('aco','pho'),
             #                                          ('Acoustic','Phonemic'),
             #                                          ([2, 0.1],[0.1, 0.03])):
