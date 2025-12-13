@@ -186,8 +186,8 @@ model_func <- function(current_data){
   }
   
   tp <- current_data$time[1]
-  #fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
-  fml <- as.formula(paste("value ~ 1 +", paste(paste0("sem", 1:67), collapse = " + ")))
+  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
+  #fml <- as.formula(paste("value ~ 1 +", paste(paste0("sem", 1:67), collapse = " + ")))
   ridge_alpha <- 0
   ridge_lambda_vWM <- current_data$ridge_lambda_vWM[1]
   ridge_lambda_novWM <- current_data$ridge_lambda_novWM[1]
@@ -240,7 +240,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 3e2#1e3
+  n_perm <- 0#3e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -314,29 +314,14 @@ delay_nodelays <- c("LexDelayRep")#c("LexDelayRep","LexNoDelay")
 alignments <- c("Aud","Go","Resp")
 #alignments <- c("Resp")
 # alignments <- c("Aud")
-elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')#,'Wgw_p55b','Wgw_a55b')
+# elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')
+elec_grps <- c('Wgw_p55b','Wgw_a55b')
 #elec_grps <- c('Motor')
 
 a = 0
 #Make fixed lambda (from cv or anything optimized)
-ridge_lambda1 <- data.frame( # lambda adjusted according to electrode size
-  vWM = c(10,  # Auditory vWM
-          20, # Sensorymotor vWM
-          20, # Motor vWM
-          10, # Delay only vWM
-          1,# Wgw_p55b
-          1),# Wgw_a55b
-  
-  novWM = c(60, # Auditory novWM
-            20, # Sensorymotor novWM
-            200,# Motor novWM
-            10,  # Delay only novWM (Sensorymotor novWM)
-            1,  # Wgw_p55b
-            1)# Wgw_a55b
-)
-rownames(ridge_lambda1) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')
 
-ridge_lambda2 <- data.frame( # lambda adjusted according to electrode size
+ridge_lambda_speech <- data.frame( # lambda adjusted according to electrode size
   vWM = c(20,  # Auditory vWM
           40, # Sensorymotor vWM
           40, # Motor vWM
@@ -351,10 +336,10 @@ ridge_lambda2 <- data.frame( # lambda adjusted according to electrode size
             1,  # Wgw_p55b
             1)# Wgw_a55b
 )
-rownames(ridge_lambda2) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')
+rownames(ridge_lambda_speech) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')
 
 
-ridge_lambda2_semantics <- data.frame( # lambda adjusted according to electrode size
+ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode size
   vWM = c(60,  # Auditory vWM
           80, # Sensorymotor vWM
           100, # Motor vWM
@@ -369,7 +354,7 @@ ridge_lambda2_semantics <- data.frame( # lambda adjusted according to electrode 
             1,  # Wgw_p55b
             1)# Wgw_a55b
 )
-rownames(ridge_lambda2_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')
+rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')
 
 
 #Make lambda combinations (for testing lambda effects by looping)
@@ -407,8 +392,8 @@ sem_fea_T$stim <- rownames(sem_fea_T)
 sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 
 #%% Start looping
-for (ridge_lambda in list(ridge_lambda2_semantics)){#list(ridge_lambda1,ridge_lambda2)){
-#for (lambda_test in c(1,10,20,40,60,80,100,200,300,400,500,600,700,800,900)){
+# for (ridge_lambda in list(ridge_lambda_speech)){#list(ridge_lambda1,ridge_lambda2)){
+for (lambda_test in c(1,10,20,40,60,80,100,200,300,400,500,600,700,800,900)){
   for (delay_nodelay in delay_nodelays){
     for (alignment in alignments){
       for (elec_grp in elec_grps){
@@ -479,7 +464,7 @@ for (ridge_lambda in list(ridge_lambda2_semantics)){#list(ridge_lambda1,ridge_la
         time_points <- unique(long_data$time)
         
         #for (lex in c("Word","Nonword",'All')){
-        lex<-'Word'
+        lex<-'All'
         if (lex!='All'){
           word_data <- long_data[long_data['wordness']==lex,]
           #%% append semantic features
@@ -491,13 +476,13 @@ for (ridge_lambda in list(ridge_lambda2_semantics)){#list(ridge_lambda1,ridge_la
         #%% Run computations
         
         #%% append ridge lambdas
-        word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
-        word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
+        # word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
+        # word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
         # current_pair <- all_pairs[lambda_pair, ]
         # word_data$ridge_lambda_vWM <- current_pair$First_Number
         # word_data$ridge_lambda_novWM <- current_pair$Second_Number
-        # word_data$ridge_lambda_vWM<-lambda_test
-        # word_data$ridge_lambda_novWM<-lambda_test
+        word_data$ridge_lambda_vWM<-lambda_test
+        word_data$ridge_lambda_novWM<-lambda_test
         cat("Re-formatting long data \n")
         data_by_time <- split(word_data, word_data$time)
         rm(word_data)
@@ -517,8 +502,8 @@ for (ridge_lambda in list(ridge_lambda2_semantics)){#list(ridge_lambda1,ridge_la
         
         print(perm_compare_df)
         
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
-        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
   
         }
       }
