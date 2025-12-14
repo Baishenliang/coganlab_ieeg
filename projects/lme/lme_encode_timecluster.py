@@ -35,6 +35,8 @@ Sensorimotor_col = [1, 0, 0]  # Sensorimotor
 Auditory_col = [0, 1, 0]  # Auditory
 Delay_col = [1, 0.65, 0]  # Delay
 Motor_col = [0, 0, 1]  # Motor
+WGW_p55b_col=[0.74901961, 0.25098039, 0.74901961] # WGW 55b
+WGW_a55b_col=[0, 0.5, 0.5] # WGW a55b
 
 # Feature colors
 aco_col = [0, 0.502, 0.502]      # Teal (青色)
@@ -153,13 +155,13 @@ baseline_beta_rms_std=dict()
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),
-                                                         (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
+    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b'),
+                                                         (Auditory_col,Sensorimotor_col,Motor_col,Delay_col,WGW_p55b_col,WGW_a55b_col),
                                                         #  (10, 20, 20, 10), # looser vWM lambdas
                                                         #  (60, 20, 200, 10), # looser novWM lambdas
-                                                         (20, 40, 40, 20), # stricter vWM lambdas
-                                                         (100, 40, 400, 20), # stricter novWM lambdas
-                                                         (2,0.8,0.7,1.3)):
+                                                         (20, 40, 40, 20,10,10), # stricter vWM lambdas
+                                                         (100, 40, 400, 20,10,10), # stricter novWM lambdas
+                                                         (2,0.8,0.7,1.3,1.2,1)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
         # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
@@ -246,11 +248,11 @@ for alignment,xlim_align in zip(
                         time_series = (time_series - baseline[elec_grp])
                     para_sig_bar = para_sig_barbar
 
-                if vWM=='vWM' or vWM=='novWM':
+                if vWM=='vWM' or (vWM == 'novWM' and "Wgw" not in elec_grp):
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
                 true_indices_by_vWM[vWM] = true_indices
-                if true_indices.size > 0 and (vWM == 'vWM' or vWM == 'novWM'):
+                if true_indices.size > 0 and (vWM == 'vWM' or (vWM == 'novWM' and "Wgw" not in elec_grp)):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
