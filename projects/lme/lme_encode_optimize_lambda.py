@@ -144,6 +144,13 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
 is_normalize=False
 is_bsl_correct=False
 mode='time_cluster'
+test_type='Speech'  #'Semantics' 'Speech'
+if test_type=='Semantics':
+    lex='Word'
+    test_lambda_save='test_lambda_semantics'
+elif test_type=='Speech':
+    lex='All'
+    test_lambda_save='test_lambda'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 baseline=dict()
@@ -155,9 +162,12 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
     for alignment,xlim_align in zip(
             ('Aud','Resp','Go'),
             ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-        for elec_grp,elec_col,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),#'Wgw_p55b','Wgw_a55b'),
-                                                            (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),#,Wgw_p55b_col,Wgw_a55b_col),
-                                                            (3.5,1.6,1.3,1.3)):#,2.0,2.0)):
+        # for elec_grp,elec_col,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),#'Wgw_p55b','Wgw_a55b'),
+        #                                                     (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),#,Wgw_p55b_col,Wgw_a55b_col),
+        #                                                     (3.5,1.6,1.3,1.3)):#,2.0,2.0)):
+        for elec_grp,elec_col,fea_plot_yscale in zip(('Wgw_p55b','Wgw_a55b'),
+                                                    (Wgw_p55b_col,Wgw_a55b_col),
+                                                    (2.0,2.0)):
             fea = 'ACC'
             fea_tag = 'ACC'
             para_sig_barbar = [0.2, 0.01]
@@ -169,7 +179,7 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
             fea_cols=gp.create_gradient(elec_col, len(test_lambdas)+1)[:-1]
             for i,test_lambda in enumerate(test_lambdas):
 
-                filename = f"results/LexDelayRep_{elec_grp}_{alignment}_Word_testλ_{test_lambda}.csv"
+                filename = f"results/LexDelayRep_{elec_grp}_{alignment}_{lex}_testλ_{test_lambda}.csv"
                 raw = pd.read_csv(filename)
 
                 input_r2 = 'p'
@@ -234,5 +244,5 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','test_lambda_semantics', f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_testλ.tif'), dpi=300)
+            plt.savefig(os.path.join('figs',test_lambda_save, f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_testλ.tif'), dpi=300)
             plt.close()
