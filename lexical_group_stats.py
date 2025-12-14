@@ -802,6 +802,7 @@ if groupsTag == "LexDelay":
             plt.savefig(os.path.join(fig_save_dir, f'{fname}_{tag}.jpg'), dpi=300)
             plt.close()
 
+    ele_codes = []
     for Hickok_roi_gp, col, tag in zip(
             (Spt_sig_idx, lPMC_sig_idx, lIFG_sig_idx,Wgw_p55b_sig_idx,Wgw_a55b_sig_idx),
             (Auditory_col, Sensorimotor_col, Motor_col,WGW_p55b_col,WGW_a55b_col),
@@ -912,6 +913,12 @@ if groupsTag == "LexDelay":
                         
                         Hickok_ROI_data_sort_sub = select_electrodes(Hickok_ROI_data_sort, hickok_sub_idx)
                         Hickok_ROI_epoch_sort_sub = select_electrodes(Hickok_ROI_epoch_sort, hickok_sub_idx)
+
+                        # save manually coded electrode types
+                        ele={'Group':tag,'manual_tag':hickok_sub_idx_tag,'chs':Hickok_ROI_data_sort_sub.labels[0].tolist()}
+                        ele_code=pd.DataFrame(data=ele)
+                        ele_codes.append(ele_code)
+
                         plot_chs(Hickok_ROI_epoch_sort_sub, os.path.join(fig_save_dir,
                                                                      f'Hickok_sig_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.jpg'),
                                  f'{tag} {hickok_sub_idx_tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
@@ -950,6 +957,24 @@ if groupsTag == "LexDelay":
                                 cluster_paras_Spt[hickok_sub_idx_tag] = {}
                             cluster_paras_Spt[hickok_sub_idx_tag][epoch_tag] = Hickok_ROI_epoch_sort_paras_tab
 
+                    # Brain plots of Spt clusters
+                    Hickok_roi_gp_arr = np.array(list(Hickok_roi_gp))
+                    Hickok_roi_gp_arr_sorted = Hickok_roi_gp_arr[list(Hickok_ROI_epoch_sort_idx)]
+                    Hickok_roi_gp_arr_sorted_aud_mtr = set(Hickok_roi_gp_arr_sorted[list(hickok_sub_idx_aud_mtr)])
+                    Hickok_roi_gp_arr_sorted_aud_onset = set(Hickok_roi_gp_arr_sorted[list(hickok_sub_idx_aud_onset)])
+                    Hickok_roi_gp_arr_sorted_aud_contin = set(Hickok_roi_gp_arr_sorted[list(hickok_sub_idx_aud_contin)])
+                    len_d = len(data_LexDelay_Aud.labels[0])
+                    TypeLabel = f'Hikock'
+                    cols = np.full((len_d, 3), 0.5)
+                    cols[list(Hickok_roi_gp_arr_sorted_aud_mtr), :] = create_gradient([0,1,0], len(Hickok_roi_gp_arr_sorted_aud_mtr) + 1)[:-1]
+                    cols[list(Hickok_roi_gp_arr_sorted_aud_onset), :] = create_gradient([1,165/255,0], len(Hickok_roi_gp_arr_sorted_aud_onset) + 1)[:-1]
+                    cols[list(Hickok_roi_gp_arr_sorted_aud_contin), :] = create_gradient([1,0,0], len(Hickok_roi_gp_arr_sorted_aud_contin) + 1)[:-1]
+                    cols_lst = cols[
+                        list(Hickok_roi_gp_arr_sorted_aud_mtr | Hickok_roi_gp_arr_sorted_aud_onset | Hickok_roi_gp_arr_sorted_aud_contin)].tolist()
+                    pick_labels = list(data_LexDelay_Aud.labels[0][list(Hickok_roi_gp_arr_sorted_aud_mtr | Hickok_roi_gp_arr_sorted_aud_onset | Hickok_roi_gp_arr_sorted_aud_contin)])
+                    plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'),
+                               0.3, 0.2)
+
                 elif tag == 'lPMC (dPCSA)':
                     hickok_sub_idx_aud_onset = np.array([8,11,18,24,26,33,35])-1
                     hickok_sub_idx_aud_contin = np.array([3,4,7,13,14,15,16,17,20,21,22,28,31])-1
@@ -962,6 +987,12 @@ if groupsTag == "LexDelay":
                         
                         Hickok_ROI_data_sort_sub = select_electrodes(Hickok_ROI_data_sort, hickok_sub_idx)
                         Hickok_ROI_epoch_sort_sub = select_electrodes(Hickok_ROI_epoch_sort, hickok_sub_idx)
+
+                        # save manually coded electrode types
+                        ele={'Group':tag,'manual_tag':hickok_sub_idx_tag,'chs':Hickok_ROI_data_sort_sub.labels[0].tolist()}
+                        ele_code=pd.DataFrame(data=ele)
+                        ele_codes.append(ele_code)
+
                         plot_chs(Hickok_ROI_epoch_sort_sub, os.path.join(fig_save_dir,
                                                                      f'Hickok_sig_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.jpg'),
                                  f'{tag} {hickok_sub_idx_tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
@@ -1013,6 +1044,12 @@ if groupsTag == "LexDelay":
                         
                         Hickok_ROI_data_sort_sub = select_electrodes(Hickok_ROI_data_sort, hickok_sub_idx)
                         Hickok_ROI_epoch_sort_sub = select_electrodes(Hickok_ROI_epoch_sort, hickok_sub_idx)
+
+                        # save manually coded electrode types
+                        ele={'Group':tag,'manual_tag':hickok_sub_idx_tag,'chs':Hickok_ROI_data_sort_sub.labels[0].tolist()}
+                        ele_code=pd.DataFrame(data=ele)
+                        ele_codes.append(ele_code)
+
                         plot_chs(Hickok_ROI_epoch_sort_sub, os.path.join(fig_save_dir,
                                                                      f'Hickok_sig_alg_resp_{tag}_{epoch_tag}_{hickok_sub_idx_tag}.jpg'),
                                  f'{tag} {hickok_sub_idx_tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
@@ -1051,24 +1088,6 @@ if groupsTag == "LexDelay":
                                 cluster_paras_lIFG[hickok_sub_idx_tag] = {}
                             cluster_paras_lIFG[hickok_sub_idx_tag][epoch_tag] = Hickok_ROI_epoch_sort_paras_tab
 
-                    # Brain plots of Spt clusters
-                    Hickok_roi_gp_arr = np.array(list(Hickok_roi_gp))
-                    Hickok_roi_gp_arr_sorted = Hickok_roi_gp_arr[list(Hickok_ROI_epoch_sort_idx)]
-                    Hickok_roi_gp_arr_sorted_aud_mtr = set(Hickok_roi_gp_arr_sorted[list(hickok_sub_idx_aud_mtr)])
-                    Hickok_roi_gp_arr_sorted_aud_onset = set(Hickok_roi_gp_arr_sorted[list(hickok_sub_idx_aud_onset)])
-                    Hickok_roi_gp_arr_sorted_aud_contin = set(Hickok_roi_gp_arr_sorted[list(hickok_sub_idx_aud_contin)])
-                    len_d = len(data_LexDelay_Aud.labels[0])
-                    TypeLabel = f'Hikock'
-                    cols = np.full((len_d, 3), 0.5)
-                    cols[list(Hickok_roi_gp_arr_sorted_aud_mtr), :] = create_gradient([0,1,0], len(Hickok_roi_gp_arr_sorted_aud_mtr) + 1)[:-1]
-                    cols[list(Hickok_roi_gp_arr_sorted_aud_onset), :] = create_gradient([1,165/255,0], len(Hickok_roi_gp_arr_sorted_aud_onset) + 1)[:-1]
-                    cols[list(Hickok_roi_gp_arr_sorted_aud_contin), :] = create_gradient([1,0,0], len(Hickok_roi_gp_arr_sorted_aud_contin) + 1)[:-1]
-                    cols_lst = cols[
-                        list(Hickok_roi_gp_arr_sorted_aud_mtr | Hickok_roi_gp_arr_sorted_aud_onset | Hickok_roi_gp_arr_sorted_aud_contin)].tolist()
-                    pick_labels = list(data_LexDelay_Aud.labels[0][list(Hickok_roi_gp_arr_sorted_aud_mtr | Hickok_roi_gp_arr_sorted_aud_onset | Hickok_roi_gp_arr_sorted_aud_contin)])
-                    plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'),
-                               0.3, 0.2)
-
                 # brain plot (sig vs. nonsig before onset)
                 cols = np.full((len_d, 3), 0.5)
                 for col_idx_i in range(len(Hickok_roi_gp)):
@@ -1086,6 +1105,11 @@ if groupsTag == "LexDelay":
                     x=cluster_paras_Spt[hickok_sub_idx_tag]['Stim']['activity_length']
                     y=cluster_paras_Spt[hickok_sub_idx_tag]['Resp']['rms_value']
                     Hickok_aud_resp_corr(x, y, fig_save_dir, f"{tag}_{hickok_sub_idx_tag}", col, fname = f'Hickok_aud_resp_corr_Spt_{hickok_sub_idx_tag}')
+
+    if ele_codes:
+        ele_codes_df = pd.concat(ele_codes, ignore_index=True)
+        ele_codes_df_uni = ele_codes_df.drop_duplicates()
+        ele_codes_df_uni.to_csv(os.path.join('projects','Greg_ROIs', 'Hickok_ROI_electrode_manual_coding.csv'), index=False)
 
     # Count subj electrods in each Hickok region
     Spt_subj_elec = data_LexDelay_Aud.labels[0][list(Lex_idxes['Hikock_Spt'])]
