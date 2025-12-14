@@ -124,7 +124,7 @@ from sklearn.decomposition import NMF
 from scipy.cluster.hierarchy import linkage, cophenet
 from scipy.spatial.distance import squareform
 
-def evaluate_nmf_stability(X, k_range, n_repeats=50):
+def evaluate_nmf_stability(X, k_range, n_repeats=500):
     """
     Evaluate NMF model stability and reconstruction error across a range of ranks (k).
     
@@ -269,17 +269,25 @@ H = model.components_
 
 # --- 3. Plotting: Show Traces of Components ---
 plt.figure(figsize=(12, 4))
+MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
+Sensorimotor_col = [1, 0, 0]  # Sensorimotor
+Auditory_col = [0, 1, 0]  # Auditory
+Delay_col = [1, 0.65, 0]  # Delay
+Motor_col = [0, 0, 1]  # Motor
+WGW_p55b_col=[0.74901961, 0.25098039, 0.74901961] # WGW 55b
+WGW_a55b_col=[0, 0.5, 0.5] # WGW a55b
 colors = [
-    '#1f77b4', # Blue
-    '#ff7f0e', # Orange
-    '#2ca02c', # Green
-    '#d62728', # Red
+    Motor_col, # Blue
+    Auditory_col, # Orange
+    Delay_col, # Green
+    Sensorimotor_col, # Red
     '#7f7f7f', # Grey
     '#9467bd', # Purple
     '#8c564b'  # Brown
 ]
+comp_names = ['Motor', 'Auditory_early', 'Delay', 'Auditory_late']
 for i in range(n_components):
-    plt.plot(H[i], label=f'Component {i+1}', color=colors[i], linewidth=2)
+    plt.plot(H[i], label=comp_names[i], color=colors[i], linewidth=2)
 
 plt.title('NMF Temporal Components (Traces)')
 plt.xlabel('Time Points')
@@ -291,14 +299,14 @@ plt.show()
 
 # --- 4. Generate DataFrame: Electrode Contributions ---
 # Create base DataFrame
-df_weights = pd.DataFrame(W, columns=[f'Comp_{i+1}_Weight' for i in range(n_components)])
+df_weights = pd.DataFrame(W, columns=comp_names)
 
 # Insert electrode information (Channel and Group)
 df_weights.insert(0, 'Channel', final_chs)
 df_weights.insert(1, 'Group', final_grps)
 
 # (Optional) Identify the dominant component for each electrode
-df_weights['Dominant_Comp'] = df_weights[[f'Comp_{i+1}_Weight' for i in range(n_components)]].idxmax(axis=1)
+df_weights['Dominant_Comp'] = df_weights[comp_names].idxmax(axis=1)
 
 # Display first few rows
 print("Electrode Weights DataFrame (First 5 rows):")
@@ -309,22 +317,19 @@ import numpy as np
 
 # --- 1. Calculate Mean Weights per Group ---
 # (Exactly as you requested)
-df_mean_weights = df_weights.groupby('Group')[[f'Comp_{i+1}_Weight' for i in range(n_components)]].mean()
+df_mean_weights = df_weights.groupby('Group')[comp_names].mean()
 
 # --- 2. Setup Colors ---
 # Create a consistent color map for the groups so "Hickok_Spt" is the same color in all charts
 groups = df_mean_weights.index
 # Use a colormap (e.g., 'tab20' is good for categorical data)
-colors = plt.get_cmap('tab20')(np.linspace(0, 1, len(groups)))
+# colors = plt.get_cmap('tab20')(np.linspace(0, 1, len(groups)))
 color_dict = dict(zip(groups, colors))
 
 # --- 3. Plot Pie Charts ---
 fig, axes = plt.subplots(1, 4, figsize=(18, 6))
 
-components_to_plot = [0,1,2,3]  # Corresponds to Components 4, 5, and 6
-
-for i, comp_idx in enumerate(components_to_plot):
-    col_name = f'Comp_{comp_idx+1}_Weight'
+for i, col_name in enumerate(comp_names):
     ax = axes[i]  # Use the enumerated index for the subplot axis
     
     # Get data for this component
@@ -341,7 +346,7 @@ for i, comp_idx in enumerate(components_to_plot):
         textprops={'fontsize': 30}
     )
     
-    ax.set_title(f'Component {comp_idx+1}\nMean Weight Distribution', fontsize=14, fontweight='bold')
+    ax.set_title(f'{col_name}\nMean Weight Distribution', fontsize=14, fontweight='bold')
 
 plt.tight_layout()
 plt.show()
@@ -416,6 +421,54 @@ def export_electrode_weights(W, electrode_names=None):
 
 # View the first few rows
 print(df_weights.head().round(3))
+manual_coding=pd.read_csv(os.path.join('..','Greg_ROIs', 'Hickok_ROI_electrode_manual_coding.csv'))
+manual_coding = manual_coding.rename(columns={'chs': 'Channel'})
+manual_coding = manual_coding.merge(df_weights[['Channel', 'Dominant_Comp']].drop_duplicates(), on='Channel', how='left')
+
+comp_color_map = dict(zip(comp_names, colors[:len(comp_names)]))
+
+unique_groups = manual_coding['Group'].unique()
+for group in unique_groups:
+    group_data = manual_coding[manual_coding['Group'] == group]
+    unique_tags = group_data['manual_tag'].unique()
+    fig, axes = plt.subplots(1, len(unique_tags), figsize=(5 * len(unique_tags), 6))
+    if len(unique_tags) == 1:
+        axes = [axes]
+    for i, tag in enumerate(unique_tags):
+        ax = axes[i]
+        tag_data = group_data[group_data['manual_tag'] == tag]
+        if not tag_data.empty:
+            type_counts = tag_data['Dominant_Comp'].value_counts()
+            pie_colors = [comp_color_map[comp] for comp in type_counts.index]
+            ax.pie(type_counts, labels=type_counts.index, autopct=lambda p: '{:.0f}'.format(p * sum(type_counts) / 100), startangle=140, textprops={'fontsize': 16}, colors=pie_colors)
+        ax.set_title(f'{group}\n{tag}', fontsize=18)
+    plt.tight_layout()
+    plt.show()
+
+ch_to_idx = {ch: i for i, ch in enumerate(final_chs)}
+
+for group in unique_groups:
+    group_data = manual_coding[manual_coding['Group'] == group]
+    unique_tags = group_data['manual_tag'].unique()
+    for tag in unique_tags:
+        tag_data = group_data[group_data['manual_tag'] == tag]
+        unique_comps = tag_data['Dominant_Comp'].unique()
+        for comp in unique_comps:
+            channels = tag_data[tag_data['Dominant_Comp'] == comp]['Channel'].tolist()
+            indices = [ch_to_idx[ch] for ch in channels if ch in ch_to_idx]
+            
+            if not indices:
+                continue
+                
+            traces = final_array[indices, :]
+            
+            plt.figure(figsize=(12, 4))
+            plt.plot(traces.T, color=comp_color_map[comp], alpha=0.5, linewidth=0.8)
+            plt.title(f'Traces for {group} | {tag} | {comp} (n={len(indices)})')
+            plt.xlabel('Time Points')
+            plt.ylabel('Amplitude')
+            plt.tight_layout()
+            plt.show()
 
 # Export to CSV for further analysis
 # df_weights.to_csv('NMF_Electrode_Weights.csv', index=False)
@@ -453,7 +506,7 @@ def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col
     else:
         time_axis = np.arange(sig.shape[1]) / fs
     
-    comp_cols = [c for c in df_weights.columns if c.startswith('Comp_') and not c.endswith('Percent')]
+    comp_cols = [c for c in df_weights.columns if c not in ['Channel', 'Group', 'Dominant_Comp'] and not c.endswith('Percent')]
     
     if group_col not in df_weights.columns:
         raise KeyError(f"Column '{group_col}' not found in df_weights.")
