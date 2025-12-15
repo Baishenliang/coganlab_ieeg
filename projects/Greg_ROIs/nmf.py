@@ -3,6 +3,8 @@
 import os
 import pickle
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 HOME = os.path.expanduser("~")
 LAB_root = os.path.join(HOME, "Box", "CoganLab")
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
@@ -37,6 +39,7 @@ def get_time_indexs(time_str,start_float:float=0,end_float:float=delay_len):
 def rearrange_elects(elec_grps, elec_idxs, epoc,t_range:list=[-0.5, 2]):
     data_list = []
     chs_list = []
+    times_list = None
     grp_list = []
 
     for elec_grp, elec_idx in zip(elec_grps, elec_idxs):
@@ -44,15 +47,18 @@ def rearrange_elects(elec_grps, elec_idxs, epoc,t_range:list=[-0.5, 2]):
         m_chs = epoc.take(list(LexDelay_twin_idxes[elec_idx]), axis=0)
         m = m_chs.take(get_time_indexs(m_chs.labels[1], t_range[0], t_range[1]), axis=1)
         m_chs_labels = m.labels[0]
+        m_times = m.labels[1].tolist()
         m_data = m.__array__()
         print(f'max time point {[m_data.shape[1]-1]}')
 
         data_list.append(m_data)
         chs_list.extend(m_chs_labels)
+        if times_list is None:
+            times_list = m_times 
         grp_list.extend([elec_grp] * len(m_chs_labels))
 
     if data_list:
-        return np.vstack(data_list), chs_list, grp_list
+        return np.vstack(data_list), chs_list, times_list, grp_list
     else:
         return np.empty((0, 450)), [], []
 
@@ -95,6 +101,7 @@ if groupsTag=="LexDelay&LexNoDelay":
 
 arrays_to_hstack = []
 final_chs = None
+final_times = []
 final_grps = None
 
 if groupsTag=="LexDelay":
@@ -104,14 +111,28 @@ if groupsTag=="LexDelay":
     # elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
     for epoc,t_range in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ([-0.5, 2], [-0.5, 1.5], [-0.5, 2])):
-        curr_arr, curr_chs, curr_grps = rearrange_elects(elec_grps, elec_idxs, epoc,t_range=t_range)
+        curr_arr, curr_chs, curr_times, curr_grps = rearrange_elects(elec_grps, elec_idxs, epoc,t_range=t_range)
         arrays_to_hstack.append(curr_arr)
+        final_times.extend(curr_times)
     
         if final_chs is None:
             final_chs = curr_chs
             final_grps = curr_grps
 
     final_array = np.hstack(arrays_to_hstack)
+    final_times = np.array(final_times, dtype=float)
+
+    # Setup for non-linear time axis (concatenated epochs)
+    x_linear = np.arange(len(final_times))
+    tick_indices = [i for i, t in enumerate(final_times) if abs(t - round(t / 0.25) * 0.25) < 1e-4]
+    zero_indices = [i for i, t in enumerate(final_times) if abs(t) < 1e-4]
+    minus_point_five_indices = [i for i, t in enumerate(final_times) if abs(t + 0.5) < 1e-4]
+    def time_formatter(x, pos):
+        idx = int(x)
+        if 0 <= idx < len(final_times):
+            if abs(final_times[idx] + 0.5) < 1e-4: return ""
+            return f"{final_times[idx]:.2f}".rstrip('0').rstrip('.')
+        return ""
 
 if final_array.min() < 0:
     print(f"Negative values detected (min={final_array.min():.2f}). Shifting data to satisfy NMF non-negativity constraint...")
@@ -244,7 +265,6 @@ plot_stability_metrics(metrics)
 #%% NMF
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.decomposition import NMF
 
 # --- 1. Data Preprocessing (NMF requires non-negative input) ---
@@ -285,15 +305,25 @@ colors = [
     '#9467bd', # Purple
     '#8c564b'  # Brown
 ]
-comp_names = ['Motor', 'Auditory_early', 'Delay', 'Auditory_late']
+comp_names = ['Motor', 'Auditory', 'Delay', 'Auditory_motor']
+
+
 for i in range(n_components):
-    plt.plot(H[i], label=comp_names[i], color=colors[i], linewidth=2)
+    plt.plot(x_linear, H[i], label=comp_names[i], color=colors[i], linewidth=2)
+for idx in zero_indices:
+    plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
+for idx in minus_point_five_indices:
+    plt.axvline(x=idx, color='k', linestyle='-', linewidth=1, alpha=0.5)
 
 plt.title('NMF Temporal Components (Traces)')
-plt.xlabel('Time Points')
+plt.xlabel('Time (s)')
+plt.gca().xaxis.set_major_locator(ticker.FixedLocator(tick_indices))
+plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(time_formatter))
 plt.ylabel('Amplitude (Arbitrary Unit)')
-plt.legend()
+plt.legend(fontsize=14)
 plt.grid(True, alpha=0.3)
+plt.gca().spines['top'].set_visible(False)
+plt.gca().spines['right'].set_visible(False)
 plt.tight_layout()
 plt.show()
 
@@ -324,7 +354,7 @@ df_mean_weights = df_weights.groupby('Group')[comp_names].mean()
 groups = df_mean_weights.index
 # Use a colormap (e.g., 'tab20' is good for categorical data)
 # colors = plt.get_cmap('tab20')(np.linspace(0, 1, len(groups)))
-color_dict = dict(zip(groups, colors))
+color_dict = dict(zip(groups, colors[3:3+len(groups)]))  # Adjust color selection as needed
 
 # --- 3. Plot Pie Charts ---
 fig, axes = plt.subplots(1, 4, figsize=(18, 6))
@@ -463,10 +493,18 @@ for group in unique_groups:
             traces = final_array[indices, :]
             
             plt.figure(figsize=(12, 4))
-            plt.plot(traces.T, color=comp_color_map[comp], alpha=0.5, linewidth=0.8)
+            plt.plot(x_linear, traces.T, color=comp_color_map[comp], alpha=0.5, linewidth=2)
+            for idx in zero_indices:
+                plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
+            for idx in minus_point_five_indices:
+                plt.axvline(x=idx, color='k', linestyle='-', linewidth=1, alpha=0.5)
             plt.title(f'Traces for {group} | {tag} | {comp} (n={len(indices)})')
-            plt.xlabel('Time Points')
+            plt.xlabel('Time (s)')
+            plt.gca().xaxis.set_major_locator(ticker.FixedLocator(tick_indices))
+            plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(time_formatter))
             plt.ylabel('Amplitude')
+            plt.gca().spines['top'].set_visible(False)
+            plt.gca().spines['right'].set_visible(False)
             plt.tight_layout()
             plt.show()
 
@@ -568,9 +606,11 @@ def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col
         
         # Set Ticks: Every 0.25s
         ax.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
+        ax.axvline(x=0, color='k', linestyle='--', linewidth=1, alpha=0.5)
+        ax.axvline(x=-0.5, color='k', linestyle='-', linewidth=1, alpha=0.5)
         
         if has_data:
-            ax.legend(loc='upper right', fontsize='small', ncol=1, frameon=False)
+            ax.legend(loc='upper right', fontsize=14, ncol=1, frameon=False)
         else:
             ax.text(0.5, 0.5, 'No valid data', ha='center', transform=ax.transAxes)
 
