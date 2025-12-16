@@ -35,6 +35,8 @@ Sensorimotor_col = [1, 0, 0]  # Sensorimotor
 Auditory_col = [0, 1, 0]  # Auditory
 Delay_col = [1, 0.65, 0]  # Delay
 Motor_col = [0, 0, 1]  # Motor
+WGW_p55b_col=[0.74901961, 0.25098039, 0.74901961] # WGW 55b
+WGW_a55b_col=[0, 0.5, 0.5] # WGW a55b
 
 # Feature colors
 aco_col = [0, 0.502, 0.502]      # Teal (青色)
@@ -153,13 +155,11 @@ baseline_beta_rms_std=dict()
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only'),
-                                                         (Auditory_col,Sensorimotor_col,Motor_col,Delay_col),
-                                                        #  (10, 20, 20, 10), # looser vWM lambdas
-                                                        #  (60, 20, 200, 10), # looser novWM lambdas
-                                                         (60, 80, 100, 20), # stricter vWM lambdas
-                                                         (150, 60, 450, 20), # stricter novWM lambdas
-                                                         (3.5,1.6,1.3,1.3)):
+    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b'),
+                                                         (Auditory_col,Sensorimotor_col,Motor_col,Delay_col,WGW_p55b_col,WGW_a55b_col),
+                                                         (40, 100, 80, 40,20,20), # vWM lambdas
+                                                         (200, 100, 500, 40,20,20), # novWM lambdas
+                                                         (3.5,1.6,1.3,1.3,1.2,1)):
 
         for fea, fea_tag, para_sig_barbar in zip(('ACC',),
                                                  ('ACC',),
@@ -226,7 +226,7 @@ for alignment,xlim_align in zip(
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
                 true_indices_by_vWM[vWM] = true_indices
-                if true_indices.size > 0 and (vWM == 'vWM_p' or vWM == 'novWM_p'):
+                if true_indices.size > 0 and (vWM == 'vWM' or vWM == 'novWM'):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
@@ -274,3 +274,164 @@ for alignment,xlim_align in zip(
             plt.tight_layout()
             plt.savefig(os.path.join('figs','semantics', f'{elec_grp}_{fea_tag}_{alignment}_Word_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=100)
             plt.close()
+
+            # %%  Now plot the beta traces for each feature
+            group_beta_type='max' # 'rms' or 'max'
+            raw_org = raw[raw['perm'] == 0]
+            
+            for is_vWM in ('_vWM','_novWM'):#','wordnessWord:aco','wordnessWord:pho'):
+
+                all_rms_data = {}
+                all_rms_data_sig = {}
+                time_points_plot = None
+                            # Define a color map for features for better visualization
+                feature_colors = {
+                    'aco': aco_col,
+                    'pho': pho_col,
+                    'sem': wordness_col
+                }
+
+                for fea in ('aco','pho','sem'):#,'wordnessWord:pho'):#,'wordnessWord:aco'
+                    print(f'Feature beta plots for {fea}')
+                    fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(fea) and is_vWM in col]
+                    raw_org_fea = raw_org[fea_columns].copy()
+
+                    # Calculate the root-mean-square across all 'aco' columns
+                    rms_cols = [col for col in fea_columns if col != 'time_point']
+                    if group_beta_type == 'rms':
+                        raw_org_fea['rms'] = np.sqrt(raw_org_fea[rms_cols].pow(2).mean(axis=1))
+                    elif group_beta_type == 'max':
+                        max_abs_beta = raw_org_fea[rms_cols].abs().max(axis=1)
+                        n_cols = len(rms_cols)
+                        raw_org_fea['rms'] = max_abs_beta / np.sqrt(n_cols)
+                    all_rms_data[fea] = raw_org_fea.groupby('time_point')['rms'].mean()
+                    # Also for data with permutations
+                    fea_columns_perm = ['perm']+fea_columns
+                    raw_fea = raw[fea_columns_perm].copy()
+                    if group_beta_type == 'rms':
+                        raw_fea['rms'] = np.sqrt(raw_fea[rms_cols].pow(2).mean(axis=1))
+                    elif group_beta_type == 'max':
+                        max_abs_beta = raw_fea[rms_cols].abs().max(axis=1)
+                        n_cols = len(rms_cols)
+                        raw_fea['rms'] = max_abs_beta / np.sqrt(n_cols)
+                    raw_fea = raw_fea[['perm', 'time_point', 'rms']]
+                    pthres=[1e-2,1e-2]
+                    time_point, time_series, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1],mode=mode,target_fea='rms',input='R2')
+                    true_indices = np.where(mask_time_clus)[0]
+                    all_rms_data_sig[fea] = true_indices
+
+                    # Plotting the acoustic features from raw_org_aco
+                    fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
+                    ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
+                    add_alignment_vlines(ax, alignment)
+                    if time_points_plot is None:
+                        time_points_plot = sorted(raw_org_fea['time_point'].unique())
+
+                    # Pivot the table to have time_point as index and features as columns
+                    plot_cols = [col for col in fea_columns if col != 'time_point'] + ['rms']
+                    raw_org_fea_plot = raw_org_fea.pivot_table(index='time_point', columns=None, values=plot_cols)
+
+                    fea_cols=gp.create_gradient(feature_colors[fea], raw_org_fea_plot.shape[1])[:-1]
+                    for i, col in enumerate(raw_org_fea_plot.columns):
+                        if col == 'rms':
+                            ax.plot(time_points_plot, raw_org_fea_plot[col], label='RMS', color='grey', linewidth=4, alpha=0.8)
+                        else:
+                            ax.plot(time_points_plot, raw_org_fea_plot[col], label=col,color=fea_cols[i-1])
+
+                    # ax.set_xlabel("Time (secs)")
+                    # ax.set_ylabel("β")
+                    ax.tick_params(axis='both', which='major')#, labelsize=16)
+                    ax.ticklabel_format(
+                        axis='y',
+                        style='sci',
+                        scilimits=(-2, -2),  # 将指数固定为 10^-3
+                        useMathText=True  # 使用 LaTeX 格式显示指数，如 10⁻³
+                    )
+                    ax.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
+                    ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
+                    # ax.legend(fontsize=18)
+                    ax.set_xlim(xlim_align)#time_point.max())
+                    ax.spines['top'].set_visible(False)
+                    ax.spines['right'].set_visible(False)
+                    ax.set_ylim(-1e-2*fea_plot_yscale,1e-2*fea_plot_yscale)
+                    plt.tight_layout()
+                    plt.savefig(os.path.join('figs', 'semantics', f'{elec_grp}_{alignment}_{is_vWM}_{fea.replace(":", "_")}_betas.tif'), dpi=100)
+                    plt.close(fig)
+
+                # %% Plot all collected RMS traces
+                # if elec_grp!='Motor' or alignment!='Aud':
+                fig_rms, ax_rms = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
+                # elif elec_grp=='Motor' and alignment=='Aud':
+                #     fig_rms, ax_rms = plt.subplots(figsize=(5.6*(1.4/2.15)*(xlim_align[1]-xlim_align[0]), 5))
+                ax_rms.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
+                add_alignment_vlines(ax_rms, alignment)
+
+                j=0
+                for fea, rms_series in all_rms_data.items():
+                    # Normalize or baseline correction
+                    if alignment == 'Aud':
+                        if elec_grp not in baseline_beta_rms: # Initialize inner dicts if they don't exist
+                            baseline_beta_rms[elec_grp] = {}
+                            baseline_beta_rms_std[elec_grp] = {}
+                        baseline_beta_rms[elec_grp][fea] = np.min(rms_series[(np.array(time_points_plot) > -0.2) & (np.array(time_points_plot) <= 0)])
+                        baseline_beta_rms_std[elec_grp][fea]=np.std(rms_series[(np.array(time_points_plot) > -0.2) & (np.array(time_points_plot) <= 0)])
+                    if is_normalize:
+                        rms_series = (rms_series - baseline_beta_rms[elec_grp][fea]) / baseline_beta_rms_std[elec_grp][fea]
+                        rms_series = rms_series/ (np.max(rms_series[(np.array(time_points_plot) > xlim_align[0]) & (np.array(time_points_plot) <= xlim_align[1])]) - np.min((np.array(time_points_plot) > xlim_align[0]) & (np.array(time_points_plot) <= xlim_align[1])))
+                    else:
+                        if is_bsl_correct:
+                            rms_series = (rms_series - baseline_beta_rms[elec_grp][fea])
+                    rms_series=gaussian_filter1d(rms_series, sigma=2, mode='nearest')
+                    # Use the defined color for the feature, or a default color if not specified
+                    color = feature_colors.get(fea, '#333333')  # Default to a dark grey
+                    # Use dashed lines for interaction terms
+                    linestyle = '--' if ':' in fea else '-'
+                    ax_rms.plot(time_points_plot, rms_series, label=fea, linewidth=3, color=color, linestyle=linestyle)
+
+                    true_indices = all_rms_data_sig[fea]
+                    if is_vWM == '_vWM':
+                        is_vWM_label = 'vWM'
+                    elif is_vWM == '_novWM':
+                        is_vWM_label = 'novWM'
+                    true_indices_mask=true_indices_by_vWM[is_vWM_label]
+                    true_indices = np.intersect1d(true_indices, true_indices_mask)
+                    if true_indices.size > 0:
+                        split_points = np.where(np.diff(true_indices) != 1)[0] + 1
+                        clusters_indices = np.split(true_indices, split_points)
+
+                        for k, cluster in enumerate(clusters_indices):
+                            start_index = cluster[0]
+                            end_index = cluster[-1]
+
+                            time_step = time_points_plot[1] - time_points_plot[0]
+                            start_time = time_points_plot[start_index] - time_step / 2
+                            end_time = time_points_plot[end_index] + time_step / 2
+
+                            label = f'clust{k} of pho'
+                            ax_rms.plot([start_time, end_time], [1e-2*fea_plot_yscale-(1e-3)*(j-1),1e-2*fea_plot_yscale-(1e-3)*(j-1)],
+                                    color=color,alpha=0.4,
+                                    linewidth=5,  # Make the line thick like a bar
+                                    solid_capstyle='butt')  # Makes the line ends flat
+                        j=j+1
+
+                # ax_rms.set_xlabel("Time (secs)")
+                # ax_rms.set_ylabel("RMS of βs")
+                # ax_rms.set_title(f"Feature Set RMS ({elec_grp} - {alignment})")
+                ax_rms.tick_params(axis='both', which='major')
+                ax_rms.ticklabel_format(
+                    axis='y',
+                    style='sci',
+                    scilimits=(-2, -2),
+                    useMathText=True
+                )
+                ax_rms.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
+                ax_rms.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
+                # ax_rms.legend(fontsize=18)
+                ax_rms.set_xlim(xlim_align)
+                # if elec_grp=='Motor' and alignment=='Aud':
+                #     ax_rms.set_xlim([0.5,xlim_align[1]])
+                ax_rms.spines['top'].set_visible(False)
+                ax_rms.spines['right'].set_visible(False)
+                plt.tight_layout()
+                plt.savefig(os.path.join('figs', 'semantics', f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
+                plt.close(fig_rms)
