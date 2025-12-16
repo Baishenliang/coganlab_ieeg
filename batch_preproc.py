@@ -544,13 +544,13 @@ for subject, processing_type in subject_processing_dict.items():
                 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 # 我觉得应该好好检查一下这个is_bsl_correct，如果不是两个信号直接比较的话应该选True吧。那么原本的数据会错吗？应该是错的代码没有跑过新的数据吧anyway到时候BIDS完今年的被试应该要认真看看的。
                 # Just a temporal option for Greg Hickok's whole trial epoches aligned to different onsets
-                # gamma_epoc_zip = zip(
-                #     ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                #     ((-0.5, 6), (-2.5, 4), (-4.5, 2), (-5, 1.5)),
-                #     ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep'),
-                #     (True, True, True, True)
-                # )
+                gamma_epoc_zip = zip(
+                    ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                    ((-0.5, 6), (-2.5, 4), (-4.5, 2), (-5, 1.5)),
+                    ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep'),
+                    (True, True, True, True)
+                )
                 # gamma_epoc_zip = zip(
                 #     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT'),
                 #     ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT'),
@@ -558,13 +558,13 @@ for subject, processing_type in subject_processing_dict.items():
                 #     ('Cue_inRep','Auditory_inRep'),
                 #     (True,True)
                 # )
-                gamma_epoc_zip = zip(
-                    ('Auditory_stim/Repeat/CORRECT',),
-                    ('Cue/Repeat/CORRECT',),
-                    ((-2.5, 4),),
-                    ('Auditory_inRep',),
-                    (True,)
-                )
+                # gamma_epoc_zip = zip(
+                #     ('Auditory_stim/Repeat/CORRECT',),
+                #     ('Cue/Repeat/CORRECT',),
+                #     ((-2.5, 4),),
+                #     ('Auditory_inRep',),
+                #     (True,)
+                # )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
                 # gamma_epoc_zip=zip(
@@ -656,7 +656,7 @@ for subject, processing_type in subject_processing_dict.items():
 
                 sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
 
-                is_perm=True
+                is_perm=False
                 if is_perm:
                     # time-perm  (test whether signal is greater than baseline, p=0.05 as it is a one-tailed test)
                     if Task_Tag=='LexicalDecRepDelay' and (epoch_phase=='Auditory_inYN' or epoch_phase=='Resp_inYN'):
