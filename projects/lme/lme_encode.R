@@ -49,68 +49,6 @@ model_func <- function(current_data){
   }
   
   # Ridge regression model
-  ridge <- function(fml, current_data, alpha, lambda_val) {
-    
-    mf <- model.frame(fml, data = current_data, na.action = na.exclude)
-    X <- model.matrix(fml, data = mf)[, -1]
-    y <- model.response(mf)
-    
-    final_lambda <- NULL
-    model_fit <- NULL
-    
-    if (lambda_val <= 0) {
-      
-      lambda_seq <- 10^seq(4, -4, by = -.1) 
-      
-      ridge_cv <- cv.glmnet(
-        x = X, 
-        y = y, 
-        alpha = alpha,
-        lambda = lambda_seq,
-        nfolds = 10 
-      )
-      
-      final_lambda <- ridge_cv$lambda.min
-      model_fit <- ridge_cv
-      
-      pred <- predict(object = model_fit, s = final_lambda, newx = X)
-      
-    } else {
-      
-      final_lambda <- lambda_val
-      
-      fit <- glmnet(
-        x = X, 
-        y = y, 
-        alpha = alpha,
-        lambda = final_lambda
-      )
-      
-      model_fit <- fit
-      pred <- predict(object = model_fit, s = final_lambda, newx = X)
-    }
-    
-    raw_coefs <- coef(model_fit, s = final_lambda) 
-    coefs <- as.vector(raw_coefs)
-    names(coefs) <- rownames(raw_coefs)
-    
-    actual <- y
-    rss <- sum((pred - actual) ^ 2)
-    tss <- sum((actual - mean(actual)) ^ 2)
-    rsq <- 1 - rss/tss
-    n <- length(y)
-    mse_train <- rss / n
-    p <- ncol(X)
-    adj_rsq <- 1 - ((1 - rsq) * (n - 1) / (n - p - 1))
-    
-    result_list <- list(
-      R2_Train = adj_rsq,
-      Lambda_Used = final_lambda,
-      Coefficients = coefs
-    )
-    
-    return(result_list)
-  }
   
   ridge_cv_predict <- function(fml, current_data, alpha, lambda_val, k_folds = 10) {
     
@@ -197,18 +135,6 @@ model_func <- function(current_data){
   # lambda > 0 : do ridge with fixed lambda 
   current_data_vWM <- current_data[current_data$vWM == 1, ]
   current_data_novWM <- current_data[current_data$vWM == 0, ]
-  
-  # regression version
-  # ridge_vWM<-ridge(fml, current_data_vWM, ridge_alpha,ridge_lambda)
-  # ridge_novWM<-ridge(fml, current_data_novWM, ridge_alpha,ridge_lambda)
-  # perm_compare_df_i <- data.frame(
-  #   perm = 0,
-  #   time_point = tp,
-  #   R2_vWM = ridge_vWM$R2_Train,
-  #   R2_novWM = ridge_novWM$R2_Train,
-  #   R2_diff = ridge_vWM$R2_Train-ridge_novWM$R2_Train
-  # )
-  # 
   
   # machine learning version
   ridge_vWM<-ridge_cv_predict(fml, current_data_vWM, ridge_alpha,ridge_lambda_vWM)
