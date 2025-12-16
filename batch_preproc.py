@@ -25,63 +25,63 @@ from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_
 from matplotlib import pyplot as plt
 
 # %% Subj list
-# subject_processing_dict_org = {
-#     "D0023": "gamma",
-#     "D0024": "gamma",
-#     "D0026": "gamma",
-#     "D0027": "gamma",
-#     "D0028": "gamma",
-#     "D0029": "gamma",
-#     "D0032": "gamma",
-#     "D0035": "gamma",
-#     "D0038": "gamma",
-#     "D0042": "gamma",
-#     "D0044": "gamma",
-#     "D0047": "gamma",
-#     "D0053": "gamma",
-#     "D0054": "gamma",
-#     "D0055": "gamma",
-#     "D0057": "gamma",
-#     "D0059": "gamma",
-#     "D0063": "gamma",
-#     "D0065": "gamma",
-#     "D0066": "gamma",
-#     "D0068": "gamma",
-#     "D0069": "gamma",
-#     "D0070": "gamma",
-#     "D0071": "gamma",
-#     "D0077": "gamma",
-#     "D0079": "gamma",
-#     "D0080": "gamma",
-#     "D0081": "gamma",
-#     "D0084": "gamma",
-#     "D0086": "gamma",
-#     "D0090": "gamma",
-#     "D0092": "gamma",
-#     "D0094": "gamma",
-#     "D0096": "gamma",
-#     "D0100": "gamma",
-#     "D0101": "gamma",
-#     "D0102": "gamma",
-#     "D0103": "gamma",
-#     "D0107": "gamma",
-#     "D0115": "gamma",
-#     "D0117": "gamma"
-# }
+subject_processing_dict_org = {
+    "D0023": "gamma",
+    "D0024": "gamma",
+    "D0026": "gamma",
+    "D0027": "gamma",
+    "D0028": "gamma",
+    "D0029": "gamma",
+    "D0032": "gamma",
+    "D0035": "gamma",
+    "D0038": "gamma",
+    "D0042": "gamma",
+    "D0044": "gamma",
+    "D0047": "gamma",
+    "D0053": "gamma",
+    "D0054": "gamma",
+    "D0055": "gamma",
+    "D0057": "gamma",
+    "D0059": "gamma",
+    "D0063": "gamma",
+    "D0065": "gamma",
+    "D0066": "gamma",
+    "D0068": "gamma",
+    "D0069": "gamma",
+    "D0070": "gamma",
+    "D0071": "gamma",
+    "D0077": "gamma",
+    "D0079": "gamma",
+    "D0080": "gamma",
+    "D0081": "gamma",
+    "D0084": "gamma",
+    "D0086": "gamma",
+    "D0090": "gamma",
+    "D0092": "gamma",
+    "D0094": "gamma",
+    "D0096": "gamma",
+    "D0100": "gamma",
+    "D0101": "gamma",
+    "D0102": "gamma",
+    "D0103": "gamma",
+    "D0107": "gamma",
+    "D0115": "gamma",
+    "D0117": "gamma"
+}
 # subject_processing_dict_org = {
 #     "D0107": "gamma"
 # }
-subject_processing_dict_org = {
-    "D0121": "linernoise/outlierchs/wavelet",
-    "D0128": "linernoise/outlierchs/wavelet",
-    "D0137": "linernoise/outlierchs/wavelet"
-}
+# subject_processing_dict_org = {
+#     "D0121": "linernoise/outlierchs/wavelet",
+#     "D0128": "linernoise/outlierchs/wavelet",
+#     "D0137": "linernoise/outlierchs/wavelet"
+# }
 
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 # %% define task
-#Task_Tag="LexicalDecRepDelay"
-Task_Tag="LexicalDecRepNoDelay"
+Task_Tag="LexicalDecRepDelay"
+#Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
@@ -676,14 +676,16 @@ for subject, processing_type in subject_processing_dict.items():
                 # Calculate the p-value
                 p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
 
-                data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
+                data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy(), epoch.copy()))
 
-                for tag, epoch_mask, power, z_score, p_vals in data:
+                for tag, epoch_mask, power, z_score, p_vals, epoch in data:
 
                     power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
                     z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
+                    epoch.save(subj_gamma_stats_dir + f"/{tag}_rawpower-epo.fif", overwrite=True,fmt='double')
                     epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave.fif", overwrite=True)
                     p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
+
 
                 if is_bsl_correct:
                     base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
