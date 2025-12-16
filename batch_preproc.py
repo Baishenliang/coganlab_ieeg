@@ -652,43 +652,45 @@ for subject, processing_type in subject_processing_dict.items():
                 epoch = out[0]
                 t = t_phase
                 tag = tag_phase
+                epoch.save(subj_gamma_stats_dir + f"/{tag}_rawpower-epo.fif", overwrite=True,fmt='double')
 
                 sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
 
-                # time-perm  (test whether signal is greater than baseline, p=0.05 as it is a one-tailed test)
-                if Task_Tag=='LexicalDecRepDelay' and (epoch_phase=='Auditory_inYN' or epoch_phase=='Resp_inYN'):
-                    p_thresh_time_perm_cluster=0.05
-                else:
-                    p_thresh_time_perm_cluster=0.025
-                mask[tag], p_act = stats.time_perm_cluster(
-                    sig1, sig2, p_thresh=p_thresh_time_perm_cluster, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
-                    ignore_adjacency=1)
-                epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
-                                            tmin=t[0])
+                is_perm=False
+                if is_perm:
+                    # time-perm  (test whether signal is greater than baseline, p=0.05 as it is a one-tailed test)
+                    if Task_Tag=='LexicalDecRepDelay' and (epoch_phase=='Auditory_inYN' or epoch_phase=='Resp_inYN'):
+                        p_thresh_time_perm_cluster=0.05
+                    else:
+                        p_thresh_time_perm_cluster=0.025
+                    mask[tag], p_act = stats.time_perm_cluster(
+                        sig1, sig2, p_thresh=p_thresh_time_perm_cluster, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
+                        ignore_adjacency=1)
+                    epoch_mask = mne.EvokedArray(mask[tag], epoch.average().info,
+                                                tmin=t[0])
 
-                # plot mask
-                plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}.jpg')
+                    # plot mask
+                    plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}.jpg')
 
-                # baseline correction
-                power = scaling.rescale(epoch, base, 'mean', copy=True)
-                z_score = scaling.rescale(epoch, base, 'zscore', copy=True) # average of the baseline by trial and by time
+                    # baseline correction
+                    power = scaling.rescale(epoch, base, 'mean', copy=True)
+                    z_score = scaling.rescale(epoch, base, 'zscore', copy=True) # average of the baseline by trial and by time
 
-                # Calculate the p-value
-                p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
+                    # Calculate the p-value
+                    p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
 
-                data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy(), epoch.copy()))
+                    data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
 
-                for tag, epoch_mask, power, z_score, p_vals, epoch in data:
+                    for tag, epoch_mask, power, z_score, p_vals in data:
 
-                    power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
-                    z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
-                    epoch.save(subj_gamma_stats_dir + f"/{tag}_rawpower-epo.fif", overwrite=True,fmt='double')
-                    epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave.fif", overwrite=True)
-                    p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
+                        power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
+                        z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
+                        epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave.fif", overwrite=True)
+                        p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
 
 
-                if is_bsl_correct:
-                    base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
+                    if is_bsl_correct:
+                        base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
                 del data, sig1, sig2, base, mask
 
             log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation  %%% completed %%% \n")
