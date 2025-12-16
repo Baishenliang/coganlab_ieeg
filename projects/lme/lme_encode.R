@@ -266,15 +266,15 @@ rownames(ridge_lambda_speech) <- c("Auditory", "Sensorymotor", "Motor","Delay_on
 
 
 ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode size
-  vWM = c(40,  # Auditory vWM
-          100, # Sensorymotor vWM
-          80, # Motor vWM
+  vWM = c(60,  # Auditory vWM
+          200, # Sensorymotor vWM
+          100, # Motor vWM
           40, # Delay only vWM
           20,# Wgw_p55b
           20),# Wgw_a55b
   
-  novWM = c(200, # Auditory novWM
-            100, # Sensorymotor novWM
+  novWM = c(400, # Auditory novWM
+            200, # Sensorymotor novWM
             500,# Motor novWM
             40,  # Delay only novWM (Sensorymotor novWM)
             20,  # Wgw_p55b
