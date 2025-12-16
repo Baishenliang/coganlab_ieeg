@@ -656,7 +656,7 @@ for subject, processing_type in subject_processing_dict.items():
 
                 sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
 
-                is_perm=False
+                is_perm=True
                 if is_perm:
                     # time-perm  (test whether signal is greater than baseline, p=0.05 as it is a one-tailed test)
                     if Task_Tag=='LexicalDecRepDelay' and (epoch_phase=='Auditory_inYN' or epoch_phase=='Resp_inYN'):
