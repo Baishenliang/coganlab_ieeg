@@ -516,7 +516,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col='Group', fs=100):
+def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col='Group', fs=100, weighted=False):
     """
     Plots weighted NMF component traces separated by anatomical/functional ROI groups.
     
@@ -544,7 +544,7 @@ def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col
     else:
         time_axis = np.arange(sig.shape[1]) / fs
     
-    comp_cols = [c for c in df_weights.columns if c not in ['Channel', 'Group', 'Dominant_Comp'] and not c.endswith('Percent')]
+    comp_cols = [c for c in df_weights.columns if c not in ['Channel', 'Group', 'Dominant_Comp', group_col] and not c.endswith('Percent')]
     
     if group_col not in df_weights.columns:
         raise KeyError(f"Column '{group_col}' not found in df_weights.")
@@ -574,7 +574,7 @@ def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col
                 ch_name = row['Channel']
                 weight = row[comp_name]
                 
-                if weight < 0.01 or ch_name not in ch_to_idx:
+                if weight < 0.1 or ch_name not in ch_to_idx:
                     continue
                     
                 idx = ch_to_idx[ch_name]
@@ -591,7 +591,10 @@ def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col
                 weights_arr = np.array(valid_weights)
                 
                 total_weight = np.sum(weights_arr)
-                weighted_mean = np.sum(traces_arr * weights_arr[:, np.newaxis], axis=0) / total_weight
+                if weighted:
+                    weighted_mean = np.sum(traces_arr * weights_arr[:, np.newaxis], axis=0) / total_weight
+                else:
+                    weighted_mean = np.mean(traces_arr, axis=0)
                 
                 ax.plot(time_axis, weighted_mean, color=color, linewidth=2, label=f"{comp_name}")
                 
@@ -621,6 +624,7 @@ def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col
 # 2. Prepare Data
 # Extract time range -0.5 to 2.0
 # Assuming 'get_time_indexs' returns indices for slicing
+df_weights['All'] = 'All'
 for n,t_range in zip((epoc_LexDelayRep_Aud, epoc_LexDelayRep_Go, epoc_LexDelayRep_Resp),
                       ([-0.5, 2], [-0.5, 2], [-0.5, 2])):
     m = n.take(get_time_indexs(n.labels[1], t_range[0], t_range[1]), axis=1)
@@ -630,6 +634,5 @@ for n,t_range in zip((epoc_LexDelayRep_Aud, epoc_LexDelayRep_Go, epoc_LexDelayRe
     times = m.labels[1]  # Time points array
 
     # 3. Run plotting with the 'times' argument
-    plot_nmf_components_by_roi_group(sig, chs, df_weights, times=times, group_col='Group')# %%
-
+    plot_nmf_components_by_roi_group(sig, chs, df_weights, times=times, group_col='All', weighted=True)
 # %%
