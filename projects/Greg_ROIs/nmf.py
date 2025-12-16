@@ -82,7 +82,7 @@ stats_root_delay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS',
 stats_root_nodelay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BIDS', "derivatives", "stats")
 
 if groupsTag=="LexDelay":
-    data_LexDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay,cbind_subjs=False)
+    data_LexDelay_Aud,subjs=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay,cbind_subjs=False)
     elec_labels=data_LexDelay_Aud.labels[0]
     data_LexDelay_Cue, _ = gp.load_stats('mask', 'Cue_inRep', 'ave', stats_root_delay, stats_root_delay,cbind_subjs=False)
     data_LexDelay_Go, _ = gp.load_stats('mask', 'Go_inRep', 'ave', stats_root_delay, stats_root_delay,cbind_subjs=False)
@@ -305,7 +305,7 @@ colors = [
     '#9467bd', # Purple
     '#8c564b'  # Brown
 ]
-comp_names = ['Motor', 'Auditory', 'Delay', 'Auditory_motor']
+comp_names = ['Motor', 'Auditory', 'Delay', 'Auditory_motor']#,'hahaha','hihihi']  # Customize component names as needed
 
 
 for i in range(n_components):
@@ -357,7 +357,7 @@ groups = df_mean_weights.index
 color_dict = dict(zip(groups, colors[3:3+len(groups)]))  # Adjust color selection as needed
 
 # --- 3. Plot Pie Charts ---
-fig, axes = plt.subplots(1, 4, figsize=(18, 6))
+fig, axes = plt.subplots(1, n_components, figsize=(5 * n_components, 6))
 
 for i, col_name in enumerate(comp_names):
     ax = axes[i]  # Use the enumerated index for the subplot axis
@@ -507,6 +507,13 @@ for group in unique_groups:
             plt.gca().spines['right'].set_visible(False)
             plt.tight_layout()
             plt.show()
+
+# Brain plot for projected weights:
+for i, comp in enumerate(comp_names):
+    w = df_weights[comp].values
+    w_norm = (w - w.min()) / (w.max() - w.min())
+    cols_lst = [list(np.array(colors[i]) * val + np.array([1, 1, 1]) * (1 - val)) for val in w_norm]
+    gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, comp, 0.3, 0.2)
 
 # Export to CSV for further analysis
 # df_weights.to_csv('NMF_Electrode_Weights.csv', index=False)
