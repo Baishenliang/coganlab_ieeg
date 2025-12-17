@@ -144,13 +144,13 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
 is_normalize=False
 is_bsl_correct=False
 mode='time_cluster'
-test_type='Semantics'  #'Semantics' 'Speech'
+test_type='Speech'  #'Semantics' 'Speech'
 if test_type=='Semantics':
     lex='Word'
     test_lambda_save='test_lambda_semantics_full'
 elif test_type=='Speech':
     lex='All'
-    test_lambda_save='test_lambda'
+    test_lambda_save='test_lambda_rawpow'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 baseline=dict()
@@ -176,7 +176,7 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
             fea_cols=gp.create_gradient(elec_col, len(test_lambdas)+1)[:-1]
             for i,test_lambda in enumerate(test_lambdas):
 
-                filename = f"results/LexDelayRep_{elec_grp}_{alignment}_{lex}_testλ_{test_lambda}.csv"
+                filename = f"results/LexDelayRep_{elec_grp}_{alignment}_{lex}_rawpow_testλ_{test_lambda}.csv"
                 raw = pd.read_csv(filename)
 
                 input_r2 = 'p'
@@ -241,5 +241,5 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs',test_lambda_save, f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_testλ.tif'), dpi=300)
+            plt.savefig(os.path.join('figs',test_lambda_save, f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_rawpow_testλ.tif'), dpi=300)
             plt.close()

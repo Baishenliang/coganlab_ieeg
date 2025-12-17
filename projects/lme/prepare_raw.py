@@ -61,7 +61,7 @@ if groupsTag=="LexDelay":
     data_LexDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay)
     elec_labels=data_LexDelay_Aud.labels[0]
     NoDelay_append_startings=False
-    epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+    epoc_LexDelayRep_Aud,_=gp.load_stats('rawpower','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
 
     _, _,go_dicts, stim_duration_dicts, _=gp.get_onset_times(epoc_LexDelayRep_Aud,encoding_mode,align_to='Auditory_stim',fileTag='BIDS-1.0_LexicalDecRepDelay')
     mean_duration, std_dev_duration, count = gp.get_stats_from_nested_dict(stim_duration_dicts)
@@ -70,11 +70,11 @@ if groupsTag=="LexDelay":
     print(f"Go onsets after Stim onsets: {mean_duration:.4f} +/- {2*std_dev_duration:.4f} seconds")
 
     data_LexDelayRep_Resp, _ = gp.load_stats('mask', 'Resp_inRep', contrast, stats_root_delay, stats_root_delay)
-    epoc_LexDelayRep_Resp, _ = gp.load_stats('zscore', 'Resp_inRep', 'epo', stats_root_delay, stats_root_delay,
+    epoc_LexDelayRep_Resp, _ = gp.load_stats('rawpower', 'Resp_inRep', 'epo', stats_root_delay, stats_root_delay,
                                        trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
 
     data_LexDelayRep_Go, _ = gp.load_stats('mask', 'Go_inRep', contrast, stats_root_delay, stats_root_delay)
-    epoc_LexDelayRep_Go, _ = gp.load_stats('zscore', 'Go_inRep', 'epo', stats_root_delay, stats_root_delay,
+    epoc_LexDelayRep_Go, _ = gp.load_stats('rawpower', 'Go_inRep', 'epo', stats_root_delay, stats_root_delay,
                                        trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
 
     _, resp_dicts, _, _, resp_duration_dicts=gp.get_onset_times(epoc_LexDelayRep_Go,encoding_mode,align_to='Go',fileTag='BIDS-1.0_LexicalDecRepDelay')
@@ -84,13 +84,13 @@ if groupsTag=="LexDelay":
     print(f"Response duration: {mean_duration:.4f} +/- {2*std_dev_duration:.4f} seconds")
 
 if groupsTag=="LexDelay&LexNoDelay":
-    # epoc_LexDelayRep_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
-    # epoc_LexNoDelay_Aud, _ = gp.load_stats('zscore', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+    # epoc_LexDelayRep_Aud, _ = gp.load_stats('rawpower', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+    # epoc_LexNoDelay_Aud, _ = gp.load_stats('rawpower', 'Auditory_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
     data_LexNoDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_nodelay,stats_root_nodelay)
     elec_labels=data_LexNoDelay_Aud.labels[0]
 
     # Get the LexNoDelay data aligned to Cue
-    epoc_LexNoDelay_Cue, _ = gp.load_stats('zscore', 'Cue_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
+    epoc_LexNoDelay_Cue, _ = gp.load_stats('rawpower', 'Cue_inRep', 'epo', stats_root_nodelay, stats_root_nodelay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
     # Generate trial-based Auditory and Response onsets
     auditory_stim_dicts, resp_dicts,*_=gp.get_onset_times(epoc_LexNoDelay_Cue,encoding_mode)
     with open(os.path.join(sf_dir,'LexNoDelay_Cue_auditory_stim_dicts.pkl'), 'wb') as f:
@@ -99,7 +99,7 @@ if groupsTag=="LexDelay&LexNoDelay":
         pickle.dump(resp_dicts, f)
 
     # Get the LexDelay data aligned to Go
-    epoc_LexDelay_Go, _ = gp.load_stats('zscore', 'Go_inRep', 'epo', stats_root_nodelay, stats_root_delay,
+    epoc_LexDelay_Go, _ = gp.load_stats('rawpower', 'Go_inRep', 'epo', stats_root_nodelay, stats_root_delay,
                                         trial_labels=trial_labels, keeptrials=True, cbind_subjs=cbind_subjs)
     auditory_stim_dicts, resp_dicts,*_ = gp.get_onset_times(epoc_LexDelay_Go, encoding_mode, align_to='Go',fileTag='BIDS-1.0_LexicalDecRepDelay')
     with open(os.path.join(sf_dir, 'LexDelay_Go_auditory_stim_dicts.pkl'), 'wb') as f:
@@ -108,7 +108,7 @@ if groupsTag=="LexDelay&LexNoDelay":
         pickle.dump(resp_dicts, f)
 
     # Get the LexDelay data aligned to Cue
-    epoc_LexDelay_Cue, _ = gp.load_stats('zscore', 'Cue_inRep', 'epo', stats_root_nodelay, stats_root_delay,
+    epoc_LexDelay_Cue, _ = gp.load_stats('rawpower', 'Cue_inRep', 'epo', stats_root_nodelay, stats_root_delay,
                                         trial_labels=trial_labels, keeptrials=True, cbind_subjs=cbind_subjs)
     auditory_stim_dicts, resp_dicts,*_ = gp.get_onset_times(epoc_LexDelay_Go, encoding_mode, align_to='Cue',fileTag='BIDS-1.0_LexicalDecRepDelay')
     with open(os.path.join(sf_dir, 'LexDelay_Cue_auditory_stim_dicts.pkl'), 'wb') as f:
@@ -143,7 +143,7 @@ def rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag, win_len:int=10):
             del m
             m = epoc_dict
 
-        gp.win_to_Rdataframe(m, os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}'), win_len=win_len, append_pho=False,
+        gp.win_to_Rdataframe(m, os.path.join(sf_dir, f'{epoc_tag}_{elec_grp}_rawpow'), win_len=win_len, append_pho=False,
                              NoDelay_append_startings=NoDelay_append_startings)  # 100s for phoneme responses
 
 loaded_data={}

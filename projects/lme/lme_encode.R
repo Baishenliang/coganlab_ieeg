@@ -48,32 +48,33 @@ model_func <- function(current_data){
     library(glmnet, lib.loc = "~/lab/bl314/rlib")
   }
   
+  # Normalize data
+  current_data_norm <- current_data %>%
+    group_by(subject, electrode) %>%
+    mutate(
+      session_mean = mean(value, na.rm = TRUE),
+      session_sd = sd(value, na.rm = TRUE),
+      value_normalized = (value - session_mean) / session_sd
+    ) %>%
+    ungroup() %>%
+    select(-session_mean, -session_sd)
+  rm(current_data)
+  current_data<-current_data_norm
+  
   # Ridge regression model
   
-  ridge_cv_predict <- function(fml, current_data, alpha, lambda_val, k_folds = 10) {
+  ridge_cv_predict <- function(fml, current_data, alpha, lambda_val, k_folds = 10, seed = 123) {
+    
+    set.seed(seed)
     
     mf <- model.frame(fml, data = current_data, na.action = na.exclude)
     X <- model.matrix(fml, data = mf)[, -1]  
     y <- model.response(mf)                
     n <- length(y)
     
-    final_lambda <- NULL
-    if (lambda_val <= 0) {
-      lambda_seq <- 10^seq(4, -4, by = -.1) 
-      ridge_cv <- cv.glmnet(
-        x = X, 
-        y = y, 
-        alpha = alpha,
-        lambda = lambda_seq,
-        nfolds = k_folds  
-      )
-      final_lambda <- ridge_cv$lambda.min
-    } else {
-      final_lambda <- lambda_val
-    }
-    
     fold_id <- sample(rep(1:k_folds, length.out = n))
     pred_cv <- numeric(n) 
+    lambdas_used <- numeric(k_folds)
     
     for (i in 1:k_folds) {
       train_idx <- which(fold_id != i)
@@ -83,14 +84,32 @@ model_func <- function(current_data){
       y_train <- y[train_idx]
       X_test <- X[test_idx, ]
       
+      current_fold_lambda <- NULL
+      
+      if (lambda_val <= 0) {
+        inner_cv <- cv.glmnet(
+          x = X_train, 
+          y = y_train, 
+          alpha = alpha, 
+          nfolds = 5,
+          standardize = TRUE 
+        )
+        current_fold_lambda <- inner_cv$lambda.min
+      } else {
+        current_fold_lambda <- lambda_val
+      }
+      
+      lambdas_used[i] <- current_fold_lambda
+      
       fit_fold <- glmnet(
         x = X_train, 
         y = y_train, 
         alpha = alpha, 
-        lambda = final_lambda 
+        lambda = current_fold_lambda,
+        standardize = TRUE 
       )
       
-      pred_test <- predict(object = fit_fold, s = final_lambda, newx = X_test)
+      pred_test <- predict(object = fit_fold, s = current_fold_lambda, newx = X_test)
       
       pred_cv[test_idx] <- pred_test
     }
@@ -99,22 +118,21 @@ model_func <- function(current_data){
       x = X, 
       y = y, 
       alpha = alpha, 
-      lambda = final_lambda 
+      lambda = median(lambdas_used),
+      standardize = TRUE
     )
     
-    coefficients <- coef(fit_final, s = final_lambda)
+    coefficients <- coef(fit_final, s = median(lambdas_used))
     
     cor_result <- cor.test(pred_cv, y)
-    
-    rho <- cor_result$estimate
-    p_value <- cor_result$p.value
-    rho <- as.numeric(rho)
+    rho <- as.numeric(cor_result$estimate)
     if (rho < 0){
       rho = 0
     }
+    p_value <- cor_result$p.value
     
     result_list <- list(
-      Lambda_Used = final_lambda,
+      Lambda_Used = median(lambdas_used),
       Correlation_Coefficient = rho,
       P_Value = p_value,
       Coefficients = coefficients
@@ -124,8 +142,8 @@ model_func <- function(current_data){
   }
   
   tp <- current_data$time[1]
-  #fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
-  fml <- as.formula(paste("value ~ 1 +", paste(c(paste0("aco", 1:9), paste0("pho", 1:11), paste0("sem", 1:67)), collapse = " + ")))
+  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
+  #fml <- as.formula(paste("value ~ 1 +", paste(c(paste0("aco", 1:9), paste0("pho", 1:11), paste0("sem", 1:67)), collapse = " + ")))
   ridge_alpha <- 0
   ridge_lambda_vWM <- current_data$ridge_lambda_vWM[1]
   ridge_lambda_novWM <- current_data$ridge_lambda_novWM[1]
@@ -166,7 +184,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 3e2#1e3
+  n_perm <- 0#3e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -181,8 +199,8 @@ model_func <- function(current_data){
           mutate(
             perm_indices = sample(1:n()),
             across(
-              #starts_with('aco') | starts_with('pho') | starts_with('word'), 
-              starts_with('aco') | starts_with('pho') | starts_with('sem'), 
+              starts_with('aco') | starts_with('pho') | starts_with('word'), 
+              #starts_with('aco') | starts_with('pho') | starts_with('sem'), 
               ~ .x[perm_indices]
             )
           ) %>%
@@ -318,8 +336,8 @@ sem_fea_T$stim <- rownames(sem_fea_T)
 sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 
 #%% Start looping
-for (ridge_lambda in list(ridge_lambda_semantics)){#list(ridge_lambda1,ridge_lambda2)){
-#for (lambda_test in c(1,10,20,40,60,80,100,200,300,400,500,600,700,800,900)){
+#for (ridge_lambda in list(ridge_lambda_semantics)){#list(ridge_lambda1,ridge_lambda2)){
+for (lambda_test in c(1,10,20,40,60,80,100,200,300,400,500,600,700,800,900)){
   for (delay_nodelay in delay_nodelays){
     for (alignment in alignments){
       for (elec_grp in elec_grps){
@@ -344,11 +362,11 @@ for (ridge_lambda in list(ridge_lambda_semantics)){#list(ridge_lambda1,ridge_lam
         # vwm electrodes
         if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b'){
           file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_long.csv",
+                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_rawpow_long.csv",
                                       sep = "")
         }else{
           file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_long.csv",
+                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_rawpow_long.csv",
                                       sep = "")
         }
         long_data_vwm <- read.csv(file_path_long_vwm)
@@ -357,11 +375,11 @@ for (ridge_lambda in list(ridge_lambda_semantics)){#list(ridge_lambda1,ridge_lam
         # no vWM electrodes
         if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b'){
           file_path_long_novwm <- paste(home_dir,
-                                        "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_long.csv",
+                                        "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_rawpow_long.csv",
                                         sep = "")
         }else{
           file_path_long_novwm <- paste(home_dir,
-                                        "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_long.csv",
+                                        "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_rawpow_long.csv",
                                         sep = "")
         }
         long_data_novwm <- read.csv(file_path_long_novwm)
@@ -390,7 +408,7 @@ for (ridge_lambda in list(ridge_lambda_semantics)){#list(ridge_lambda1,ridge_lam
         time_points <- unique(long_data$time)
         
         #for (lex in c("Word","Nonword",'All')){
-        lex<-'Word'
+        lex<-'All'
         if (lex!='All'){
           word_data <- long_data[long_data['wordness']==lex,]
           #%% append semantic features
@@ -402,13 +420,13 @@ for (ridge_lambda in list(ridge_lambda_semantics)){#list(ridge_lambda1,ridge_lam
         #%% Run computations
         
         #%% append ridge lambdas
-        word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
-        word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
+        # word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
+        # word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
         # current_pair <- all_pairs[lambda_pair, ]
         # word_data$ridge_lambda_vWM <- current_pair$First_Number
         # word_data$ridge_lambda_novWM <- current_pair$Second_Number
-        # word_data$ridge_lambda_vWM<-lambda_test
-        # word_data$ridge_lambda_novWM<-lambda_test
+        word_data$ridge_lambda_vWM<-lambda_test
+        word_data$ridge_lambda_novWM<-lambda_test
         cat("Re-formatting long data \n")
         data_by_time <- split(word_data, word_data$time)
         rm(word_data)
@@ -428,8 +446,8 @@ for (ridge_lambda in list(ridge_lambda_semantics)){#list(ridge_lambda1,ridge_lam
         
         print(perm_compare_df)
         
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
-        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_rawpow_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
   
         }
       }
