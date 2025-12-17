@@ -337,7 +337,7 @@ sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 
 #%% Start looping
 #for (ridge_lambda in list(ridge_lambda_semantics)){#list(ridge_lambda1,ridge_lambda2)){
-for (lambda_test in c(1,10,20,40,60,80,100,200,300,400,500,600,700,800,900)){
+for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100)){
   for (delay_nodelay in delay_nodelays){
     for (alignment in alignments){
       for (elec_grp in elec_grps){
