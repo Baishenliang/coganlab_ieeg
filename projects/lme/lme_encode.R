@@ -49,17 +49,16 @@ model_func <- function(current_data){
   }
   
   # Normalize data
-  current_data_norm <- current_data %>%
-    group_by(subject, electrode) %>%
+  current_data <- current_data %>%
+    group_by(subject) %>% # Add 'electrode' here if you have multiple electrodes: group_by(subject, electrode)
     mutate(
       session_mean = mean(value, na.rm = TRUE),
       session_sd = sd(value, na.rm = TRUE),
-      value_normalized = (value - session_mean) / session_sd
+      # Overwrite the original 'value' column
+      value = (value - session_mean) / session_sd
     ) %>%
     ungroup() %>%
     select(-session_mean, -session_sd)
-  rm(current_data)
-  current_data<-current_data_norm
   
   # Ridge regression model
   
@@ -126,10 +125,11 @@ model_func <- function(current_data){
     
     cor_result <- cor.test(pred_cv, y)
     rho <- as.numeric(cor_result$estimate)
+    p_value <- cor_result$p.value
     if (rho < 0){
       rho = 0
+      p_value = 0.9
     }
-    p_value <- cor_result$p.value
     
     result_list <- list(
       Lambda_Used = median(lambdas_used),
