@@ -427,8 +427,8 @@ for (ridge_lambda in list(ridge_lambda_speech)){#list(ridge_lambda1,ridge_lambda
         # current_pair <- all_pairs[lambda_pair, ]
         # word_data$ridge_lambda_vWM <- current_pair$First_Number
         # word_data$ridge_lambda_novWM <- current_pair$Second_Number
-        word_data$ridge_lambda_vWM<-lambda_test
-        word_data$ridge_lambda_novWM<-lambda_test
+        # word_data$ridge_lambda_vWM<-lambda_test
+        # word_data$ridge_lambda_novWM<-lambda_test
         cat("Re-formatting long data \n")
         data_by_time <- split(word_data, word_data$time)
         rm(word_data)
