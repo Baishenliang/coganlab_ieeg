@@ -157,14 +157,15 @@ baseline=dict()
 baseline_beta_rms=dict()
 baseline_std=dict()
 baseline_beta_rms_std=dict()
-test_lambdas=[1,10,20,20,40,60,80,100,200,300,400,500,600,700,800,900]
+test_lambdas=['1e-05','1e-04','0.001','0.01','0.1','0.2','0.4','0.6','0.8','1','2','4','6','8','10']
+              #'20','40','60','80','100','200','500','1000','10000']#,20,20,40,60,80,100,200,300,400,500,600,700,800,900]
 for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
     for alignment,xlim_align in zip(
             ('Aud','Resp','Go'),
             ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-        for elec_grp,elec_col,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b'),
-                                                            (Auditory_col,Sensorimotor_col,Motor_col,Delay_col,Wgw_p55b_col,Wgw_a55b_col),
-                                                            (3.5,1.6,1.3,1.3,2.0,2.0)):
+        for elec_grp,elec_col,fea_plot_yscale in zip(('Auditory','Sensorymotor','Delay_only','Wgw_p55b','Wgw_a55b','Motor'),
+                                                            (Auditory_col,Sensorimotor_col,Delay_col,Wgw_p55b_col,Wgw_a55b_col,Motor_col),
+                                                            (3.5,1.6,1.3,2.0,2.0,1.3)):
             fea = 'ACC'
             fea_tag = 'ACC'
             para_sig_barbar = [0.2, 0.01]
@@ -180,7 +181,7 @@ for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
                 raw = pd.read_csv(filename)
 
                 input_r2 = 'p'
-                pthres_r2 = [1e-2, 1e-2]
+                pthres_r2 = [0.1, 0.8]
                 vwm_text_r2 = 'ACC'
                 target_fea_r2 = f'{fea}_{vWM}'
                 time_point, time_series_r2, *_ = get_traces_clus(raw, pthres_r2[0], pthres_r2[1], mode=mode, target_fea=target_fea_r2, input=input_r2)
