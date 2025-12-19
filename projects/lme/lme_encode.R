@@ -258,9 +258,9 @@ delay_nodelays <- c("LexDelayRep")#c("LexDelayRep","LexNoDelay")
 alignments <- c("Aud","Go","Resp")
 #alignments <- c("Resp")
 # alignments <- c("Aud")
-elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b')
+#elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b')
 #elec_grps <- c('Wgw_p55b','Wgw_a55b')
-#elec_grps <- c('Motor')
+elec_grps <- c('Motor')
 
 a = 0
 #Make fixed lambda (from cv or anything optimized)
@@ -268,7 +268,7 @@ a = 0
 ridge_lambda_speech <- data.frame( # lambda adjusted according to electrode size
   vWM = c(1e-5,  # Auditory vWM
           0.1, # Sensorymotor vWM
-          0.8, # Motor vWM
+          1, # Motor vWM
           10, # Delay only vWM
           0.001,# Wgw_p55b
           0.001),# Wgw_a55b
