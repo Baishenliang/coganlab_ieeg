@@ -363,7 +363,8 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         cat("loading files \n")
         # slurm task selection
         # vwm electrodes
-        if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b'){
+        if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b' || elec_grp=='SM_vWM_Auditory_early' || 
+            elec_grp=='SM_vWM_Auditory_late' || elec_grp=='SM_vWM_Delay' || elec_grp=='SM_vWM_Motor'){
           file_path_long_vwm <- paste(home_dir,
                                       "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_rawpow_long.csv",
                                       sep = "")
@@ -376,7 +377,8 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         long_data_vwm$time <- as.numeric(long_data_vwm$time)
         
         # no vWM electrodes
-        if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b'){
+        if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b' || elec_grp=='SM_vWM_Auditory_early' || 
+            elec_grp=='SM_vWM_Auditory_late' || elec_grp=='SM_vWM_Delay' || elec_grp=='SM_vWM_Motor'){
           file_path_long_novwm <- paste(home_dir,
                                         "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_rawpow_long.csv",
                                         sep = "")
