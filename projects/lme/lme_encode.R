@@ -184,7 +184,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 0#3e2#1e3
+  n_perm <- 3e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -293,21 +293,29 @@ rownames(ridge_lambda_speech) <- c("Auditory", "Sensorymotor", "Motor","Delay_on
 
 
 ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode size
-  vWM = c(60,  # Auditory vWM
-          200, # Sensorymotor vWM
-          100, # Motor vWM
-          40, # Delay only vWM
-          20,# Wgw_p55b
-          20),# Wgw_a55b
+  vWM = c(1e-5,  # Auditory vWM
+          1, # Sensorymotor vWM
+          1e-5, # Motor vWM
+          10, # Delay only vWM
+          0.001,# Wgw_p55b
+          10,# Wgw_a55b
+          0.1, #SM_vWM_Auditory_early
+          1,# SM_vWM_Auditory_late
+          0.1,# SM_vWM_Delay
+          1),  # SM_vWM_Motor
   
-  novWM = c(400, # Auditory novWM
-            200, # Sensorymotor novWM
-            500,# Motor novWM
-            40,  # Delay only novWM (Sensorymotor novWM)
-            20,  # Wgw_p55b
-            20)# Wgw_a55b
+  novWM = c(100, # Auditory novWM
+            40, # Sensorymotor novWM
+            450,# Motor novWM
+            20,  # Delay only novWM (Sensorymotor novWM)
+            10,  # Wgw_p55b
+            10,# Wgw_a55b
+            1e-5, #SM_vWM_Auditory_early
+            0.1,# SM_vWM_Auditory_late
+            0.001,# SM_vWM_Delay
+            0.1)  # SM_vWM_Motor
 )
-rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')
+rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
 
 
 #Make lambda combinations (for testing lambda effects by looping)
@@ -345,8 +353,8 @@ sem_fea_T$stim <- rownames(sem_fea_T)
 sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 
 #%% Start looping
-#for (ridge_lambda in list(ridge_lambda_speech)){#list(ridge_lambda1,ridge_lambda2)){
-for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
+for (ridge_lambda in list(ridge_lambda_semantics)){#list(ridge_lambda1,ridge_lambda2)){
+#for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
 #for (lambda_test in c(20,40,60,80,200,500,1000,10000)){
 #for (lambda_test in c(0.2,0.4,0.6,0.8,2,4,6,8)){
   for (delay_nodelay in delay_nodelays){
@@ -433,13 +441,13 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         #%% Run computations
         
         #%% append ridge lambdas
-        # word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
-        # word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
+        word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
+        word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
         # current_pair <- all_pairs[lambda_pair, ]
         # word_data$ridge_lambda_vWM <- current_pair$First_Number
         # word_data$ridge_lambda_novWM <- current_pair$Second_Number
-        word_data$ridge_lambda_vWM<-lambda_test
-        word_data$ridge_lambda_novWM<-lambda_test
+        # word_data$ridge_lambda_vWM<-lambda_test
+        # word_data$ridge_lambda_novWM<-lambda_test
         cat("Re-formatting long data \n")
         data_by_time <- split(word_data, word_data$time)
         rm(word_data)
@@ -459,8 +467,8 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         
         print(perm_compare_df)
         
-        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_rawpow_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_rawpow_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_rawpow_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
+        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_rawpow_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
   
         }
       }
