@@ -105,10 +105,10 @@ final_times = []
 final_grps = None
 
 if groupsTag=="LexDelay":
-    elec_grps=('Spt','lPMC','lIFG')
-    elec_idxs=('Hikock_Spt','Hikock_lPMC','Hikock_lIFG')
-    # elec_grps=('Sensorymotor_in_Delay',)
-    # elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
+    # elec_grps=('Spt','lPMC','lIFG')
+    # elec_idxs=('Hikock_Spt','Hikock_lPMC','Hikock_lIFG')
+    elec_grps=('Sensorymotor_in_Delay',)
+    elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
     for epoc,t_range in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ([-0.5, 2], [-0.5, 1.5], [-0.5, 2])):
         curr_arr, curr_chs, curr_times, curr_grps = rearrange_elects(elec_grps, elec_idxs, epoc,t_range=t_range)
@@ -145,112 +145,112 @@ from sklearn.decomposition import NMF
 from scipy.cluster.hierarchy import linkage, cophenet
 from scipy.spatial.distance import squareform
 
-def evaluate_nmf_stability(X, k_range, n_repeats=500):
+def evaluate_nmf_stability(X, k_range, n_repeats=100):
     """
-    Evaluate NMF model stability and reconstruction error across a range of ranks (k).
+    Evaluate NMF model stability (Cophenetic Correlation) and fit quality (Explained Variance).
     
     Parameters:
     -----------
     X : numpy.ndarray
-        Input data matrix with shape (n_channels, n_timepoints). 
-        Must be non-negative (e.g., High-Gamma envelope).
+        Input data matrix (n_channels, n_timepoints). Must be non-negative.
     k_range : list or range
-        Range of components (ranks) to test (e.g., range(2, 10)).
+        Range of ranks to test (e.g., range(2, 10)).
     n_repeats : int
-        Number of NMF runs with random initialization for each k to estimate stability.
+        Number of NMF runs per k to estimate stability.
         
     Returns:
     --------
     results : dict
-        Dictionary containing 'k_vals', 'rss' (reconstruction errors), 
-        and 'cophenetic' (stability scores).
+        Contains 'k_vals', 'rss', 'explained_variance', and 'cophenetic'.
     """
     
-    # Initialize lists to store metrics
-    rss_scores = []       # Reconstruction errors (Frobenius norm)
-    cophenetic_scores = [] # Stability scores (0 to 1, higher is better)
+    # 1. Calculate Total Sum of Squares (Total Variance) of the original data
+    # This is required to calculate Explained Variance (EV)
+    # Total SS = ||X||_F^2
+    total_ss = np.linalg.norm(X, ord='fro')**2
     
-    print(f"Starting NMF stability evaluation for k = {k_range[0]} to {k_range[-1]}...")
+    rss_scores = [] 
+    ev_scores = []          # New: Store Explained Variance
+    cophenetic_scores = []
+    
+    print(f"Starting NMF evaluation for k = {k_range[0]} to {k_range[-1]}...")
     
     for k in k_range:
-        # Initialize consensus matrix: (n_channels x n_channels)
-        # Stores how often two channels are clustered together
         consensus_matrix = np.zeros((X.shape[0], X.shape[0]))
-        
         current_rss_list = []
         
         for i in range(n_repeats):
-            # Run NMF with random initialization to test robustness
-            # solver='cd' (Coordinate Descent) is standard for NMF
+            # Run NMF
             model = NMF(n_components=k, init='random', random_state=None, 
                         max_iter=500, solver='cd', tol=1e-4)
-            
             W = model.fit_transform(X)
             
-            # Record reconstruction error (Residual Sum of Squares)
-            current_rss_list.append(model.reconstruction_err_)
+            # Record RSS (Squared reconstruction error)
+            # model.reconstruction_err_ is the Frobenius norm ||X - WH||
+            rss = model.reconstruction_err_**2
+            current_rss_list.append(rss)
             
-            # Determine cluster assignments (Hard Clustering)
-            # Assign each channel to the component with the highest weight
+            # Hard Clustering for Consensus Matrix
             labels = np.argmax(W, axis=1)
-            
-            # Update consensus matrix
-            # If channel i and j have the same label, add 1 to entry (i, j)
-            # Using broadcasting for efficiency
             connectivity = (labels[:, None] == labels[None, :]).astype(float)
             consensus_matrix += connectivity
             
-        # Normalize consensus matrix by the number of repeats (values between 0 and 1)
+        # Normalize Consensus Matrix
         consensus_matrix /= n_repeats
         
-        # --- Calculate Cophenetic Correlation Coefficient (CCC) ---
-        # Convert consensus matrix to distance matrix (Distance = 1 - Similarity)
+        # --- Calculate Cophenetic Correlation (Stability) ---
         dist_matrix = 1 - consensus_matrix
-        
-        # Extract upper triangle for scipy linkage
         dist_vec = squareform(dist_matrix)
-        
-        # Hierarchical clustering (Average Linkage)
         Z = linkage(dist_vec, method='average')
-        
-        # Calculate CCC: Correlation between original distances and dendrogram distances
         c, _ = cophenet(Z, dist_vec)
         
-        # Store average metrics for this k
-        rss_scores.append(np.mean(current_rss_list))
+        # --- Calculate Average Metrics ---
+        avg_rss = np.mean(current_rss_list)
+        
+        # Calculate Explained Variance (EV)
+        # EV = 1 - (Residual / Total)
+        avg_ev = 1 - (avg_rss / total_ss)
+        
+        rss_scores.append(avg_rss)
+        ev_scores.append(avg_ev)
         cophenetic_scores.append(c)
         
-        print(f"Rank k={k}: RSS={np.mean(current_rss_list):.4f}, Cophenetic Coeff={c:.4f}")
+        print(f"Rank k={k}: EV={avg_ev:.2%}, Cophenetic={c:.4f}")
 
     return {
         'k_vals': list(k_range),
         'rss': rss_scores,
+        'explained_variance': ev_scores,
         'cophenetic': cophenetic_scores
     }
 
 def plot_stability_metrics(results):
     """
-    Plot Reconstruction Error (Elbow Curve) and Stability (Cophenetic Coefficient).
+    Plots Explained Variance (Fit) and Cophenetic Correlation (Stability).
     """
     k_vals = results['k_vals']
-    rss = results['rss']
+    ev = results['explained_variance']
     ccc = results['cophenetic']
     
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
-    # Plot RSS (Elbow Method)
+    # --- Plot 1: Explained Variance (Left Axis) ---
     color = 'tab:red'
     ax1.set_xlabel('Number of Components (k)', fontsize=12)
-    ax1.set_ylabel('Reconstruction Error (RSS)', color=color, fontsize=12)
-    ax1.plot(k_vals, rss, 'o--', color=color, lw=2, label='RSS (Fit)')
+    ax1.set_ylabel('Explained Variance (%)', color=color, fontsize=12)
+    ax1.plot(k_vals, ev, 'o--', color=color, lw=2, label='Explained Variance (Fit)')
     ax1.tick_params(axis='y', labelcolor=color)
+    
+    # Format Y-axis as percentage
+    vals = ax1.get_yticks()
+    ax1.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
     ax1.grid(True, alpha=0.3)
 
-    # Plot Cophenetic Correlation (Stability) on secondary y-axis
+    # --- Plot 2: Cophenetic Correlation (Right Axis) ---
     ax2 = ax1.twinx()  
     color = 'tab:blue'
     ax2.set_ylabel('Cophenetic Correlation (Stability)', color=color, fontsize=12)
-    ax2.plot(k_vals, ccc, 's-', color=color, lw=2, label='CCC (Stability)')
+    ax2.plot(k_vals, ccc, 's-', color=color, lw=2, label='Stability (CCC)')
     ax2.tick_params(axis='y', labelcolor=color)
     
     plt.title('NMF Model Selection: Stability vs. Fit', fontsize=14)
@@ -258,7 +258,6 @@ def plot_stability_metrics(results):
     plt.show()
 
 # --- Usage Example ---
-# Assuming 'data_matrix' is your prepared (n_channels, n_timepoints) array
 metrics = evaluate_nmf_stability(final_array, k_range=range(2, 10))
 plot_stability_metrics(metrics)
 
@@ -305,7 +304,7 @@ colors = [
     '#9467bd', # Purple
     '#8c564b'  # Brown
 ]
-comp_names = ['Motor', 'Auditory', 'Delay', 'Auditory_motor']#,'hahaha','hihihi']  # Customize component names as needed
+comp_names = ['Motor', 'Auditory_early', 'Delay', 'Auditory_late']  # Customize component names as needed
 
 
 for i in range(n_components):
@@ -337,6 +336,20 @@ df_weights.insert(1, 'Group', final_grps)
 
 # (Optional) Identify the dominant component for each electrode
 df_weights['Dominant_Comp'] = df_weights[comp_names].idxmax(axis=1)
+
+#  Save the new clusters
+# 1. Get the electrode categories from the Dominant_Comp column of the df_weights;
+for category in df_weights['Dominant_Comp'].unique():
+    # 2. transform each category of electrodes to the indices in data_LexDelay_Aud.labels[0]
+    category_chs = set(df_weights[df_weights['Dominant_Comp'] == category]['Channel'])
+    # 3. make a index set for each type of electrodes
+    category_idx = set([i for i, x in enumerate(data_LexDelay_Aud.labels[0]) if x in category_chs])
+    # 4. append the sets tp the LexDelay_twin_idxes, with the key names being LexDelay_Sensorimotor_in_Delay_sig_idx_{category name}
+    LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
+
+# 5. save the new LexDelay_twin_idxes into its original position
+with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "wb") as f:
+    pickle.dump(LexDelay_twin_idxes, f)
 
 # Display first few rows
 print("Electrode Weights DataFrame (First 5 rows):")
@@ -515,6 +528,38 @@ for i, comp in enumerate(comp_names):
     cols_lst = [list(np.array(colors[i]) * val + np.array([1, 1, 1]) * (1 - val)) for val in w_norm]
     gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, comp, 0.3, 0.2)
 
+# Brain plot for dominant component
+cols_lst = [comp_color_map[comp] for comp in df_weights['Dominant_Comp']]
+gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, 'Dominant_Comp', 0.3, 0.2)
+
+# --- 5. Identify Hub Electrodes ---
+# 1. Provincial Hubs: Top contributors for each component
+print("\n--- Provincial Hubs (Top 5 per Component) ---")
+for comp in comp_names:
+    print(f"\nComponent: {comp}")
+    print(df_weights.nlargest(5, comp)[['Channel', 'Group', comp]])
+
+# 2. Connector Hubs: Electrodes that are "hub" to the four components (high participation)
+# Participation Coefficient: P_i = 1 - sum((w_ij / w_i_total)^2)
+w_matrix = df_weights[comp_names].values
+w_total = w_matrix.sum(axis=1, keepdims=True)
+w_total[w_total == 0] = 1e-10 # Avoid division by zero
+df_weights['Total_Weight'] = w_total.flatten()
+df_weights['Participation_Coef'] = 1 - np.sum((w_matrix / w_total)**2, axis=1)
+
+print("\n--- Connector Hubs (High Participation across 4 components) ---")
+# Filter for electrodes with significant weight (e.g., top 50% of total weight) to avoid noise
+significant_elecs = df_weights[df_weights['Total_Weight'] > df_weights['Total_Weight'].quantile(0.75)]
+print(significant_elecs.nlargest(10, 'Participation_Coef')[['Channel', 'Group', 'Participation_Coef', 'Total_Weight']])
+
+
+
+# Brain plot for participation coefficient of the hub electrodes
+w = significant_elecs['Participation_Coef'].values
+w_norm = (w - w.min()) / (w.max() - w.min())
+cols_lst = [list(np.array([1.0, 0.0784, 0.5765]) * val + np.array([1, 1, 1]) * (1 - val)) for val in w_norm]
+gp.plot_brain(subjs, significant_elecs.Channel.to_list(), cols_lst, None, 'Dominant_Comp', 0.3, 0.2)
+
 # Export to CSV for further analysis
 # df_weights.to_csv('NMF_Electrode_Weights.csv', index=False)
 #%% Plot NMF Components by ROI Group
@@ -632,6 +677,7 @@ def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col
 # Extract time range -0.5 to 2.0
 # Assuming 'get_time_indexs' returns indices for slicing
 df_weights['All'] = 'All'
+df_weights.drop(columns=['Total_Weight', 'Participation_Coef'], inplace=True, errors='ignore')
 for n,t_range in zip((epoc_LexDelayRep_Aud, epoc_LexDelayRep_Go, epoc_LexDelayRep_Resp),
                       ([-0.5, 2], [-0.5, 2], [-0.5, 2])):
     m = n.take(get_time_indexs(n.labels[1], t_range[0], t_range[1]), axis=1)
