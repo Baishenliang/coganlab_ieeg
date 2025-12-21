@@ -155,11 +155,11 @@ baseline_beta_rms_std=dict()
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b'),
-                                                         (Auditory_col,Sensorimotor_col,Motor_col,Delay_col,WGW_p55b_col,WGW_a55b_col),
-                                                         (40, 100, 80, 40,20,20), # vWM lambdas
-                                                         (200, 100, 500, 40,20,20), # novWM lambdas
-                                                         (3.5,1.6,1.3,1.3,1.2,1)):
+    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Sensorymotor','Auditory','Motor','Delay_only','Wgw_p55b','Wgw_a55b'),
+                                                         (Sensorimotor_col,Auditory_col,Motor_col,Delay_col,WGW_p55b_col,WGW_a55b_col),
+                                                         (200, 60, 100, 40,20,20), # vWM lambdas
+                                                         (200, 400, 500, 40,20,20), # novWM lambdas
+                                                         (1.6,3.5,1.3,1.3,1.2,1)):
 
         for fea, fea_tag, para_sig_barbar in zip(('ACC',),
                                                  ('ACC',),
@@ -195,7 +195,7 @@ for alignment,xlim_align in zip(
                     ('vWM','vWM_p','novWM','novWM_p'),#,'diff'),
                     ('-','-','--','--'),#,'--'),
                     ('R2','p','R2','p'),#,'R2'),
-                    ([2/300,2/300],[2.5e-2,2.5e-2],[2/300,2/300],[2.5e-2,2.5e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
+                    ([1e-2,1e-2],[2.5e-2,2.5e-2],[1e-2,1e-2],[2.5e-2,2.5e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
                     ('ACC','p','ACC','p'),#,'diff'),
                     (elec_col,elec_col,elec_col,elec_col)):#,[0.5,0.5,0.5])):
                 if fea == 'aco':
@@ -222,11 +222,11 @@ for alignment,xlim_align in zip(
                         time_series = (time_series - baseline[elec_grp])
                     para_sig_bar = para_sig_barbar
 
-                if vWM=='vWM' or vWM=='novWM':
+                if vWM=='vWM':# or vWM=='novWM':
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
                 true_indices_by_vWM[vWM] = true_indices
-                if true_indices.size > 0 and (vWM == 'vWM' or vWM == 'novWM'):
+                if true_indices.size > 0 and (vWM == 'vWM'):# or vWM == 'novWM'):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
@@ -291,7 +291,7 @@ for alignment,xlim_align in zip(
                     'sem': wordness_col
                 }
 
-                for fea in ('aco','pho','sem'):#,'wordnessWord:pho'):#,'wordnessWord:aco'
+                for fea in ('sem',):#('aco','pho','sem'):#,'wordnessWord:pho'):#,'wordnessWord:aco'
                     print(f'Feature beta plots for {fea}')
                     fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(fea) and is_vWM in col]
                     raw_org_fea = raw_org[fea_columns].copy()
