@@ -144,20 +144,23 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
 is_normalize=False
 is_bsl_correct=False
 mode='time_cluster'
-test_type='Speech'  #'Semantics' 'Speech'
+test_type='Nonword'  #'Semantics' 'Speech'
 if test_type=='Semantics':
     lex='Word'
-    test_lambda_save='test_lambda_semantics_full'
+    test_lambda_save='test_lambda_semantics_full_rawpow'
 elif test_type=='Speech':
     lex='All'
     test_lambda_save='test_lambda_rawpow'
+elif test_type=='Nonword':
+    lex='Nonword'
+    test_lambda_save='test_lambda_nonword_rawpow'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
 baseline=dict()
 baseline_beta_rms=dict()
 baseline_std=dict()
 baseline_beta_rms_std=dict()
-test_lambdas=['1e-05','1e-04','0.001','0.01','0.1','1','10','100','1000','10000']
+test_lambdas=['1e-05','1e-04','0.001','0.01','0.1','1','10']#,'100','1000','10000']
               #'20','40','60','80','100','200','500','1000','10000']#,20,20,40,60,80,100,200,300,400,500,600,700,800,900]
 for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
     for alignment,xlim_align in zip(
