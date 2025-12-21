@@ -43,6 +43,8 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
     match stat_type:
         case "zscore":
             fif_read = lambda f: mne.read_epochs(f, False, preload=True)
+        case "rawpower":
+            fif_read = lambda f: mne.read_epochs(f, False, preload=True)
         case "power":
             fif_read = lambda f: mne.read_epochs(f, False, preload=True)
         case "significance":
@@ -93,6 +95,23 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
         match stat_type:
             case "zscore":
+                subj_dataset = subj_dataset[trial_labels]
+                subj_data_epo = subj_dataset._data
+                if keeptrials:
+                    subj_data = subj_data_epo
+                else:
+                    match split_half:
+                        case 0:
+                            subj_data = np.nanmean(subj_data_epo, axis=0)
+                        case 1:
+                            half = subj_data_epo.shape[0] // 2
+                            subj_data = np.nanstd(subj_data_epo[:half], axis=0)
+                        case 2:
+                            half = subj_data_epo.shape[0] // 2
+                            subj_data = np.nanstd(subj_data_epo[half:], axis=0)
+                subj_chs = subj_dataset.ch_names
+                times = subj_dataset.times
+            case "rawpower":
                 subj_dataset = subj_dataset[trial_labels]
                 subj_data_epo = subj_dataset._data
                 if keeptrials:

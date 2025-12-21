@@ -148,10 +148,13 @@ def rearrange_elects(elec_grps, elec_idxs, epoc, epoc_tag, win_len:int=10):
 
 loaded_data={}
 if groupsTag=="LexDelay":
-    elec_grps=('Motor_vWM','Auditory_vWM','Sensorymotor_vWM','Delay_only','Motor_novWM','Auditory_novWM','Sensorymotor_novWM','Wgw_p55b','Wgw_a55b')#,'Delay_only')
+
+    elec_grps=('SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
+             #'Motor_vWM','Auditory_vWM','Sensorymotor_vWM','Delay_only','Motor_novWM','Auditory_novWM','Sensorymotor_novWM','Wgw_p55b','Wgw_a55b')#,'Delay_only')
              #'Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
-    elec_idxs=('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx',
-               'LexDelay_Motor_not_in_Delay_sig_idx','LexDelay_Auditory_not_in_Delay_sig_idx','LexDelay_Sensorimotor_not_in_Delay_sig_idx','Wgw_p55b','Wgw_a55b')
+    elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx_Auditory_early','LexDelay_Sensorimotor_in_Delay_sig_idx_Auditory_late','LexDelay_Sensorimotor_in_Delay_sig_idx_Delay','LexDelay_Sensorimotor_in_Delay_sig_idx_Motor')
+                #0'LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx',
+               #'LexDelay_Motor_not_in_Delay_sig_idx','LexDelay_Auditory_not_in_Delay_sig_idx','LexDelay_Sensorimotor_not_in_Delay_sig_idx','Wgw_p55b','Wgw_a55b')
              #'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
     for epoc,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ('epoc_LexDelayRep_Aud','epoc_LexDelayRep_Go','epoc_LexDelayRep_Resp')):
