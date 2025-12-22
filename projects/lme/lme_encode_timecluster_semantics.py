@@ -159,7 +159,7 @@ for alignment,xlim_align in zip(
             (Sensorimotor_col,Auditory_col,Motor_col,Delay_col,WGW_p55b_col,WGW_a55b_col,Auditory_col,Sensorimotor_col,Delay_col,Motor_col),
             ('1', '1e-05', '1e-05', '10', '0.001', '10', '0.1','1','0.1','1'), # vWM lambdas (Updated)
             ('40', '100', '450', '20', '10', '10', '1e-05','0.1','0.001','0.1'), # novWM lambdas
-            (1.6, 3.5, 1.3, 1.3, 1.2, 1, 15, 1.6, 2, 1.3)): # Scale factors
+            (1.6, 3.5, 1.3, 1.3, 1.2, 1, 50, 18, 2, 1.3)): # Scale factors
 
         for fea, fea_tag, para_sig_barbar in zip(('ACC',),
                                                  ('ACC',),
@@ -292,7 +292,7 @@ for alignment,xlim_align in zip(
                 }
 
                 # CHANGED: Renamed loop variable from 'fea' to 'beta_fea' to avoid shadowing outer 'fea'
-                for beta_fea in ('sem',):#('aco','pho','sem'):#,'wordnessWord:pho'):#,'wordnessWord:aco'
+                for beta_fea in ('aco','pho','sem'):#,'wordnessWord:pho'):#,'wordnessWord:aco'
                     print(f'Feature beta plots for {beta_fea}')
                     fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(beta_fea) and is_vWM in col]
                     raw_org_fea = raw_org[fea_columns].copy()
@@ -410,7 +410,7 @@ for alignment,xlim_align in zip(
                             end_time = time_points_plot[end_index] + time_step / 2
 
                             label = f'clust{k} of pho'
-                            ax_rms.plot([start_time, end_time], [1e-2*fea_plot_yscale-(1e-3)*(j-1),1e-2*fea_plot_yscale-(1e-3)*(j-1)],
+                            ax_rms.plot([start_time, end_time], [1e-2*fea_plot_yscale-(2e-2)*(j-1),1e-2*fea_plot_yscale-(2e-2)*(j-1)],
                                     color=color,alpha=0.4,
                                     linewidth=5,  # Make the line thick like a bar
                                     solid_capstyle='butt')  # Makes the line ends flat
