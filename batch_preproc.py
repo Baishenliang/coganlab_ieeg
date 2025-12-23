@@ -545,11 +545,11 @@ for subject, processing_type in subject_processing_dict.items():
                 # 我觉得应该好好检查一下这个is_bsl_correct，如果不是两个信号直接比较的话应该选True吧。那么原本的数据会错吗？应该是错的代码没有跑过新的数据吧anyway到时候BIDS完今年的被试应该要认真看看的。
                 # Just a temporal option for Greg Hickok's whole trial epoches aligned to different onsets
                 gamma_epoc_zip = zip(
-                    ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                    ((-0.5, 6), (-2.5, 4), (-4.5, 2), (-5, 1.5)),
-                    ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep'),
-                    (True, True, True, True)
+                    ('Cue/Repeat/CORRECT', 'Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT','Cue/Yes_No/CORRECT', 'Auditory_stim/Yes_No/CORRECT', 'Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT','Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT'),
+                    ((-0.5, 6), (-2.5, 4), (-4.5, 2), (-5, 1.5),(-0.5, 6), (-2.5, 4), (-4.5, 2), (-5, 1.5)),
+                    ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep','Cue_inYN', 'Auditory_inYN', 'Go_inYN', 'Resp_inYN'),
+                    (True, True, True, True,True, True, True, True)
                 )
                 # gamma_epoc_zip = zip(
                 #     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT'),
@@ -654,15 +654,22 @@ for subject, processing_type in subject_processing_dict.items():
                 tag = tag_phase
                 epoch.save(subj_gamma_stats_dir + f"/{tag}_rawpower-epo.fif", overwrite=True,fmt='double')
 
+                                    # baseline correction
+                power = scaling.rescale(epoch, base, 'mean', copy=True,axis=(0, -1))
+                z_score = scaling.rescale(epoch, base, 'zscore', copy=True) # average of the baseline by trial and by time
+                power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
+                z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
+
                 sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
 
-                is_perm=True
+                is_perm=False
                 if is_perm:
                     # time-perm  (test whether signal is greater than baseline, p=0.05 as it is a one-tailed test)
-                    if Task_Tag=='LexicalDecRepDelay' and (epoch_phase=='Auditory_inYN' or epoch_phase=='Resp_inYN'):
-                        p_thresh_time_perm_cluster=0.05
-                    else:
-                        p_thresh_time_perm_cluster=0.025
+                    # if Task_Tag=='LexicalDecRepDelay' and (epoch_phase=='Auditory_inYN' or epoch_phase=='Go_inYN' or epoch_phase=='Resp_inYN'):
+                    #     p_thresh_time_perm_cluster=0.05
+                    # else:
+                    #     p_thresh_time_perm_cluster=0.025
+                    p_thresh_time_perm_cluster=0.025
                     mask[tag], p_act = stats.time_perm_cluster(
                         sig1, sig2, p_thresh=p_thresh_time_perm_cluster, axis=0, tails=1, n_perm=nperm, n_jobs=-10,
                         ignore_adjacency=1)
@@ -672,19 +679,12 @@ for subject, processing_type in subject_processing_dict.items():
                     # plot mask
                     plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}.jpg')
 
-                    # baseline correction
-                    power = scaling.rescale(epoch, base, 'mean', copy=True)
-                    z_score = scaling.rescale(epoch, base, 'zscore', copy=True) # average of the baseline by trial and by time
-
                     # Calculate the p-value
                     p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
 
-                    data.append((tag, epoch_mask.copy(), power.copy(), z_score.copy(), p_vals.copy()))
+                    data.append((tag, epoch_mask.copy(),p_vals.copy()))
 
-                    for tag, epoch_mask, power, z_score, p_vals in data:
-
-                        power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
-                        z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
+                    for tag, epoch_mask, p_vals in data:
                         epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave.fif", overwrite=True)
                         p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
 
