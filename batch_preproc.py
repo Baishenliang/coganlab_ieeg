@@ -656,7 +656,7 @@ for subject, processing_type in subject_processing_dict.items():
 
                 # baseline correction
                 base_grand = np.nanmean(base, axis=0, keepdims=True)
-                base_forced = np.broadcast_to(base_grand, base.shape)
+                base_forced = np.broadcast_to(base_grand, base.get_data().shape)
                 del base_grand
                 power = scaling.rescale(epoch, base_forced, 'mean', copy=True)
                 z_score = scaling.rescale(epoch, base, 'zscore', copy=True) # average of the baseline by trial and by time
