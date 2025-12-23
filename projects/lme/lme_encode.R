@@ -49,16 +49,16 @@ model_func <- function(current_data){
   }
   
   # Normalize data
-  # current_data <- current_data %>%
-  #   group_by(subject) %>% # Add 'electrode' here if you have multiple electrodes: group_by(subject, electrode)
-  #   mutate(
-  #     session_mean = mean(value, na.rm = TRUE),
-  #     session_sd = sd(value, na.rm = TRUE),
-  #     # Overwrite the original 'value' column
-  #     value = (value - session_mean) / session_sd
-  #   ) %>%
-  #   ungroup() %>%
-  #   select(-session_mean, -session_sd)
+  current_data <- current_data %>%
+    group_by(subject) %>% # Add 'electrode' here if you have multiple electrodes: group_by(subject, electrode)
+    mutate(
+      session_mean = mean(value, na.rm = TRUE),
+      session_sd = sd(value, na.rm = TRUE),
+      # Overwrite the original 'value' column
+      value = (value - session_mean) / session_sd
+    ) %>%
+    ungroup() %>%
+    select(-session_mean, -session_sd)
   
   # Ridge regression model
   
@@ -285,7 +285,7 @@ ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode s
           0.1,# SM_vWM_Delay
           1)  # SM_vWM_Motor
 )
-rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
+rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
