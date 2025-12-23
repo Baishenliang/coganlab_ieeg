@@ -369,7 +369,7 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         time_points <- unique(long_data$time)
         
         #for (lex in c("Word","Nonword",'All')){
-        lex<-'Nonword'
+        lex<-'All'
         if (lex=='Word'){
           word_data <- long_data[long_data['wordness']==lex,]
           #%% append semantic features
