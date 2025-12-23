@@ -654,10 +654,11 @@ for subject, processing_type in subject_processing_dict.items():
                 tag = tag_phase
                 epoch.save(subj_gamma_stats_dir + f"/{tag}_rawpower-epo.fif", overwrite=True,fmt='double')
 
-                                    # baseline correction
-                import inspect
-                log_file.write(f"Real source path of rescale function:\n  {inspect.getfile(scaling.rescale)}")
-                power = scaling.rescale(epoch, base, 'mean', copy=True)
+                # baseline correction
+                base_grand = np.nanmean(base, axis=0, keepdims=True)
+                base_forced = np.broadcast_to(base_grand, base.shape)
+                del base_grand
+                power = scaling.rescale(epoch, base_forced, 'mean', copy=True)
                 z_score = scaling.rescale(epoch, base, 'zscore', copy=True) # average of the baseline by trial and by time
                 power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
                 z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
