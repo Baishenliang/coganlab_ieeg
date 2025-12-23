@@ -49,16 +49,16 @@ model_func <- function(current_data){
   }
   
   # Normalize data
-  current_data <- current_data %>%
-    group_by(subject) %>% # Add 'electrode' here if you have multiple electrodes: group_by(subject, electrode)
-    mutate(
-      session_mean = mean(value, na.rm = TRUE),
-      session_sd = sd(value, na.rm = TRUE),
-      # Overwrite the original 'value' column
-      value = (value - session_mean) / session_sd
-    ) %>%
-    ungroup() %>%
-    select(-session_mean, -session_sd)
+  # current_data <- current_data %>%
+  #   group_by(subject) %>% # Add 'electrode' here if you have multiple electrodes: group_by(subject, electrode)
+  #   mutate(
+  #     session_mean = mean(value, na.rm = TRUE),
+  #     session_sd = sd(value, na.rm = TRUE),
+  #     # Overwrite the original 'value' column
+  #     value = (value - session_mean) / session_sd
+  #   ) %>%
+  #   ungroup() %>%
+  #   select(-session_mean, -session_sd)
   
   # Ridge regression model
   
@@ -142,9 +142,9 @@ model_func <- function(current_data){
   }
   
   tp <- current_data$time[1]
-  #fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
+  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
   #fml <- as.formula(paste("value ~ 1 +", paste(c(paste0("aco", 1:9), paste0("pho", 1:11), paste0("sem", 1:67)), collapse = " + ")))
-  fml <- as.formula(paste("value ~ 1 +", paste(c(paste0("aco", 1:9), paste0("pho", 1:11)), collapse = " + ")))
+  #fml <- as.formula(paste("value ~ 1 +", paste(c(paste0("aco", 1:9), paste0("pho", 1:11)), collapse = " + ")))
   ridge_alpha <- 0
   ridge_lambda_vWM <- current_data$ridge_lambda_vWM[1]
   ridge_lambda_novWM <- current_data$ridge_lambda_novWM[1]
@@ -185,7 +185,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 3e2#1e3
+  n_perm <- 0#3e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -200,9 +200,9 @@ model_func <- function(current_data){
           mutate(
             perm_indices = sample(1:n()),
             across(
-              #starts_with('aco') | starts_with('pho') | starts_with('word'), 
+              starts_with('aco') | starts_with('pho') | starts_with('word'), 
               #starts_with('aco') | starts_with('pho') | starts_with('sem'), 
-              starts_with('aco') | starts_with('pho'), 
+              #starts_with('aco') | starts_with('pho'), 
               ~ .x[perm_indices]
             )
           ) %>%
@@ -381,8 +381,8 @@ sem_fea_T$stim <- rownames(sem_fea_T)
 sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 
 #%% Start looping
-for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambda2)){
-#for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
+#for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambda2)){
+for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
 #for (lambda_test in c(20,40,60,80,200,500,1000,10000)){
 #for (lambda_test in c(0.2,0.4,0.6,0.8,2,4,6,8)){
   for (delay_nodelay in delay_nodelays){
@@ -410,11 +410,11 @@ for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambd
         if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b' || elec_grp=='SM_vWM_Auditory_early' || 
             elec_grp=='SM_vWM_Auditory_late' || elec_grp=='SM_vWM_Delay' || elec_grp=='SM_vWM_Motor'){
           file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_rawpow_long.csv",
+                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_pow_long.csv",
                                       sep = "")
         }else{
           file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_rawpow_long.csv",
+                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_pow_long.csv",
                                       sep = "")
         }
         long_data_vwm <- read.csv(file_path_long_vwm)
@@ -424,11 +424,11 @@ for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambd
         if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b' || elec_grp=='SM_vWM_Auditory_early' || 
             elec_grp=='SM_vWM_Auditory_late' || elec_grp=='SM_vWM_Delay' || elec_grp=='SM_vWM_Motor'){
           file_path_long_novwm <- paste(home_dir,
-                                        "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_rawpow_long.csv",
+                                        "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_pow_long.csv",
                                         sep = "")
         }else{
           file_path_long_novwm <- paste(home_dir,
-                                        "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_rawpow_long.csv",
+                                        "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_pow_long.csv",
                                         sep = "")
         }
         long_data_novwm <- read.csv(file_path_long_novwm)
@@ -469,13 +469,13 @@ for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambd
         #%% Run computations
         
         #%% append ridge lambdas
-        word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
-        word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
+        # word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
+        # word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
         # current_pair <- all_pairs[lambda_pair, ]
         # word_data$ridge_lambda_vWM <- current_pair$First_Number
         # word_data$ridge_lambda_novWM <- current_pair$Second_Number
-        # word_data$ridge_lambda_vWM<-lambda_test
-        # word_data$ridge_lambda_novWM<-lambda_test
+        word_data$ridge_lambda_vWM<-lambda_test
+        word_data$ridge_lambda_novWM<-lambda_test
         cat("Re-formatting long data \n")
         data_by_time <- split(word_data, word_data$time)
         rm(word_data)
@@ -495,8 +495,8 @@ for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambd
         
         print(perm_compare_df)
         
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_rawpow_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
-        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_rawpow_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_pow_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_pow_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
   
         }
       }
