@@ -147,27 +147,19 @@ model_func <- function(current_data){
   #fml <- as.formula(paste("value ~ 1 +", paste(c(paste0("aco", 1:9), paste0("pho", 1:11)), collapse = " + ")))
   ridge_alpha <- 0
   ridge_lambda_vWM <- current_data$ridge_lambda_vWM[1]
-  ridge_lambda_novWM <- current_data$ridge_lambda_novWM[1]
   # ridge_lambda_vWM <- -1
-  # ridge_lambda_novWM <- -1
   # lambda < 0: do CV and get optimal lambda
   # lambda > 0 : do ridge with fixed lambda 
-  current_data_vWM <- current_data[current_data$vWM == 1, ]
-  current_data_novWM <- current_data[current_data$vWM == 0, ]
-  
+
   # machine learning version
-  ridge_vWM<-ridge_cv_predict(fml, current_data_vWM, ridge_alpha,ridge_lambda_vWM)
-  ridge_novWM<-ridge_cv_predict(fml, current_data_novWM, ridge_alpha,ridge_lambda_novWM)
-  
+  ridge_vWM<-ridge_cv_predict(fml, current_data, ridge_alpha,ridge_lambda_vWM)
+
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
     ACC_vWM = ridge_vWM$Correlation_Coefficient,
     ACC_vWM_p = ridge_vWM$P_Value,
-    vWM_lambda = ridge_vWM$Lambda_Used,
-    ACC_novWM = ridge_novWM$Correlation_Coefficient,
-    ACC_novWM_p = ridge_novWM$P_Value,
-    novWM_lambda = ridge_novWM$Lambda_Used)
+    vWM_lambda = ridge_vWM$Lambda_Used)
   
   coef_vWM_rn_sparse <- ridge_vWM$Coefficients
   coef_vWM_vec <- as.numeric(coef_vWM_rn_sparse)
@@ -175,13 +167,7 @@ model_func <- function(current_data){
   names(coef_vWM_vec) <- paste0(names(coef_vWM_vec), '_vWM')
   coef_vWM_rn <- as_tibble_row(coef_vWM_vec)
   
-  coef_novWM_rn_sparse <- ridge_novWM$Coefficients
-  coef_novWM_vec <- as.numeric(coef_novWM_rn_sparse)
-  names(coef_novWM_vec) <- rownames(coef_novWM_rn_sparse)
-  names(coef_novWM_vec) <- paste0(names(coef_novWM_vec), '_novWM')
-  coef_novWM_rn <- as_tibble_row(coef_novWM_vec)
-  
-  perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn,coef_novWM_rn)
+  perm_compare_df_i <- bind_cols(perm_compare_df_i,coef_vWM_rn)
   
   # Permutation
   cat('Start perm \n')
@@ -213,11 +199,9 @@ model_func <- function(current_data){
       }
       
       current_data_vWM_perm_relable <- relable_perm(current_data_vWM)
-      current_data_novWM_perm_relable <- relable_perm(current_data_novWM)
-      
+
       ridge_vWM_relable_perm<-ridge_cv_predict(fml, current_data_vWM_perm_relable, ridge_alpha,ridge_lambda_vWM)
-      ridge_novWM_relable_perm<-ridge_cv_predict(fml, current_data_novWM_perm_relable, ridge_alpha,ridge_lambda_novWM)
-      
+
       # Store permutation data
       
       perm_compare_df_i_perm <- data.frame(
@@ -225,10 +209,7 @@ model_func <- function(current_data){
         time_point = tp,
         ACC_vWM = ridge_vWM_relable_perm$Correlation_Coefficient,
         ACC_vWM_p = ridge_vWM_relable_perm$P_Value,
-        vWM_lambda = ridge_vWM_relable_perm$Lambda_Used,
-        ACC_novWM = ridge_novWM_relable_perm$Correlation_Coefficient,
-        ACC_novWM_p = ridge_novWM_relable_perm$P_Value,
-        novWM_lambda = ridge_novWM_relable_perm$Lambda_Used)
+        vWM_lambda = ridge_vWM_relable_perm$Lambda_Used)
       
       coef_vWM_rn_sparse <- ridge_vWM_relable_perm$Coefficients
       coef_vWM_vec <- as.numeric(coef_vWM_rn_sparse)
@@ -236,13 +217,7 @@ model_func <- function(current_data){
       names(coef_vWM_vec) <- paste0(names(coef_vWM_vec), '_vWM')
       coef_vWM_rn_perm <- as_tibble_row(coef_vWM_vec)
       
-      coef_novWM_rn_sparse <- ridge_novWM_relable_perm$Coefficients
-      coef_novWM_vec <- as.numeric(coef_novWM_rn_sparse)
-      names(coef_novWM_vec) <- rownames(coef_novWM_rn_sparse)
-      names(coef_novWM_vec) <- paste0(names(coef_novWM_vec), '_novWM')
-      coef_novWM_rn_perm <- as_tibble_row(coef_novWM_vec)
-      
-      perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm,coef_novWM_rn_perm)
+      perm_compare_df_i_perm <- bind_cols(perm_compare_df_i_perm,coef_vWM_rn_perm)
       
       perm_compare_df_i <- rbind(
         perm_compare_df_i,
@@ -278,18 +253,7 @@ ridge_lambda_speech <- data.frame( # lambda adjusted according to electrode size
           1e-5, #SM_vWM_Auditory_early
           0.1,# SM_vWM_Auditory_late
           0.001,# SM_vWM_Delay
-          0.1),  # SM_vWM_Motor
-  
-  novWM = c(100, # Auditory novWM
-            40, # Sensorymotor novWM
-            450,# Motor novWM
-            20,  # Delay only novWM (Sensorymotor novWM)
-            10,  # Wgw_p55b
-            10,# Wgw_a55b
-            1e-5, #SM_vWM_Auditory_early
-            0.1,# SM_vWM_Auditory_late
-            0.001,# SM_vWM_Delay
-            0.1)  # SM_vWM_Motor
+          0.1)  # SM_vWM_Motor
 )
 rownames(ridge_lambda_speech) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
 
@@ -304,18 +268,7 @@ ridge_lambda_nonword <- data.frame( # lambda adjusted according to electrode siz
           0.001, #SM_vWM_Auditory_early
           0.001,# SM_vWM_Auditory_late
           0.001,# SM_vWM_Delay
-          0.001),  # SM_vWM_Motor
-  
-  novWM = c(100, # Auditory novWM
-            40, # Sensorymotor novWM
-            450,# Motor novWM
-            20,  # Delay only novWM (Sensorymotor novWM)
-            10,  # Wgw_p55b
-            10,# Wgw_a55b
-            1e-5, #SM_vWM_Auditory_early
-            0.1,# SM_vWM_Auditory_late
-            0.001,# SM_vWM_Delay
-            0.1)  # SM_vWM_Motor
+          0.001)  # SM_vWM_Motor
 )
 rownames(ridge_lambda_nonword) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
 
@@ -330,28 +283,9 @@ ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode s
           0.1, #SM_vWM_Auditory_early
           1,# SM_vWM_Auditory_late
           0.1,# SM_vWM_Delay
-          1),  # SM_vWM_Motor
-  
-  novWM = c(100, # Auditory novWM
-            40, # Sensorymotor novWM
-            450,# Motor novWM
-            20,  # Delay only novWM (Sensorymotor novWM)
-            10,  # Wgw_p55b
-            10,# Wgw_a55b
-            1e-5, #SM_vWM_Auditory_early
-            0.1,# SM_vWM_Auditory_late
-            0.001,# SM_vWM_Delay
-            0.1)  # SM_vWM_Motor
+          1)  # SM_vWM_Motor
 )
 rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
-
-
-#Make lambda combinations (for testing lambda effects by looping)
-# powers <- seq(from = -2, to = 3, by = 1)
-# S <- 10^powers
-# print(S)
-# all_pairs <- expand.grid(First_Number = S, Second_Number = S)
-# num_pairs <- nrow(all_pairs)
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
@@ -417,29 +351,7 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
                                       "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_pow_long.csv",
                                       sep = "")
         }
-        long_data_vwm <- read.csv(file_path_long_vwm)
-        long_data_vwm$time <- as.numeric(long_data_vwm$time)
-        
-        # no vWM electrodes
-        if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b' || elec_grp=='SM_vWM_Auditory_early' || 
-            elec_grp=='SM_vWM_Auditory_late' || elec_grp=='SM_vWM_Delay' || elec_grp=='SM_vWM_Motor'){
-          file_path_long_novwm <- paste(home_dir,
-                                        "data/epoc_LexDelayRep_",alignment,"_","Sensorymotor","_novWM_pow_long.csv",
-                                        sep = "")
-        }else{
-          file_path_long_novwm <- paste(home_dir,
-                                        "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_novWM_pow_long.csv",
-                                        sep = "")
-        }
-        long_data_novwm <- read.csv(file_path_long_novwm)
-        long_data_novwm$time <- as.numeric(long_data_novwm$time)
-        
-        # Merge
-        data_vwm_labeled <- long_data_vwm %>%
-          mutate(vWM = 1)
-        data_novwm_labeled <- long_data_novwm %>%
-          mutate(vWM = 0)
-        long_data <- bind_rows(data_vwm_labeled, data_novwm_labeled)
+        long_data <- read.csv(file_path_long_vwm)
         
         #%% get only word part of the "stim"
         long_data <- long_data %>%
@@ -470,12 +382,7 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         
         #%% append ridge lambdas
         # word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
-        # word_data$ridge_lambda_novWM<-ridge_lambda[elec_grp,'novWM']
-        # current_pair <- all_pairs[lambda_pair, ]
-        # word_data$ridge_lambda_vWM <- current_pair$First_Number
-        # word_data$ridge_lambda_novWM <- current_pair$Second_Number
         word_data$ridge_lambda_vWM<-lambda_test
-        word_data$ridge_lambda_novWM<-lambda_test
         cat("Re-formatting long data \n")
         data_by_time <- split(word_data, word_data$time)
         rm(word_data)
@@ -495,7 +402,7 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         
         print(perm_compare_df)
         
-        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_pow_vWMλ_",ridge_lambda[elec_grp,'vWM'],"_novWMλ_",ridge_lambda[elec_grp,'novWM'],".csv",sep = ''),row.names = FALSE)
+        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_pow_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
         write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_pow_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
   
         }
