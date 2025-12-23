@@ -656,17 +656,7 @@ for subject, processing_type in subject_processing_dict.items():
 
                                     # baseline correction
                 import inspect
-                print("--- Path Diagnostic Information ---")
-                try:
-                    # Print the installation path of the entire library
-                    print(f"Library (scaling) installation path:\n  {scaling.__file__}")
-                    
-                    # Print the specific source file path for the rescale function
-                    # If this differs from the file you are looking at, you have a version mismatch.
-                    print(f"Real source path of rescale function:\n  {inspect.getfile(scaling.rescale)}")
-                except Exception as e:
-                    print(f"Could not retrieve path info: {e}")
-                print("-----------------------------------\n")
+                log_file.write(f"Real source path of rescale function:\n  {inspect.getfile(scaling.rescale)}")
                 power = scaling.rescale(epoch, base, 'mean', copy=True)
                 z_score = scaling.rescale(epoch, base, 'zscore', copy=True) # average of the baseline by trial and by time
                 power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
