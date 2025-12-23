@@ -235,8 +235,8 @@ delay_nodelays <- c("LexDelayRep")#c("LexDelayRep","LexNoDelay")
 alignments <- c("Aud","Go","Resp")
 #alignments <- c("Resp")
 # alignments <- c("Aud")
-elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
-#elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b')
+#elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
+elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b')
 #elec_grps <- c('Wgw_p55b','Wgw_a55b')
 #elec_grps <- c('Motor')
 
@@ -249,13 +249,9 @@ ridge_lambda_speech <- data.frame( # lambda adjusted according to electrode size
           1, # Motor vWM
           10, # Delay only vWM
           0.001,# Wgw_p55b
-          0.001,# Wgw_a55b
-          1e-5, #SM_vWM_Auditory_early
-          0.1,# SM_vWM_Auditory_late
-          0.001,# SM_vWM_Delay
-          0.1)  # SM_vWM_Motor
+          0.001)# Wgw_a55b
 )
-rownames(ridge_lambda_speech) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
+rownames(ridge_lambda_speech) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
 
 
 ridge_lambda_nonword <- data.frame( # lambda adjusted according to electrode size
@@ -264,13 +260,9 @@ ridge_lambda_nonword <- data.frame( # lambda adjusted according to electrode siz
           0.001, # Motor vWM
           0.001, # Delay only vWM
           0.001,# Wgw_p55b
-          0.001,# Wgw_a55b
-          0.001, #SM_vWM_Auditory_early
-          0.001,# SM_vWM_Auditory_late
-          0.001,# SM_vWM_Delay
-          0.001)  # SM_vWM_Motor
+          0.001)# Wgw_a55b
 )
-rownames(ridge_lambda_nonword) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
+rownames(ridge_lambda_nonword) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
 
 
 ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode size
@@ -279,11 +271,7 @@ ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode s
           1e-5, # Motor vWM
           10, # Delay only vWM
           0.001,# Wgw_p55b
-          10,# Wgw_a55b
-          0.1, #SM_vWM_Auditory_early
-          1,# SM_vWM_Auditory_late
-          0.1,# SM_vWM_Delay
-          1)  # SM_vWM_Motor
+          10)# Wgw_a55b
 )
 rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
 
