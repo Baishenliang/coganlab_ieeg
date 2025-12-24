@@ -31,7 +31,6 @@ if (os_type == "Windows") {
   }
 }
 
-#%% Modeling func
 model_func <- function(current_data){
   
   # Loading packages
@@ -49,16 +48,15 @@ model_func <- function(current_data){
   }
   
   # Normalize data
-  current_data <- current_data %>%
-    group_by(subject) %>% # Add 'electrode' here if you have multiple electrodes: group_by(subject, electrode)
-    mutate(
-      session_mean = mean(value, na.rm = TRUE),
-      session_sd = sd(value, na.rm = TRUE),
-      # Overwrite the original 'value' column
-      value = (value - session_mean) / session_sd
-    ) %>%
-    ungroup() %>%
-    select(-session_mean, -session_sd)
+  # current_data <- current_data %>%
+  #   group_by(subject) %>% 
+  #   mutate(
+  #     session_mean = mean(value, na.rm = TRUE),
+  #     session_sd = sd(value, na.rm = TRUE),
+  #     value = (value - session_mean) / session_sd
+  #   ) %>%
+  #   ungroup() %>%
+  #   select(-session_mean, -session_sd)
   
   # Ridge regression model
   
@@ -126,15 +124,19 @@ model_func <- function(current_data){
     cor_result <- cor.test(pred_cv, y)
     rho <- as.numeric(cor_result$estimate)
     p_value <- cor_result$p.value
+    
     if (rho < 0){
       rho = 0
       p_value = 0.9
     }
     
+    cv_mse <- mean((y - pred_cv)^2)
+    
     result_list <- list(
       Lambda_Used = median(lambdas_used),
       Correlation_Coefficient = rho,
       P_Value = p_value,
+      CV_MSE = cv_mse, 
       Coefficients = coefficients
     )
     
@@ -150,15 +152,16 @@ model_func <- function(current_data){
   # ridge_lambda_vWM <- -1
   # lambda < 0: do CV and get optimal lambda
   # lambda > 0 : do ridge with fixed lambda 
-
+  
   # machine learning version
   ridge_vWM<-ridge_cv_predict(fml, current_data, ridge_alpha,ridge_lambda_vWM)
-
+  
   perm_compare_df_i <- data.frame(
     perm = 0,
     time_point = tp,
     ACC_vWM = ridge_vWM$Correlation_Coefficient,
     ACC_vWM_p = ridge_vWM$P_Value,
+    ACC_vWM_MSE = ridge_vWM$cv_mse,
     vWM_lambda = ridge_vWM$Lambda_Used)
   
   coef_vWM_rn_sparse <- ridge_vWM$Coefficients
@@ -199,9 +202,9 @@ model_func <- function(current_data){
       }
       
       current_data_vWM_perm_relable <- relable_perm(current_data_vWM)
-
+      
       ridge_vWM_relable_perm<-ridge_cv_predict(fml, current_data_vWM_perm_relable, ridge_alpha,ridge_lambda_vWM)
-
+      
       # Store permutation data
       
       perm_compare_df_i_perm <- data.frame(
@@ -209,6 +212,7 @@ model_func <- function(current_data){
         time_point = tp,
         ACC_vWM = ridge_vWM_relable_perm$Correlation_Coefficient,
         ACC_vWM_p = ridge_vWM_relable_perm$P_Value,
+        ACC_vWM_MSE = ridge_vWM_relable_perm$cv_mse,
         vWM_lambda = ridge_vWM_relable_perm$Lambda_Used)
       
       coef_vWM_rn_sparse <- ridge_vWM_relable_perm$Coefficients
@@ -305,8 +309,8 @@ sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 #%% Start looping
 #for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambda2)){
 for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
-#for (lambda_test in c(20,40,60,80,200,500,1000,10000)){
-#for (lambda_test in c(0.2,0.4,0.6,0.8,2,4,6,8)){
+  #for (lambda_test in c(20,40,60,80,200,500,1000,10000)){
+  #for (lambda_test in c(0.2,0.4,0.6,0.8,2,4,6,8)){
   for (delay_nodelay in delay_nodelays){
     for (alignment in alignments){
       for (elec_grp in elec_grps){
@@ -392,10 +396,10 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         
         #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
         write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
-  
-        }
+        
       }
     }
   }
+}
 #}
-  #}
+#}
