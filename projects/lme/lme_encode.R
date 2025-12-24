@@ -332,11 +332,11 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b' || elec_grp=='SM_vWM_Auditory_early' || 
             elec_grp=='SM_vWM_Auditory_late' || elec_grp=='SM_vWM_Delay' || elec_grp=='SM_vWM_Motor'){
           file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_pow_long.csv",
+                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_long.csv",
                                       sep = "")
         }else{
           file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_pow_long.csv",
+                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_long.csv",
                                       sep = "")
         }
         long_data <- read.csv(file_path_long_vwm)
@@ -390,8 +390,8 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         
         print(perm_compare_df)
         
-        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_pow_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_pow_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
   
         }
       }
