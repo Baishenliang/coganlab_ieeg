@@ -205,7 +205,7 @@ model_func <- function(current_data){
         return(data_perm_relabeled)
       }
       
-      current_data_vWM_perm_relable <- relable_perm(current_data_vWM)
+      current_data_vWM_perm_relable <- relable_perm(current_data)
       
       ridge_vWM_relable_perm<-ridge_cv_predict(fml, current_data_vWM_perm_relable, ridge_alpha,ridge_lambda_vWM)
       
