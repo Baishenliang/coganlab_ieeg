@@ -161,7 +161,7 @@ model_func <- function(current_data){
     time_point = tp,
     ACC_vWM = ridge_vWM$Correlation_Coefficient,
     ACC_vWM_p = ridge_vWM$P_Value,
-    ACC_vWM_MSE = ridge_vWM$cv_mse,
+    ACC_vWM_MSE = ridge_vWM$CV_MSE,
     vWM_lambda = ridge_vWM$Lambda_Used)
   
   coef_vWM_rn_sparse <- ridge_vWM$Coefficients
@@ -212,7 +212,7 @@ model_func <- function(current_data){
         time_point = tp,
         ACC_vWM = ridge_vWM_relable_perm$Correlation_Coefficient,
         ACC_vWM_p = ridge_vWM_relable_perm$P_Value,
-        ACC_vWM_MSE = ridge_vWM_relable_perm$cv_mse,
+        ACC_vWM_MSE = ridge_vWM_relable_perm$CV_MSE,
         vWM_lambda = ridge_vWM_relable_perm$Lambda_Used)
       
       coef_vWM_rn_sparse <- ridge_vWM_relable_perm$Coefficients
