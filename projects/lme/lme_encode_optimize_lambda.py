@@ -144,13 +144,13 @@ colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
 is_normalize=False
 is_bsl_correct=False
 mode='time_cluster'
-test_type='Nonword'  #'Semantics' 'Speech'
+test_type='Speech'  #'Semantics' 'Speech'
 if test_type=='Semantics':
     lex='Word'
     test_lambda_save='test_lambda_semantics_full_rawpow'
 elif test_type=='Speech':
     lex='All'
-    test_lambda_save='test_lambda_rawpow'
+    test_lambda_save='test_lambda_pow'
 elif test_type=='Nonword':
     lex='Nonword'
     test_lambda_save='test_lambda_nonword_rawpow'
@@ -162,89 +162,91 @@ baseline_std=dict()
 baseline_beta_rms_std=dict()
 test_lambdas=['1e-05','1e-04','0.001','0.01','0.1','1','10']#,'100','1000','10000']
               #'20','40','60','80','100','200','500','1000','10000']#,20,20,40,60,80,100,200,300,400,500,600,700,800,900]
-for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
-    for alignment,xlim_align in zip(
-            ('Aud','Resp','Go'),
-            ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-        for elec_grp,elec_col,fea_plot_yscale in zip(('Auditory','Sensorymotor','Delay_only','Wgw_p55b','Wgw_a55b','Motor','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor'),
-                                                            (Auditory_col,Sensorimotor_col,Delay_col,Wgw_p55b_col,Wgw_a55b_col,Motor_col,Auditory_col,Sensorimotor_col,Delay_col,Motor_col),
-                                                            (3.5,1.6,1.3,2.0,2.0,1.3,3.5,1.6,1.3,1.3)):
+# for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
+vWM = 'vWM'
+vwm_linestyle = '-'
+for alignment,xlim_align in zip(
+        ('Aud','Resp','Go'),
+        ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
+    for elec_grp,elec_col,fea_plot_yscale in zip(('Auditory','Sensorymotor','Delay_only','Wgw_p55b','Wgw_a55b','Motor'),#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor'),
+                                                        (Auditory_col,Sensorimotor_col,Delay_col,Wgw_p55b_col,Wgw_a55b_col,Motor_col),#,Auditory_col,Sensorimotor_col,Delay_col,Motor_col),
+                                                        (3.5,1.6,1.3,2.0,2.0,1.3)):#,3.5,1.6,1.3,1.3)):
 
-            fea = 'ACC'
-            fea_tag = 'ACC'
-            para_sig_barbar = [0.2, 0.01]
+        fea = 'ACC'
+        fea_tag = 'ACC'
+        para_sig_barbar = [0.2, 0.01]
 
-            fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
-            j=0
-            ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
-            add_alignment_vlines(ax, alignment)
-            fea_cols=gp.create_gradient(elec_col, len(test_lambdas)+1)[:-1]
-            for i,test_lambda in enumerate(test_lambdas):
+        fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
+        j=0
+        ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
+        add_alignment_vlines(ax, alignment)
+        fea_cols=gp.create_gradient(elec_col, len(test_lambdas)+1)[:-1]
+        for i,test_lambda in enumerate(test_lambdas):
 
-                filename = f"results/LexDelayRep_{elec_grp}_{alignment}_{lex}_rawpow_testλ_{test_lambda}.csv"
-                raw = pd.read_csv(filename)
+            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_{lex}_pow_testλ_{test_lambda}.csv"
+            raw = pd.read_csv(filename)
 
-                input_r2 = 'p'
-                pthres_r2 = [0.8, 0.05]
-                vwm_text_r2 = 'ACC'
-                target_fea_r2 = f'{fea}_{vWM}'
-                time_point, time_series_r2, *_ = get_traces_clus(raw, pthres_r2[0], pthres_r2[1], mode=mode, target_fea=target_fea_r2, input=input_r2)
-                target_fea_p = f'{fea}_{vWM}_p'
-                _, _, mask_time_clus = get_traces_clus(raw, pthres_r2[0], pthres_r2[1], mode=mode, target_fea=target_fea_p, input=input_r2)
+            input_r2 = 'p'
+            pthres_r2 = [0.8, 0.05]
+            vwm_text_r2 = 'ACC'
+            target_fea_r2 = f'{fea}_{vWM}'
+            time_point, time_series_r2, *_ = get_traces_clus(raw, pthres_r2[0], pthres_r2[1], mode=mode, target_fea=target_fea_r2, input=input_r2)
+            target_fea_p = f'{fea}_{vWM}_p'
+            _, _, mask_time_clus = get_traces_clus(raw, pthres_r2[0], pthres_r2[1], mode=mode, target_fea=target_fea_p, input=input_r2)
 
-                time_series_r2 = gaussian_filter1d(time_series_r2, sigma=2, mode='nearest')
+            time_series_r2 = gaussian_filter1d(time_series_r2, sigma=2, mode='nearest')
 
-                if alignment == 'Aud':
-                    baseline[elec_grp] = np.min(time_series_r2[(time_point > -0.2) & (time_point <= 0)])
-                    baseline_std[elec_grp] = np.std(time_series_r2[(time_point > -0.2) & (time_point <= 0)])
+            if alignment == 'Aud':
+                baseline[elec_grp] = np.min(time_series_r2[(time_point > -0.2) & (time_point <= 0)])
+                baseline_std[elec_grp] = np.std(time_series_r2[(time_point > -0.2) & (time_point <= 0)])
+            
+            if is_normalize:
+                time_series_r2 = (time_series_r2 - baseline[elec_grp]) / baseline_std[elec_grp]
+                time_series_r2 = time_series_r2 / (np.max(time_series_r2[(time_point > xlim_align[0]) & (time_point <= xlim_align[1])]) - np.min((time_point > xlim_align[0]) & (time_point <= xlim_align[1])))
+                para_sig_bar = [1, 1e-1]
+            else:
+                if is_bsl_correct:
+                    time_series_r2 = (time_series_r2 - baseline[elec_grp])
+                para_sig_bar = para_sig_barbar
+            
+            ax.plot(time_point, time_series_r2, label=f"λ={test_lambda}", color=fea_cols[i], linewidth=5, linestyle=vwm_linestyle)
+
+            true_indices = np.where(mask_time_clus)[0]
+            if true_indices.size > 0:
+                split_points = np.where(np.diff(true_indices) != 1)[0] + 1
+                clusters_indices = np.split(true_indices, split_points)
+
+                for k, cluster in enumerate(clusters_indices):
+                    start_index = cluster[0]
+                    end_index = cluster[-1]
+
+                    time_step = time_point[1] - time_point[0]
+                    start_time = time_point[start_index] - time_step / 2
+                    end_time = time_point[end_index] + time_step / 2
+
+                    label = f'clust{k} of pho'
+                    ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(j-1),para_sig_bar[0]-para_sig_bar[1]*(j-1)],
+                            color=fea_cols[i],alpha=0.4,
+                            linewidth=10,  # Make the line thick like a bar
+                            solid_capstyle='butt')  # Makes the line ends flat
+                j=j+1
                 
-                if is_normalize:
-                    time_series_r2 = (time_series_r2 - baseline[elec_grp]) / baseline_std[elec_grp]
-                    time_series_r2 = time_series_r2 / (np.max(time_series_r2[(time_point > xlim_align[0]) & (time_point <= xlim_align[1])]) - np.min((time_point > xlim_align[0]) & (time_point <= xlim_align[1])))
-                    para_sig_bar = [1, 1e-1]
-                else:
-                    if is_bsl_correct:
-                        time_series_r2 = (time_series_r2 - baseline[elec_grp])
-                    para_sig_bar = para_sig_barbar
-                
-                ax.plot(time_point, time_series_r2, label=f"λ={test_lambda}", color=fea_cols[i], linewidth=5, linestyle=vwm_linestyle)
-
-                true_indices = np.where(mask_time_clus)[0]
-                if true_indices.size > 0:
-                    split_points = np.where(np.diff(true_indices) != 1)[0] + 1
-                    clusters_indices = np.split(true_indices, split_points)
-
-                    for k, cluster in enumerate(clusters_indices):
-                        start_index = cluster[0]
-                        end_index = cluster[-1]
-
-                        time_step = time_point[1] - time_point[0]
-                        start_time = time_point[start_index] - time_step / 2
-                        end_time = time_point[end_index] + time_step / 2
-
-                        label = f'clust{k} of pho'
-                        ax.plot([start_time, end_time], [para_sig_bar[0]-para_sig_bar[1]*(j-1),para_sig_bar[0]-para_sig_bar[1]*(j-1)],
-                                color=fea_cols[i],alpha=0.4,
-                                linewidth=10,  # Make the line thick like a bar
-                                solid_capstyle='butt')  # Makes the line ends flat
-                    j=j+1
-                    
-            ax.tick_params(axis='both', which='major')#, labelsize=16)
-            ax.ticklabel_format(
-                axis='y',
-                style='sci',
-                scilimits=(-3, -3),  # 将指数固定为 10^-3
-                useMathText=True  # 使用 LaTeX 格式显示指数，如 10⁻³
-            )
-            ax.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
-            ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
-            ax.legend(title='λ values', bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0., fontsize=12)
-            ax.set_xlim(xlim_align)#time_point.max())
-            # if elec_grp=='Motor' and alignment=='Aud':
-            #     ax.set_xlim([0.5,xlim_align[1]])
-            ax.spines['top'].set_visible(False)
-            ax.spines['right'].set_visible(False)
-            ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
-            plt.tight_layout()
-            plt.savefig(os.path.join('figs',test_lambda_save, f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_rawpow_testλ.tif'), dpi=300)
-            plt.close()
+        ax.tick_params(axis='both', which='major')#, labelsize=16)
+        ax.ticklabel_format(
+            axis='y',
+            style='sci',
+            scilimits=(-3, -3),  # 将指数固定为 10^-3
+            useMathText=True  # 使用 LaTeX 格式显示指数，如 10⁻³
+        )
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(0.25))
+        ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
+        ax.legend(title='λ values', bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0., fontsize=12)
+        ax.set_xlim(xlim_align)#time_point.max())
+        # if elec_grp=='Motor' and alignment=='Aud':
+        #     ax.set_xlim([0.5,xlim_align[1]])
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
+        plt.tight_layout()
+        plt.savefig(os.path.join('figs',test_lambda_save, f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_rawpow_testλ.tif'), dpi=300)
+        plt.close()
