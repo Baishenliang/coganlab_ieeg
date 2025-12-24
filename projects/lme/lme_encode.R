@@ -64,6 +64,10 @@ model_func <- function(current_data){
     
     set.seed(seed)
     
+    if("wordness" %in% names(current_data)){
+      current_data$wordness <- relevel(as.factor(current_data$wordness), ref = "Word")
+    }
+    
     mf <- model.frame(fml, data = current_data, na.action = na.exclude)
     X <- model.matrix(fml, data = mf)[, -1]  
     y <- model.response(mf)                
@@ -174,7 +178,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 0#3e2#1e3
+  n_perm <- 3e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -308,7 +312,8 @@ sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 
 #%% Start looping
 #for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambda2)){
-for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
+for (lambda_test in c(0.001,1,10)){
+#for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
   #for (lambda_test in c(20,40,60,80,200,500,1000,10000)){
   #for (lambda_test in c(0.2,0.4,0.6,0.8,2,4,6,8)){
   for (delay_nodelay in delay_nodelays){
@@ -394,8 +399,8 @@ for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
         
         print(perm_compare_df)
         
-        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
+        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
         
       }
     }
