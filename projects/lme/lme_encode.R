@@ -134,13 +134,10 @@ model_func <- function(current_data){
       p_value = 0.9
     }
     
-    cv_mse <- mean((y - pred_cv)^2)
-    
     result_list <- list(
       Lambda_Used = median(lambdas_used),
       Correlation_Coefficient = rho,
       P_Value = p_value,
-      CV_MSE = cv_mse, 
       Coefficients = coefficients
     )
     
@@ -148,9 +145,15 @@ model_func <- function(current_data){
   }
   
   tp <- current_data$time[1]
-  fml <- as.formula(paste0('value ~ 1+',paste0(c(paste0('aco', 1:9,"*wordness"), paste0("pho", 1:11,"*wordness"),"wordness"), collapse = ' + ')))
-  #fml <- as.formula(paste("value ~ 1 +", paste(c(paste0("aco", 1:9), paste0("pho", 1:11), paste0("sem", 1:67)), collapse = " + ")))
-  #fml <- as.formula(paste("value ~ 1 +", paste(c(paste0("aco", 1:9), paste0("pho", 1:11)), collapse = " + ")))
+  
+  term_aco <- paste0('aco', 1:9, "*wordness")
+  term_pho <- paste0('pho', 1:11, "*wordness")
+  term_sem <- paste0('sem', 1:67)
+  
+  all_terms <- c(term_aco, term_pho, term_sem, "wordness")
+  
+  fml <- as.formula(paste0("value ~ 1 + ", paste(all_terms, collapse = " + ")))
+  
   ridge_alpha <- 0
   ridge_lambda_vWM <- current_data$ridge_lambda_vWM[1]
   # ridge_lambda_vWM <- -1
@@ -165,7 +168,6 @@ model_func <- function(current_data){
     time_point = tp,
     ACC_vWM = ridge_vWM$Correlation_Coefficient,
     ACC_vWM_p = ridge_vWM$P_Value,
-    ACC_vWM_MSE = ridge_vWM$CV_MSE,
     vWM_lambda = ridge_vWM$Lambda_Used)
   
   coef_vWM_rn_sparse <- ridge_vWM$Coefficients
@@ -178,7 +180,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 3e2#1e3
+  n_perm <- 1e2#3e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
@@ -193,9 +195,7 @@ model_func <- function(current_data){
           mutate(
             perm_indices = sample(1:n()),
             across(
-              starts_with('aco') | starts_with('pho') | starts_with('word'), 
-              #starts_with('aco') | starts_with('pho') | starts_with('sem'), 
-              #starts_with('aco') | starts_with('pho'), 
+              starts_with('aco') | starts_with('pho') | starts_with('word') | starts_with('sem'), 
               ~ .x[perm_indices]
             )
           ) %>%
@@ -216,7 +216,6 @@ model_func <- function(current_data){
         time_point = tp,
         ACC_vWM = ridge_vWM_relable_perm$Correlation_Coefficient,
         ACC_vWM_p = ridge_vWM_relable_perm$P_Value,
-        ACC_vWM_MSE = ridge_vWM_relable_perm$CV_MSE,
         vWM_lambda = ridge_vWM_relable_perm$Lambda_Used)
       
       coef_vWM_rn_sparse <- ridge_vWM_relable_perm$Coefficients
@@ -312,8 +311,8 @@ sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 
 #%% Start looping
 #for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambda2)){
-for (lambda_test in c(0.001,1,10)){
-#for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
+#for (lambda_test in c(0.001,1,10)){
+for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
   #for (lambda_test in c(20,40,60,80,200,500,1000,10000)){
   #for (lambda_test in c(0.2,0.4,0.6,0.8,2,4,6,8)){
   for (delay_nodelay in delay_nodelays){
@@ -365,15 +364,23 @@ for (lambda_test in c(0.001,1,10)){
         long_data$time <- as.numeric(long_data$time)
         time_points <- unique(long_data$time)
         
-        #for (lex in c("Word","Nonword",'All')){
-        lex<-'All'
-        if (lex=='Word'){
-          word_data <- long_data[long_data['wordness']==lex,]
-          #%% append semantic features
-          word_data <- left_join(word_data,sem_fea_T,by='stim')
+        lex <- 'All'
+        sem_cols <- setdiff(names(sem_fea_T), "stim")
+        
+        if (lex == 'Word'){
+          word_data <- long_data[long_data['wordness'] == lex, ]
+          word_data <- left_join(word_data, sem_fea_T, by = 'stim')
+        } else if (lex == 'All') {
+          word_data <- left_join(long_data, sem_fea_T, by = 'stim')
+          nonword_indices <- word_data$wordness == 'Nonword'
+          
+          if (sum(nonword_indices) > 0) {
+            word_data[nonword_indices, sem_cols] <- 0
+          }
         } else {
           word_data <- long_data
         }
+        
         rm(long_data)
         #%% Run computations
         
@@ -400,7 +407,7 @@ for (lambda_test in c(0.001,1,10)){
         print(perm_compare_df)
         
         #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_huge_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
         
       }
     }
