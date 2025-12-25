@@ -155,14 +155,15 @@ baseline_beta_rms_std=dict()
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Sensorymotor','Auditory','Delay_only','Wgw_p55b','Wgw_a55b','Motor','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor'),
-                                                         (Sensorimotor_col,Auditory_col,Delay_col,WGW_p55b_col,WGW_a55b_col,Motor_col,Auditory_col,Sensorimotor_col,Delay_col,Motor_col),
+    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Sensorymotor','Auditory','Delay_only','Wgw_p55b','Wgw_a55b','Motor'),
+                                                         (Sensorimotor_col,Auditory_col,Delay_col,WGW_p55b_col,WGW_a55b_col,Motor_col),
                                                         #  (10, 20, 20, 10), # looser vWM lambdas
                                                         #  (60, 20, 200, 10), # looser novWM lambdas
-                                                         ('0.001', '0.001', '0.001','0.001','0.001', '0.001','0.001','0.001','0.001','0.001'), # stricter vWM lambdas
+                                                        ('0.001', '0.001', '0.001','0.001','0.001', '0.001'), # stricter vWM lambdas
+                                                         #(1,1,1,1,1,1),
                                                          #('0.1', '1e-05', '10','0.001','0.001', '1','1e-05','0.1','0.001','0.1'), # stricter vWM lambdas
-                                                         ('40', '100', '20','10','10', '450','1e-05','0.1','0.001','0.1'), # stricter novWM lambdas
-                                                         (0.8,1,1.3,1.2,1,0.7,3,1.2,2,1.3)):
+                                                         ('45', '45', '45','45','45', '45'), # stricter novWM lambdas
+                                                         (0.8,1,1.3,1.2,1,0.7)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
         # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
@@ -210,18 +211,18 @@ for alignment,xlim_align in zip(
             add_alignment_vlines(ax, alignment)
 
             #filename = f"results/{elec_grp}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.csv"
-            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_Nonword_rawpow_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.csv"
+            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All_testλ_{vWM_lambda}.csv"
             raw = pd.read_csv(filename)
 
             j = 0
             true_indices_by_vWM = {}
             for vWM,vwm_linestyle,input,pthres,vwm_text,sig_bar_col in zip(
-                    ('vWM','vWM_p','novWM','novWM_p'),#,'diff'),
-                    ('-','-','--','--'),#,'--'),
-                    ('R2','p','R2','p'),#,'R2'),
-                    ([1e-2,1e-2],[2.5e-2,2.5e-2],[1e-2,1e-2],[2.5e-2,2.5e-2]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
-                    ('ACC','p','ACC','p'),#,'diff'),
-                    (elec_col,elec_col,elec_col,elec_col)):#,[0.5,0.5,0.5])):
+                    ('vWM','vWM_p'),#,'diff'),
+                    ('-','-'),#,'--'),
+                    ('R2','p'),#,'R2'),
+                    ([1e-2,1e-2],[1e-3,1e-3]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
+                    ('ACC','p'),#,'diff'),
+                    (elec_col,elec_col)):#,[0.5,0.5,0.5])):
                 if fea == 'aco':
                     target_fea = list(expand_sequence('aco',vWM,9))
                 elif fea == 'pho':
@@ -305,14 +306,14 @@ for alignment,xlim_align in zip(
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','nonwords', f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=300)
+            plt.savefig(os.path.join('figs','z_score_unnormalized', f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=300)
             plt.close()
 
             # %%  Now plot the beta traces for each feature
             group_beta_type='max' # 'rms' or 'max'
             raw_org = raw[raw['perm'] == 0]
             
-            for is_vWM in ('_vWM','_novWM'):#','wordnessWord:aco','wordnessWord:pho'):
+            for is_vWM in ('_vWM',):#,'_novWM'):#','wordnessWord:aco','wordnessWord:pho'):
 
                 all_rms_data = {}
                 all_rms_data_sig = {}
@@ -322,44 +323,130 @@ for alignment,xlim_align in zip(
                     'aco': aco_col,
                     'pho': pho_col,
                     'wordnessWord': wordness_col,
-                    'wordnessWord:aco': aco_col,
+                    'wordnessNonword:aco': aco_col,
+                    'wordnessNonword:pho': pho_col,
                 }
 
-                for beta_fea in ('aco','pho'):#,'wordnessWord'):#,'wordnessWord:pho','wordnessWord:aco'):
+                for beta_fea in ('aco','pho','wordnessNonword:pho'):#,'wordnessWord:pho','wordnessWord:aco'):
                     print(f'Feature beta plots for {beta_fea}')
-                    if beta_fea=="aco" or beta_fea=="pho":
-                        # add interaction terms to aco
-                        fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(beta_fea) and ':' not in col and is_vWM in col]
-                    elif beta_fea=="wordnessWord":
-                        # add interaction terms to lex status
-                        fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(beta_fea) and ':' not in col and is_vWM in col]
-                    elif ":" in beta_fea:
+
+                    # 1. 预先定义好所有的主效应列 (Main Effects)
+                    # 确保它们已经按顺序排好 (1, 2, ... 11)
+                    fea_columns_aco = [col for col in raw.columns if col.startswith('aco') and ':' not in col and is_vWM in col]
+                    fea_columns_pho = [col for col in raw.columns if col.startswith('pho') and ':' not in col and is_vWM in col]
+
+                    # 2. 根据 beta_fea 确定当前要分析的特征列 (fea_columns)
+                    if beta_fea == "aco":
+                        fea_columns = ['time_point'] + fea_columns_aco
+                    elif beta_fea == "pho":
+                        fea_columns = ['time_point'] + fea_columns_pho
+                    elif (":" in beta_fea) and ("aco" in beta_fea):
+                        # 如果是交互项，提取对应的交互列
+                        fea_columns = ['time_point'] +['aco1:wordnessNonword_vWM']+ [col for col in raw.columns if col.startswith(beta_fea) and is_vWM in col]
+                    elif (":" in beta_fea) and ("pho" in beta_fea):
                         fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(beta_fea) and is_vWM in col]
+
+                    # 提取当前分析所需的子集 (这里只包含时间 + 当前关注的特征)
                     raw_org_fea = raw_org[fea_columns].copy()
 
-                    # Calculate the root-mean-square across all 'aco' columns
+                    # 3. 确定要计算 RMS/Max 的数值列
                     rms_cols = [col for col in fea_columns if col != 'time_point']
+
+                    # 4. 计算逻辑
                     if group_beta_type == 'rms':
                         raw_org_fea['rms'] = np.sqrt(raw_org_fea[rms_cols].pow(2).mean(axis=1))
+
                     elif group_beta_type == 'max':
-                        max_abs_beta = raw_org_fea[rms_cols].abs().max(axis=1)
+                        if ":" not in beta_fea:
+                            # 情况 A: 只有主效应，直接取绝对值最大
+                            max_abs_beta = raw_org_fea[rms_cols].abs().max(axis=1)
+                        
+                        else:
+                            # 情况 B: 交互项，计算 |Main + Diff| - |Main|
+                            # 必须先确定对应的主效应列是哪一组
+                            if "aco" in beta_fea:
+                                current_main_cols = fea_columns_aco
+                            elif "pho" in beta_fea:
+                                current_main_cols = fea_columns_pho
+                                
+                            # [CRITICAL FIX 1]: 维度检查
+                            # 确保交互项列数 == 主效应列数 (例如都是 9 个 aco)
+                            if len(rms_cols) != len(current_main_cols):
+                                raise ValueError(f"Shape mismatch: Interaction cols ({len(rms_cols)}) vs Main cols ({len(current_main_cols)})")
+                                
+                            # [CRITICAL FIX 2]: 使用 .values 进行计算
+                            # raw_org_fea[rms_cols] 是交互项数据 (DataFrame)
+                            # raw_org[current_main_cols] 是主效应数据 (DataFrame, 注意要从 raw_org 取!)
+                            # 使用 .values 强制转换成 numpy array，忽略列名差异，直接按位置相加
+                            
+                            diff_vals = raw_org_fea[rms_cols].values
+                            main_vals = raw_org[current_main_cols].values 
+                            
+                            # 公式: |Main + Diff| - |Main|
+                            # Nonword > Word
+                            #sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
+                            # Word > Nonword
+                            sensitivity_gain = np.abs(main_vals) - np.abs(main_vals + diff_vals)
+                            
+                            # 取每一行(每个时间点)里增益最大的那个特征
+                            max_abs_beta = np.max(sensitivity_gain, axis=1)
+
+                        # 归一化 (可选，视你的需求而定，原代码保留)
                         n_cols = len(rms_cols)
                         raw_org_fea['rms'] = max_abs_beta / np.sqrt(n_cols)
-                    all_rms_data[beta_fea] = raw_org_fea.groupby('time_point')['rms'].mean()
-                    # Also for data with permutations
-                    fea_columns_perm = ['perm']+fea_columns
+                        all_rms_data[beta_fea] = raw_org_fea.groupby('time_point')['rms'].mean()
+                        
+                        # Also for data with permutations
+                    fea_columns_perm = ['perm'] + fea_columns
                     raw_fea = raw[fea_columns_perm].copy()
+                    
                     if group_beta_type == 'rms':
                         raw_fea['rms'] = np.sqrt(raw_fea[rms_cols].pow(2).mean(axis=1))
+                        
                     elif group_beta_type == 'max':
-                        max_abs_beta = raw_fea[rms_cols].abs().max(axis=1)
+                        # Case A: 主效应 (没有冒号)，直接取绝对值最大
+                        if ":" not in beta_fea:
+                            max_abs_beta = raw_fea[rms_cols].abs().max(axis=1)
+                        
+                        # Case B: 交互项，计算 |Main + Diff| - |Main|
+                        else:
+                            # 1. 确定对应的主效应列名 (aco 或 pho)
+                            # 这些变量应该在之前的代码块里定义过
+                            if "aco" in beta_fea:
+                                current_main_cols = fea_columns_aco
+                            elif "pho" in beta_fea:
+                                current_main_cols = fea_columns_pho
+                            
+                            # 2. 提取数据矩阵 (转化为 numpy array 以忽略列名)
+                            # Diff 值: 直接从当前的 raw_fea 取
+                            diff_vals = raw_fea[rms_cols].values
+                            
+                            # Main 值: *关键步骤*
+                            # 必须从原始大表 'raw' 中，根据 raw_fea 的索引 (index)，
+                            # 取出对应的 Permutation 轮次下的主效应值。
+                            main_vals = raw.loc[raw_fea.index, current_main_cols].values
+                            
+                            # 3. 维度安全检查 (防止列数对不上)
+                            if diff_vals.shape[1] != main_vals.shape[1]:
+                                raise ValueError(f"Shape mismatch: Diff cols {diff_vals.shape[1]} vs Main cols {main_vals.shape[1]}")
+                            
+                            # 4. 核心公式: |Main + Diff| - |Main|
+                            # Nonword > Word
+                            #sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
+                            # Word > Nonword
+                            sensitivity_gain = np.abs(main_vals) - np.abs(main_vals + diff_vals)
+                            
+                            # 5. 取每行的最大值 (axis=1)
+                            max_abs_beta = np.max(sensitivity_gain, axis=1)
+
+                        # 归一化
                         n_cols = len(rms_cols)
                         raw_fea['rms'] = max_abs_beta / np.sqrt(n_cols)
-                    raw_fea = raw_fea[['perm', 'time_point', 'rms']]
-                    pthres=[5e-2,5e-2]
-                    time_point, time_series, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1],mode=mode,target_fea='rms',input='R2')
-                    true_indices = np.where(mask_time_clus)[0]
-                    all_rms_data_sig[beta_fea] = true_indices
+                        raw_fea = raw_fea[['perm', 'time_point', 'rms']]
+                        pthres=[2.5e-2,2.5e-2]
+                        time_point, time_series, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1],mode=mode,target_fea='rms',input='R2')
+                        true_indices = np.where(mask_time_clus)[0]
+                        all_rms_data_sig[beta_fea] = true_indices
 
                     # Plotting the acoustic features from raw_org_aco
                     fig, ax = plt.subplots(figsize=(5.6*(xlim_align[1]-xlim_align[0]), 5))
@@ -478,7 +565,7 @@ for alignment,xlim_align in zip(
                 ax_rms.spines['top'].set_visible(False)
                 ax_rms.spines['right'].set_visible(False)
                 plt.tight_layout()
-                plt.savefig(os.path.join('figs', 'nonwords', f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
+                plt.savefig(os.path.join('figs', 'z_score_unnormalized', f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
                 plt.close(fig_rms)
 
     # %%
