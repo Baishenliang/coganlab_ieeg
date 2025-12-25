@@ -161,6 +161,7 @@ for alignment,xlim_align in zip(
                                                         #  (60, 20, 200, 10), # looser novWM lambdas
                                                         ('0.001', '0.001', '0.001','0.001','0.001', '0.001'), # stricter vWM lambdas
                                                          #(1,1,1,1,1,1),
+                                                         #(10,10,10,10,10,10),
                                                          #('0.1', '1e-05', '10','0.001','0.001', '1','1e-05','0.1','0.001','0.1'), # stricter vWM lambdas
                                                          ('45', '45', '45','45','45', '45'), # stricter novWM lambdas
                                                          (0.8,1,1.3,1.2,1,0.7)):
@@ -306,7 +307,7 @@ for alignment,xlim_align in zip(
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','z_score_unnormalized', f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=300)
+            plt.savefig(os.path.join('figs','z_score_unnormalized', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=300)
             plt.close()
 
             # %%  Now plot the beta traces for each feature
@@ -384,9 +385,9 @@ for alignment,xlim_align in zip(
                             
                             # 公式: |Main + Diff| - |Main|
                             # Nonword > Word
-                            #sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
+                            sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
                             # Word > Nonword
-                            sensitivity_gain = np.abs(main_vals) - np.abs(main_vals + diff_vals)
+                            #sensitivity_gain = np.abs(main_vals) - np.abs(main_vals + diff_vals)
                             
                             # 取每一行(每个时间点)里增益最大的那个特征
                             max_abs_beta = np.max(sensitivity_gain, axis=1)
@@ -432,9 +433,9 @@ for alignment,xlim_align in zip(
                             
                             # 4. 核心公式: |Main + Diff| - |Main|
                             # Nonword > Word
-                            #sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
+                            sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
                             # Word > Nonword
-                            sensitivity_gain = np.abs(main_vals) - np.abs(main_vals + diff_vals)
+                            #sensitivity_gain = np.abs(main_vals) - np.abs(main_vals + diff_vals)
                             
                             # 5. 取每行的最大值 (axis=1)
                             max_abs_beta = np.max(sensitivity_gain, axis=1)
@@ -443,7 +444,7 @@ for alignment,xlim_align in zip(
                         n_cols = len(rms_cols)
                         raw_fea['rms'] = max_abs_beta / np.sqrt(n_cols)
                         raw_fea = raw_fea[['perm', 'time_point', 'rms']]
-                        pthres=[1e-2,2.5e-2]
+                        pthres=[1e-2,5e-2]
                         time_point, time_series, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1],mode=mode,target_fea='rms',input='R2')
                         true_indices = np.where(mask_time_clus)[0]
                         all_rms_data_sig[beta_fea] = true_indices
@@ -487,7 +488,7 @@ for alignment,xlim_align in zip(
                     ax.spines['right'].set_visible(False)
                     ax.set_ylim(-1e-2*fea_plot_yscale,1e-2*fea_plot_yscale)
                     plt.tight_layout()
-                    plt.savefig(os.path.join('figs', 'multencode', f'{elec_grp}_{alignment}_{is_vWM}_{beta_fea.replace(":", "_")}_betas.tif'), dpi=100)
+                    plt.savefig(os.path.join('figs', 'z_score_unnormalized', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_{beta_fea.replace(":", "_")}_betas.tif'), dpi=100)
                     plt.close(fig)
 
                 # %% Plot all collected RMS traces
@@ -565,7 +566,7 @@ for alignment,xlim_align in zip(
                 ax_rms.spines['top'].set_visible(False)
                 ax_rms.spines['right'].set_visible(False)
                 plt.tight_layout()
-                plt.savefig(os.path.join('figs', 'z_score_unnormalized', f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
+                plt.savefig(os.path.join('figs', 'z_score_unnormalized', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
                 plt.close(fig_rms)
 
     # %%
