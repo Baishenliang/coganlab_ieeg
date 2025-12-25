@@ -443,7 +443,7 @@ for alignment,xlim_align in zip(
                         n_cols = len(rms_cols)
                         raw_fea['rms'] = max_abs_beta / np.sqrt(n_cols)
                         raw_fea = raw_fea[['perm', 'time_point', 'rms']]
-                        pthres=[2.5e-2,2.5e-2]
+                        pthres=[1e-2,2.5e-2]
                         time_point, time_series, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1],mode=mode,target_fea='rms',input='R2')
                         true_indices = np.where(mask_time_clus)[0]
                         all_rms_data_sig[beta_fea] = true_indices
