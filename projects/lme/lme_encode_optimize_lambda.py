@@ -150,7 +150,7 @@ if test_type=='Semantics':
     test_lambda_save='test_lambda_semantics_full_rawpow'
 elif test_type=='Speech':
     lex='All'
-    test_lambda_save='test_lambda_pow'
+    test_lambda_save='test_lambda_zscore'
 elif test_type=='Nonword':
     lex='Nonword'
     test_lambda_save='test_lambda_nonword_rawpow'
@@ -160,7 +160,7 @@ baseline=dict()
 baseline_beta_rms=dict()
 baseline_std=dict()
 baseline_beta_rms_std=dict()
-test_lambdas=['1e-05','1e-04','0.001','0.01','0.1','1','10']#,'100','1000','10000']
+test_lambdas=['1e-04','0.001','0.01','0.1','1','10','100','1000','10000']
               #'20','40','60','80','100','200','500','1000','10000']#,20,20,40,60,80,100,200,300,400,500,600,700,800,900]
 # for vWM, vwm_linestyle in zip(('vWM', 'novWM'), ('-', '--')):
 vWM = 'vWM'
@@ -183,11 +183,11 @@ for alignment,xlim_align in zip(
         fea_cols=gp.create_gradient(elec_col, len(test_lambdas)+1)[:-1]
         for i,test_lambda in enumerate(test_lambdas):
 
-            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_{lex}_pow_testλ_{test_lambda}.csv"
+            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_{lex}_testλ_{test_lambda}.csv"
             raw = pd.read_csv(filename)
 
             input_r2 = 'p'
-            pthres_r2 = [0.8, 0.05]
+            pthres_r2 = [0.8, 0.001]
             vwm_text_r2 = 'ACC'
             target_fea_r2 = f'{fea}_{vWM}'
             time_point, time_series_r2, *_ = get_traces_clus(raw, pthres_r2[0], pthres_r2[1], mode=mode, target_fea=target_fea_r2, input=input_r2)
@@ -246,7 +246,7 @@ for alignment,xlim_align in zip(
         #     ax.set_xlim([0.5,xlim_align[1]])
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
-        ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
+        #ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
         plt.tight_layout()
         plt.savefig(os.path.join('figs',test_lambda_save, f'{elec_grp}_{fea_tag}_{alignment}_{vWM}_rawpow_testλ.tif'), dpi=300)
         plt.close()
