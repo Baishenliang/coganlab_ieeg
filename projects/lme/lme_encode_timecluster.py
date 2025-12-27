@@ -152,18 +152,12 @@ baseline_beta_rms=dict()
 baseline_std=dict()
 baseline_beta_rms_std=dict()
 # test_lamndas=[1e-2,1e-1,'1','10','100','1000']
+vWM_lambda='100'
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
-    for elec_grp,elec_col,vWM_lambda,novWM_lambda,fea_plot_yscale in zip(('Sensorymotor','Auditory','Delay_only','Wgw_p55b','Wgw_a55b','Motor'),
+    for elec_grp,elec_col,fea_plot_yscale in zip(('Sensorymotor','Auditory','Delay_only','Wgw_p55b','Wgw_a55b','Motor'),
                                                          (Sensorimotor_col,Auditory_col,Delay_col,WGW_p55b_col,WGW_a55b_col,Motor_col),
-                                                        #  (10, 20, 20, 10), # looser vWM lambdas
-                                                        #  (60, 20, 200, 10), # looser novWM lambdas
-                                                        ('0.001', '0.001', '0.001','0.001','0.001', '0.001'), # stricter vWM lambdas
-                                                         #(1,1,1,1,1,1),
-                                                         #(10,10,10,10,10,10),
-                                                         #('0.1', '1e-05', '10','0.001','0.001', '1','1e-05','0.1','0.001','0.1'), # stricter vWM lambdas
-                                                         ('45', '45', '45','45','45', '45'), # stricter novWM lambdas
                                                          (0.8,1,1.3,1.2,1,0.7)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
@@ -200,7 +194,6 @@ for alignment,xlim_align in zip(
             # elec_grp='Auditory'
             # elec_col=Auditory_col
             # vWM_lambda=20
-            # novWM_lambda=80
             # fea='ACC'
             # fea_tag='ACC'
             # para_sig_barbar=[0.1,0.01]
@@ -211,7 +204,6 @@ for alignment,xlim_align in zip(
             ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
             add_alignment_vlines(ax, alignment)
 
-            #filename = f"results/{elec_grp}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.csv"
             filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All_huge_testλ_{vWM_lambda}.csv"
             raw = pd.read_csv(filename)
 
@@ -251,11 +243,11 @@ for alignment,xlim_align in zip(
                         time_series = (time_series - baseline[elec_grp])
                     para_sig_bar = para_sig_barbar
 
-                if vWM=='vWM':# or (vWM == 'novWM' and "Wgw" not in elec_grp):
+                if vWM=='vWM':
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
                 true_indices_by_vWM[vWM] = true_indices
-                if true_indices.size > 0 and (vWM == 'vWM'):# or (vWM == 'novWM_p' and "Wgw" not in elec_grp)):
+                if true_indices.size > 0 and (vWM == 'vWM'):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
@@ -307,14 +299,14 @@ for alignment,xlim_align in zip(
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','z_score_unnormalized_huge', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=300)
+            plt.savefig(os.path.join('figs','z_score_unnormalized_huge', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}.tif'), dpi=300)
             plt.close()
 
             # %%  Now plot the beta traces for each feature
             group_beta_type='max' # 'rms' or 'max'
             raw_org = raw[raw['perm'] == 0]
             
-            for is_vWM in ('_vWM',):#,'_novWM'):#','wordnessWord:aco','wordnessWord:pho'):
+            for is_vWM in ('_vWM',):
 
                 all_rms_data = {}
                 all_rms_data_sig = {}
@@ -529,8 +521,6 @@ for alignment,xlim_align in zip(
                     true_indices = all_rms_data_sig[beta_fea]
                     if is_vWM == '_vWM':
                         is_vWM_label = 'vWM_p'
-                    elif is_vWM == '_novWM':
-                        is_vWM_label = 'novWM_p'
                     true_indices_mask=true_indices_by_vWM[is_vWM_label]
                     #true_indices = np.intersect1d(true_indices, true_indices_mask)
                     if true_indices.size > 0:
