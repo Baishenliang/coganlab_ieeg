@@ -212,7 +212,7 @@ for alignment,xlim_align in zip(
             add_alignment_vlines(ax, alignment)
 
             #filename = f"results/{elec_grp}_{alignment}_All_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.csv"
-            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All_testλ_{vWM_lambda}.csv"
+            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All_huge_testλ_{vWM_lambda}.csv"
             raw = pd.read_csv(filename)
 
             j = 0
@@ -221,7 +221,7 @@ for alignment,xlim_align in zip(
                     ('vWM','vWM_p'),#,'diff'),
                     ('-','-'),#,'--'),
                     ('R2','p'),#,'R2'),
-                    ([1e-2,1e-2],[1e-3,1e-3]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
+                    ([2.5e-2,2.5e-2],[1e-3,1e-3]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
                     ('ACC','p'),#,'diff'),
                     (elec_col,elec_col)):#,[0.5,0.5,0.5])):
                 if fea == 'aco':
@@ -255,7 +255,7 @@ for alignment,xlim_align in zip(
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
                 true_indices_by_vWM[vWM] = true_indices
-                if true_indices.size > 0 and (vWM == 'vWM_p'):# or (vWM == 'novWM_p' and "Wgw" not in elec_grp)):
+                if true_indices.size > 0 and (vWM == 'vWM'):# or (vWM == 'novWM_p' and "Wgw" not in elec_grp)):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
@@ -307,7 +307,7 @@ for alignment,xlim_align in zip(
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','z_score_unnormalized', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=300)
+            plt.savefig(os.path.join('figs','z_score_unnormalized_huge', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}_novWMλ_{novWM_lambda}.tif'), dpi=300)
             plt.close()
 
             # %%  Now plot the beta traces for each feature
@@ -326,21 +326,26 @@ for alignment,xlim_align in zip(
                     'wordnessWord': wordness_col,
                     'wordnessNonword:aco': aco_col,
                     'wordnessNonword:pho': pho_col,
+                    'sem': [0.2, 0.8, 0.2]
                 }
 
-                for beta_fea in ('aco','pho','wordnessNonword:pho'):#,'wordnessWord:pho','wordnessWord:aco'):
+                for beta_fea in ('aco','pho','wordnessNonword:pho','sem'):#,'wordnessWord:pho','wordnessWord:aco'):
                     print(f'Feature beta plots for {beta_fea}')
 
                     # 1. 预先定义好所有的主效应列 (Main Effects)
                     # 确保它们已经按顺序排好 (1, 2, ... 11)
                     fea_columns_aco = [col for col in raw.columns if col.startswith('aco') and ':' not in col and is_vWM in col]
                     fea_columns_pho = [col for col in raw.columns if col.startswith('pho') and ':' not in col and is_vWM in col]
+                    fea_columns_sem = [col for col in raw.columns if col.startswith('sem') and ':' not in col and is_vWM in col]
+
 
                     # 2. 根据 beta_fea 确定当前要分析的特征列 (fea_columns)
                     if beta_fea == "aco":
                         fea_columns = ['time_point'] + fea_columns_aco
                     elif beta_fea == "pho":
                         fea_columns = ['time_point'] + fea_columns_pho
+                    elif beta_fea == "sem":
+                        fea_columns = ['time_point'] + fea_columns_sem
                     elif (":" in beta_fea) and ("aco" in beta_fea):
                         # 如果是交互项，提取对应的交互列
                         fea_columns = ['time_point'] +['aco1:wordnessNonword_vWM']+ [col for col in raw.columns if col.startswith(beta_fea) and is_vWM in col]
@@ -488,7 +493,7 @@ for alignment,xlim_align in zip(
                     ax.spines['right'].set_visible(False)
                     ax.set_ylim(-1e-2*fea_plot_yscale,1e-2*fea_plot_yscale)
                     plt.tight_layout()
-                    plt.savefig(os.path.join('figs', 'z_score_unnormalized', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_{beta_fea.replace(":", "_")}_betas.tif'), dpi=100)
+                    plt.savefig(os.path.join('figs', 'z_score_unnormalized_huge', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_{beta_fea.replace(":", "_")}_betas.tif'), dpi=100)
                     plt.close(fig)
 
                 # %% Plot all collected RMS traces
@@ -566,7 +571,7 @@ for alignment,xlim_align in zip(
                 ax_rms.spines['top'].set_visible(False)
                 ax_rms.spines['right'].set_visible(False)
                 plt.tight_layout()
-                plt.savefig(os.path.join('figs', 'z_score_unnormalized', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
+                plt.savefig(os.path.join('figs', 'z_score_unnormalized_huge', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
                 plt.close(fig_rms)
 
     # %%
