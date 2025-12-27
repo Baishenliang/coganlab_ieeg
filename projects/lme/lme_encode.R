@@ -345,7 +345,7 @@ for (lambda_test in c(0.001,1,10,100)){
                                       sep = "")
         }else{
           file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_yn_vWM_long.csv",
+                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM_yn_long.csv",
                                       sep = "")
         }
         long_data <- read.csv(file_path_long_vwm)
