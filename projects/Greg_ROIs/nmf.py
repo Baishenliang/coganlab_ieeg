@@ -3,6 +3,7 @@
 import os
 import pickle
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 HOME = os.path.expanduser("~")
@@ -14,6 +15,7 @@ if current_dir != script_dir:
 sf_dir = 'data'
 with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
+update_dict = False
 # Get the Aud/SM/Mtr Delay electrodes without vWM:
 LexDelay_twin_idxes['LexDelay_Sensorimotor_novWM_sig_idx']=LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx']-LexDelay_twin_idxes['LexDelay_Sensorimotor_in_Delay_sig_idx']
 LexDelay_twin_idxes['LexDelay_Auditory_novWM_sig_idx']=LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx']-LexDelay_twin_idxes['LexDelay_Auditory_in_Delay_sig_idx']
@@ -107,11 +109,27 @@ final_grps = None
 if groupsTag=="LexDelay":
     # elec_grps=('Spt','lPMC','lIFG')
     # elec_idxs=('Hikock_Spt','Hikock_lPMC','Hikock_lIFG')
-    elec_grps=('Sensorymotor_in_Delay',)
-    elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
-    for epoc,t_range in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
-                             ([-0.5, 2], [-0.5, 1.5], [-0.5, 2])):
+    # elec_grps=('Sensorymotor_in_Delay',)
+    # elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
+    elec_grps=('Spt',)
+    elec_idxs=('Hikock_Spt',)
+    for epoc,t_range,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
+                             ([-0.5, 2], [-0.5, 1.5], [-0.5, 2]),
+                             ('Stim','Go','Resp')):
         curr_arr, curr_chs, curr_times, curr_grps = rearrange_elects(elec_grps, elec_idxs, epoc,t_range=t_range)
+        
+        # Save final_array as csv
+        df_final = pd.DataFrame(curr_arr.T, index=curr_times, columns=curr_chs)
+        if not os.path.exists(os.path.join(script_dir, sf_dir)):
+            os.makedirs(os.path.join(script_dir, sf_dir))
+        df_final.to_csv(os.path.join(script_dir, sf_dir, f'{'_'.join(elec_grps)}_{epoc_tag}_zscore_epo.csv'))
+
+        # Read final_array from csv
+        # df_final_read = pd.read_csv(os.path.join(script_dir, sf_dir, f'{'_'.join(elec_grps)}_{epoc_tag}_zscore_epo.csv'), index_col=0)
+        # final_times_read = df_final_read.index.to_numpy(dtype=float)
+        # final_chs_read = df_final_read.columns.tolist()
+        # final_array_read = df_final_read.values.T
+        
         arrays_to_hstack.append(curr_arr)
         final_times.extend(curr_times)
     
@@ -133,6 +151,8 @@ if groupsTag=="LexDelay":
             if abs(final_times[idx] + 0.5) < 1e-4: return ""
             return f"{final_times[idx]:.2f}".rstrip('0').rstrip('.')
         return ""
+
+
 
 if final_array.min() < 0:
     print(f"Negative values detected (min={final_array.min():.2f}). Shifting data to satisfy NMF non-negativity constraint...")
@@ -274,7 +294,7 @@ if X.min() < 0:
     X = X - X.min()
 
 # --- 2. Run NMF ---
-n_components = 4
+n_components = 3
 # init='nndsvd' typically yields more consistent and sparse results
 model = NMF(n_components=n_components, init='nndsvd', random_state=42, max_iter=500)
 
@@ -296,7 +316,9 @@ Motor_col = [0, 0, 1]  # Motor
 WGW_p55b_col=[0.74901961, 0.25098039, 0.74901961] # WGW 55b
 WGW_a55b_col=[0, 0.5, 0.5] # WGW a55b
 colors = [
+    Sensorimotor_col,
     Motor_col, # Blue
+    Delay_col,
     Auditory_col, # Orange
     Delay_col, # Green
     Sensorimotor_col, # Red
@@ -304,7 +326,7 @@ colors = [
     '#9467bd', # Purple
     '#8c564b'  # Brown
 ]
-comp_names = ['Motor', 'Auditory_early', 'Delay', 'Auditory_late']  # Customize component names as needed
+comp_names = ['Auditory_continuous', 'Auditory_motor', 'Auditory_onset']  # Customize component names as needed
 
 
 for i in range(n_components):
@@ -347,9 +369,10 @@ for category in df_weights['Dominant_Comp'].unique():
     # 4. append the sets tp the LexDelay_twin_idxes, with the key names being LexDelay_Sensorimotor_in_Delay_sig_idx_{category name}
     LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
 
-# 5. save the new LexDelay_twin_idxes into its original position
-with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "wb") as f:
-    pickle.dump(LexDelay_twin_idxes, f)
+if update_dict:
+    # 5. save the new LexDelay_twin_idxes into its original position
+    with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "wb") as f:
+        pickle.dump(LexDelay_twin_idxes, f)
 
 # Display first few rows
 print("Electrode Weights DataFrame (First 5 rows):")
@@ -664,10 +687,10 @@ def plot_nmf_components_by_roi_group(sig, chs, df_weights, times=None, group_col
         ax.axvline(x=0, color='k', linestyle='--', linewidth=1, alpha=0.5)
         ax.axvline(x=-0.5, color='k', linestyle='-', linewidth=1, alpha=0.5)
         
-        if has_data:
-            ax.legend(loc='upper right', fontsize=14, ncol=1, frameon=False)
-        else:
-            ax.text(0.5, 0.5, 'No valid data', ha='center', transform=ax.transAxes)
+        # if has_data:
+        #     ax.legend(loc='upper right', fontsize=14, ncol=1, frameon=False)
+        # else:
+        #     ax.text(0.5, 0.5, 'No valid data', ha='center', transform=ax.transAxes)
 
     axes[-1].set_xlabel('Time (s)')
     plt.tight_layout()
