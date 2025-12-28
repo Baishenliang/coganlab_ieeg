@@ -143,7 +143,7 @@ def add_alignment_vlines(ax, alignment):
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 is_normalize=False
-is_bsl_correct=False
+is_bsl_correct=True
 mode='time_cluster'
 #for elec_grp in ['Hickok_Spt','Hickok_lPMC','Hickok_lIFG']:
 # for elec_grp in ['Auditory_delay','Sensorymotor_delay','Motor_delay','Delay_only']:
@@ -152,13 +152,14 @@ baseline_beta_rms=dict()
 baseline_std=dict()
 baseline_beta_rms_std=dict()
 # test_lamndas=[1e-2,1e-1,'1','10','100','1000']
-vWM_lambda='100'
+vWM_lambda='0.001'
+is_yn=''#'_yn' # if it is repeat, ''
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
     for elec_grp,elec_col,fea_plot_yscale in zip(('Sensorymotor','Auditory','Delay_only','Wgw_p55b','Wgw_a55b','Motor'),
                                                          (Sensorimotor_col,Auditory_col,Delay_col,WGW_p55b_col,WGW_a55b_col,Motor_col),
-                                                         (0.8,1,1.3,1.2,1,0.7)):
+                                                         (3.5,3.5,4,3.5,3.5,2)):
         # for elec_grp in ['Auditory_delay','Sensorymotor_delay']:
         # for elec_grp in ['Sensorymotor_delay']:
         # for fea,fea_tag,para_sig_barbar in zip(('Wordvec','wordness','aco','pho'),
@@ -204,7 +205,7 @@ for alignment,xlim_align in zip(
             ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
             add_alignment_vlines(ax, alignment)
 
-            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All_huge_testλ_{vWM_lambda}.csv"
+            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All{is_yn}_huge_testλ_{vWM_lambda}.csv"
             raw = pd.read_csv(filename)
 
             j = 0
@@ -299,7 +300,7 @@ for alignment,xlim_align in zip(
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs','z_score_unnormalized_huge', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}.tif'), dpi=300)
+            plt.savefig(os.path.join('figs',f'z_score_unnormalized{is_yn}_huge', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}.tif'), dpi=300)
             plt.close()
 
             # %%  Now plot the beta traces for each feature
@@ -315,9 +316,9 @@ for alignment,xlim_align in zip(
                 feature_colors = {
                     'aco': aco_col,
                     'pho': pho_col,
-                    'wordnessWord': wordness_col,
+                    'wordnessNonword_vWM': wordness_col,
                     'wordnessNonword:aco': aco_col,
-                    'wordnessNonword:pho': pho_col,
+                    'wordnessNonword:pho': [0.5,0.5,0.5],
                     'sem': [0.2, 0.8, 0.2]
                 }
 
@@ -336,6 +337,8 @@ for alignment,xlim_align in zip(
                         fea_columns = ['time_point'] + fea_columns_aco
                     elif beta_fea == "pho":
                         fea_columns = ['time_point'] + fea_columns_pho
+                    elif beta_fea == "wordnessNonword_vWM":
+                        fea_columns = ['time_point'] + ['wordnessNonword_vWM']
                     elif beta_fea == "sem":
                         fea_columns = ['time_point'] + fea_columns_sem
                     elif (":" in beta_fea) and ("aco" in beta_fea):
@@ -441,7 +444,7 @@ for alignment,xlim_align in zip(
                         n_cols = len(rms_cols)
                         raw_fea['rms'] = max_abs_beta / np.sqrt(n_cols)
                         raw_fea = raw_fea[['perm', 'time_point', 'rms']]
-                        pthres=[1e-2,5e-2]
+                        pthres=[1e-2,2.5e-2]
                         time_point, time_series, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1],mode=mode,target_fea='rms',input='R2')
                         true_indices = np.where(mask_time_clus)[0]
                         all_rms_data_sig[beta_fea] = true_indices
@@ -485,7 +488,7 @@ for alignment,xlim_align in zip(
                     ax.spines['right'].set_visible(False)
                     ax.set_ylim(-1e-2*fea_plot_yscale,1e-2*fea_plot_yscale)
                     plt.tight_layout()
-                    plt.savefig(os.path.join('figs', 'z_score_unnormalized_huge', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_{beta_fea.replace(":", "_")}_betas.tif'), dpi=100)
+                    plt.savefig(os.path.join('figs', f'z_score_unnormalized{is_yn}_huge', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_{beta_fea.replace(":", "_")}_betas.tif'), dpi=100)
                     plt.close(fig)
 
                 # %% Plot all collected RMS traces
@@ -536,7 +539,7 @@ for alignment,xlim_align in zip(
                             end_time = time_points_plot[end_index] + time_step / 2
 
                             label = f'clust{k} of pho'
-                            ax_rms.plot([start_time, end_time], [1e-1*fea_plot_yscale-(5e-3)*(j-1),1e-1*fea_plot_yscale-(5e-3)*(j-1)],
+                            ax_rms.plot([start_time, end_time], [1e-1*fea_plot_yscale-(2e-2)*(j-1),1e-1*fea_plot_yscale-(2e-2)*(j-1)],
                                     color=color,alpha=0.4,
                                     linewidth=5,  # Make the line thick like a bar
                                     solid_capstyle='butt')  # Makes the line ends flat
@@ -561,7 +564,7 @@ for alignment,xlim_align in zip(
                 ax_rms.spines['top'].set_visible(False)
                 ax_rms.spines['right'].set_visible(False)
                 plt.tight_layout()
-                plt.savefig(os.path.join('figs', 'z_score_unnormalized_huge', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
+                plt.savefig(os.path.join('figs', f'z_score_unnormalized{is_yn}_huge', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
                 plt.close(fig_rms)
 
     # %%
