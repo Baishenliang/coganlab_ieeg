@@ -818,17 +818,17 @@ if groupsTag == "LexDelay":
 
 
             for data_epoch,epoc_epoch,wav_fig_size,wav_x_lim,epoch_tag in zip(
-                    (data_LexDelay_Resp,data_LexDelay_Cue,data_LexDelay_Aud,data_LexDelay_Go),
-                    (epoc_LexDelay_Resp,epoc_LexDelay_Cue,epoc_LexDelay_Aud,epoc_LexDelay_Go),
+                    (data_LexDelay_Resp,data_LexDelay_Aud,data_LexDelay_Go,data_LexDelay_Cue),
+                    (epoc_LexDelay_Resp,epoc_LexDelay_Aud,epoc_LexDelay_Go,epoc_LexDelay_Cue),
                     ((Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt)),
-                    ([-5, 1.5],[-0.5, 6],[-2.5, 4],[-4.5, 2]),
-                    ('Resp','Cue','Stim','Go')
+                    ([-5, 1.5],[-2.5, 4],[-4.5, 2],[-0.5, 6]),
+                    ('Resp','Stim','Go','Cue')
             ):
 
                 # for testing:
-                # Hickok_roi_gp=lIFG_sig_idx
-                # col=Motor_col
-                # tag='lIFG (vPCSA)'
+                # Hickok_roi_gp=Spt_sig_idx
+                # col=Auditory_col
+                # tag='Spt'
                 # data_epoch=data_LexDelay_Resp
                 # epoc_epoch=epoc_LexDelay_Resp
                 # wav_fig_size=(Waveplot_wth, Waveplot_hgt)
@@ -901,9 +901,15 @@ if groupsTag == "LexDelay":
 
                 # For Spt only: wave plots for different categories of electrodes
                 if tag == 'Spt':
-                    hickok_sub_idx_aud_mtr=np.array([3,4,6,10,11,12,13,14,15])-1
-                    hickok_sub_idx_aud_onset = np.array([20,21,22,23,25,26,27])-1
-                    hickok_sub_idx_aud_contin = np.array([19,28,29,31,32,33,34])-1
+                    # Hickok's manual categorizations
+                    # hickok_sub_idx_aud_mtr=np.array([3,4,6,10,11,12,13,14,15])-1
+                    # hickok_sub_idx_aud_onset = np.array([20,21,22,23,25,26,27])-1
+                    # hickok_sub_idx_aud_contin = np.array([19,28,29,31,32,33,34])-1
+                    
+                    # New categorizations based on NMF
+                    hickok_sub_idx_aud_mtr = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 23, 29, 34])
+                    hickok_sub_idx_aud_contin = np.array([13, 14, 18, 28, 31, 32, 33])
+                    hickok_sub_idx_aud_onset = np.array([19, 20, 21, 22, 24, 25, 26, 27, 30])
 
                     for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col,wave_y_lim in zip(
                             (hickok_sub_idx_aud_mtr,hickok_sub_idx_aud_onset,hickok_sub_idx_aud_contin),
