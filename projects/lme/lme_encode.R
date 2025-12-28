@@ -180,7 +180,7 @@ model_func <- function(current_data){
   
   # Permutation
   cat('Start perm \n')
-  n_perm <- 1e3#3e2#1e3
+  n_perm <- 3e2#1e3
   
   if (n_perm>0){
     for (i_perm in 1:n_perm) {
