@@ -154,6 +154,7 @@ baseline_beta_rms_std=dict()
 # test_lamndas=[1e-2,1e-1,'1','10','100','1000']
 vWM_lambda='0.001'
 is_yn=''#'_yn' # if it is repeat, ''
+is_huge=''#'_huge' # if it is huge, '_huge'
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
@@ -205,7 +206,7 @@ for alignment,xlim_align in zip(
             ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7,linewidth=3)
             add_alignment_vlines(ax, alignment)
 
-            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All{is_yn}_huge_testλ_{vWM_lambda}.csv"
+            filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
             raw = pd.read_csv(filename)
 
             j = 0
@@ -300,7 +301,7 @@ for alignment,xlim_align in zip(
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs',f'z_score_unnormalized{is_yn}_huge', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}.tif'), dpi=300)
+            plt.savefig(os.path.join('figs',f'z_score_unnormalized{is_yn}{is_huge}', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}.tif'), dpi=300)
             plt.close()
 
             # %%  Now plot the beta traces for each feature
@@ -322,7 +323,7 @@ for alignment,xlim_align in zip(
                     'sem': [0.2, 0.8, 0.2]
                 }
 
-                for beta_fea in ('aco','pho','wordnessNonword:pho','sem'):#,'wordnessWord:pho','wordnessWord:aco'):
+                for beta_fea in ('aco','pho','wordnessNonword:pho'):#,'sem'):#,'wordnessWord:pho','wordnessWord:aco'):
                     print(f'Feature beta plots for {beta_fea}')
 
                     # 1. 预先定义好所有的主效应列 (Main Effects)
@@ -488,7 +489,7 @@ for alignment,xlim_align in zip(
                     ax.spines['right'].set_visible(False)
                     ax.set_ylim(-1e-2*fea_plot_yscale,1e-2*fea_plot_yscale)
                     plt.tight_layout()
-                    plt.savefig(os.path.join('figs', f'z_score_unnormalized{is_yn}_huge', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_{beta_fea.replace(":", "_")}_betas.tif'), dpi=100)
+                    plt.savefig(os.path.join('figs', f'z_score_unnormalized{is_yn}{is_huge}', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_{beta_fea.replace(":", "_")}_betas.tif'), dpi=100)
                     plt.close(fig)
 
                 # %% Plot all collected RMS traces
@@ -564,7 +565,7 @@ for alignment,xlim_align in zip(
                 ax_rms.spines['top'].set_visible(False)
                 ax_rms.spines['right'].set_visible(False)
                 plt.tight_layout()
-                plt.savefig(os.path.join('figs', f'z_score_unnormalized{is_yn}_huge', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
+                plt.savefig(os.path.join('figs', f'z_score_unnormalized{is_yn}{is_huge}', f'λ{vWM_lambda}',f'{elec_grp}_{alignment}_{is_vWM}_all_rms_betas.tif'), dpi=100)
                 plt.close(fig_rms)
 
     # %%
