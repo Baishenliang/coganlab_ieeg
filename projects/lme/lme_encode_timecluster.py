@@ -153,8 +153,8 @@ baseline_std=dict()
 baseline_beta_rms_std=dict()
 # test_lamndas=[1e-2,1e-1,'1','10','100','1000']
 vWM_lambda='0.001'
-is_yn=''#'_yn' # if it is repeat, ''
-is_huge=''#'_huge' # if it is huge, '_huge'
+is_yn='_yn' # if it is repeat, ''
+is_huge='onlysem'#'_huge' # if it is huge, '_huge'
 for alignment,xlim_align in zip(
         ('Aud','Resp','Go'),
         ([-0.2, 1.75],[-0.2, 1.25],[-0.2, 1.25])):
@@ -215,7 +215,7 @@ for alignment,xlim_align in zip(
                     ('vWM','vWM_p'),#,'diff'),
                     ('-','-'),#,'--'),
                     ('R2','p'),#,'R2'),
-                    ([2.5e-2,2.5e-2],[1e-3,1e-3]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
+                    ([5e-2,1e-4],[1e-3,1e-30]),#,[2.5e-2,2.5e-2]),#,[5e-2,1e-1]),
                     ('ACC','p'),#,'diff'),
                     (elec_col,elec_col)):#,[0.5,0.5,0.5])):
                 if fea == 'aco':
@@ -249,7 +249,7 @@ for alignment,xlim_align in zip(
                     ax.plot(time_point, time_series, label=f"{elec_grp}{vwm_text}", color=elec_col, linewidth=5,linestyle=vwm_linestyle)
                 true_indices = np.where(mask_time_clus)[0]
                 true_indices_by_vWM[vWM] = true_indices
-                if true_indices.size > 0 and (vWM == 'vWM'):
+                if true_indices.size > 0 and (vWM == 'vWM_p'):
                     split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                     clusters_indices = np.split(true_indices, split_points)
 
@@ -301,7 +301,7 @@ for alignment,xlim_align in zip(
             ax.spines['right'].set_visible(False)
             ax.set_ylim(-0.002,para_sig_bar[0]+2*para_sig_bar[1])
             plt.tight_layout()
-            plt.savefig(os.path.join('figs',f'z_score_unnormalized{is_yn}{is_huge}', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_rawpow_vWMλ_{vWM_lambda}.tif'), dpi=300)
+            plt.savefig(os.path.join('figs',f'z_score_unnormalized{is_yn}{is_huge}', f'λ{vWM_lambda}',f'{elec_grp}_{fea_tag}_{alignment}_All_vWMλ_{vWM_lambda}.tif'), dpi=300)
             plt.close()
 
             # %%  Now plot the beta traces for each feature
@@ -323,7 +323,7 @@ for alignment,xlim_align in zip(
                     'sem': [0.2, 0.8, 0.2]
                 }
 
-                for beta_fea in ('aco','pho','wordnessNonword:pho'):#,'sem'):#,'wordnessWord:pho','wordnessWord:aco'):
+                for beta_fea in ('sem',):#:('aco','pho','wordnessNonword:pho','sem'):#,'wordnessWord:pho','wordnessWord:aco'):
                     print(f'Feature beta plots for {beta_fea}')
 
                     # 1. 预先定义好所有的主效应列 (Main Effects)
