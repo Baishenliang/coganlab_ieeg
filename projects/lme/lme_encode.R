@@ -303,8 +303,9 @@ pho_fea_T$stim <- rownames(pho_fea_T)
 pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
 #Load semantic parameters
+sem_tag<-'syllables_sem_proxy_pca'
 sem_path <- paste(home_dir,
-                  "data/syllables_sem_proxy_pca.csv",
+                  "data/",sem_tag,".csv",
                   sep = "")
 sem_fea <- read.csv(sem_path,row.names = 1)
 sem_fea_T <- as.data.frame(t(sem_fea))
@@ -376,12 +377,16 @@ for (rep_yn in c('','_yn')){
         if (lex == 'Word'){
           word_data <- long_data[long_data['wordness'] == lex, ]
           word_data <- left_join(word_data, sem_fea_T, by = 'stim')
-        } else if (lex == 'All') {
-          word_data <- left_join(long_data, sem_fea_T, by = 'stim')
-          nonword_indices <- word_data$wordness == 'Nonword'
           
-          if (sum(nonword_indices) > 0) {
-            word_data[nonword_indices, sem_cols] <- 0
+        } else if (lex == 'All') {
+          if (sem_tag == 'syllables_sem_proxy_pca'){
+            word_data <- left_join(long_data, sem_fea_T, by = 'stim')
+          } else {
+            word_data <- left_join(long_data, sem_fea_T, by = 'stim')
+            nonword_indices <- word_data$wordness == 'Nonword'
+            if (sum(nonword_indices) > 0) {
+              word_data[nonword_indices, sem_cols] <- 0
+            }
           }
         } else {
           word_data <- long_data
@@ -395,6 +400,7 @@ for (rep_yn in c('','_yn')){
         word_data$ridge_lambda_vWM<-lambda_test
         cat("Re-formatting long data \n")
         data_by_time <- split(word_data, word_data$time)
+        #browser()
         rm(word_data)
         
         cat("Starting modeling \n")
