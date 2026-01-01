@@ -148,7 +148,7 @@ model_func <- function(current_data){
   
   term_aco <- paste0('aco', 1:9, "*wordness")
   term_pho <- paste0('pho', 1:11, "*wordness")
-  term_sem <- paste0('sem', 1:67)
+  term_sem <- paste0('sem', 1:75)
   
   #all_terms <- c(term_aco, term_pho, term_sem, "wordness")
   #all_terms <- c(term_aco, term_pho, "wordness")
@@ -304,7 +304,7 @@ pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
 #Load semantic parameters
 sem_path <- paste(home_dir,
-                  "data/syllables_sem_pca.csv",
+                  "data/syllables_sem_proxy_pca.csv",
                   sep = "")
 sem_fea <- read.csv(sem_path,row.names = 1)
 sem_fea_T <- as.data.frame(t(sem_fea))
@@ -413,7 +413,7 @@ for (rep_yn in c('','_yn')){
         print(perm_compare_df)
         
         #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,"onlysem_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,"onlysemproxy_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
         
       }
     }
