@@ -194,7 +194,7 @@ mode = 'time_cluster'
 
 # 定义所有要画的电极组及其对应参数
 is_yn = '' # '' or '_yn'
-is_huge = 'onlysemproxy' # 'onlysemproxy' or '_huge' or 'onlysem' or ''
+is_huge = '_huge' # 'onlysemproxy' or '_huge' or 'onlysem' or ''
 
 # --- 根据 is_huge 设定统一的 Y-Scale (使用 match case) ---
 match is_huge:
@@ -450,12 +450,12 @@ for chunk_idx, current_chunk in enumerate(elec_chunks):
                         # Get the gain of nonword - word
                         #sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
                         # Get nonword main effect
-                        sensitivity_gain = np.abs(main_vals + diff_vals)
+                        sensitivity_gain = np.abs(main_vals + diff_vals)+ np.abs(main_vals)
                     elif group_beta_type == 'rms':
                         # Get the gain of nonword - word
                         #sensitivity_gain = np.sqrt(np.mean((main_vals + diff_vals)**2, axis=1)) - np.sqrt(np.mean(main_vals**2, axis=1))
                         # Get nonword main effect
-                        sensitivity_gain = np.sqrt(np.mean((main_vals + diff_vals)**2, axis=1))    
+                        sensitivity_gain = np.sqrt(np.mean((main_vals + diff_vals)**2, axis=1)) + np.sqrt(np.mean(main_vals**2, axis=1))
                     if group_beta_type == 'avg':
                         val = np.mean(sensitivity_gain, axis=1)
                     elif group_beta_type == 'max':  
