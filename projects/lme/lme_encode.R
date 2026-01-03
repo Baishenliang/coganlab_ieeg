@@ -150,9 +150,9 @@ model_func <- function(current_data){
   term_pho <- paste0('pho', 1:11, "*wordness")
   term_sem <- paste0('sem', 1:75)
   
-  #all_terms <- c(term_aco, term_pho, term_sem, "wordness")
+  all_terms <- c(term_aco, term_pho, term_sem, "wordness")
   #all_terms <- c(term_aco, term_pho, "wordness")
-  all_terms <- c(term_sem)
+  #all_terms <- c(term_sem)
   
   fml <- as.formula(paste0("value ~ 1 + ", paste(all_terms, collapse = " + ")))
   
@@ -419,7 +419,7 @@ for (rep_yn in c('','_yn')){
         print(perm_compare_df)
         
         #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,"onlysemproxy_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,"_hugeproxy_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
         
       }
     }
