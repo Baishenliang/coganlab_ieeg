@@ -150,8 +150,8 @@ model_func <- function(current_data){
   term_pho <- paste0('pho', 1:11, "*wordness")
   term_sem <- paste0('sem', 1:75)
   
-  all_terms <- c(term_aco, term_pho, term_sem, "wordness")
-  #all_terms <- c(term_aco, term_pho, "wordness")
+  #all_terms <- c(term_aco, term_pho, term_sem, "wordness")
+  all_terms <- c(term_aco, term_pho, "wordness")
   #all_terms <- c(term_sem)
   
   fml <- as.formula(paste0("value ~ 1 + ", paste(all_terms, collapse = " + ")))
@@ -240,12 +240,12 @@ model_func <- function(current_data){
 }
 
 #%% Parameters
-delay_nodelays <- c("LexDelayRep")#c("LexDelayRep","LexNoDelay")
-alignments <- c("Aud","Go","Resp")
+delay_nodelays <- c("LexDelay","LexNoDelay")#c("LexDelayRep","LexDelay","LexNoDelay")
+alignments <- c("Aud")#,"Go","Resp")
 #alignments <- c("Resp")
 # alignments <- c("Aud")
 #elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
-elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b')
+elec_grps <- c('Auditory','Sensorymotor','Motor')#,'Delay_only','Wgw_p55b','Wgw_a55b')
 #elec_grps <- c('Wgw_p55b','Wgw_a55b')
 #elec_grps <- c('Motor')
 
@@ -321,7 +321,7 @@ lambda_test=0.001
 #for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
   #for (lambda_test in c(20,40,60,80,200,500,1000,10000)){
   #for (lambda_test in c(0.2,0.4,0.6,0.8,2,4,6,8)){
-for (rep_yn in c('','_yn')){
+for (rep_yn in c('_forSilence')){#,'','_yn')){
   for (delay_nodelay in delay_nodelays){
     for (alignment in alignments){
       for (elec_grp in elec_grps){
@@ -347,11 +347,11 @@ for (rep_yn in c('','_yn')){
         if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b' || elec_grp=='SM_vWM_Auditory_early' || 
             elec_grp=='SM_vWM_Auditory_late' || elec_grp=='SM_vWM_Delay' || elec_grp=='SM_vWM_Motor'){
           file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,rep_yn,"_long.csv",
+                                      "data/epoc_",delay_nodelay,"_",alignment,"_",elec_grp,rep_yn,"_long.csv",
                                       sep = "")
         }else{
           file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_LexDelayRep_",alignment,"_",elec_grp,"_vWM",rep_yn,"_long.csv",
+                                      "data/epoc_",delay_nodelay,"_",alignment,"_",elec_grp,"_vWM",rep_yn,"_long.csv",
                                       sep = "")
         }
         long_data <- read.csv(file_path_long_vwm)
