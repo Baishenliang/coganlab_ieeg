@@ -80,8 +80,8 @@ subject_processing_dict_org = {
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 # %% define task
-Task_Tag="LexicalDecRepDelay"
-#Task_Tag="LexicalDecRepNoDelay"
+#Task_Tag="LexicalDecRepDelay"
+Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
@@ -576,10 +576,10 @@ for subject, processing_type in subject_processing_dict.items():
                 #  )
                 # Just a temporal option for getting the Cue epochs for auditory and motor onset modeling
                 gamma_epoc_zip=zip(
-                    ('Cue/Repeat/CORRECT',),
-                    ('Cue/Repeat/CORRECT',),
-                    ((-0.5, 6),),
-                    ('Cue_inRep',),
+                    ('Auditory_stim/:=:/CORRECT',),
+                    ('Cue/:=:/CORRECT',),
+                    ((-2, 2),),
+                    ('Auditory_inSilence',),
                     (True,)
                  )
             elif Task_Tag == "RetroCue":
