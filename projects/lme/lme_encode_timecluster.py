@@ -190,16 +190,19 @@ pho_col = [0.502, 0, 0.502]
 wordness_col = [1, 0, 1] 
 
 is_normalize = False
-is_bsl_correct = True
+is_bsl_correct = False
 mode = 'time_cluster'
 
 # 定义所有要画的电极组及其对应参数
-opts_yn = ['', '_yn']
-opts_huge = ['', 'onlysem']#'onlysemproxy', '_huge', 'onlysem']
+opts_yn = ['_forSilence',]#,'', '_yn','_forSilence'
+opts_huge = ['', '_onlysem']#'onlysemproxy', '_huge', 'onlysem']
+delay_nodelays = ["LexNoDelay",] #"LexDelay","LexNoDelay","LexDelayRep"
 
-for is_yn, is_huge in itertools.product(opts_yn, opts_huge):
+for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_nodelays):
     # --- 根据 is_huge 设定统一的 Y-Scale (使用 match case) ---
     match is_huge:
+        case '_onlysem':
+            unified_y_scale = 0.3  #
         case 'onlysem':
             unified_y_scale = 10  #
         case 'onlysemproxy':
@@ -273,7 +276,7 @@ for is_yn, is_huge in itertools.product(opts_yn, opts_huge):
                 add_alignment_vlines(ax, alignment)
                 
                 # --- 加载数据 ---
-                filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
+                filename = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
                 if not os.path.exists(filename):
                     print(f"Warning: File not found {filename}")
                     continue
@@ -366,6 +369,8 @@ for is_yn, is_huge in itertools.product(opts_yn, opts_huge):
 
     group_beta_type = 'avg' # 'rms' or 'max' or 'avg'
     match is_huge:
+        case '_onlysem':
+            target_beta_features = ['sem'] 
         case 'onlysem':
             target_beta_features = ['sem'] 
         case 'onlysemproxy':
@@ -373,7 +378,7 @@ for is_yn, is_huge in itertools.product(opts_yn, opts_huge):
         case '_huge':
             target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem'] 
         case _:
-            target_beta_features = ['aco', 'pho', 'wordnessNonword:pho']
+            target_beta_features = ['aco', 'pho', 'wordnessNonword:pho','wordnessNonword_vWM']
     feature_colors = {
         'aco': aco_col, 'pho': pho_col, 'wordnessNonword_vWM': wordness_col,
         'wordnessNonword:aco': aco_col, 'wordnessNonword:pho': [0.5,0.5,0.5], 'sem': [0.2, 0.8, 0.2]
@@ -405,7 +410,7 @@ for is_yn, is_huge in itertools.product(opts_yn, opts_huge):
         for row_idx, (elec_grp, elec_col, fea_plot_yscale) in enumerate(current_chunk):
             for col_idx, (alignment, xlim_align) in enumerate(all_alignments):
                 
-                filename = f"results/LexDelayRep_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
+                filename = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
                 if not os.path.exists(filename): continue
                 raw = pd.read_csv(filename)
                 raw_org = raw[raw['perm'] == 0]
