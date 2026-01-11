@@ -1,217 +1,123 @@
-#%% Set dir
+#%% Imports and Setup
 import os
-import re
 import sys
 import numpy as np
 import pandas as pd
-from ieeg.calc.stats import time_cluster
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-from partd.utils import suffix
-from requests.packages import target
+import itertools
 from statsmodels.stats.multitest import multipletests
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
 current_dir = os.getcwd()
 if current_dir != script_dir:
     os.chdir(script_dir)
-sys.path.append(os.path.abspath(os.path.join("..", "GLM")))
-import glm_utils as glm
-from scipy.ndimage import gaussian_filter1d,uniform_filter1d
-sys.path.append(os.path.abspath(os.path.join("..", "..")))
-import utils.group as gp
-import itertools
 
-#%% Run time cluster
+# --- Configuration ---
+# 设置字体和绘图风格
+font_scale = 2
+plt.rcParams['font.size'] = 14 * font_scale
+plt.rcParams['axes.titlesize'] = 16 * font_scale
+plt.rcParams['axes.labelsize'] = 14 * font_scale
+plt.rcParams['xtick.labelsize'] = 12 * font_scale
+plt.rcParams['ytick.labelsize'] = 12 * font_scale
+plt.rcParams['legend.fontsize'] = 12 * font_scale
 
-font_scale=2
-plt.rcParams['font.size'] = 14*font_scale
-plt.rcParams['axes.titlesize'] = 16*font_scale
-plt.rcParams['axes.labelsize'] = 12*font_scale
-plt.rcParams['xtick.labelsize'] = 12*font_scale
-plt.rcParams['ytick.labelsize'] = 12*font_scale
-plt.rcParams['legend.fontsize'] = 12*font_scale
-
-MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
-Sensorimotor_col = [1, 0, 0]  # Sensorimotor
-Auditory_col = [0, 1, 0]  # Auditory
-Delay_col = [1, 0.65, 0]  # Delay
-Motor_col = [0, 0, 1]  # Motor
-WGW_p55b_col=[0.74901961, 0.25098039, 0.74901961] # WGW 55b
-WGW_a55b_col=[0, 0.5, 0.5] # WGW a55b
+# --- Colors ---
+MotorPrep_col = [1.0, 0.0784, 0.5765]
+Sensorimotor_col = [1, 0, 0]
+Auditory_col = [0, 1, 0]
+Delay_col = [1, 0.65, 0]
+Motor_col = [0, 0, 1]
+WGW_p55b_col = [0.74901961, 0.25098039, 0.74901961]
+WGW_a55b_col = [0, 0.5, 0.5]
 
 # Feature colors
-aco_col = [0, 0.502, 0.502]      # Teal (青色)
-pho_col = [0.502, 0, 0.502]      # Purple (紫色)
-wordness_col = [1, 0, 1] # Magenta (洋红色)
+aco_col = [0, 0.502, 0.502]      # Teal
+pho_col = [0.502, 0, 0.502]      # Purple
+wordness_col = [1, 0, 1]         # Magenta
+sem_col = [0.2, 0.8, 0.2]        # Green
 
-def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05, mode:str='time_cluster', target_fea:str=None, input:str='R2', calc_start_time:float=-0.25):
-    """
-    Args:
-        calc_start_time (float): Only calculate stats for time points >= this value. 
-                                 Time points before this will be set to non-significant (0).
-    """
-    # Load data
-    time_point = np.unique(raw['time_point'].to_numpy())
-    
-    if target_fea is None:
-        r2s_i_df = raw.pivot_table(
-            index='perm',
-            columns='time_point',
-            values='chi_squared_obs'
-        )
-    elif isinstance(target_fea, str):
-        raw_temp = raw.copy()
-        raw_temp['abs_target_fea'] = raw_temp[target_fea]
+feature_colors = {
+    'aco': aco_col, 
+    'pho': pho_col, 
+    'wordnessNonword_vWM': wordness_col,
+    'wordnessNonword:aco': aco_col, 
+    'wordnessNonword:pho': [0.5, 0.5, 0.5], 
+    'sem': sem_col
+}
 
-        r2s_i_df = raw_temp.pivot_table(
-            index='perm',
-            columns='time_point',
-            values='abs_target_fea'
-        )
-    elif isinstance(target_fea, list):
-        abs_features = raw[target_fea]
-        mean_abs_feature = abs_features.mean(axis=1)
+# --- Feature Tags for Plotting ---
+feature_tags = {
+    'aco': 'Acoustic',
+    'pho': 'Phonemic words',
+    'sem': 'Semantic',
+    'wordnessNonword:pho': 'Phonemic nonwords',
+    'wordnessNonword:aco': 'Acoustic nonwords',
+    'wordnessNonword_vWM': 'Lexical status'
+}
 
-        raw_temp = raw.copy()
-        raw_temp['mean_abs_features'] = mean_abs_feature
+# --- Helper Functions ---
 
-        r2s_i_df = raw_temp.pivot_table(
-            index='perm',
-            columns='time_point',
-            values='mean_abs_features'
-        )
-    
-    r2s_i = r2s_i_df.to_numpy()
-    
-    # Extract the full time series for output/plotting
-    r2_i_full = r2s_i[0, :]
-
-    # --- Slicing Logic for Calculation ---
-    if calc_start_time is not None:
-        # Find indices where time is within the window
-        valid_indices = np.where(time_point >= calc_start_time)[0]
+def get_significance_stars(p_val):
+    """Return significance stars based on p-value."""
+    if p_val < 0.001:
+        return '***'
+    elif p_val < 0.01:
+        return '**'
+    elif p_val < 0.05:
+        return '*'
     else:
-        valid_indices = np.arange(len(time_point))
-    
-    # Initialize the full statistical output mask as all False (0)
-    stat_out_full = np.zeros(len(time_point), dtype=int)
-    
-    # If no time points match the condition, return early
-    if len(valid_indices) == 0:
-        return time_point, r2_i_full, stat_out_full
+        return ''
 
-    # Slice the data to include only the valid time window
-    r2s_i_calc = r2s_i[:, valid_indices]
-    r2_i_calc = r2s_i_calc[0, :]
-    r2_i_calc = np.expand_dims(r2_i_calc, axis=0) # Shape: (1, n_time_calc)
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
-    if input == 'R2':
-        null_r2_i_calc = r2s_i_calc[1:, :]
+#%% Main Processing Loop
 
-        # Get original mask (on sliced data)
-        org_p_i_calc = glm.aaron_perm_gt_1d(r2s_i_calc, axis=0)[0] # 1-d time series
-        mask_i_org_calc = (org_p_i_calc > (1 - alpha)).astype(int) # 1-d time series (binary)
-
-        # Get null mask (on sliced data)
-        null_p_i_calc = glm.aaron_perm_gt_1d(null_r2_i_calc, axis=0) # 2-d time series: n_perm*time
-        mask_null_i_calc = (null_p_i_calc > (1 - alpha)).astype(int) # 2-d time series (binary)
-
-        if mode == 'time_cluster':
-            # Time perm cluster on sliced data
-            stat_out_calc = time_cluster(mask_i_org_calc, mask_null_i_calc, 1 - alpha_clus)
-        elif mode == 'fdr':
-            # FDR on sliced data
-            stat_out_calc, p_fdr, _, _ = multipletests(1 - org_p_i_calc, alpha=alpha_clus, method='fdr_bh')
-
-    elif input == 'p':
-        # Assuming r2_i contains p-values directly
-        stat_out_calc, p_fdr, _, _ = multipletests(r2_i_calc[0], alpha=alpha_clus, method='fdr_bh')
-    
-    # Fill the calculated stats back into the full array at the correct positions
-    stat_out_full[valid_indices] = stat_out_calc.astype(int)
-
-    return time_point, r2_i_full, stat_out_full
-
-def add_alignment_vlines(ax, alignment):
-    """
-    Adds vertical lines for specific event markers to a matplotlib Axes object
-    based on the alignment type.
-
-    Args:
-        ax (matplotlib.axes.Axes): The Axes object to draw the lines on.
-        alignment (str): The alignment type ('Aud', 'Go', or 'Resp').
-    """
-    if alignment == 'Aud':
-        # Stim offsets
-        ax.axvline(x=0.59, color='red', linestyle='--', alpha=0.7, linewidth=3)
-        # ax.axvline(x=0.59 + 0.1480 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        # ax.axvline(x=0.59 - 0.1480 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        # Delay offsets
-        ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7, linewidth=3)
-        # ax.axvline(x=1.7201 + 0.1459 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        # ax.axvline(x=1.7201 - 0.1459 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
-    elif alignment == 'Go':
-        # Motor onsets
-        ax.axvline(x=0.7961, color='red', linestyle='--', alpha=0.7, linewidth=3)
-        # ax.axvline(x=0.7961 + 1.0532 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        # ax.axvline(x=0.7961 - 1.0532 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
-    elif alignment == 'Resp':
-        # Motor offsets
-        ax.axvline(x=0.6096, color='red', linestyle='--', alpha=0.7, linewidth=3)
-        ax.axvline(x=0.6096 + 0.2190, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        ax.axvline(x=0.6096 - 0.2190, color='red', linestyle='--', alpha=0.7, linewidth=1)
-
-#%% Plotting & Big Figure Generation
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import numpy as np
-import pandas as pd
-import os
-from scipy.ndimage import gaussian_filter1d
-import utils.group as gp
-
-# --- 基础配置 ---
-colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-# 常用颜色定义
-MotorPrep_col = [1.0, 0.0784, 0.5765] 
-Sensorimotor_col = [1, 0, 0]  
-Auditory_col = [0, 1, 0]  
-Delay_col = [1, 0.65, 0]  
-Motor_col = [0, 0, 1]  
-WGW_p55b_col=[0.74901961, 0.25098039, 0.74901961] 
-WGW_a55b_col=[0, 0.5, 0.5] 
-aco_col = [0, 0.502, 0.502]      
-pho_col = [0.502, 0, 0.502]      
-wordness_col = [1, 0, 1] 
-
+# --- Parameters ---
 is_normalize = False
 is_bsl_correct = False
-mode = 'time_cluster'
+vWM_lambda = '0.001'
+mean_word_len=0.65#0.65 # from utils/lexdelay_get_stim_length.m
 
-# 定义所有要画的电极组及其对应参数
-opts_yn = ['_yn',]#'_']#,'', '_yn','_forSilence'
-opts_yn_base = ['',]#'_forSilence']#,'', '_yn','_forSilence'
-opts_huge = ['onlysem']#'onlysemproxy', '_huge', 'onlysem']
-delay_nodelays = ["LexDelayRep",] #"LexDelay","LexNoDelay","LexDelayRep"
+# Experiment Iterators
+opts_yn = ['_forSilence','_yn']#,'', '_yn','_forSilence'
+opts_yn_base = ['_forSilence','']#,'', '_yn','_forSilence'
+opts_huge = ['onlysem',""] # 可以修改为 ['_huge', 'onlysem', 'onlysemproxy'] 等
 
-for (is_yn, is_yn_base), is_huge, delay_nodelay in itertools.product(zip(opts_yn, opts_yn_base), opts_huge, delay_nodelays):
-    # --- 根据 is_huge 设定统一的 Y-Scale (使用 match case) ---
+# Time Windows definition
+time_windows = [
+    (0.55, 0.75), (0.75, 0.95),
+]
+time_labels = ["0.55-0.75", "0.75-0.95"]
+n_windows = len(time_windows)
+
+# Loop through all configuration combinations
+for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base), opts_huge):
+    
+    if is_yn == '_forSilence' and is_huge == 'onlysem':
+        is_huge = '_onlysem'
+
+    # 1. Determine Y-Axis Scale based on analysis mode
     match is_huge:
-        case '_onlysem':
-            unified_y_scale = 0.3  #
-        case 'onlysem':
-            unified_y_scale = 0.5  #
-        case 'onlysemproxy':
-            unified_y_scale = 10 
-        case '_huge':
-            unified_y_scale = 10   # [请调节] _huge
-        case '':
-            unified_y_scale = 8   # [请调节] 默认值 (类似 else)
+        case '_onlysem': unified_y_scale = 0.3 
+        case 'onlysem': unified_y_scale = 0.5 
+        case 'onlysemproxy': unified_y_scale = 10 
+        case '_huge': unified_y_scale = 10 
+        case _: unified_y_scale = 0.5
 
-    # --- 定义所有要画的电极组 (使用统一的 Scale) ---
+    # 2. Determine Features to plot
+    match is_huge:
+        case '_onlysem' | 'onlysem' | 'onlysemproxy': 
+            target_beta_features = ['sem']
+        case '_huge': 
+            target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem']
+        case _: 
+            target_beta_features = ['pho', 'wordnessNonword:pho']
+
+    # 3. Define Electrode Groups
     all_elec_configs = [
-        # (Name, Color, Y-Scale)
         ('Auditory', Auditory_col, unified_y_scale),
         ('Sensorymotor', Sensorimotor_col, unified_y_scale),
         ('Motor', Motor_col, unified_y_scale),
@@ -220,91 +126,66 @@ for (is_yn, is_yn_base), is_huge, delay_nodelay in itertools.product(zip(opts_yn
         ('Wgw_a55b', WGW_a55b_col, unified_y_scale)
     ]
 
-    # [修改] 定义列（Alignment）及其参数 - 现在 Go 在第二列，Resp 在第三列
-    all_alignments = [
-        # (Name, X-Lim)
-        ('Aud', [-0.2, 1.75]),
-        ('Go', [-0.2, 1.25]),   # Moved to 2nd position
-        ('Resp', [-0.2, 1.25])  # Moved to 3rd position
-    ]
+    # 4. Define Alignments (Columns)
+    all_alignments = [ # Only plot Aud alignment
+        ('Aud', [-0.2, 1.75])
+    ] 
 
-    # 计算每一列的时间长度，作为宽度的比例
-    width_ratios = [xlim[1] - xlim[0] for _, xlim in all_alignments]
-
-    # 全局参数
-    baseline = dict()
-    baseline_beta_rms = dict()
-    baseline_std = dict()
-    baseline_beta_rms_std = dict()
-    vWM_lambda = '0.001'
-
-    # 辅助函数
-    def chunks(lst, n):
-        for i in range(0, len(lst), n):
-            yield lst[i:i + n]
-
-    # 将电极组按 3 个一组进行切分
+    # Split electrodes into chunks (3 rows per figure)
     elec_chunks = list(chunks(all_elec_configs, 3))
+    
+    if is_yn == "_yn":
+        delay_nodelay_target = 'LexDelayRep'
+        delay_nodelay_base = 'LexDelayRep'
+    elif is_yn == "_forSilence":
+        delay_nodelay_target = 'LexDelay'
+        delay_nodelay_base = 'LexNoDelay'
+    
+    print(f"Processing: {delay_nodelay_target} vs {delay_nodelay_base} | {is_huge} | {is_yn}...")
 
-    # =============================================================================
-    # 2. 绘制 RMS 大图
-    # =============================================================================
-    print("Starting RMS Big Plots...")
-
-    group_beta_type = 'avg' # 'rms' or 'max' or 'avg'
-    match is_huge:
-        case '_onlysem':
-            target_beta_features = ['sem'] 
-        case 'onlysem':
-            target_beta_features = ['sem'] 
-        case 'onlysemproxy':
-            target_beta_features = ['sem'] 
-        case '_huge':
-            target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem'] 
-        case _:
-            target_beta_features = ['aco', 'pho', 'wordnessNonword:pho','wordnessNonword_vWM']
-    feature_colors = {
-        'aco': aco_col, 'pho': pho_col, 'wordnessNonword_vWM': wordness_col,
-        'wordnessNonword:aco': aco_col, 'wordnessNonword:pho': [0.5,0.5,0.5], 'sem': [0.2, 0.8, 0.2]
-    }
-
+    # --- Iterate through chunks (Figures) ---
     for chunk_idx, current_chunk in enumerate(elec_chunks):
         n_rows = len(current_chunk)
         n_cols = 3
+
+        # Initialize Figure - electrode groups as columns
+        fig_rms, axes_rms = plt.subplots(1, n_rows, figsize=(16, 7), sharey=True)
+        if n_rows == 1: 
+            axes_rms = [axes_rms] # Ensure axes_rms is always a list for consistent indexing
         
-        # 1. RMS 画布
-        fig_rms, axes_rms = plt.subplots(n_rows, n_cols, 
-                                        figsize=(16, 9), 
-                                        sharex='col', sharey='row',
-                                        gridspec_kw={'width_ratios': width_ratios})
-        if n_rows == 1: axes_rms = np.expand_dims(axes_rms, axis=0)
-        
+        # --- Iterate through Rows (Electrode Groups) ---
         for row_idx, (elec_grp, elec_col, fea_plot_yscale) in enumerate(current_chunk):
+            
+            # --- Iterate through Columns (Alignments) ---
             for col_idx, (alignment, xlim_align) in enumerate(all_alignments):
+                ax = axes_rms[row_idx] # Index by column
                 
-                filename = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
-                if not os.path.exists(filename):
+                # Construct Filenames
+                filename = f"results/{delay_nodelay_target}_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
+                filename_base = f"results/{delay_nodelay_base}_{elec_grp}_{alignment}_All{is_yn_base}{is_huge}_testλ_{vWM_lambda}.csv"
+                
+                # Skip if files don't exist
+                if not os.path.exists(filename) or not os.path.exists(filename_base):
+                    ax.text(0.5, 0.5, "Data Missing", ha='center', va='center')
                     continue
+
+                # Load Data
                 raw = pd.read_csv(filename)
-                
-                filename_base = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn_base}{is_huge}_testλ_{vWM_lambda}.csv"
-                if not os.path.exists(filename_base):
-                    continue
                 raw_base = pd.read_csv(filename_base)
                 
+                # Split Perm 0 (Observed) and Null Perms
                 raw_org = raw[raw['perm'] == 0]
                 raw_org_base = raw_base[raw_base['perm'] == 0]
                 
-                all_rms_data = {} 
-                all_rms_data_sig = {}
-                time_points_plot = sorted(raw_org['time_point'].unique())
+                # Dictionary to store plotting data for this subplot
+                # Structure: {feature: {'means': [val1, val2...], 'pvals': [p1, p2...]}}
+                bar_plot_data = {} 
                 
-                process_features = target_beta_features 
-                
-                for beta_fea in process_features:
+                # --- PROCESS EACH FEATURE ---
+                for beta_fea in target_beta_features:
                     is_vWM = '_vWM'
                     
-                    # ... (特征处理) ...
+                    # 1. Identify Columns based on Feature Name
                     fea_columns_aco = [col for col in raw.columns if col.startswith('aco') and ':' not in col and is_vWM in col]
                     fea_columns_pho = [col for col in raw.columns if col.startswith('pho') and ':' not in col and is_vWM in col]
                     fea_columns_sem = [col for col in raw.columns if col.startswith('sem') and ':' not in col and is_vWM in col]
@@ -318,158 +199,193 @@ for (is_yn, is_yn_base), is_huge, delay_nodelay in itertools.product(zip(opts_yn
                     elif (":" in beta_fea) and ("pho" in beta_fea):
                         fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(beta_fea) and is_vWM in col]
                     
+                    rms_cols = [col for col in fea_columns if col != 'time_point']
+
+                    # --- 2. Calculate RMS for Perm 0 (Observed) ---
+                    # We compute the "Sensitivity Gain" logic (Avg Beta approach)
                     raw_org_fea = raw_org[fea_columns].copy()
                     raw_org_fea_base = raw_org_base[fea_columns].copy()
-                    rms_cols = [col for col in fea_columns if col != 'time_point']
-                    
 
+                    # Logic for difference/interaction terms vs main terms
                     if (":" in beta_fea) or (beta_fea == 'pho') or (beta_fea == 'aco'):
                         if "aco" in beta_fea: current_main_cols = fea_columns_aco
                         elif "pho" in beta_fea: current_main_cols = fea_columns_pho
+                        
                         diff_vals = raw_org_fea[rms_cols].values
                         diff_vals_base = raw_org_fea_base[rms_cols].values
                         main_vals = raw_org[current_main_cols].values
                         main_vals_base = raw_org_base[current_main_cols].values
-                        if group_beta_type == 'max' or group_beta_type == 'avg':
-                            if (beta_fea == 'pho') or (beta_fea == 'aco'):
-                                # Get nonword main effect
-                                sensitivity_gain = np.abs(main_vals + diff_vals)+ np.abs(main_vals)
-                                sensitivity_gain_base = np.abs(main_vals_base + diff_vals_base)+ np.abs(main_vals_base)
-                            else:
-                                # Get the gain of nonword - word
-                                sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
-                                sensitivity_gain_base = np.abs(main_vals_base + diff_vals_base) - np.abs(main_vals_base)
-                        elif group_beta_type == 'rms':
-                            if (beta_fea == 'pho') or (beta_fea == 'aco'):
-                                # Get nonword main effect
-                                sensitivity_gain = np.sqrt(np.mean((main_vals + diff_vals)**2, axis=1)) + np.sqrt(np.mean(main_vals**2, axis=1))
-                                sensitivity_gain_base = np.sqrt(np.mean((main_vals_base + diff_vals_base)**2, axis=1)) + np.sqrt(np.mean(main_vals_base**2, axis=1))
-                            else:
-                                # Get the gain of nonword - word
-                                sensitivity_gain = np.sqrt(np.mean((main_vals + diff_vals)**2, axis=1)) - np.sqrt(np.mean(main_vals**2, axis=1))
-                                sensitivity_gain_base = np.sqrt(np.mean((main_vals_base + diff_vals_base)**2, axis=1)) - np.sqrt(np.mean(main_vals_base**2, axis=1))
-                        if group_beta_type == 'avg':
-                            val = np.mean(sensitivity_gain, axis=1)
-                            val_base = np.mean(sensitivity_gain_base, axis=1)
-                        elif group_beta_type == 'max':  
-                            val = np.max(sensitivity_gain, axis=1)
-                            val_base = np.max(sensitivity_gain_base, axis=1)
-                        elif group_beta_type == 'rms':
-                            val = sensitivity_gain
-                            val_base = sensitivity_gain_base
-                    else:
-                        if group_beta_type == 'avg':
-                            val = raw_org_fea[rms_cols].abs().mean(axis=1)
-                            val_base = raw_org_fea_base[rms_cols].abs().mean(axis=1)
-                        elif group_beta_type == 'max':
-                            val = raw_org_fea[rms_cols].abs().max(axis=1)
-                            val_base = raw_org_fea_base[rms_cols].abs().max(axis=1)
-                        elif group_beta_type == 'rms':
-                            val = np.sqrt(raw_org_fea[rms_cols].pow(2).mean(axis=1))
-                            val_base = np.sqrt(raw_org_fea_base[rms_cols].pow(2).mean(axis=1))
 
+                        # "avg" logic for gain calculation
+                        if (beta_fea == 'pho') or (beta_fea == 'aco'):
+                            sensitivity_gain = np.abs(main_vals + diff_vals) + np.abs(main_vals)
+                            sensitivity_gain_base = np.abs(main_vals_base + diff_vals_base) + np.abs(main_vals_base)
+                        else:
+                            sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
+                            sensitivity_gain_base = np.abs(main_vals_base + diff_vals_base) - np.abs(main_vals_base)
+                        
+                        val = np.mean(sensitivity_gain, axis=1)
+                        val_base = np.mean(sensitivity_gain_base, axis=1)
+                    else:
+                        val = raw_org_fea[rms_cols].abs().mean(axis=1)
+                        val_base = raw_org_fea_base[rms_cols].abs().mean(axis=1)
+
+                    # Normalize by sqrt(n)
                     raw_org_fea['rms'] = val / np.sqrt(len(rms_cols))
                     raw_org_fea_base['rms'] = val_base / np.sqrt(len(rms_cols))
+                    # Subtract Baseline
                     raw_org_fea['rms'] = raw_org_fea['rms'] - raw_org_fea_base['rms']
-                    all_rms_data[beta_fea] = raw_org_fea.groupby('time_point')['rms'].mean()
 
-                    # Stats
+                    # --- 3. Calculate RMS for ALL Perms (Null Distribution) ---
+                    # Reuse columns but include 'perm'
                     fea_columns_perm = ['perm'] + fea_columns
                     raw_fea = raw[fea_columns_perm].copy()
                     raw_fea_base = raw_base[fea_columns_perm].copy()
-                    if group_beta_type == 'max' and ":" in beta_fea:
-                        diff_vals_p = raw_fea[rms_cols].values
-                        diff_vals_p_base = raw_fea_base[rms_cols].values
-                        main_vals_p = raw.loc[raw_fea.index, current_main_cols].values
-                        main_vals_p_base = raw_base.loc[raw_fea_base.index, current_main_cols].values
-                        sens_gain_p = np.abs(main_vals_p + diff_vals_p) - np.abs(main_vals_p)
-                        sens_gain_p_base = np.abs(main_vals_p_base + diff_vals_p_base) - np.abs(main_vals_p_base)
-                        val_p = np.max(sens_gain_p, axis=1)
-                        val_p_base = np.max(sens_gain_p_base, axis=1)
-                    else:
-                        val_p = raw_fea[rms_cols].abs().max(axis=1)
-                        val_p_base = raw_fea_base[rms_cols].abs().max(axis=1)
                     
+                    if (":" in beta_fea) or (beta_fea == 'pho') or (beta_fea == 'aco'):
+                         if "aco" in beta_fea: current_main_cols = fea_columns_aco
+                         elif "pho" in beta_fea: current_main_cols = fea_columns_pho
+                         
+                         diff_vals_p = raw_fea[rms_cols].values
+                         diff_vals_p_base = raw_fea_base[rms_cols].values
+                         main_vals_p = raw.loc[raw_fea.index, current_main_cols].values
+                         main_vals_p_base = raw_base.loc[raw_fea_base.index, current_main_cols].values
+                         
+                         if (beta_fea == 'pho') or (beta_fea == 'aco'):
+                             # simple effect of words
+                            sg_p = np.abs(main_vals_p)
+                            sg_p_base = np.abs(main_vals_p_base)
+                             # main effect of words + nonwords
+                            #  sg_p = np.abs(main_vals_p + diff_vals_p) + np.abs(main_vals_p)
+                            #  sg_p_base = np.abs(main_vals_p_base + diff_vals_p_base) + np.abs(main_vals_p_base)
+                         else:
+                             # main effect of nonwords
+                             sg_p = np.abs(main_vals_p + diff_vals_p)
+                             sg_p_base = np.abs(main_vals_p_base + diff_vals_p_base)
+                             # gain from nonwords - words
+                            # sg_p = np.abs(main_vals_p + diff_vals_p) - np.abs(main_vals_p)
+                            # sg_p_base = np.abs(main_vals_p_base + diff_vals_p_base) - np.abs(main_vals_p_base)
+                         
+                         val_p = np.mean(sg_p, axis=1)
+                         val_p_base = np.mean(sg_p_base, axis=1)
+                    else:
+                        val_p = raw_fea[rms_cols].abs().mean(axis=1)
+                        val_p_base = raw_fea_base[rms_cols].abs().mean(axis=1)
+
                     raw_fea['rms'] = val_p / np.sqrt(len(rms_cols))
-                    raw_fea = raw_fea[['perm', 'time_point', 'rms']]
-                    
                     raw_fea_base['rms'] = val_p_base / np.sqrt(len(rms_cols))
-                    raw_fea_base = raw_fea_base[['perm', 'time_point', 'rms']]
-                    
                     raw_fea['rms'] = raw_fea['rms'] - raw_fea_base['rms']
-                    
-                    pthres = [1e-2, 5e-2]
-                    _, _, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1], mode=mode, target_fea='rms', input='R2')
-                    all_rms_data_sig[beta_fea] = np.where(mask_time_clus)[0]
 
-                # --- 绘制 RMS 图 ---
-                ax_r = axes_rms[row_idx, col_idx]
-                ax_r.axvline(x=0, color='grey', linestyle='--', alpha=0.7, linewidth=3)
-                add_alignment_vlines(ax_r, alignment)
-                
-                j_sig = 0
-                for beta_fea, rms_series in all_rms_data.items():
-                    if alignment == 'Aud':
-                        if elec_grp not in baseline_beta_rms:
-                            baseline_beta_rms[elec_grp] = {}
-                            baseline_beta_rms_std[elec_grp] = {}
-                        baseline_beta_rms[elec_grp][beta_fea] = np.min(rms_series[(np.array(time_points_plot) > -0.2) & (np.array(time_points_plot) <= 0)])
-                        baseline_beta_rms_std[elec_grp][beta_fea] = np.std(rms_series[(np.array(time_points_plot) > -0.2) & (np.array(time_points_plot) <= 0)])
+                    # --- 4. Time Binning & Raw P-value Calculation ---
+                    feature_means = []
+                    feature_raw_pvals = []
                     
-                    if is_normalize:
-                        b_val = baseline_beta_rms.get(elec_grp, {}).get(beta_fea, 0)
-                        b_std = baseline_beta_rms_std.get(elec_grp, {}).get(beta_fea, 1)
-                        rms_series = (rms_series - b_val) / b_std
-                        denom = (np.max(rms_series[(np.array(time_points_plot) > xlim_align[0]) & (np.array(time_points_plot) <= xlim_align[1])]) - 
-                                np.min(rms_series[(np.array(time_points_plot) > xlim_align[0]) & (np.array(time_points_plot) <= xlim_align[1])]))
-                        if denom != 0: rms_series = rms_series / denom
+                    for (t_start, t_end) in time_windows:
+                        # Select data in window
+                        mask_window = (raw_fea['time_point'] > t_start) & (raw_fea['time_point'] <= t_end)
+                        data_window = raw_fea[mask_window]
+                        
+                        # Average RMS over time window for each permutation
+                        perm_means = data_window.groupby('perm')['rms'].mean()
+                        
+                        obs_mean = perm_means.loc[0]  # Observed mean (Perm 0)
+                        null_means = perm_means.loc[1:] # Null distribution
+                        
+                        feature_means.append(obs_mean)
+                        
+                        # Calculate One-tailed P-value
+                        n_perms = len(null_means)
+                        if n_perms > 0:
+                            # Test: Observed > Null
+                            p_val = (np.sum(null_means >= obs_mean) + 1) / (n_perms + 1)
+                        else:
+                            p_val = 1.0
+                        
+                        feature_raw_pvals.append(p_val)
+
+                    #Apply FDR correction within this feature across time windows
+                    if len(feature_raw_pvals) > 0:
+                         _, feature_corrected_pvals, _, _ = multipletests(feature_raw_pvals, alpha=0.025, method='fdr_bh')
                     else:
-                        if is_bsl_correct:
-                            b_val = baseline_beta_rms.get(elec_grp, {}).get(beta_fea, 0)
-                            rms_series = (rms_series - b_val)
+                         feature_corrected_pvals = feature_raw_pvals
+                    # feature_corrected_pvals = feature_raw_pvals
+
+                    # Store results for this feature
+                    bar_plot_data[beta_fea] = {
+                        'means': feature_means,
+                        'pvals': feature_corrected_pvals
+                    }
+
+                # --- 6. Plotting ---
+                n_features = len(target_beta_features)
+                bar_width = 0.8 / n_features
+                indices = np.arange(n_windows)
+                
+                for i, beta_fea in enumerate(target_beta_features):
+                    data = bar_plot_data[beta_fea]
+                    means = data['means']
+                    pvals = data['pvals'] # These are now FDR corrected
                     
-                    rms_series = gaussian_filter1d(rms_series, sigma=2, mode='nearest')
-                    
+                    # Calculate x positions for clustered bars
+                    x_pos = indices + (i - n_features/2 + 0.5) * bar_width
                     color = feature_colors.get(beta_fea, '#333333')
-                    linestyle = '--' if ':' in beta_fea else '-'
-                    ax_r.plot(time_points_plot, rms_series, label=beta_fea, linewidth=3, color=color, linestyle=linestyle)
+
+                    # Get display label for the legend
+                    plot_label = feature_tags.get(beta_fea, beta_fea)
                     
-                    true_indices = all_rms_data_sig[beta_fea]
-                    if true_indices.size > 0:
-                        split_points = np.where(np.diff(true_indices) != 1)[0] + 1
-                        clusters = np.split(true_indices, split_points)
-                        for clus in clusters:
-                            s_time = time_points_plot[clus[0]] - (time_points_plot[1]-time_points_plot[0])/2
-                            e_time = time_points_plot[clus[-1]] + (time_points_plot[1]-time_points_plot[0])/2
-                            ax_r.plot([s_time, e_time], 
-                                    [1e-1*fea_plot_yscale-(5e-2)*(j_sig), 1e-1*fea_plot_yscale-(5e-2)*(j_sig)],
-                                    color=color, alpha=0.4, linewidth=5, solid_capstyle='butt')
-                        j_sig += 1
-                
-                # RMS 坐标轴设置
-                ax_r.ticklabel_format(axis='y', style='sci', scilimits=(-2, -2), useMathText=True)
-                ax_r.set_xlim(xlim_align)
-                ax_r.set_ylim(-1e-2 * fea_plot_yscale, 1e-1 * fea_plot_yscale+ 1 * (1e-2) )
-                ax_r.spines['top'].set_visible(False)
-                ax_r.spines['right'].set_visible(False)
-                
-                if row_idx == 0:
-                    ax_r.set_title(f"Aligned to {alignment}", fontsize=16, fontweight='bold', pad=10)
-                if col_idx == 0:
-                    ax_r.set_ylabel(f"{group_beta_type} beta", fontsize=16, fontweight='bold')
-                    ax_r.text(0.03, 0.95, elec_grp, transform=ax_r.transAxes, 
-                            fontsize=14, fontweight='bold', va='top', ha='left', color='black')
+                    # Draw Bars
+                    bars = ax.bar(x_pos, means, width=bar_width, label=plot_label, color=color, alpha=0.8)
+                    
+                    # Add Stars
+                    for j, rect in enumerate(bars):
+                        height = rect.get_height()
+                        p_val = pvals[j]
+                        star_text = get_significance_stars(p_val)
+                        
+                        if star_text:
+                            # Adjust text position based on bar height
+                            offset = 0.05 * fea_plot_yscale
+                            y_text = height + 0.01 * fea_plot_yscale if height >= 0 else height - 0.05 * fea_plot_yscale
+                            va = 'bottom' if height >= 0 else 'top'
                             
-                if row_idx == n_rows - 1:
-                    ax_r.set_xlabel("Time (s)", fontsize=14, fontweight='bold')
+                            ax.text(rect.get_x() + rect.get_width()/2.0, y_text, star_text,
+                                    ha='center', va=va, fontsize=16, fontweight='bold', color='black')
 
-        # --- 保存 ---
-        plt.figure(fig_rms.number)
-        plt.tight_layout(rect=[0, 0, 1, 1])
-        save_name_rms = os.path.join('figs', f'z_score_unnormalized_diff{is_yn}{is_huge}', 
-                                    f'BigPlot_Part{chunk_idx+1}_RMS_All_vWMλ_{vWM_lambda}.tif')
-        plt.savefig(save_name_rms, dpi=100)
-        plt.close(fig_rms)
+                # --- 7. Formatting ---
+                ax.set_xticks(indices)
+                ax.set_xticklabels(time_labels)
+                # ax.set_xticklabels(time_labels, rotation=45, ha='right')
+                
+                # Adjust Y-Limits dynamically or fixed
+                ax.set_ylim(-0.2 * fea_plot_yscale, 0.2 * fea_plot_yscale)
+                
+                ax.spines['top'].set_visible(False)
+                ax.spines['right'].set_visible(False)
+                
+                # Headers
+                ax.set_title(elec_grp, fontsize=18, fontweight='bold', pad=20)
+                
+                # Row Labels
+                if row_idx == 0:
+                    ax.set_ylabel("Avg Beta Gain", fontsize=16, fontweight='bold')
+                
+                # X Labels
+                ax.set_xlabel("Time Window (s)", fontsize=14, fontweight='bold')
+                
+                # Legend (Top Left Only)
+                if row_idx == 0:
+                    ax.legend(loc='upper right', frameon=False, fontsize=14)
+
+        # --- Save Figure ---
+        fig_rms.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust layout to prevent overlap
+        save_dir = os.path.join('figs', f'diff{is_yn}{is_huge}_{delay_nodelay_base}')
+        os.makedirs(save_dir, exist_ok=True)
         
+        save_name = os.path.join(save_dir, f'BigPlot_Part{chunk_idx+1}_RMS_Bar_FDR_vWMλ_{vWM_lambda}.tif')
+        
+        plt.savefig(save_name, dpi=100)
+        plt.close(fig_rms)
+        print(f"Saved: {save_name}")
 
-    print("All plots finished.")
+print("Done.")
+# %%
