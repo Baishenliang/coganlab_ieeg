@@ -109,7 +109,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
         case 'onlysem': unified_y_scale = 0.5 
         case 'onlysemproxy': unified_y_scale = 10 
         case '_huge': unified_y_scale = 10 
-        case _: unified_y_scale = 0.2
+        case _: unified_y_scale = 0.1
 
     # 2. Determine Features to plot
     match is_huge:
@@ -118,7 +118,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
         case '_huge': 
             target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem']
         case _: 
-            target_beta_features = ['pho_main', 'pho_word', 'pho_nonword', 'pho_gain']
+            target_beta_features = ['pho_main', 'pho_word', 'pho_nonword']
 
     # 3. Define Electrode Groups
     all_elec_configs = [
@@ -184,6 +184,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                 # Dictionary to store plotting data for this subplot
                 # Structure: {feature: {'means': [val1, val2...], 'pvals': [p1, p2...]}}
                 bar_plot_data = {} 
+                all_raw_pvals = []
                 
                 # --- PROCESS EACH FEATURE ---
                 for beta_fea in target_beta_features:
@@ -321,17 +322,24 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                         
                         feature_raw_pvals.append(p_val)
 
-                    # Apply FDR correction
-                    if len(feature_raw_pvals) > 0:
-                         _, feature_corrected_pvals, _, _ = multipletests(feature_raw_pvals, alpha=0.05, method='fdr_bh')
-                    else:
-                         feature_corrected_pvals = feature_raw_pvals
-
                     # Store results
+                    all_raw_pvals.extend(feature_raw_pvals)
                     bar_plot_data[beta_fea] = {
                         'means': feature_means,
-                        'pvals': feature_corrected_pvals
+                        'pvals': [] # Placeholder, will be filled after correction
                     }
+
+                # --- Perform Correction on ALL p-values ---
+                if len(all_raw_pvals) > 0:
+                    _, all_corrected_pvals, _, _ = multipletests(all_raw_pvals, alpha=0.01, method='fdr_bh')
+                else:
+                    all_corrected_pvals = []
+                
+                # --- Distribute corrected p-values back ---
+                p_val_idx = 0
+                for beta_fea in target_beta_features:
+                    bar_plot_data[beta_fea]['pvals'] = all_corrected_pvals[p_val_idx : p_val_idx + n_windows]
+                    p_val_idx += n_windows
 
                 # --- 6. Plotting ---
                 n_features = len(target_beta_features)
@@ -390,8 +398,8 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                 ax.set_xlabel("Time Window (s)", fontsize=14, fontweight='bold')
                 
                 # Legend (Top Left of Third Column)
-                if row_idx == 2:
-                    ax.legend(loc='upper left', frameon=False, fontsize=14)
+                if row_idx == 0:
+                    ax.legend(loc='upper right', frameon=False, fontsize=14)
 
         # --- Save Figure ---
         fig_rms.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust layout to prevent overlap
