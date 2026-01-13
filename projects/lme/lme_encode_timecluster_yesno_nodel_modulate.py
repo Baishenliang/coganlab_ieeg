@@ -37,16 +37,20 @@ wordness_col = [1, 0, 1]         # Magenta
 sem_col = [0.2, 0.8, 0.2]        # Green
 
 feature_colors = {
-    'aco': aco_col, 
-    'pho': pho_col, 
-    'wordnessNonword_vWM': wordness_col,
-    'wordnessNonword:aco': aco_col, 
-    'wordnessNonword:pho': [0.5, 0.5, 0.5], 
-    'sem': sem_col
+    'aco': aco_col, 'pho': pho_col, 'wordnessNonword_vWM': wordness_col,
+    'wordnessNonword:aco': aco_col, 'wordnessNonword:pho': [0.5,0.5,0.5], 'sem': [0.2, 0.8, 0.2],
+    'pho_word': pho_col,
+    'pho_nonword': [0.7, 0.3, 0.7], # Lighter purple for non-words
+    'pho_main': [0.3, 0, 0.3],     # Darker purple for main effect
+    'pho_gain': Delay_col          # Orange for gain
 }
 
 # --- Feature Tags for Plotting ---
 feature_tags = {
+    'pho_word': 'Phonemic words',
+    'pho_nonword': 'Phonemic nonwords',
+    'pho_main': 'Phonemic main effects',
+    'pho_gain': 'Phonemic nonword gain',
     'aco': 'Acoustic',
     'pho': 'Phonemic words',
     'sem': 'Semantic',
@@ -105,7 +109,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
         case 'onlysem': unified_y_scale = 0.5 
         case 'onlysemproxy': unified_y_scale = 10 
         case '_huge': unified_y_scale = 10 
-        case _: unified_y_scale = 0.5
+        case _: unified_y_scale = 0.2
 
     # 2. Determine Features to plot
     match is_huge:
@@ -114,7 +118,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
         case '_huge': 
             target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem']
         case _: 
-            target_beta_features = ['pho', 'wordnessNonword:pho']
+            target_beta_features = ['pho_main', 'pho_word', 'pho_nonword', 'pho_gain']
 
     # 3. Define Electrode Groups
     all_elec_configs = [
@@ -184,99 +188,98 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                 # --- PROCESS EACH FEATURE ---
                 for beta_fea in target_beta_features:
                     is_vWM = '_vWM'
-                    
-                    # 1. Identify Columns based on Feature Name
-                    fea_columns_aco = [col for col in raw.columns if col.startswith('aco') and ':' not in col and is_vWM in col]
-                    fea_columns_pho = [col for col in raw.columns if col.startswith('pho') and ':' not in col and is_vWM in col]
+                    group_beta_type = 'max' # 'rms' or 'max' or 'avg'
+
+                    # --- 1. Identify Columns (基于 Feature Name) ---
+                    fea_columns_aco_word = [col for col in raw.columns if col.startswith('aco') and ':' not in col and is_vWM in col]
+                    fea_columns_pho_word = [col for col in raw.columns if col.startswith('pho') and ':' not in col and is_vWM in col]
+                    fea_columns_aco_diff = [col for col in raw.columns if 'aco' in col and ':' in col and is_vWM in col]
+                    fea_columns_pho_diff = [col for col in raw.columns if 'pho' in col and ':' in col and is_vWM in col]
                     fea_columns_sem = [col for col in raw.columns if col.startswith('sem') and ':' not in col and is_vWM in col]
 
-                    if beta_fea == "aco": fea_columns = ['time_point'] + fea_columns_aco
-                    elif beta_fea == "pho": fea_columns = ['time_point'] + fea_columns_pho
-                    elif beta_fea == "wordnessNonword_vWM": fea_columns = ['time_point'] + ['wordnessNonword_vWM']
-                    elif beta_fea == "sem": fea_columns = ['time_point'] + fea_columns_sem
-                    elif (":" in beta_fea) and ("aco" in beta_fea):
-                        fea_columns = ['time_point'] +['aco1:wordnessNonword_vWM']+ [col for col in raw.columns if col.startswith(beta_fea) and is_vWM in col]
-                    elif (":" in beta_fea) and ("pho" in beta_fea):
-                        fea_columns = ['time_point'] + [col for col in raw.columns if col.startswith(beta_fea) and is_vWM in col]
+                    # --- 2. Define Mode and Columns ---
+                    calculation_mode = None # 'simple', 'nonword', 'main', 'gain'
+                    target_main_cols = []
+                    target_diff_cols = []
                     
-                    rms_cols = [col for col in fea_columns if col != 'time_point']
+                    match beta_fea:
+                        case "aco_word" | "pho_word" | "sem" | "wordnessNonword_vWM":
+                            calculation_mode = 'simple'
+                            if beta_fea == "aco_word": target_main_cols = fea_columns_aco_word
+                            elif beta_fea == "pho_word": target_main_cols = fea_columns_pho_word
+                            elif beta_fea == "sem": target_main_cols = fea_columns_sem
+                            elif beta_fea == "wordnessNonword_vWM": target_main_cols = ['wordnessNonword_vWM']
+                            
+                        case "aco_nonword" | "pho_nonword" | "aco_main" | "pho_main" | "aco_gain" | "pho_gain":
+                            if "aco" in beta_fea:
+                                target_main_cols = fea_columns_aco_word
+                                target_diff_cols = fea_columns_aco_diff
+                            elif "pho" in beta_fea:
+                                target_main_cols = fea_columns_pho_word
+                                target_diff_cols = fea_columns_pho_diff
+                                
+                            if "nonword" in beta_fea: calculation_mode = 'nonword'
+                            elif "main" in beta_fea: calculation_mode = 'main'
+                            elif "gain" in beta_fea: calculation_mode = 'gain'
 
-                    # --- 2. Calculate RMS for Perm 0 (Observed) ---
-                    # We compute the "Sensitivity Gain" logic (Avg Beta approach)
-                    raw_org_fea = raw_org[fea_columns].copy()
-                    raw_org_fea_base = raw_org_base[fea_columns].copy()
+                    # --- 3. Calculation Functions ---
 
-                    # Logic for difference/interaction terms vs main terms
-                    if (":" in beta_fea) or (beta_fea == 'pho') or (beta_fea == 'aco'):
-                        if "aco" in beta_fea: current_main_cols = fea_columns_aco
-                        elif "pho" in beta_fea: current_main_cols = fea_columns_pho
+                    def get_val_matrix(df_source, main_cols, diff_cols, mode):
+                        """计算原始数值矩阵 (n_samples x n_features)"""
+                        main_vals = df_source[main_cols].values
                         
-                        diff_vals = raw_org_fea[rms_cols].values
-                        diff_vals_base = raw_org_fea_base[rms_cols].values
-                        main_vals = raw_org[current_main_cols].values
-                        main_vals_base = raw_org_base[current_main_cols].values
-
-                        # "avg" logic for gain calculation
-                        if (beta_fea == 'pho') or (beta_fea == 'aco'):
-                            sensitivity_gain = np.abs(main_vals + diff_vals) + np.abs(main_vals)
-                            sensitivity_gain_base = np.abs(main_vals_base + diff_vals_base) + np.abs(main_vals_base)
-                        else:
-                            sensitivity_gain = np.abs(main_vals + diff_vals) - np.abs(main_vals)
-                            sensitivity_gain_base = np.abs(main_vals_base + diff_vals_base) - np.abs(main_vals_base)
+                        if mode == 'simple':
+                            return np.abs(main_vals)
                         
-                        val = np.mean(sensitivity_gain, axis=1)
-                        val_base = np.mean(sensitivity_gain_base, axis=1)
-                    else:
-                        val = raw_org_fea[rms_cols].abs().mean(axis=1)
-                        val_base = raw_org_fea_base[rms_cols].abs().mean(axis=1)
+                        # 对于 Interaction/Diff 相关的模式
+                        diff_vals = df_source[diff_cols].values
+                        
+                        if mode == 'nonword':
+                            return np.abs(main_vals + diff_vals)
+                        elif mode == 'main':
+                            return np.abs(main_vals + diff_vals) + np.abs(main_vals)
+                        elif mode == 'gain':
+                            return np.abs(main_vals + diff_vals) - np.abs(main_vals)
+                        return np.abs(main_vals) # fallback
 
-                    # Normalize by sqrt(n)
-                    raw_org_fea['rms'] = val / np.sqrt(len(rms_cols))
-                    raw_org_fea_base['rms'] = val_base / np.sqrt(len(rms_cols))
-                    # Subtract Baseline
-                    raw_org_fea['rms'] = raw_org_fea['rms'] - raw_org_fea_base['rms']
+                    def aggregate_features(val_matrix, group_type):
+                        """根据 group_beta_type 对特征维度 (axis=1) 进行聚合"""
+                        if group_type == 'avg':
+                            return np.mean(val_matrix, axis=1)
+                        elif group_type == 'max':
+                            return np.max(val_matrix, axis=1)
+                        elif group_type == 'rms':
+                            # Root Mean Square across features
+                            return np.sqrt(np.mean(val_matrix**2, axis=1))
+                        return np.mean(val_matrix, axis=1) # fallback
 
-                    # --- 3. Calculate RMS for ALL Perms (Null Distribution) ---
-                    # Reuse columns but include 'perm'
-                    fea_columns_perm = ['perm'] + fea_columns
-                    raw_fea = raw[fea_columns_perm].copy()
-                    raw_fea_base = raw_base[fea_columns_perm].copy()
+                    # --- 4. Process Data (Raw & Base) ---
                     
-                    if (":" in beta_fea) or (beta_fea == 'pho') or (beta_fea == 'aco'):
-                         if "aco" in beta_fea: current_main_cols = fea_columns_aco
-                         elif "pho" in beta_fea: current_main_cols = fea_columns_pho
-                         
-                         diff_vals_p = raw_fea[rms_cols].values
-                         diff_vals_p_base = raw_fea_base[rms_cols].values
-                         main_vals_p = raw.loc[raw_fea.index, current_main_cols].values
-                         main_vals_p_base = raw_base.loc[raw_fea_base.index, current_main_cols].values
-                         
-                         if (beta_fea == 'pho') or (beta_fea == 'aco'):
-                             # simple effect of words
-                            sg_p = np.abs(main_vals_p)
-                            sg_p_base = np.abs(main_vals_p_base)
-                             # main effect of words + nonwords
-                            #  sg_p = np.abs(main_vals_p + diff_vals_p) + np.abs(main_vals_p)
-                            #  sg_p_base = np.abs(main_vals_p_base + diff_vals_p_base) + np.abs(main_vals_p_base)
-                         else:
-                             # main effect of nonwords
-                             sg_p = np.abs(main_vals_p + diff_vals_p)
-                             sg_p_base = np.abs(main_vals_p_base + diff_vals_p_base)
-                             # gain from nonwords - words
-                            # sg_p = np.abs(main_vals_p + diff_vals_p) - np.abs(main_vals_p)
-                            # sg_p_base = np.abs(main_vals_p_base + diff_vals_p_base) - np.abs(main_vals_p_base)
-                         
-                         val_p = np.mean(sg_p, axis=1)
-                         val_p_base = np.mean(sg_p_base, axis=1)
-                    else:
-                        val_p = raw_fea[rms_cols].abs().mean(axis=1)
-                        val_p_base = raw_fea_base[rms_cols].abs().mean(axis=1)
+                    # 准备数据副本
+                    cols_needed = ['perm', 'time_point'] + target_main_cols + target_diff_cols
+                    raw_fea = raw[cols_needed].copy()
+                    raw_fea_base = raw_base[cols_needed].copy()
+                    
+                    # A. 计算 Task (Raw)
+                    mat_task = get_val_matrix(raw_fea, target_main_cols, target_diff_cols, calculation_mode)
+                    val_task = aggregate_features(mat_task, group_beta_type)
+                    
+                    # B. 计算 Base (Baseline)
+                    mat_base = get_val_matrix(raw_fea_base, target_main_cols, target_diff_cols, calculation_mode)
+                    val_base = aggregate_features(mat_base, group_beta_type)
 
-                    raw_fea['rms'] = val_p / np.sqrt(len(rms_cols))
-                    raw_fea_base['rms'] = val_p_base / np.sqrt(len(rms_cols))
+                    # --- 5. Normalize and Subtract Baseline ---
+                    # 这里的 n_feats 用于最后的归一化 (根据你的参考代码逻辑)
+                    n_feats = len(target_main_cols) 
+                    
+                    # 归一化
+                    raw_fea['rms'] = val_task / np.sqrt(n_feats)
+                    raw_fea_base['rms'] = val_base / np.sqrt(n_feats)
+                    
+                    # 减去基线 (Subtract Baseline)
                     raw_fea['rms'] = raw_fea['rms'] - raw_fea_base['rms']
 
-                    # --- 4. Time Binning & Raw P-value Calculation ---
+                    # --- 6. Time Binning & Stats ---
                     feature_means = []
                     feature_raw_pvals = []
                     
@@ -286,6 +289,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                         data_window = raw_fea[mask_window]
                         
                         # Average RMS over time window for each permutation
+                        # 注意：这里是对时间窗内的样本取平均
                         perm_means = data_window.groupby('perm')['rms'].mean()
                         
                         obs_mean = perm_means.loc[0]  # Observed mean (Perm 0)
@@ -293,24 +297,37 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                         
                         feature_means.append(obs_mean)
                         
-                        # Calculate One-tailed P-value
+                        # Calculate Two-tailed P-value
                         n_perms = len(null_means)
                         if n_perms > 0:
-                            # Test: Observed > Null
-                            p_val = (np.sum(null_means >= obs_mean) + 1) / (n_perms + 1)
+                            # 1. 计算右尾 (Observed >= Null) 的数量
+                            n_ge = np.sum(null_means >= obs_mean)
+                            
+                            # 2. 计算左尾 (Observed <= Null) 的数量
+                            n_le = np.sum(null_means <= obs_mean)
+                            
+                            # 3. 取较小的那个尾巴 (the more extreme tail)
+                            min_tail_count = min(n_ge, n_le)
+                            
+                            # 4. 双尾公式: (2 * min_count + 1) / (N + 1)
+                            # 乘以2是因为我们要看两个方向
+                            p_val = (2 * min_tail_count + 1) / (n_perms + 1)
+                            
+                            # P值不能超过1.0
+                            if p_val > 1.0: p_val = 1.0
+                            
                         else:
                             p_val = 1.0
                         
                         feature_raw_pvals.append(p_val)
 
-                    #Apply FDR correction within this feature across time windows
+                    # Apply FDR correction
                     if len(feature_raw_pvals) > 0:
-                         _, feature_corrected_pvals, _, _ = multipletests(feature_raw_pvals, alpha=0.025, method='fdr_bh')
+                         _, feature_corrected_pvals, _, _ = multipletests(feature_raw_pvals, alpha=0.05, method='fdr_bh')
                     else:
                          feature_corrected_pvals = feature_raw_pvals
-                    # feature_corrected_pvals = feature_raw_pvals
 
-                    # Store results for this feature
+                    # Store results
                     bar_plot_data[beta_fea] = {
                         'means': feature_means,
                         'pvals': feature_corrected_pvals
@@ -357,7 +374,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                 # ax.set_xticklabels(time_labels, rotation=45, ha='right')
                 
                 # Adjust Y-Limits dynamically or fixed
-                ax.set_ylim(-0.2 * fea_plot_yscale, 0.2 * fea_plot_yscale)
+                ax.set_ylim(-1*fea_plot_yscale, fea_plot_yscale)
                 
                 ax.spines['top'].set_visible(False)
                 ax.spines['right'].set_visible(False)
@@ -372,9 +389,9 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                 # X Labels
                 ax.set_xlabel("Time Window (s)", fontsize=14, fontweight='bold')
                 
-                # Legend (Top Left Only)
-                if row_idx == 0:
-                    ax.legend(loc='upper right', frameon=False, fontsize=14)
+                # Legend (Top Left of Third Column)
+                if row_idx == 2:
+                    ax.legend(loc='upper left', frameon=False, fontsize=14)
 
         # --- Save Figure ---
         fig_rms.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust layout to prevent overlap
