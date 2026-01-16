@@ -98,29 +98,12 @@ time_labels = ["0.55-0.75", "0.75-0.95"]
 n_windows = len(time_windows)
 
 # Loop through all configuration combinations
-for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base), opts_huge):
+for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
     
-    if is_yn == '_forSilence' and is_huge == 'onlysem':
-        is_huge = '_onlysem'
+    unified_y_scale = 0.5 # Unified scale for combined plot
+    target_beta_features = ['pho_word', 'pho_nonword', 'sem']
 
-    # 1. Determine Y-Axis Scale based on analysis mode
-    match is_huge:
-        case '_onlysem': unified_y_scale = 0.3 
-        case 'onlysem': unified_y_scale = 0.5 
-        case 'onlysemproxy': unified_y_scale = 10 
-        case '_huge': unified_y_scale = 10 
-        case _: unified_y_scale = 0.1
-
-    # 2. Determine Features to plot
-    match is_huge:
-        case '_onlysem' | 'onlysem' | 'onlysemproxy': 
-            target_beta_features = ['sem']
-        case '_huge': 
-            target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem']
-        case _: 
-            target_beta_features = ['pho_main', 'pho_word', 'pho_nonword']
-
-    # 3. Define Electrode Groups
+    # Define Electrode Groups
     all_elec_configs = [
         ('Auditory', Auditory_col, unified_y_scale),
         ('Sensorymotor', Sensorimotor_col, unified_y_scale),
@@ -130,7 +113,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
         ('Wgw_a55b', WGW_a55b_col, unified_y_scale)
     ]
 
-    # 4. Define Alignments (Columns)
+    # Define Alignments (Columns)
     all_alignments = [ # Only plot Aud alignment
         ('Aud', [-0.2, 1.75])
     ] 
@@ -145,7 +128,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
         delay_nodelay_target = 'LexDelay'
         delay_nodelay_base = 'LexNoDelay'
     
-    print(f"Processing: {delay_nodelay_target} vs {delay_nodelay_base} | {is_huge} | {is_yn}...")
+    print(f"Processing combined plot for: {delay_nodelay_target} vs {delay_nodelay_base} | {is_yn}...")
 
     # --- Iterate through chunks (Figures) ---
     for chunk_idx, current_chunk in enumerate(elec_chunks):
@@ -163,19 +146,36 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
             # --- Iterate through Columns (Alignments) ---
             for col_idx, (alignment, xlim_align) in enumerate(all_alignments):
                 ax = axes_rms[row_idx] # Index by column
-                
-                # Construct Filenames
-                filename = f"results/{delay_nodelay_target}_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
-                filename_base = f"results/{delay_nodelay_base}_{elec_grp}_{alignment}_All{is_yn_base}{is_huge}_testλ_{vWM_lambda}.csv"
-                
-                # Skip if files don't exist
-                if not os.path.exists(filename) or not os.path.exists(filename_base):
+
+                # --- Load and Merge Data from different 'is_huge' settings ---
+                raw = None
+                raw_base = None
+
+                for is_huge_opt in opts_huge:
+                    current_is_huge = is_huge_opt
+                    if is_yn == '_forSilence' and is_huge_opt == 'onlysem':
+                        current_is_huge = '_onlysem'
+
+                    filename = f"results/{delay_nodelay_target}_{elec_grp}_{alignment}_All{is_yn}{current_is_huge}_testλ_{vWM_lambda}.csv"
+                    filename_base = f"results/{delay_nodelay_base}_{elec_grp}_{alignment}_All{is_yn_base}{current_is_huge}_testλ_{vWM_lambda}.csv"
+
+                    if not os.path.exists(filename) or not os.path.exists(filename_base):
+                        continue
+
+                    temp_raw = pd.read_csv(filename)
+                    temp_raw_base = pd.read_csv(filename_base)
+
+                    if raw is None:
+                        raw = temp_raw
+                        raw_base = temp_raw_base
+                    else:
+                        # Merge new columns, avoiding duplicates of keys
+                        raw = pd.merge(raw, temp_raw.drop(columns=[c for c in temp_raw.columns if c in raw.columns and c not in ['perm', 'time_point']]), on=['perm', 'time_point'], how='outer')
+                        raw_base = pd.merge(raw_base, temp_raw_base.drop(columns=[c for c in temp_raw_base.columns if c in raw_base.columns and c not in ['perm', 'time_point']]), on=['perm', 'time_point'], how='outer')
+
+                if raw is None:
                     ax.text(0.5, 0.5, "Data Missing", ha='center', va='center')
                     continue
-
-                # Load Data
-                raw = pd.read_csv(filename)
-                raw_base = pd.read_csv(filename_base)
                 
                 # Split Perm 0 (Observed) and Null Perms
                 raw_org = raw[raw['perm'] == 0]
@@ -331,7 +331,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
 
                 # --- Perform Correction on ALL p-values ---
                 if len(all_raw_pvals) > 0:
-                    _, all_corrected_pvals, _, _ = multipletests(all_raw_pvals, alpha=0.01, method='fdr_bh')
+                    _, all_corrected_pvals, _, _ = multipletests(all_raw_pvals, alpha=0.05, method='holm')
                 else:
                     all_corrected_pvals = []
                 
@@ -382,7 +382,7 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                 # ax.set_xticklabels(time_labels, rotation=45, ha='right')
                 
                 # Adjust Y-Limits dynamically or fixed
-                ax.set_ylim(-1*fea_plot_yscale, fea_plot_yscale)
+                ax.set_ylim(-0.4*fea_plot_yscale, fea_plot_yscale)
                 
                 ax.spines['top'].set_visible(False)
                 ax.spines['right'].set_visible(False)
@@ -398,12 +398,12 @@ for (is_yn, is_yn_base), is_huge in itertools.product(zip(opts_yn, opts_yn_base)
                 ax.set_xlabel("Time Window (s)", fontsize=14, fontweight='bold')
                 
                 # Legend (Top Left of Third Column)
-                if row_idx == 0:
+                if row_idx == 2:
                     ax.legend(loc='upper right', frameon=False, fontsize=14)
 
         # --- Save Figure ---
         fig_rms.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust layout to prevent overlap
-        save_dir = os.path.join('figs', f'diff{is_yn}{is_huge}_{delay_nodelay_base}')
+        save_dir = os.path.join('figs', f'diff_combined{is_yn}_{delay_nodelay_base}')
         os.makedirs(save_dir, exist_ok=True)
         
         save_name = os.path.join(save_dir, f'BigPlot_Part{chunk_idx+1}_RMS_Bar_FDR_vWMλ_{vWM_lambda}.tif')
