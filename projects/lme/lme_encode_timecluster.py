@@ -125,11 +125,11 @@ def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05, mode:str='time
             stat_out_calc = time_cluster(mask_i_org_calc, mask_null_i_calc, 1 - alpha_clus)
         elif mode == 'fdr':
             # FDR on sliced data
-            stat_out_calc, p_fdr, _, _ = multipletests(1 - org_p_i_calc, alpha=alpha_clus, method='fdr_bh')
+            stat_out_calc, p_fdr, _, _ = multipletests(1 - org_p_i_calc, alpha=alpha_clus, method='holm')
 
     elif input == 'p':
         # Assuming r2_i contains p-values directly
-        stat_out_calc, p_fdr, _, _ = multipletests(r2_i_calc[0], alpha=alpha_clus, method='fdr_bh')
+        stat_out_calc, p_fdr, _, _ = multipletests(r2_i_calc[0], alpha=alpha_clus, method='holm')
     
     # Fill the calculated stats back into the full array at the correct positions
     stat_out_full[valid_indices] = stat_out_calc.astype(int)
@@ -189,8 +189,8 @@ aco_col = [0, 0.502, 0.502]
 pho_col = [0.502, 0, 0.502]      
 wordness_col = [1, 0, 1] 
 
-is_normalize = False
-is_bsl_correct = False
+is_normalize = True
+is_bsl_correct = True
 mode = 'time_cluster'
 
 # 定义所有要画的电极组及其对应参数
@@ -210,7 +210,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         case '_huge':
             unified_y_scale = 10   # [请调节] _huge
         case '':
-            unified_y_scale = 4   # [请调节] 默认值 (类似 else)
+            unified_y_scale = 1.6   # [请调节] 默认值 (类似 else)
 
     # --- 定义所有要画的电极组 (使用统一的 Scale) ---
     all_elec_configs = [
@@ -285,7 +285,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                 true_indices_by_vWM = {}
                 for vWM, vwm_linestyle, input_type, pthres, vwm_text, sig_bar_col in zip(
                         ('vWM', 'vWM_p'), ('-', '-'), ('R2', 'p'),
-                        ([5e-2, 1e-4], [1e-3, 1e-30]), ('ACC', 'p'),
+                        ([5e-2, 1e-4], [1e-3, 1e-20]), ('ACC', 'p'),
                         (elec_col, elec_col)):
                     
                     target_fea = fea + f'_{vWM}'
@@ -372,7 +372,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         case '_huge':
             target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem'] 
         case _:
-            target_beta_features = ['pho_word','pho_nonword','pho_gain']
+            target_beta_features = ['pho_word','pho_nonword','pho_gain','sem']
             #target_beta_features = ['aco_main','pho_main','pho_interact']
 
     feature_colors = {
@@ -421,13 +421,28 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
             if n_cols == 1: a = [a]
             figs_beta[fea] = f
             axes_beta[fea] = a
-            
+
+        if is_huge!='':
+            continue
         for col_idx, (elec_grp, elec_col, fea_plot_yscale) in enumerate(current_chunk):
             for _, (alignment, xlim_align) in enumerate(all_alignments):
-                    
-                    filename = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
-                    if not os.path.exists(filename): continue
-                    raw = pd.read_csv(filename)
+
+                    raw = None
+                    for is_huge_opt in opts_huge:
+                        filename = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn}{is_huge_opt}_testλ_{vWM_lambda}.csv"
+                        if not os.path.exists(filename):
+                            print(f"Warning: File not found {filename}")
+                            continue
+
+                        temp_raw = pd.read_csv(filename)
+                        if raw is None:
+                            raw = temp_raw
+                        else:
+                            # Merge new columns, avoiding duplicates of keys
+                            raw = pd.merge(raw, temp_raw.drop(columns=[c for c in temp_raw.columns if c in raw.columns and c not in ['perm', 'time_point']]), on=['perm', 'time_point'], how='outer')
+
+                    if raw is None:
+                        continue
                     
                     all_rms_data = {} 
                     all_rms_data_sig = {}
@@ -570,45 +585,48 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                                 b_val = baseline_beta_rms.get(elec_grp, {}).get(beta_fea, 0)
                                 rms_series = (rms_series - b_val)
                         
-                        rms_series = gaussian_filter1d(rms_series, sigma=2, mode='nearest')
+                        rms_series = gaussian_filter1d(rms_series, sigma=3, mode='nearest')
                         
                         color = feature_colors.get(beta_fea, '#333333')
                         linestyle = '--' if ':' in beta_fea else '-'
                         plot_label = feature_tags.get(beta_fea, beta_fea)
-                        ax_r.plot(time_points_plot, rms_series, label=plot_label, linewidth=3, color=color, linestyle=linestyle)
+                        if beta_fea != 'pho_gain':
+                            ax_r.plot(time_points_plot, rms_series,  linewidth=3, color=color, linestyle=linestyle)
                         
                         true_indices = all_rms_data_sig[beta_fea]
                         if true_indices.size > 0:
                             split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                             clusters = np.split(true_indices, split_points)
-                            for clus in clusters:
+                            for i, clus in enumerate(clusters):
                                 s_time = time_points_plot[clus[0]] - (time_points_plot[1]-time_points_plot[0])/2
                                 e_time = time_points_plot[clus[-1]] + (time_points_plot[1]-time_points_plot[0])/2
                                 ax_r.plot([s_time, e_time], 
-                                        [1e-1*fea_plot_yscale-(5e-2)*(j_sig), 1e-1*fea_plot_yscale-(5e-2)*(j_sig)],
-                                        color=color, alpha=0.4, linewidth=5, solid_capstyle='butt')
+                                        [fea_plot_yscale-0.05*(j_sig), fea_plot_yscale-0.05*(j_sig)],
+                                        color=color, alpha=0.6, label=plot_label if i == 0 else None,linewidth=3, solid_capstyle='butt')
                             j_sig += 1
                     
                     # RMS 坐标轴设置
-                    ax_r.ticklabel_format(axis='y', style='sci', scilimits=(-2, -2), useMathText=True)
+                    #ax_r.ticklabel_format(axis='y', style='sci', scilimits=(-2, -2), useMathText=True)
                     ax_r.set_xlim(xlim_align)
-                    ax_r.set_ylim(-1e-2 * fea_plot_yscale, 1e-1 * fea_plot_yscale+ 1 * (5e-2) )
+                    ax_r.set_ylim(-0.1*fea_plot_yscale,  fea_plot_yscale+ 1 * (5e-2) )
                     ax_r.spines['top'].set_visible(False)
                     ax_r.spines['right'].set_visible(False)
 
                     ax_r.set_title(elec_grp, fontsize=16, fontweight='bold', pad=10)
                     if col_idx == 0:
                         ax_r.set_ylabel(f"{group_beta_type} beta", fontsize=16, fontweight='bold')
-                    if col_idx == 2:
-                        ax_r.legend(loc='upper left', frameon=False, fontsize=12)
                                 
                     ax_r.set_xlabel("Time (s)", fontsize=14, fontweight='bold')
 
         # --- 保存 ---
+        handles, labels = axes_rms[1].get_legend_handles_labels()
+        fig_rms.legend(handles, labels, loc='upper right', frameon=False, fontsize=12)
         fig_rms.suptitle(f"RMS Aligned to {all_alignments[0][0]}", fontsize=20, fontweight='bold')
         plt.figure(fig_rms.number)
         plt.tight_layout(rect=[0, 0, 1, 0.95])
-        save_name_rms = os.path.join('figs', f'z_score_unnormalized{is_yn}{is_huge}', 
+        save_dir_rms = os.path.join('figs', f'z_score_unnormalized{is_yn}_combined')
+        os.makedirs(save_dir_rms, exist_ok=True)
+        save_name_rms = os.path.join(save_dir_rms, 
                                     f'BigPlot_RMS_Part{chunk_idx+1}_vWMλ_{vWM_lambda}.tif')
         plt.savefig(save_name_rms, dpi=100)
         plt.close(fig_rms)
