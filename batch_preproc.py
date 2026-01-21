@@ -71,20 +71,15 @@ from matplotlib import pyplot as plt
 # subject_processing_dict_org = {
 #     "D0107": "gamma"
 # }
-# subject_processing_dict_org = {
-#     "D0086": "linernoise/outlierchs/wavelet",
-#     "D0121": "linernoise/outlierchs/wavelet",
-#     "D0128": "linernoise/outlierchs/wavelet",
-#     "D0133": "linernoise/outlierchs/wavelet",
-#     "D0134": "linernoise/outlierchs/wavelet",
-#     "D0137": "linernoise/outlierchs/wavelet",
-#     "D0138": "linernoise/outlierchs/wavelet",
-#     "D0140": "linernoise/outlierchs/wavelet",
-# }
-
 subject_processing_dict_org = {
+    # "D0086": "linernoise/outlierchs/wavelet",
+    # "D0121": "linernoise/outlierchs/wavelet",
+    "D0128": "linernoise/outlierchs/wavelet",
+    "D0133": "linernoise/outlierchs/wavelet",
     "D0134": "linernoise/outlierchs/wavelet",
-    "D0138": "linernoise/outlierchs/wavelet"
+    "D0137": "linernoise/outlierchs/wavelet",
+    "D0138": "linernoise/outlierchs/wavelet"#,
+    # "D0140": "linernoise/outlierchs/wavelet",
 }
 
 
@@ -155,7 +150,7 @@ for subject, processing_type in subject_processing_dict.items():
             # drop eeg and marker channels
             eeg_electrode_list = load_eeg_chs(subject)
             eeg_electrode_list = [item for item in eeg_electrode_list if isinstance(item, str)]
-            if subject!='D0103' and subject!='D0121' and subject!='D0128' and subject!='D0133' and subject!='D0137' and subject!='D0140':
+            if subject!='D0103' and subject!='D0121' and subject!='D0128' and subject!='D0133' and subject!='D0134'  and subject!='D0137' and subject!='D0140':
                 eeg_electrode_list.append('Trigger')
             raw.drop_channels(eeg_electrode_list)
 
