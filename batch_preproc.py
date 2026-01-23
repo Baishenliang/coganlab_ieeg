@@ -73,10 +73,10 @@ from matplotlib import pyplot as plt
 # }
 subject_processing_dict_org = {
     # "D0086": "linernoise/outlierchs/wavelet",
-    # "D0121": "linernoise/outlierchs/wavelet",
+    "D0121": "linernoise/outlierchs/wavelet",
     # "D0128": "linernoise/outlierchs/wavelet",
     # "D0133": "linernoise/outlierchs/wavelet",
-    "D0134": "linernoise/outlierchs/wavelet"
+    #"D0134": "linernoise/outlierchs/wavelet"
     # "D0137": "linernoise/outlierchs/wavelet",
     # "D0138": "linernoise/outlierchs/wavelet",
     # "D0140": "linernoise/outlierchs/wavelet",
@@ -86,8 +86,8 @@ subject_processing_dict_org = {
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
 # %% define task
-#Task_Tag="LexicalDecRepDelay"
-Task_Tag="LexicalDecRepNoDelay"
+Task_Tag="LexicalDecRepDelay"
+#Task_Tag="LexicalDecRepNoDelay"
 # Task_Tag="RetroCue"
 BIDS_Tag=f"BIDS-1.0_{Task_Tag}"
 
