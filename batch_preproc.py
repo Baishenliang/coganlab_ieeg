@@ -26,12 +26,12 @@ from matplotlib import pyplot as plt
 
 # %% Subj list
 subject_processing_dict_org = {
-    "D0121": "gamma",
-    "D0128": "gamma",
-    "D0134": "gamma",
-    "D0137": "gamma",
-    "D0138": "gamma",
-    "D0140": "gamma",
+    # "D0121": "gamma",
+    # "D0128": "gamma",
+    # "D0134": "gamma",
+    # "D0137": "gamma",
+    # "D0138": "gamma",
+    # "D0140": "gamma",
     "D0023": "gamma",
     "D0024": "gamma",
     "D0026": "gamma",
