@@ -25,54 +25,57 @@ from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_
 from matplotlib import pyplot as plt
 
 # %% Subj list
+# subject_processing_dict_org = {
+#     # "D0121": "gamma",
+#     # "D0128": "gamma",
+#     # "D0134": "gamma",
+#     # "D0137": "gamma",
+#     # "D0138": "gamma",
+#     # "D0140": "gamma"
+#     "D0023": "gamma",
+#     "D0024": "gamma",
+#     "D0026": "gamma",
+#     "D0027": "gamma",
+#     "D0028": "gamma",
+#     "D0029": "gamma",
+#     "D0032": "gamma",
+#     "D0035": "gamma",
+#     "D0038": "gamma",
+#     "D0042": "gamma",
+#     "D0044": "gamma",
+#     "D0047": "gamma",
+#     "D0053": "gamma",
+#     "D0054": "gamma",
+#     "D0055": "gamma",
+#     "D0057": "gamma",
+#     "D0059": "gamma",
+#     "D0063": "gamma",
+#     "D0065": "gamma",
+#     "D0066": "gamma",
+#     "D0068": "gamma",
+#     "D0069": "gamma",
+#     "D0070": "gamma",
+#     "D0071": "gamma",
+#     "D0077": "gamma",
+#     "D0079": "gamma",
+#     "D0080": "gamma",
+#     "D0081": "gamma",
+#     "D0084": "gamma",
+#     "D0086": "gamma",
+#     "D0090": "gamma",
+#     "D0092": "gamma",
+#     "D0094": "gamma",
+#     "D0096": "gamma",
+#     "D0100": "gamma",
+#     "D0101": "gamma",
+#     "D0102": "gamma",
+#     "D0103": "gamma",
+#     "D0107": "gamma",
+#     "D0115": "gamma",
+#     "D0117": "gamma"
+# }
 subject_processing_dict_org = {
-    # "D0121": "gamma",
-    # "D0128": "gamma",
-    # "D0134": "gamma",
-    # "D0137": "gamma",
-    # "D0138": "gamma",
-    # "D0140": "gamma"
-    "D0023": "gamma",
-    "D0024": "gamma",
-    "D0026": "gamma",
-    "D0027": "gamma",
-    "D0028": "gamma",
-    "D0029": "gamma",
-    "D0032": "gamma",
-    "D0035": "gamma",
-    "D0038": "gamma",
-    "D0042": "gamma",
-    "D0044": "gamma",
-    "D0047": "gamma",
-    "D0053": "gamma",
-    "D0054": "gamma",
-    "D0055": "gamma",
-    "D0057": "gamma",
-    "D0059": "gamma",
-    "D0063": "gamma",
-    "D0065": "gamma",
-    "D0066": "gamma",
-    "D0068": "gamma",
-    "D0069": "gamma",
-    "D0070": "gamma",
-    "D0071": "gamma",
-    "D0077": "gamma",
-    "D0079": "gamma",
-    "D0080": "gamma",
-    "D0081": "gamma",
-    "D0084": "gamma",
-    "D0086": "gamma",
-    "D0090": "gamma",
-    "D0092": "gamma",
-    "D0094": "gamma",
-    "D0096": "gamma",
-    "D0100": "gamma",
-    "D0101": "gamma",
-    "D0102": "gamma",
-    "D0103": "gamma",
-    "D0107": "gamma",
-    "D0115": "gamma",
-    "D0117": "gamma"
+     "D0134": "wavelet"
 }
 # subject_processing_dict_org = {
 #     "D0121": "multitaper/gamma",
@@ -250,6 +253,7 @@ for subject, processing_type in subject_processing_dict.items():
         print('=========================\n')
 
         ## Wavelet
+        reref=False
         log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Executing wavelet\n")
@@ -266,7 +270,8 @@ for subject, processing_type in subject_processing_dict.items():
 
             # ref to average
             ch_type = raw.get_channel_types(only_data_chs=True)[0]
-            raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
+            if reref:
+                raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
 
             # make direction
             if not os.path.exists(os.path.join(save_dir, subject)):
@@ -334,6 +339,8 @@ for subject, processing_type in subject_processing_dict.items():
                 # Save spectrograms
                 fig_count = 0
                 for fig in chan_grids:
+                    if not reref:
+                        tag = tag + '_noref'
                     figdir = os.path.join(save_dir, subject, 'wavelet', f'{tag}_{fig_count + 1}.jpg')
                     chan_grids[fig_count].savefig(figdir, dpi=300)
                     plt.close(fig)
