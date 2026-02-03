@@ -458,39 +458,61 @@ for subject, processing_type in subject_processing_dict.items():
                                 ((-0.5, 0.7+0.4),(-0.3, 0.7+0.4+1.5), (-0.5, 0.7+1.5), (-0.5, 1), (-0.5, 1)),
                                 ('Auditory1', 'Auditory2', 'Cue', 'Go', 'Resp'))
 
-                    # Initialize baseline container outside the loop to persist across epochs
-                    baseline_data = None 
+                    from scipy.interpolate import interp1d
+                    def chan_grid_psd(psd_data, freqs, ch_names, size=(4, 5), vlim=(0.7, 1.4), save_dir=None, prefix=''):
+                        n_chans = len(ch_names)
+                        rows, cols = size
+                        chans_per_fig = rows * cols
+                        n_figs = int(np.ceil(n_chans / chans_per_fig))
+                        
+                        for i in range(n_figs):
+                            fig, axes = plt.subplots(rows, cols, figsize=(20, 12), constrained_layout=True)
+                            axes = axes.flatten()
+                            
+                            start_idx = i * chans_per_fig
+                            end_idx = min((i + 1) * chans_per_fig, n_chans)
+                            
+                            for j, ch_idx in enumerate(range(start_idx, end_idx)):
+                                ax = axes[j]
+                                ax.plot(freqs, psd_data[ch_idx], color='k', linewidth=1.5)
+                                
+                                ax.set_title(ch_names[ch_idx], fontsize=10)
+                                ax.set_ylim(vlim)
+                                ax.set_xlim(freqs[0], freqs[-1])
+                                ax.axhline(1, color='r', linestyle='--', linewidth=0.8, alpha=0.5)
+                                
+                                if j >= (rows - 1) * cols: ax.set_xlabel("Freq (Hz)")
+                                if j % cols == 0: ax.set_ylabel("Power Ratio")
 
-                    # Loop through events
+                            for k in range(len(range(start_idx, end_idx)), len(axes)):
+                                axes[k].axis('off')
+
+                            if save_dir:
+                                figdir = os.path.join(save_dir, f'{prefix}_{i + 1}.jpg')
+                                fig.savefig(figdir, dpi=300)
+                                plt.close(fig)
+                            else:
+                                plt.show()
+
+                    baseline_data = None 
+                    baseline_freqs = None
+
                     for epoch, t, tag in multitap_evnt_zip:
 
-                        # ---------------------------------------------------------
-                        # 1. Common Preprocessing
-                        # ---------------------------------------------------------
                         t1 = t[0] - 0.5
                         t2 = t[1] + 0.5
                         times = (t1, t2)
-                        
-                        # Load trials
                         trials = trial_ieeg(raw, epoch, times, preload=True)
                         outliers_to_nan(trials, outliers=10)
 
-                        # ---------------------------------------------------------
-                        # 2. Branch: Time-Frequency (Spectrogram) or PSD (Spectrum)
-                        # ---------------------------------------------------------
-                        
-                        # === MODE A: Time-Frequency Representation (Spectrogram) ===
                         if reref:
-                            # Define TFR parameters
                             freq = np.linspace(0.5, 200, num=80)
                             kwargs = dict(average=False, n_jobs=-1, freqs=freq, return_itc=False,
                                         n_cycles=freq / 2, time_bandwidth=4, decim=20)
                             
-                            # Compute TFR
                             spectra_multitaper = trials.compute_tfr(method="multitaper", **kwargs)
-                            crop_pad(spectra_multitaper, "0.5s")  # Remove buffer
+                            crop_pad(spectra_multitaper, "0.5s")
 
-                            # --- Extract Baseline (TFR Object) ---
                             if Task_Tag in ["LexicalDecRepDelay", "LexicalDecRepNoDelay"]:
                                 if 'Cue' in epoch:
                                     base_temp = spectra_multitaper.copy().crop(-0.5, 0)
@@ -502,22 +524,17 @@ for subject, processing_type in subject_processing_dict.items():
                                     baseline_data = base_temp.average(lambda x: np.nanmean(x, axis=0), copy=True)
                                     del base_temp
 
-                            # --- Baseline Correction ---
-                            # Average over epochs first
                             spectra_multitaper = spectra_multitaper.average(lambda x: np.nanmean(x, axis=0), copy=True)
                             
                             if baseline_data is not None:
                                 spectra_multitaper = rescale(spectra_multitaper, baseline_data, copy=True, mode='ratio')
                             
-                            # --- Save TFR Data ---
                             save_path = os.path.join(save_dir, subject, 'multitaper_4cons')
                             if not os.path.exists(save_path): os.makedirs(save_path)
                             
                             filename = os.path.join(save_path, f'{tag}-tfr.h5')
                             mne.time_frequency.write_tfrs(filename, spectra_multitaper, overwrite=True)
 
-                            # --- Plot Spectrograms (Heatmaps) ---
-                            # Using your custom chan_grid function
                             chan_grids = chan_grid(spectra_multitaper, size=(20, 10), vlim=(0.7, 1.4), cmap=parula_map)
                             
                             fig_count = 0
@@ -529,87 +546,57 @@ for subject, processing_type in subject_processing_dict.items():
                                 
                             del spectra_multitaper, chan_grids
 
-                        # === MODE B: Power Spectral Density (Line Plot) ===
                         else:
-                            # 1. Compute PSD
                             psd_kwargs = dict(method='multitaper', fmin=0.5, fmax=200, 
                                             bandwidth=4, n_jobs=-1, verbose=False)
                             
                             spectrum_obj = trials.compute_psd(tmin=t[0], tmax=t[1], **psd_kwargs)
                             
-                            psd_all = spectrum_obj.get_data() # (n_epochs, n_chans, n_freqs)
-                            psd_active = psd_all.mean(axis=0) # (n_chans, n_freqs)
-                            
-                            freqs = spectrum_obj.freqs
+                            psd_all = spectrum_obj.get_data()
+                            psd_active = psd_all.mean(axis=0)
+                            freqs_active = spectrum_obj.freqs
 
-                            # 2. Get/Update Baseline
-                            if Task_Tag in ["LexicalDecRepDelay", "LexicalDecRepNoDelay"] and 'Cue' in epoch:
-                                base_obj = trials.compute_psd(tmin=-0.5, tmax=0, **psd_kwargs)
-                                base_all = base_obj.get_data()
-                                baseline_data = base_all.mean(axis=0)
+                            if (Task_Tag in ["LexicalDecRepDelay", "LexicalDecRepNoDelay"] and 'Cue' in epoch) or \
+                            (Task_Tag == "RetroCue" and 'Audio1' in epoch):
                                 
-                            elif Task_Tag == "RetroCue" and 'Audio1' in epoch:
                                 base_obj = trials.compute_psd(tmin=-0.5, tmax=0, **psd_kwargs)
                                 base_all = base_obj.get_data()
                                 baseline_data = base_all.mean(axis=0)
-
-                            # 3. Baseline Correction
+                                baseline_freqs = base_obj.freqs
+                                
                             if baseline_data is not None:
-                                temp_base = baseline_data.copy()
+                                if psd_active.shape[1] != baseline_data.shape[1]:
+                                    interp_func = interp1d(baseline_freqs, baseline_data, kind='linear', 
+                                                        axis=1, fill_value="extrapolate")
+                                    baseline_resampled = interp_func(freqs_active)
+                                    temp_base = baseline_resampled.copy()
+                                else:
+                                    temp_base = baseline_data.copy()
+
                                 temp_base[temp_base == 0] = np.nan
                                 psd_corrected = psd_active / temp_base
                             else:
                                 psd_corrected = psd_active
 
-                            # --- Save PSD Data ---
-                            save_path = os.path.join(save_dir, subject, 'multitaper_psd')
+                            save_path = os.path.join(save_dir, subject, 'multitaper_psd_spectrum')
                             if not os.path.exists(save_path): os.makedirs(save_path)
                             
                             filename = os.path.join(save_path, f'{tag}-psd.npy')
-                            np.save(filename, {'power': psd_corrected, 'freqs': freqs, 'ch_names': trials.info['ch_names']})
+                            np.save(filename, {'power': psd_corrected, 'freqs': freqs_active, 'ch_names': trials.info['ch_names']})
 
-                            # --- Plot Spectra (Line Plots) ---
-                            n_chans = psd_corrected.shape[0]
-                            chans_per_fig = 20
-                            n_figs = int(np.ceil(n_chans / chans_per_fig))
-                            
-                            for i in range(n_figs):
-                                # Create grid 4x5
-                                fig, axes = plt.subplots(4, 5, figsize=(20, 12), constrained_layout=True)
-                                axes = axes.flatten()
-                                
-                                start_idx = i * chans_per_fig
-                                end_idx = min((i + 1) * chans_per_fig, n_chans)
-                                
-                                for j, ch_idx in enumerate(range(start_idx, end_idx)):
-                                    ax = axes[j]
-                                    
-                                    # Plot Frequency (x) vs Power Ratio (y)
-                                    ax.plot(freqs, psd_corrected[ch_idx], color='k', linewidth=1.5)
-                                    
-                                    # Styling
-                                    ax.set_title(trials.info['ch_names'][ch_idx], fontsize=10)
-                                    ax.set_ylim(0.7, 1.4)  # Adjust based on expected signal changes
-                                    ax.set_xlim(0.5, 200)
-                                    ax.axhline(1, color='r', linestyle='--', linewidth=0.8, alpha=0.5) # Baseline ref
-                                    
-                                    if j >= 15: ax.set_xlabel("Freq (Hz)")
-                                    if j % 5 == 0: ax.set_ylabel("Power Ratio")
-
-                                # Turn off unused axes
-                                for k in range(len(range(start_idx, end_idx)), len(axes)):
-                                    axes[k].axis('off')
-
-                                # Save figure
-                                figdir = os.path.join(save_path, f'{tag}_{i + 1}.jpg')
-                                fig.savefig(figdir, dpi=300)
-                                plt.close(fig)
+                            chan_grid_psd(
+                                psd_data=psd_corrected,
+                                freqs=freqs_active,
+                                ch_names=trials.info['ch_names'],
+                                size=(4, 5),
+                                vlim=(0.7, 1.4),
+                                save_dir=save_path,
+                                prefix=tag
+                            )
 
                             del spectrum_obj, psd_active, psd_corrected
+                            if 'psd_all' in locals(): del psd_all
 
-                        # ---------------------------------------------------------
-                        # 3. Cleanup
-                        # ---------------------------------------------------------
                         del trials
             del raw, layout
             log_file.write(f"{datetime.datetime.now()}, {subject}, Multitaper  %%% completed %%% \n")
