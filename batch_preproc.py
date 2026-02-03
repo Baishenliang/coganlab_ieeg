@@ -589,7 +589,7 @@ for subject, processing_type in subject_processing_dict.items():
                                 freqs=freqs_active,
                                 ch_names=trials.info['ch_names'],
                                 size=(4, 5),
-                                vlim=(0.7, 1.4),
+                                vlim=(0, 2),
                                 save_dir=save_path,
                                 prefix=tag
                             )
