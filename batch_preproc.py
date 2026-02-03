@@ -363,7 +363,7 @@ for subject, processing_type in subject_processing_dict.items():
         print(f'Multitaper {subject}\n')
         print('=========================\n')
 
-        reref=False
+        reref=True
 
         log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
