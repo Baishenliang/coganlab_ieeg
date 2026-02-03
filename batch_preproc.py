@@ -531,33 +531,34 @@ for subject, processing_type in subject_processing_dict.items():
 
                         # === MODE B: Power Spectral Density (Line Plot) ===
                         else:
-                            # Define PSD parameters (bandwidth=4 matches time_bandwidth=4)
+                            # 1. Compute PSD
                             psd_kwargs = dict(method='multitaper', fmin=0.5, fmax=200, 
                                             bandwidth=4, n_jobs=-1, verbose=False)
                             
-                            # Compute PSD for the active window (t[0] to t[1])
                             spectrum_obj = trials.compute_psd(tmin=t[0], tmax=t[1], **psd_kwargs)
-                            psd_all_epochs = spectrum_obj.get_data() 
-                            psd_active = psd_all_epochs.mean(axis=0)
+                            
+                            psd_all = spectrum_obj.get_data() # (n_epochs, n_chans, n_freqs)
+                            psd_active = psd_all.mean(axis=0) # (n_chans, n_freqs)
+                            
                             freqs = spectrum_obj.freqs
 
-                            # --- Extract Baseline (PSD Array) ---
+                            # 2. Get/Update Baseline
                             if Task_Tag in ["LexicalDecRepDelay", "LexicalDecRepNoDelay"] and 'Cue' in epoch:
                                 base_obj = trials.compute_psd(tmin=-0.5, tmax=0, **psd_kwargs)
-                                baseline_data = base_obj.get_data(average=True)
+                                base_all = base_obj.get_data()
+                                baseline_data = base_all.mean(axis=0)
                                 
                             elif Task_Tag == "RetroCue" and 'Audio1' in epoch:
                                 base_obj = trials.compute_psd(tmin=-0.5, tmax=0, **psd_kwargs)
-                                baseline_data = base_obj.get_data(average=True)
+                                base_all = base_obj.get_data()
+                                baseline_data = base_all.mean(axis=0)
 
-                            # --- Baseline Correction (Ratio) ---
+                            # 3. Baseline Correction
                             if baseline_data is not None:
-                                # Handle potential division by zero
                                 temp_base = baseline_data.copy()
                                 temp_base[temp_base == 0] = np.nan
                                 psd_corrected = psd_active / temp_base
                             else:
-                                print(f"Warning: No baseline PSD found for {tag}, skipping correction.")
                                 psd_corrected = psd_active
 
                             # --- Save PSD Data ---
