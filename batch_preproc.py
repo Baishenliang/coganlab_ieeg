@@ -537,7 +537,8 @@ for subject, processing_type in subject_processing_dict.items():
                             
                             # Compute PSD for the active window (t[0] to t[1])
                             spectrum_obj = trials.compute_psd(tmin=t[0], tmax=t[1], **psd_kwargs)
-                            psd_active = spectrum_obj.get_data(average=True) # Shape: (n_channels, n_freqs)
+                            psd_all_epochs = spectrum_obj.get_data() 
+                            psd_active = psd_all_epochs.mean(axis=0)
                             freqs = spectrum_obj.freqs
 
                             # --- Extract Baseline (PSD Array) ---
