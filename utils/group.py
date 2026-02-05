@@ -58,7 +58,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
     if not testsubj:
         subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
-        subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+        subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     else:
         subjs = ['D0024','D0100']
     # else:
