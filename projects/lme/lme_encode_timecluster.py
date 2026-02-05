@@ -22,6 +22,22 @@ import utils.group as gp
 import itertools
 
 #%% Run time cluster
+import tkinter as tk
+from tkinter import messagebox
+
+def show_warning_popup():
+    # 初始化一个隐藏的根窗口（否则会多出一个空白方框）
+    root = tk.Tk()
+    root.withdraw() 
+    
+    # 弹出警告框
+    messagebox.showwarning(title="分析警告", message="请使用T值画acc trace！")
+    
+    # 销毁窗口资源
+    root.destroy()
+
+# --- 在你需要的地方调用它 ---
+show_warning_popup()
 
 font_scale=2
 plt.rcParams['font.size'] = 14*font_scale

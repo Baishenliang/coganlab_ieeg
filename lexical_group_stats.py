@@ -3,9 +3,9 @@ from pickle import FALSE
 from matplotlib_venn import venn3
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
+groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -47,6 +47,7 @@ WGW_a55b_col=[0, 0.5, 0.5] # WGW a55b
 Sensorimotor_Delay_col = Sensorimotor_col#[1, 0, 1]  # Sensorimotor-Delay
 Auditory_Delay_col = Auditory_col#[1, 1, 0]  # Auditory-Delay
 Delay_Motor_col = Motor_col#[0, 1, 1]  # Delay-Motor
+do_hickok_rois = True   # whether to plot hickok rois
 
 # %% Sort data and get significant electrode lists
 import os
@@ -81,7 +82,8 @@ if groupsTag=="LexDelay":
         data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
         # Get the ROI of labels
-        ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
+        if do_hickok_rois:
+            ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
 
         epoc_LexDelay_Aud,_=load_stats('zscore','Auditory'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         epoc_LexDelay_Cue,_=load_stats('zscore','Cue'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
@@ -156,11 +158,12 @@ elif groupsTag=="LexDelay&LexNoDelay":
     epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels)
     epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
-if groupsTag=="LexNoDelay":
-    chs_coor=get_coor(data_LexNoDelay_Aud.labels[0],'group')
-else:
-    chs_coor=get_coor(data_LexDelay_Aud.labels[0],'group')
-hickok_roi_labels, hickok_roi_sig_idx=hickok_roi_sphere(chs_coor)
+if do_hickok_rois:
+    if groupsTag=="LexNoDelay":
+        chs_coor=get_coor(data_LexNoDelay_Aud.labels[0],'group')
+    else:
+        chs_coor=get_coor(data_LexDelay_Aud.labels[0],'group')
+    hickok_roi_labels, hickok_roi_sig_idx=hickok_roi_sphere(chs_coor)
 
 #%% Get sorted electrodes
 Lex_idxes = dict()
@@ -318,19 +321,20 @@ if "LexNoDelay" in groupsTag:
     # May do in_Silence electrodes later
 Lex_idxes['groupsTag']=groupsTag
 
-Spt_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Spt']
-lPMC_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lPMC']
-lIPL_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL']
-lIFG_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG']
-Wgw_p55b_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Wgw_p55b']
-Wgw_a55b_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Wgw_a55b']
+if do_hickok_rois:
+    Spt_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Spt']
+    lPMC_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lPMC']
+    lIPL_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIPL']
+    lIFG_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['lIFG']
+    Wgw_p55b_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Wgw_p55b']
+    Wgw_a55b_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Wgw_a55b']
 
-Lex_idxes['Hikock_Spt']=Spt_sig_idx
-Lex_idxes['Hikock_lPMC']=lPMC_sig_idx
-Lex_idxes['Hikock_lIPL']=lIPL_sig_idx
-Lex_idxes['Hikock_lIFG']=lIFG_sig_idx
-Lex_idxes['Wgw_p55b']=Wgw_p55b_sig_idx
-Lex_idxes['Wgw_a55b']=Wgw_a55b_sig_idx
+    Lex_idxes['Hikock_Spt']=Spt_sig_idx
+    Lex_idxes['Hikock_lPMC']=lPMC_sig_idx
+    Lex_idxes['Hikock_lIPL']=lIPL_sig_idx
+    Lex_idxes['Hikock_lIFG']=lIFG_sig_idx
+    Lex_idxes['Wgw_p55b']=Wgw_p55b_sig_idx
+    Lex_idxes['Wgw_a55b']=Wgw_a55b_sig_idx
 
 with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.npy'), "wb") as f:
     pickle.dump(Lex_idxes, f)

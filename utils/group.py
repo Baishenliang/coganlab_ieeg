@@ -58,7 +58,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
     if not testsubj:
         subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
-        subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+        subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     else:
         subjs = ['D0024','D0100']
     # else:
@@ -1954,7 +1954,14 @@ def chs2atlas(subjs,chs_all):
     subjs_s = ['D' + subj[1:].lstrip('0') for subj in subjs]
     ch_labels = dict()
     for subj in subjs_s:
-        info_i = subject_to_info(subj)
+        print(f'Processing chs to atlas subject {subj}...')
+        while True:
+            try:
+                info_i = subject_to_info(subj)
+                break
+            except Exception as e:
+                print(f"subject_to_info for {subj} failed with error: {e}. Retrying...")
+                continue
         ch_labels_k = gen_labels(info_i, subj, atlas='.BN_atlas')
         for key, value in ch_labels_k.items():
             ch_labels[f'{subj}-{key}'] = value
