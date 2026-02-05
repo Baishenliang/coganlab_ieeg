@@ -91,11 +91,11 @@ subject_processing_dict_org = {
     # "D0127": "linernoise/outlierchs/wavelet",
     # "D0128": "linernoise/outlierchs/wavelet/multitaper/gamma",
     # "D0129": "linernoise/outlierchs/wavelet"
-    # "D0133": "linernoise/outlierchs/wavelet",
+    "D0133": "linernoise/outlierchs/wavelet",
     #"D0134": "linernoise/outlierchs/wavelet"
     # "D0137": "linernoise/outlierchs/wavelet",
     # "D0138": "linernoise/outlierchs/wavelet",
-    "D0139": "linernoise/outlierchs/wavelet",
+    #"D0139": "linernoise/outlierchs/wavelet",
     # "D0140": "linernoise/outlierchs/wavelet",
 }
 
