@@ -88,9 +88,9 @@ from matplotlib import pyplot as plt
 subject_processing_dict_org = {
     # "D0086": "linernoise/outlierchs/wavelet",
     #D0121": "linernoise/outlierchs/wavelet",
-    "D0127": "multitaper/gamma",
+    "D0127": "gamma",
     #"D0128": "linernoise/outlierchs/wavelet/multitaper/gamma",
-    "D0129": "multitaper/gamma"
+    "D0129": "gamma"
     #"D0133": "linernoise/outlierchs/wavelet",
     #"D0134": "linernoise/outlierchs/wavelet"
     # "D0137": "linernoise/outlierchs/wavelet",
