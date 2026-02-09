@@ -828,9 +828,9 @@ if groupsTag == "LexDelay":
             ):
 
                 # for testing:
-                # Hickok_roi_gp=lIFG_sig_idx
+                # Hickok_roi_gp=lPMC_sig_idx
                 # col=Auditory_col
-                # tag='lIFG (vPCSA)'
+                # tag='lPMC (dPCSA)'
                 # data_epoch=data_LexDelay_Resp
                 # epoc_epoch=epoc_LexDelay_Resp
                 # wav_fig_size=(Waveplot_wth, Waveplot_hgt)
@@ -988,8 +988,8 @@ if groupsTag == "LexDelay":
                     # hickok_sub_idx_aud_onset = np.array([8,11,18,24,26,33,35])-1
                     # hickok_sub_idx_aud_contin = np.array([3,4,7,13,14,15,16,17,20,21,22,28,31])-1
                     # New categorizations based on NMF
-                    hickok_sub_idx_aud_contin = np.array([0, 1, 2, 3, 4, 5, 9, 10, 11, 18, 19, 20, 23, 26, 27, 28, 30, 31, 32, 33, 34])
-                    hickok_sub_idx_aud_onset = np.array([6, 7, 8, 12, 13, 14, 15, 16, 17, 21, 22, 24, 25, 29])
+                    hickok_sub_idx_aud_onset = np.array([0, 1, 2, 3, 4, 5, 9, 10, 11, 18, 19, 20, 23, 26, 27, 28, 30, 31, 32, 33, 34])
+                    hickok_sub_idx_aud_contin = np.array([6, 7, 8, 12, 13, 14, 15, 16, 17, 21, 22, 24, 25, 29])
 
                     for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col,wave_y_lim in zip(
                             (hickok_sub_idx_aud_onset,hickok_sub_idx_aud_contin),

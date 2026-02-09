@@ -113,10 +113,10 @@ if groupsTag=="LexDelay":
     # elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
     # elec_grps=('Spt',)
     # elec_idxs=('Hikock_Spt',)
-    # elec_grps=('lPMC',)
-    # elec_idxs=('Hikock_lPMC',)
-    elec_grps=('lIFG',)
-    elec_idxs=('Hikock_lIFG',)
+    elec_grps=('lPMC',)
+    elec_idxs=('Hikock_lPMC',)
+    # elec_grps=('lIFG',)
+    # elec_idxs=('Hikock_lIFG',)
     for epoc,t_range,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ([-0.5, 1.5], [-0.5, 1], [-0.5, 1.25]),
                              ('Stim','Go','Resp')):
@@ -298,7 +298,7 @@ if X.min() < 0:
     X = X - X.min()
 
 # --- 2. Run NMF ---
-n_components = 3
+n_components = 2
 # init='nndsvd' typically yields more consistent and sparse results
 model = NMF(n_components=n_components, init='nndsvd', random_state=42, max_iter=500)
 
@@ -337,13 +337,13 @@ colors = [
     '#8c564b'  
 ]
 #colors_trace = [[1,0,0],[0,1,0],[1,165/255,0]] #Spt
-#colors_trace = [[1,0,0],[1,165/255,0]] #lPMC
-colors_trace = [[191/255,191/255,191/255],[0,0,0],[127/255,127/255,127/255]] #lIFG
+colors_trace = [[1,0,0],[1,165/255,0]] #lPMC
+#colors_trace = [[191/255,191/255,191/255],[0,0,0],[127/255,127/255,127/255]] #lIFG
 
 # comp_names 需要在外面定义好，或者根据 n_components 生成
 #comp_names = ['Auditory_continuous', 'Auditory_motor', 'Auditory_onset'] #Spt
-#comp_names = ['Auditory_continuous', 'Auditory_onset'] #PMC
-comp_names = ['delay pre-articulation','articulation','both delay and articulation'] #lIFG
+comp_names = ['Auditory_continuous', 'Auditory_onset'] #PMC
+#comp_names = ['delay pre-articulation','articulation','both delay and articulation'] #lIFG
 # ==============================================================================
 # 1. 配置区域：在这里手动指定“名字-颜色”和“NMF索引-名字”的对应关系
 # ==============================================================================
@@ -351,10 +351,10 @@ comp_names = ['delay pre-articulation','articulation','both delay and articulati
 # --- A. 颜色配置 (请根据当前是 Spt, lPMC 还是 lIFG 选择解注) ---
 
 # [配置 1: lPMC] (Continuous=红, Onset=橙)
-# color_map = {
-#     'Auditory_continuous': [1, 0, 0],       # Red
-#     'Auditory_onset':      [1, 165/255, 0]  # Orange
-# }
+color_map = {
+    'Auditory_continuous': [1, 0, 0],       # Red
+    'Auditory_onset':      [1, 165/255, 0]  # Orange
+}
 
 # [配置 2: Spt] (Motor=红, Onset=绿, Continuous=橙)
 # color_map = {
@@ -364,11 +364,11 @@ comp_names = ['delay pre-articulation','articulation','both delay and articulati
 # }
 
 # [配置 3: lIFG] (Delay=浅灰, Articulation=黑, Both=深灰) <--- 当前生效
-color_map = {
-    'delay pre-articulation':      [191/255, 191/255, 191/255], # Light Gray
-    'articulation':                [0, 0, 0],                   # Black
-    'both delay and articulation': [127/255, 127/255, 127/255]  # Dark Gray
-}
+# color_map = {
+#     'delay pre-articulation':      [191/255, 191/255, 191/255], # Light Gray
+#     'articulation':                [0, 0, 0],                   # Black
+#     'both delay and articulation': [127/255, 127/255, 127/255]  # Dark Gray
+# }
 
 
 # --- B. 身份绑定 (CRITICAL STEP!) ---
@@ -376,27 +376,27 @@ color_map = {
 # Key 是 NMF 的 index, Value 必须是上面 color_map 里定义的 key
 
 # lIFG 配置示例 (请根据您的 NMF 实际结果修改 0, 1, 2 的对应关系!)
-nmf_identity = {
-    0: 'both delay and articulation', 
-    1: 'delay pre-articulation',       
-    2: 'articulation'            
-}
+# nmf_identity = {
+#     0: 'both delay and articulation', 
+#     1: 'delay pre-articulation',       
+#     2: 'articulation'            
+# }
 
 # (备用：lPMC 配置)
-# nmf_identity = {
-#     0: 'Auditory_continuous',
-#     1: 'Auditory_onset'
-# }
+nmf_identity = {
+    0: 'Auditory_continuous',
+    1: 'Auditory_onset'
+}
 
 
 # --- C. 图例顺序 ---
 # 列表里的名字顺序决定了画图和图例的顺序 (谁在前面谁就在图例上面)
 
 # [lIFG 顺序]
-legend_order = ['delay pre-articulation', 'articulation', 'both delay and articulation']
+# legend_order = ['delay pre-articulation', 'articulation', 'both delay and articulation']
 
 # [lPMC / Spt 顺序 (备用)]
-# legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
+legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
 
 
 # ==============================================================================
