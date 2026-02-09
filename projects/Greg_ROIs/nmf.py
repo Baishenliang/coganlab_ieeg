@@ -113,10 +113,10 @@ if groupsTag=="LexDelay":
     # elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
     # elec_grps=('Spt',)
     # elec_idxs=('Hikock_Spt',)
-    elec_grps=('lPMC',)
-    elec_idxs=('Hikock_lPMC',)
-    # elec_grps=('lIFG',)
-    # elec_idxs=('Hikock_lIFG',)
+    # elec_grps=('lPMC',)
+    # elec_idxs=('Hikock_lPMC',)
+    elec_grps=('lIFG',)
+    elec_idxs=('Hikock_lIFG',)
     for epoc,t_range,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ([-0.5, 1.5], [-0.5, 1], [-0.5, 1.25]),
                              ('Stim','Go','Resp')):
@@ -298,7 +298,7 @@ if X.min() < 0:
     X = X - X.min()
 
 # --- 2. Run NMF ---
-n_components = 2
+n_components = 3
 # init='nndsvd' typically yields more consistent and sparse results
 model = NMF(n_components=n_components, init='nndsvd', random_state=42, max_iter=500)
 
@@ -337,13 +337,13 @@ colors = [
     '#8c564b'  
 ]
 #colors_trace = [[1,0,0],[0,1,0],[1,165/255,0]] #Spt
-colors_trace = [[1,0,0],[1,165/255,0]] #lPMC
-#colors_trace = [[191/255,191/255,191/255],[0,0,0],[127/255,127/255,127/255]] #lIFG
+#colors_trace = [[1,0,0],[1,165/255,0]] #lPMC
+colors_trace = [[191/255,191/255,191/255],[0,0,0],[127/255,127/255,127/255]] #lIFG
 
 # comp_names 需要在外面定义好，或者根据 n_components 生成
 #comp_names = ['Auditory_continuous', 'Auditory_motor', 'Auditory_onset'] #Spt
-comp_names = ['Auditory_continuous', 'Auditory_onset'] #PMC
-#comp_names = ['delay pre-articulation','articulation','both delay and articulation'] #lIFG
+#comp_names = ['Auditory_continuous', 'Auditory_onset'] #PMC
+comp_names = ['delay pre-articulation','articulation','both delay and articulation'] #lIFG
 # ==============================================================================
 # 1. 配置区域：在这里手动指定“名字-颜色”和“NMF索引-名字”的对应关系
 # ==============================================================================
@@ -351,10 +351,10 @@ comp_names = ['Auditory_continuous', 'Auditory_onset'] #PMC
 # --- A. 颜色配置 (请根据当前是 Spt, lPMC 还是 lIFG 选择解注) ---
 
 # [配置 1: lPMC] (Continuous=红, Onset=橙)
-color_map = {
-    'Auditory_continuous': [1, 0, 0],       # Red
-    'Auditory_onset':      [1, 165/255, 0]  # Orange
-}
+# color_map = {
+#     'Auditory_continuous': [1, 0, 0],       # Red
+#     'Auditory_onset':      [1, 165/255, 0]  # Orange
+# }
 
 # [配置 2: Spt] (Motor=红, Onset=绿, Continuous=橙)
 # color_map = {
@@ -364,11 +364,11 @@ color_map = {
 # }
 
 # [配置 3: lIFG] (Delay=浅灰, Articulation=黑, Both=深灰) <--- 当前生效
-# color_map = {
-#     'delay pre-articulation':      [191/255, 191/255, 191/255], # Light Gray
-#     'articulation':                [0, 0, 0],                   # Black
-#     'both delay and articulation': [127/255, 127/255, 127/255]  # Dark Gray
-# }
+color_map = {
+    'delay pre-articulation':      [191/255, 191/255, 191/255], # Light Gray
+    'articulation':                [0, 0, 0],                   # Black
+    'both delay and articulation': [127/255, 127/255, 127/255]  # Dark Gray
+}
 
 
 # --- B. 身份绑定 (CRITICAL STEP!) ---
@@ -376,27 +376,27 @@ color_map = {
 # Key 是 NMF 的 index, Value 必须是上面 color_map 里定义的 key
 
 # lIFG 配置示例 (请根据您的 NMF 实际结果修改 0, 1, 2 的对应关系!)
-# nmf_identity = {
-#     0: 'both delay and articulation', 
-#     1: 'delay pre-articulation',       
-#     2: 'articulation'            
-# }
+nmf_identity = {
+    0: 'both delay and articulation', 
+    1: 'delay pre-articulation',       
+    2: 'articulation'            
+}
 
 # (备用：lPMC 配置)
-nmf_identity = {
-    0: 'Auditory_continuous',
-    1: 'Auditory_onset'
-}
+# nmf_identity = {
+#     0: 'Auditory_continuous',
+#     1: 'Auditory_onset'
+# }
 
 
 # --- C. 图例顺序 ---
 # 列表里的名字顺序决定了画图和图例的顺序 (谁在前面谁就在图例上面)
 
 # [lIFG 顺序]
-# legend_order = ['delay pre-articulation', 'articulation', 'both delay and articulation']
+legend_order = ['delay pre-articulation', 'articulation', 'both delay and articulation']
 
 # [lPMC / Spt 顺序 (备用)]
-legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
+# legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
 
 
 # ==============================================================================
@@ -895,4 +895,106 @@ plot_individual_traces_by_dominant_comp(
     time_windows=time_windows, 
     colors_dict=colors_dict
 )
+# %%
+# aud_motor correction
+t_range = [0, 1.5]
+roi_chs=data_LexDelay_Aud.labels[0].tolist()
+if groupsTag=="LexDelay":
+    epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=False)
+    epoc_LexDelayRep_Resp,_=gp.load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=False)
+
+    # 为r和p值在df_weights中添加新列
+    df_weights['r'] = np.nan
+    df_weights['p'] = np.nan
+    # 为了高效查找，将'Channel'设置为索引
+    df_weights.set_index('Channel', inplace=True)
+
+    for roi_ch in roi_chs:
+        s,e = roi_ch.split('-')
+        print(f"Processing {s} in {e}...")
+
+        Aud_s = epoc_LexDelayRep_Aud[s]
+        Aud_s_e = Aud_s.take(e, axis=1)
+        Aud_s_e = Aud_s_e.take(get_time_indexs(Aud_s_e.labels[1], t_range[0], t_range[1]), axis=1)
+        Aud_s_e_data = Aud_s_e.__array__()
+
+        Resp_s = epoc_LexDelayRep_Resp[s]
+        Resp_s_e = Resp_s.take(e, axis=1)
+        Resp_s_e = Resp_s_e.take(get_time_indexs(Resp_s_e.labels[1], t_range[0], t_range[1]), axis=1)
+        Resp_s_e_data = Resp_s_e.__array__() # (trials, samples)
+
+        # (1) 分别对这两个数据求所有samples的power之和（省略nan）
+        aud_power_sum = np.nansum(Aud_s_e_data, axis=1)
+        resp_power_sum = np.nansum(Resp_s_e_data, axis=1)
+
+        # (2) 对求和之后的n_trial的两个vector求出相关系数（省略nan）
+        # 创建一个mask来处理两个vector中可能存在的NaN值
+        valid_mask = ~np.isnan(aud_power_sum) & ~np.isnan(resp_power_sum)
+        
+        aud_valid = aud_power_sum[valid_mask]
+        resp_valid = resp_power_sum[valid_mask]
+
+        # 确保有足够的数据点来计算相关性 (至少需要2个点)
+        if len(aud_valid) > 1:
+            from scipy.stats import pearsonr
+            corr, p_value = pearsonr(aud_valid, resp_valid)
+            print(f"  Correlation for {roi_ch}: r = {corr:.4f}, p = {p_value:.4f}")
+
+            # 如果电极存在于df_weights中，则存储结果
+            if roi_ch in df_weights.index:
+                df_weights.loc[roi_ch, ['r', 'p']] = corr, p_value
+
+    # 重置索引，以便'Channel'变回列
+    df_weights.reset_index(inplace=True)
+
+
+# %% 对每个显性成分（Dominant_Comp）的r值进行可视化和统计检验
+import seaborn as sns
+import ptitprince as pt
+from scipy.stats import f_oneway
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+
+# 1. 数据准备：筛选掉没有r值的行
+df_plot = df_weights.dropna(subset=['r'])
+
+# 为PtitPrince准备调色板和顺序
+plot_order = sorted(df_plot['Dominant_Comp'].unique())
+palette_list = [comp_color_map.get(comp, (0.5, 0.5, 0.5)) for comp in plot_order]
+
+# 2. 绘制云雨图
+plt.figure(figsize=(12, 8))
+ax = pt.RainCloud(
+    x='Dominant_Comp', 
+    y='r', 
+    data=df_plot,
+    order=plot_order,
+    palette=palette_list,
+    bw=0.2,                  # 核密度估计的带宽
+    width_viol=0.6,          # 小提琴图的宽度
+    orient='v'               # 垂直方向
+)
+plt.title('Distribution of Correlation Coefficients (r) by Dominant Component', fontsize=16)
+plt.ylabel('Pearson Correlation (r)', fontsize=12)
+plt.xlabel('Dominant Component', fontsize=12)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.show()
+
+# 3. 统计检验
+print("--- Statistical Analysis of Correlation Coefficients (r) ---")
+# 准备ANOVA所需的数据
+groups = df_plot['Dominant_Comp'].unique()
+grouped_data = [df_plot['r'][df_plot['Dominant_Comp'] == g] for g in groups]
+
+# 执行单因素方差分析 (One-way ANOVA)
+f_stat, p_val_anova = f_oneway(*grouped_data)
+print(f"\nOne-way ANOVA results: F-statistic = {f_stat:.4f}, p-value = {p_val_anova:.4f}")
+
+# 如果ANOVA结果显著，则进行Tukey's HSD事后检验
+if p_val_anova < 0.05:
+    print("\nANOVA is significant. Performing Tukey's HSD post-hoc test:")
+    tukey_results = pairwise_tukeyhsd(endog=df_plot['r'], groups=df_plot['Dominant_Comp'], alpha=0.05)
+    print(tukey_results)
+else:
+    print("\nANOVA is not significant, indicating no significant difference between the groups.")
+
 # %%
