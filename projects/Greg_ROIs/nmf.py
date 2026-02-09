@@ -113,8 +113,10 @@ if groupsTag=="LexDelay":
     # elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
     # elec_grps=('Spt',)
     # elec_idxs=('Hikock_Spt',)
-    elec_grps=('lPMC',)
-    elec_idxs=('Hikock_lPMC',)
+    # elec_grps=('lPMC',)
+    # elec_idxs=('Hikock_lPMC',)
+    elec_grps=('lIFG',)
+    elec_idxs=('Hikock_lIFG',)
     for epoc,t_range,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ([-0.5, 1.5], [-0.5, 1], [-0.5, 1.25]),
                              ('Stim','Go','Resp')):
@@ -296,7 +298,7 @@ if X.min() < 0:
     X = X - X.min()
 
 # --- 2. Run NMF ---
-n_components = 2
+n_components = 3
 # init='nndsvd' typically yields more consistent and sparse results
 model = NMF(n_components=n_components, init='nndsvd', random_state=42, max_iter=500)
 
@@ -335,44 +337,66 @@ colors = [
     '#8c564b'  
 ]
 #colors_trace = [[1,0,0],[0,1,0],[1,165/255,0]] #Spt
-colors_trace = [[1,0,0],[1,165/255,0]] #lPMC
+#colors_trace = [[1,0,0],[1,165/255,0]] #lPMC
+colors_trace = [[191/255,191/255,191/255],[0,0,0],[127/255,127/255,127/255]] #lIFG
+
 # comp_names 需要在外面定义好，或者根据 n_components 生成
-if 'comp_names' not in locals():
-    #comp_names = ['Auditory_continuous', 'Auditory_motor', 'Auditory_onset'] #Spt
-    comp_names = ['Auditory_continuous', 'Auditory_onset'] #PMC
+#comp_names = ['Auditory_continuous', 'Auditory_motor', 'Auditory_onset'] #Spt
+#comp_names = ['Auditory_continuous', 'Auditory_onset'] #PMC
+comp_names = ['delay pre-articulation','articulation','both delay and articulation'] #lIFG
 # ==============================================================================
 # 1. 配置区域：在这里手动指定“名字-颜色”和“NMF索引-名字”的对应关系
 # ==============================================================================
 
-# --- A. 颜色配置 (请根据当前是 Spt 还是 lPMC 选择解注) ---
+# --- A. 颜色配置 (请根据当前是 Spt, lPMC 还是 lIFG 选择解注) ---
 
 # [配置 1: lPMC] (Continuous=红, Onset=橙)
-color_map = {
-    'Auditory_continuous': [1, 0, 0],       # Red
-    'Auditory_onset':      [1, 165/255, 0]  # Orange
-}
+# color_map = {
+#     'Auditory_continuous': [1, 0, 0],       # Red
+#     'Auditory_onset':      [1, 165/255, 0]  # Orange
+# }
 
-# [配置 2: Spt] (Motor=红, Onset=绿, Continuous=橙) -- 如果跑 Spt 请解注这个
+# [配置 2: Spt] (Motor=红, Onset=绿, Continuous=橙)
 # color_map = {
 #     'Auditory_motor':      [1, 0, 0],       # Red
 #     'Auditory_onset':      [0, 1, 0],       # Green
 #     'Auditory_continuous': [1, 165/255, 0]  # Orange
 # }
 
+# [配置 3: lIFG] (Delay=浅灰, Articulation=黑, Both=深灰) <--- 当前生效
+color_map = {
+    'delay pre-articulation':      [191/255, 191/255, 191/255], # Light Gray
+    'articulation':                [0, 0, 0],                   # Black
+    'both delay and articulation': [127/255, 127/255, 127/255]  # Dark Gray
+}
+
 
 # --- B. 身份绑定 (CRITICAL STEP!) ---
 # 跑完 NMF 后，看一眼 W 或 H，确认 Component 0, 1, 2 分别是谁，然后修改这里。
 # Key 是 NMF 的 index, Value 必须是上面 color_map 里定义的 key
+
+# lIFG 配置示例 (请根据您的 NMF 实际结果修改 0, 1, 2 的对应关系!)
 nmf_identity = {
-    0: 'Auditory_continuous',  # <--- 请根据实际结果修改 (比如 Spt 的 comp 0)
-    1: 'Auditory_onset',       # <--- 请根据实际结果修改
-    # 2: 'Auditory_motor'      # <--- 如果是 Spt (n=3)，请解注并修改
+    0: 'both delay and articulation', 
+    1: 'delay pre-articulation',       
+    2: 'articulation'            
 }
+
+# (备用：lPMC 配置)
+# nmf_identity = {
+#     0: 'Auditory_continuous',
+#     1: 'Auditory_onset'
+# }
 
 
 # --- C. 图例顺序 ---
 # 列表里的名字顺序决定了画图和图例的顺序 (谁在前面谁就在图例上面)
-legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
+
+# [lIFG 顺序]
+legend_order = ['delay pre-articulation', 'articulation', 'both delay and articulation']
+
+# [lPMC / Spt 顺序 (备用)]
+# legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
 
 
 # ==============================================================================
@@ -450,70 +474,79 @@ plt.gca().spines['right'].set_visible(False)
 plt.tight_layout()
 plt.show()
 
-# --- 4. Generate DataFrame: Electrode Contributions ---
-# Create base DataFrame
-df_weights = pd.DataFrame(W, columns=comp_names)
+# --- 4. Generate DataFrame: Electrode Contributions [FIXED] ---
 
-# Insert electrode information (Channel and Group)
+# 1. 根据 nmf_identity 的索引顺序 (0, 1, 2...) 生成正确的列名列表
+# 确保列名与 W 矩阵的列 (0, 1, 2...) 一一对应
+sorted_comp_names = [nmf_identity[i] for i in range(n_components)]
+
+# 2. 使用排好序的名字创建 DataFrame
+df_weights = pd.DataFrame(W, columns=sorted_comp_names)
+
+# 3. 插入电极信息
 df_weights.insert(0, 'Channel', final_chs)
 df_weights.insert(1, 'Group', final_grps)
 
-# (Optional) Identify the dominant component for each electrode
-df_weights['Dominant_Comp'] = df_weights[comp_names].idxmax(axis=1)
+# 4. 确定 Dominant Component
+# 现在列名是对的，idxmax 也就对了
+df_weights['Dominant_Comp'] = df_weights[sorted_comp_names].idxmax(axis=1)
 
-#  Save the new clusters
-# 1. Get the electrode categories from the Dominant_Comp column of the df_weights;
+# --- 以下保存逻辑保持不变 ---
+# Save the new clusters
+# 1. Get the electrode categories from the Dominant_Comp column...
 for category in df_weights['Dominant_Comp'].unique():
-    # 2. transform each category of electrodes to the indices in data_LexDelay_Aud.labels[0]
+    # 2. transform each category of electrodes...
     category_chs = set(df_weights[df_weights['Dominant_Comp'] == category]['Channel'])
-    # 3. make a index set for each type of electrodes
+    # 3. make a index set...
     category_idx = set([i for i, x in enumerate(data_LexDelay_Aud.labels[0]) if x in category_chs])
-    # 4. append the sets tp the LexDelay_twin_idxes, with the key names being LexDelay_Sensorimotor_in_Delay_sig_idx_{category name}
+    # 4. append the sets...
     LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
 
 if update_dict:
-    # 5. save the new LexDelay_twin_idxes into its original position
+    # 5. save...
     with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "wb") as f:
         pickle.dump(LexDelay_twin_idxes, f)
 
 # Display first few rows
 print("Electrode Weights DataFrame (First 5 rows):")
+print(df_weights.head())
 
-# If you want to see the average contribution of each Group to different Components, run this:
+# --- Plot Pie Charts (Logic Updated) ---
+# 注意：这里我们也要用 sorted_comp_names 来画图，确保和 DataFrame 列名一致
 import matplotlib.pyplot as plt
 import numpy as np
 
-# --- 1. Calculate Mean Weights per Group ---
-# (Exactly as you requested)
-df_mean_weights = df_weights.groupby('Group')[comp_names].mean()
+# Calculate Mean Weights
+df_mean_weights = df_weights.groupby('Group')[sorted_comp_names].mean()
 
-# --- 2. Setup Colors ---
-# Create a consistent color map for the groups so "Hickok_Spt" is the same color in all charts
+# Setup Colors
 groups = df_mean_weights.index
-# Use a colormap (e.g., 'tab20' is good for categorical data)
-# colors = plt.get_cmap('tab20')(np.linspace(0, 1, len(groups)))
-color_dict = dict(zip(groups, colors[3:3+len(groups)]))  # Adjust color selection as needed
+# 确保颜色字典存在 (如果前面没定义)
+if 'color_dict' not in locals():
+    # 简单的 fallback 颜色
+    import matplotlib.cm as cm
+    color_dict = dict(zip(groups, cm.tab20.colors[:len(groups)]))
 
-# --- 3. Plot Pie Charts ---
+# Draw Pie Charts
 fig, axes = plt.subplots(1, n_components, figsize=(5 * n_components, 6))
+if n_components == 1: axes = [axes]
 
-for i, col_name in enumerate(comp_names):
-    ax = axes[i]  # Use the enumerated index for the subplot axis
+# 遍历排好序的名字
+for i, col_name in enumerate(sorted_comp_names):
+    ax = axes[i]
     
-    # Get data for this component
     values = df_mean_weights[col_name]
     
-    # Draw Pie Chart
-    # autopct='%1.1f%%' displays the percentage
     wedges, texts, autotexts = ax.pie(
         values, 
         labels=groups, 
         autopct='%1.1f%%', 
-        colors=[color_dict[g] for g in groups], # Ensure consistent coloring
+        colors=[color_dict.get(g, 'gray') for g in groups], 
         startangle=140,
-        textprops={'fontsize': 30}
+        textprops={'fontsize': 14} # 字体改小一点防止重叠
     )
     
+    # 标题加上对应的功能名
     ax.set_title(f'{col_name}\nMean Weight Distribution', fontsize=14, fontweight='bold')
 
 plt.tight_layout()

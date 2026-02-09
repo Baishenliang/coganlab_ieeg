@@ -828,9 +828,9 @@ if groupsTag == "LexDelay":
             ):
 
                 # for testing:
-                # Hickok_roi_gp=lPMC_sig_idx
+                # Hickok_roi_gp=lIFG_sig_idx
                 # col=Auditory_col
-                # tag='lPMC (dPCSA)'
+                # tag='lIFG (vPCSA)'
                 # data_epoch=data_LexDelay_Resp
                 # epoc_epoch=epoc_LexDelay_Resp
                 # wav_fig_size=(Waveplot_wth, Waveplot_hgt)
@@ -1044,9 +1044,14 @@ if groupsTag == "LexDelay":
                             cluster_paras_lPMC[hickok_sub_idx_tag][epoch_tag] = Hickok_ROI_epoch_sort_paras_tab
                 
                 elif tag == 'lIFG (vPCSA)':
-                    hickok_sub_idx_delay = np.array([5,8,17,18])-1
-                    hickok_sub_idx_articulation = np.array([3,6,13,14])-1
-                    hickok_sub_idx_both = np.array([2,4,9,10,11])-1
+                    # Hicok's manual categorizations
+                    # hickok_sub_idx_delay = np.array([5,8,17,18])-1
+                    # hickok_sub_idx_articulation = np.array([3,6,13,14])-1
+                    # hickok_sub_idx_both = np.array([2,4,9,10,11])-1
+                    # New categorizations based on NMF
+                    hickok_sub_idx_articulation = np.array([14, 15])
+                    hickok_sub_idx_both = np.array([5, 8, 9, 10, 12, 13])
+                    hickok_sub_idx_delay = np.array([0, 1, 2, 3, 4, 6, 7, 11, 16, 17])
 
                     for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col,wave_y_lim in zip(
                             (hickok_sub_idx_delay,hickok_sub_idx_articulation,hickok_sub_idx_both),
