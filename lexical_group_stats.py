@@ -803,6 +803,8 @@ if groupsTag == "LexDelay":
             plt.close()
 
     ele_codes = []
+    Waveplot_wth=5 # Width of wave plots
+    Waveplot_hgt=4 # Height of wave plots
     for Hickok_roi_gp, col, tag in zip(
             (Spt_sig_idx, lPMC_sig_idx, lIFG_sig_idx,Wgw_p55b_sig_idx,Wgw_a55b_sig_idx),
             (Auditory_col, Sensorimotor_col, Motor_col,WGW_p55b_col,WGW_a55b_col),
@@ -821,18 +823,18 @@ if groupsTag == "LexDelay":
                     (data_LexDelay_Resp,data_LexDelay_Aud,data_LexDelay_Go,data_LexDelay_Cue),
                     (epoc_LexDelay_Resp,epoc_LexDelay_Aud,epoc_LexDelay_Go,epoc_LexDelay_Cue),
                     ((Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt)),
-                    ([-5, 1.5],[-2.5, 4],[-4.5, 2],[-0.5, 6]),
+                    ([-0.5, 1.5],[-0.5, 1.5],[-0.5, 1.5],[-0.5, 1.5]),
                     ('Resp','Stim','Go','Cue')
             ):
 
                 # for testing:
-                # Hickok_roi_gp=Spt_sig_idx
+                # Hickok_roi_gp=lPMC_sig_idx
                 # col=Auditory_col
-                # tag='Spt'
+                # tag='lPMC (dPCSA)'
                 # data_epoch=data_LexDelay_Resp
                 # epoc_epoch=epoc_LexDelay_Resp
                 # wav_fig_size=(Waveplot_wth, Waveplot_hgt)
-                # wav_x_lim=[-5, 1.5]
+                # wav_x_lim=[-0.5, 1.5]
                 # epoch_tag='Resp'
 
                 # Clus plots
@@ -982,14 +984,18 @@ if groupsTag == "LexDelay":
                                0.3, 0.2)
 
                 elif tag == 'lPMC (dPCSA)':
-                    hickok_sub_idx_aud_onset = np.array([8,11,18,24,26,33,35])-1
-                    hickok_sub_idx_aud_contin = np.array([3,4,7,13,14,15,16,17,20,21,22,28,31])-1
+                    # Hicok's manual categorizations
+                    # hickok_sub_idx_aud_onset = np.array([8,11,18,24,26,33,35])-1
+                    # hickok_sub_idx_aud_contin = np.array([3,4,7,13,14,15,16,17,20,21,22,28,31])-1
+                    # New categorizations based on NMF
+                    hickok_sub_idx_aud_contin = np.array([0, 1, 2, 3, 4, 5, 9, 10, 11, 18, 19, 20, 23, 26, 27, 28, 30, 31, 32, 33, 34])
+                    hickok_sub_idx_aud_onset = np.array([6, 7, 8, 12, 13, 14, 15, 16, 17, 21, 22, 24, 25, 29])
 
                     for hickok_sub_idx,hickok_sub_idx_tag,hickok_sub_idx_col,wave_y_lim in zip(
                             (hickok_sub_idx_aud_onset,hickok_sub_idx_aud_contin),
                             ('auditory onset','auditory continuous'),
                             ([1,165/255,0],[1,0,0]),
-                            ([-0.4,3],[-0.4,3])):
+                            ([-0.4,4],[-0.4,4])):
                         
                         Hickok_ROI_data_sort_sub = select_electrodes(Hickok_ROI_data_sort, hickok_sub_idx)
                         Hickok_ROI_epoch_sort_sub = select_electrodes(Hickok_ROI_epoch_sort, hickok_sub_idx)
