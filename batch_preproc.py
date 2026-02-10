@@ -673,6 +673,13 @@ for subject, processing_type in subject_processing_dict.items():
                     ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep','Cue_inYN', 'Auditory_inYN', 'Go_inYN', 'Resp_inYN'),
                     (True, True, True, True,True, True, True, True)
                 )
+                gamma_epoc_zip = zip(
+                    ('Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT','Cue/Yes_No/CORRECT', 'Auditory_stim/Yes_No/CORRECT', 'Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT','Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT'),
+                    ((-4.5, 2), (-5, 1.5),(-0.5, 6), (-2.5, 4), (-4.5, 2), (-5, 1.5)),
+                    ('Go_inRep', 'Resp_inRep','Cue_inYN', 'Auditory_inYN', 'Go_inYN', 'Resp_inYN'),
+                    (True, True,True, True, True, True)
+                )
                 # gamma_epoc_zip = zip(
                 #     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT'),
                 #     ('Cue/Repeat/CORRECT','Cue/Repeat/CORRECT'),
