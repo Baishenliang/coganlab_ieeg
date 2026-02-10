@@ -111,12 +111,12 @@ if groupsTag=="LexDelay":
     # elec_idxs=('Hikock_Spt','Hikock_lPMC','Hikock_lIFG')
     # elec_grps=('Sensorymotor_in_Delay',)
     # elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx',)
-    # elec_grps=('Spt',)
-    # elec_idxs=('Hikock_Spt',)
+    elec_grps=('Spt',)
+    elec_idxs=('Hikock_Spt',)
     # elec_grps=('lPMC',)
     # elec_idxs=('Hikock_lPMC',)
-    elec_grps=('lIFG',)
-    elec_idxs=('Hikock_lIFG',)
+    # elec_grps=('lIFG',)
+    # elec_idxs=('Hikock_lIFG',)
     for epoc,t_range,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ([-0.5, 1.5], [-0.5, 1], [-0.5, 1.25]),
                              ('Stim','Go','Resp')):
@@ -336,14 +336,14 @@ colors = [
     '#9467bd', 
     '#8c564b'  
 ]
-#colors_trace = [[1,0,0],[0,1,0],[1,165/255,0]] #Spt
+colors_trace = [[1,0,0],[0,1,0],[1,165/255,0]] #Spt
 #colors_trace = [[1,0,0],[1,165/255,0]] #lPMC
-colors_trace = [[191/255,191/255,191/255],[0,0,0],[127/255,127/255,127/255]] #lIFG
+# colors_trace = [[191/255,191/255,191/255],[0,0,0],[127/255,127/255,127/255]] #lIFG
 
 # comp_names 需要在外面定义好，或者根据 n_components 生成
-#comp_names = ['Auditory_continuous', 'Auditory_motor', 'Auditory_onset'] #Spt
+comp_names = ['Auditory_continuous', 'Auditory_motor', 'Auditory_onset'] #Spt
 #comp_names = ['Auditory_continuous', 'Auditory_onset'] #PMC
-comp_names = ['delay pre-articulation','articulation','both delay and articulation'] #lIFG
+# comp_names = ['delay pre-articulation','articulation','both delay and articulation'] #lIFG
 # ==============================================================================
 # 1. 配置区域：在这里手动指定“名字-颜色”和“NMF索引-名字”的对应关系
 # ==============================================================================
@@ -357,18 +357,18 @@ comp_names = ['delay pre-articulation','articulation','both delay and articulati
 # }
 
 # [配置 2: Spt] (Motor=红, Onset=绿, Continuous=橙)
-# color_map = {
-#     'Auditory_motor':      [1, 0, 0],       # Red
-#     'Auditory_onset':      [0, 1, 0],       # Green
-#     'Auditory_continuous': [1, 165/255, 0]  # Orange
-# }
+color_map = {
+    'Auditory_continuous':      [1, 0, 0],       # Red
+    'Auditory_motor':      [0, 1, 0],       # Green
+    'Auditory_onset': [1, 165/255, 0]  # Orange
+}
 
 # [配置 3: lIFG] (Delay=浅灰, Articulation=黑, Both=深灰) <--- 当前生效
-color_map = {
-    'delay pre-articulation':      [191/255, 191/255, 191/255], # Light Gray
-    'articulation':                [0, 0, 0],                   # Black
-    'both delay and articulation': [127/255, 127/255, 127/255]  # Dark Gray
-}
+# color_map = {
+#     'delay pre-articulation':      [191/255, 191/255, 191/255], # Light Gray
+#     'articulation':                [0, 0, 0],                   # Black
+#     'both delay and articulation': [127/255, 127/255, 127/255]  # Dark Gray
+# }
 
 
 # --- B. 身份绑定 (CRITICAL STEP!) ---
@@ -376,11 +376,11 @@ color_map = {
 # Key 是 NMF 的 index, Value 必须是上面 color_map 里定义的 key
 
 # lIFG 配置示例 (请根据您的 NMF 实际结果修改 0, 1, 2 的对应关系!)
-nmf_identity = {
-    0: 'both delay and articulation', 
-    1: 'delay pre-articulation',       
-    2: 'articulation'            
-}
+# nmf_identity = {
+#     0: 'both delay and articulation', 
+#     1: 'delay pre-articulation',       
+#     2: 'articulation'            
+# }
 
 # (备用：lPMC 配置)
 # nmf_identity = {
@@ -388,15 +388,22 @@ nmf_identity = {
 #     1: 'Auditory_onset'
 # }
 
+# (Spt 配置)
+nmf_identity = {
+    1: 'Auditory_motor',
+    2: 'Auditory_onset',
+    0: 'Auditory_continuous'
+}
+
 
 # --- C. 图例顺序 ---
 # 列表里的名字顺序决定了画图和图例的顺序 (谁在前面谁就在图例上面)
 
 # [lIFG 顺序]
-legend_order = ['delay pre-articulation', 'articulation', 'both delay and articulation']
+# legend_order = ['delay pre-articulation', 'articulation', 'both delay and articulation']
 
 # [lPMC / Spt 顺序 (备用)]
-# legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
+legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
 
 
 # ==============================================================================
@@ -953,48 +960,95 @@ import seaborn as sns
 import ptitprince as pt
 from scipy.stats import f_oneway
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
+import matplotlib.pyplot as plt
 
-# 1. 数据准备：筛选掉没有r值的行
-df_plot = df_weights.dropna(subset=['r'])
+# 1. 数据准备：筛选掉没有r值或p值的行
+df_plot = df_weights.dropna(subset=['r', 'p'])
 
-# 为PtitPrince准备调色板和顺序
+# 准备顺序
 plot_order = sorted(df_plot['Dominant_Comp'].unique())
+# 准备调色板 (用于云层和小提琴图，保持组的颜色)
 palette_list = [comp_color_map.get(comp, (0.5, 0.5, 0.5)) for comp in plot_order]
 
 # 2. 绘制云雨图
 plt.figure(figsize=(12, 8))
+
+# --- 第一步：绘制云(密度图)和伞(箱线图)，但不画雨(散点) ---
 ax = pt.RainCloud(
     x='Dominant_Comp', 
     y='r', 
     data=df_plot,
     order=plot_order,
     palette=palette_list,
-    bw=0.2,                  # 核密度估计的带宽
-    width_viol=0.6,          # 小提琴图的宽度
-    orient='v'               # 垂直方向
+    bw=0.2,              # 核密度估计带宽
+    width_viol=0.6,      # 小提琴图宽度
+    orient='v',          # 垂直方向
+    point_size=0,        # <--- 关键：设为0以隐藏默认散点，我们要自己画
+    alpha=0.65,          # 设置云层的透明度
+    box_showmeans=True   # 箱线图中显示均值
 )
+
+# --- 第二步：手动添加“雨”(散点)，根据P值着色 ---
+
+# 2.1 画不显著的点 (p >= 0.05) -> 灰色
+non_sig_data = df_plot[df_plot['p'] >= 0.05]
+sns.stripplot(
+    data=non_sig_data,
+    x='Dominant_Comp',
+    y='r',
+    order=plot_order,
+    color='gray',        # 强制灰色
+    alpha=0.5,           # 稍微透明一点
+    jitter=True,         # 抖动以防重叠
+    size=4,
+    ax=ax,
+    zorder=1             # 图层顺序
+)
+
+# 2.2 画显著的点 (p < 0.05) -> 组别颜色
+sig_data = df_plot[df_plot['p'] < 0.05]
+if not sig_data.empty:
+    sns.stripplot(
+        data=sig_data,
+        x='Dominant_Comp',
+        y='r',
+        order=plot_order,
+        hue='Dominant_Comp',    # 基于组别着色
+        palette=comp_color_map, # 使用你的颜色字典
+        jitter=True,
+        size=5,                 # 显著的点稍微大一点点
+        ax=ax,
+        zorder=2,
+        legend=False            # 不要图例
+    )
+
+# 3. 调整外观 (去除边框和网格)
 plt.title('Distribution of Correlation Coefficients (r) by Dominant Component', fontsize=16)
 plt.ylabel('Pearson Correlation (r)', fontsize=12)
 plt.xlabel('Dominant Component', fontsize=12)
-plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+# 去除上方和右侧的框线 (Spines)
+sns.despine() 
+
+# 确保不显示网格
+plt.grid(False) 
+
+plt.tight_layout()
 plt.show()
 
-# 3. 统计检验
+# 4. 统计检验 (保持不变)
 print("--- Statistical Analysis of Correlation Coefficients (r) ---")
-# 准备ANOVA所需的数据
 groups = df_plot['Dominant_Comp'].unique()
 grouped_data = [df_plot['r'][df_plot['Dominant_Comp'] == g] for g in groups]
 
-# 执行单因素方差分析 (One-way ANOVA)
 f_stat, p_val_anova = f_oneway(*grouped_data)
 print(f"\nOne-way ANOVA results: F-statistic = {f_stat:.4f}, p-value = {p_val_anova:.4f}")
 
-# 如果ANOVA结果显著，则进行Tukey's HSD事后检验
 if p_val_anova < 0.05:
     print("\nANOVA is significant. Performing Tukey's HSD post-hoc test:")
     tukey_results = pairwise_tukeyhsd(endog=df_plot['r'], groups=df_plot['Dominant_Comp'], alpha=0.05)
     print(tukey_results)
 else:
-    print("\nANOVA is not significant, indicating no significant difference between the groups.")
+    print("\nANOVA is not significant.")
 
 # %%
