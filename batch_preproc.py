@@ -89,8 +89,8 @@ from matplotlib import pyplot as plt
 subject_processing_dict_org = {
     # "D0086": "linernoise/outlierchs/wavelet",
     #D0121": "linernoise/outlierchs/wavelet",
-    "D0127": "gamma",
-    #"D0128": "linernoise/outlierchs/wavelet/multitaper/gamma",
+    #"D0127": "gamma",
+    "D0128": "gamma",
     #"D0129": "gamma"
     #"D0133": "linernoise/outlierchs/wavelet",
     #"D0134": "linernoise/outlierchs/wavelet"
@@ -674,12 +674,19 @@ for subject, processing_type in subject_processing_dict.items():
                 #     ('Cue_inRep', 'Auditory_inRep', 'Go_inRep', 'Resp_inRep','Cue_inYN', 'Auditory_inYN', 'Go_inYN', 'Resp_inYN'),
                 #     (True, True, True, True,True, True, True, True)
                 # )
+                # gamma_epoc_zip = zip(
+                #     ('Auditory_stim/Yes_No/CORRECT', 'Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT'),
+                #     ( 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT'),
+                #     ((-2.5, 4), (-4.5, 2), (-5, 1.5)),
+                #     ('Auditory_inYN', 'Go_inYN', 'Resp_inYN'),
+                #     (True, True,True)
+                # )
                 gamma_epoc_zip = zip(
-                    ('Auditory_stim/Yes_No/CORRECT', 'Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT'),
-                    ( 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT'),
-                    ((-2.5, 4), (-4.5, 2), (-5, 1.5)),
-                    ('Auditory_inYN', 'Go_inYN', 'Resp_inYN'),
-                    (True, True,True)
+                    ('Auditory_stim/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT', 'Auditory_stim/Yes_No/CORRECT', 'Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT'),
+                    ((-2.5, 4), (-4.5, 2), (-5, 1.5), (-2.5, 4), (-4.5, 2), (-5, 1.5)),
+                    ('Auditory_inRep', 'Go_inRep', 'Resp_inRep', 'Auditory_inYN', 'Go_inYN', 'Resp_inYN'),
+                    (True, True, True, True, True, True)
                 )
                 # gamma_epoc_zip = zip(
                 #     ('Cue/Repeat/CORRECT','Auditory_stim/Repeat/CORRECT'),
