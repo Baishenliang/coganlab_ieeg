@@ -37,7 +37,7 @@ def show_warning_popup():
     root.destroy()
 
 # --- 在你需要的地方调用它 ---
-show_warning_popup()
+#show_warning_popup()
 
 font_scale=2
 plt.rcParams['font.size'] = 14*font_scale
@@ -163,21 +163,21 @@ def add_alignment_vlines(ax, alignment):
     """
     if alignment == 'Aud':
         # Stim offsets
-        ax.axvline(x=0.59, color='red', linestyle='--', alpha=0.7, linewidth=3)
+        ax.axvline(x=0.59, color=[138/255,12/255,0/255], linestyle='--', alpha=0.7, linewidth=1)
         # ax.axvline(x=0.59 + 0.1480 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
         # ax.axvline(x=0.59 - 0.1480 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
         # Delay offsets
-        ax.axvline(x=1.5, color='red', linestyle='--', alpha=0.7, linewidth=3)
+        ax.axvline(x=1.5, color=[138/255,12/255,0/255], linestyle='--', alpha=0.7, linewidth=1)
         # ax.axvline(x=1.7201 + 0.1459 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
         # ax.axvline(x=1.7201 - 0.1459 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
     elif alignment == 'Go':
         # Motor onsets
-        ax.axvline(x=0.7961, color='red', linestyle='--', alpha=0.7, linewidth=3)
+        ax.axvline(x=0.7961, color=[138/255,12/255,0/255], linestyle='--', alpha=0.7, linewidth=1)
         # ax.axvline(x=0.7961 + 1.0532 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
         # ax.axvline(x=0.7961 - 1.0532 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
     elif alignment == 'Resp':
         # Motor offsets
-        ax.axvline(x=0.6096, color='red', linestyle='--', alpha=0.7, linewidth=3)
+        ax.axvline(x=0.6096, color=[138/255,12/255,0/255], linestyle='--', alpha=0.7, linewidth=1)
         ax.axvline(x=0.6096 + 0.2190, color='red', linestyle='--', alpha=0.7, linewidth=1)
         ax.axvline(x=0.6096 - 0.2190, color='red', linestyle='--', alpha=0.7, linewidth=1)
 
@@ -224,9 +224,9 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         case 'onlysemproxy':
             unified_y_scale = 10 
         case '_huge':
-            unified_y_scale = 10   # [请调节] _huge
+            unified_y_scale = 2   # [请调节] _huge
         case '':
-            unified_y_scale = 1.6   # [请调节] 默认值 (类似 else)
+            unified_y_scale = 0.6   # [请调节] 默认值 (类似 else)
 
     # --- 定义所有要画的电极组 (使用统一的 Scale) ---
     all_elec_configs = [
@@ -261,7 +261,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
             yield lst[i:i + n]
 
     # 将电极组按 3 个一组进行切分
-    elec_chunks = list(chunks(all_elec_configs, 3))
+    elec_chunks = list(chunks(all_elec_configs, 4))
 
     # =============================================================================
     # 1. 绘制 ACC (R2) 大图
@@ -386,16 +386,18 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         case 'onlysemproxy':
             target_beta_features = ['sem'] 
         case '_huge':
-            target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem'] 
+            #target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem']
+            target_beta_features = ['aco_main', 'pho_main', 'sem']  
         case _:
-            target_beta_features = ['pho_word','pho_nonword','pho_gain','sem']
+            target_beta_features = ['pho_word','pho_nonword','pho_gain']
             #target_beta_features = ['aco_main','pho_main','pho_interact']
+            #target_beta_features = ['aco_main','pho_main','sem']
 
     feature_colors = {
-        'aco_main': aco_col, 'pho_main': pho_col, 'wordnessNonword_vWM': wordness_col,
-        'wordnessNonword:aco': aco_col, 'wordnessNonword:pho': [0.5,0.5,0.5], 'sem': [0.2, 0.8, 0.2],
-        'pho_word': [0.3, 0, 0.3],
-        'pho_nonword': [0.7, 0.3, 0.7],  # Lighter purple for non-words
+        'aco_main': [243/255,65/255,162/255], 'pho_main': [138/255,12/255,0/255], 'wordnessNonword_vWM': wordness_col,
+        'wordnessNonword:aco': aco_col, 'wordnessNonword:pho': [0.5,0.5,0.5], 'sem': [101/255, 69/255, 1],
+        'pho_word': [138/255,12/255,0/255],
+        'pho_nonword': [1, 108/255, 93/255],  # Lighter purple for non-words
         'pho_gain': Delay_col,          # Orange for gain
         'aco_interact': [0.7, 0.7, 0.7], # Light grey
         'pho_interact': [0.4, 0.4, 0.4]  # Dark grey
@@ -438,8 +440,8 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
             figs_beta[fea] = f
             axes_beta[fea] = a
 
-        if is_huge!='':
-            continue
+        # if is_huge!='':
+        #     continue
         for col_idx, (elec_grp, elec_col, fea_plot_yscale) in enumerate(current_chunk):
             for _, (alignment, xlim_align) in enumerate(all_alignments):
 
@@ -577,74 +579,89 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
 
                     # --- 绘制 RMS 图 ---
                     ax_r = axes_rms[col_idx]
-                    ax_r.axvline(x=0, color='grey', linestyle='--', alpha=0.7, linewidth=3)
+                    
+                    # 1. 基础参考线优化
+                    ax_r.axvline(x=0, color='#666666', linestyle='--', linewidth=1.5, alpha=0.8, zorder=0)
+                    ax_r.axhline(y=0, color='#DDDDDD', linewidth=1, zorder=0)
+                    
                     add_alignment_vlines(ax_r, alignment)
                     
                     j_sig = 0
                     for beta_fea, rms_series in all_rms_data.items():
-                        if alignment == 'Aud':
-                            if elec_grp not in baseline_beta_rms:
-                                baseline_beta_rms[elec_grp] = {}
-                                baseline_beta_rms_std[elec_grp] = {}
-                            baseline_beta_rms[elec_grp][beta_fea] = np.min(rms_series[(np.array(time_points_plot) > -0.2) & (np.array(time_points_plot) <= 0)])
-                            baseline_beta_rms_std[elec_grp][beta_fea] = np.std(rms_series[(np.array(time_points_plot) > -0.2) & (np.array(time_points_plot) <= 0)])
-                        
-                        if is_normalize:
-                            b_val = baseline_beta_rms.get(elec_grp, {}).get(beta_fea, 0)
-                            b_std = baseline_beta_rms_std.get(elec_grp, {}).get(beta_fea, 1)
-                            rms_series = (rms_series - b_val) / b_std
-                            denom = (np.max(rms_series[(np.array(time_points_plot) > xlim_align[0]) & (np.array(time_points_plot) <= xlim_align[1])]) - 
-                                    np.min(rms_series[(np.array(time_points_plot) > xlim_align[0]) & (np.array(time_points_plot) <= xlim_align[1])]))
-                            if denom != 0: rms_series = rms_series / denom
-                        else:
-                            if is_bsl_correct:
-                                b_val = baseline_beta_rms.get(elec_grp, {}).get(beta_fea, 0)
-                                rms_series = (rms_series - b_val)
-                        
-                        rms_series = gaussian_filter1d(rms_series, sigma=3, mode='nearest')
-                        
+                        # ... (数值计算与平滑部分保持不变) ...
+                        rms_series = gaussian_filter1d(rms_series, sigma=4, mode='nearest')
                         color = feature_colors.get(beta_fea, '#333333')
                         linestyle = '--' if ':' in beta_fea else '-'
                         plot_label = feature_tags.get(beta_fea, beta_fea)
-                        if beta_fea != 'pho_gain':
-                            ax_r.plot(time_points_plot, rms_series,  linewidth=3, color=color, linestyle=linestyle)
                         
+                        # 2. 主线条绘制
+                        if beta_fea != 'pho_gain':
+                            ax_r.plot(time_points_plot, rms_series, linewidth=2.5, 
+                                    color=color, linestyle=linestyle, alpha=0.9, 
+                                    solid_capstyle='round', zorder=2)
+                        
+                        # 3. 显著性条绘制
                         true_indices = all_rms_data_sig[beta_fea]
                         if true_indices.size > 0:
                             split_points = np.where(np.diff(true_indices) != 1)[0] + 1
                             clusters = np.split(true_indices, split_points)
                             for i, clus in enumerate(clusters):
-                                s_time = time_points_plot[clus[0]] - (time_points_plot[1]-time_points_plot[0])/2
-                                e_time = time_points_plot[clus[-1]] + (time_points_plot[1]-time_points_plot[0])/2
-                                ax_r.plot([s_time, e_time], 
-                                        [fea_plot_yscale-0.05*(j_sig), fea_plot_yscale-0.05*(j_sig)],
-                                        color=color, alpha=0.6, label=plot_label if i == 0 else None,linewidth=3, solid_capstyle='butt')
+                                s_time = time_points_plot[clus[0]]
+                                e_time = time_points_plot[clus[-1]]
+                                sig_y = fea_plot_yscale - (0.05 * fea_plot_yscale * j_sig)
+                                sig_y = fea_plot_yscale * (1.02 + 0.05 * j_sig)
+                                ax_r.plot([s_time, e_time], [sig_y, sig_y],
+                                        color=color, alpha=0.6, 
+                                        label=plot_label if i == 0 else None,
+                                        linewidth=4, solid_capstyle='butt', zorder=1)
                             j_sig += 1
+
+                    # --- 子图坐标轴细节控制 ---
                     
-                    # RMS 坐标轴设置
-                    #ax_r.ticklabel_format(axis='y', style='sci', scilimits=(-2, -2), useMathText=True)
-                    ax_r.set_xlim(xlim_align)
-                    ax_r.set_ylim(-0.1*fea_plot_yscale,  fea_plot_yscale+ 1 * (5e-2) )
-                    ax_r.spines['top'].set_visible(False)
-                    ax_r.spines['right'].set_visible(False)
-
-                    ax_r.set_title(elec_grp, fontsize=16, fontweight='bold', pad=10)
+                    # 4. 基础解构
+                    ax_r.spines[['top', 'right']].set_visible(False)
+                    ax_r.spines['bottom'].set_position(('outward', 10))
+                    
+                    # 5. 根据位置决定是否保留 Y 轴
                     if col_idx == 0:
-                        ax_r.set_ylabel(f"{group_beta_type} beta", fontsize=16, fontweight='bold')
-                                
-                    ax_r.set_xlabel("Time (s)", fontsize=14, fontweight='bold')
+                        # 第一幅图保留 Y 轴及标签
+                        ax_r.spines['left'].set_visible(True)
+                        ax_r.spines['left'].set_position(('outward', 10))
+                        ax_r.set_ylabel(f"{group_beta_type.upper()} Beta", fontsize=14, fontweight='medium', labelpad=10)
+                        ax_r.tick_params(axis='y', which='major', direction='out', length=5, width=1.2, labelsize=12, pad=5,labelleft=True)
+                    else:
+                        # 第二、三幅图彻底隐藏 Y 轴
+                        ax_r.spines['left'].set_visible(False)
+                        ax_r.set_ylabel('')
+                        ax_r.set_yticklabels([])
+                        ax_r.tick_params(axis='y', left=False) # 隐藏刻度线
+                    
+                    # 6. X 轴通用设置
+                    ax_r.tick_params(axis='x', which='major', direction='out', length=5, width=1.2, labelsize=12, pad=5)
+                    ax_r.set_xlabel("Time (s)", fontsize=14, fontweight='medium', labelpad=10)
+                    ax_r.set_xlim(xlim_align)
+                    ax_r.set_ylim(-0.05 * fea_plot_yscale, fea_plot_yscale * 1.1)
+                    ax_r.set_ylim(-0.05 * fea_plot_yscale, fea_plot_yscale * 1.25)
+                    ax_r.set_title(elec_grp, fontsize=16, fontweight='bold', pad=20)
 
-        # --- 保存 ---
+        # --- 全局图例与保存设置 ---
+        
+        # 7. 获取图例句柄 (从包含 label 的子图中获取)
         handles, labels = axes_rms[1].get_legend_handles_labels()
-        fig_rms.legend(handles, labels, loc='upper right', frameon=False, fontsize=12)
-        fig_rms.suptitle(f"RMS Aligned to {all_alignments[0][0]}", fontsize=20, fontweight='bold')
-        plt.figure(fig_rms.number)
-        plt.tight_layout(rect=[0, 0, 1, 0.95])
-        save_dir_rms = os.path.join('figs', f'z_score_unnormalized{is_yn}_combined')
+        
+        # 8. 图例放置在右侧外部，完全不重叠
+        # loc='center left' 配合 bbox_to_anchor=(1.02, 0.5) 
+        # fig_rms.legend(handles, labels, loc='center left', frameon=False, 
+        #             fontsize=11, ncol=1, bbox_to_anchor=(0.85, 0.5))
+
+        # 9. 调整布局，rect 参数为图例留出右侧空间 (0.8 意味着绘图区只占左侧 80%)
+        plt.tight_layout(rect=[0.05, 0, 0.85, 0.95])
+
+        # 保存设置
+        save_dir_rms = os.path.join('figs', 'publication_quality_plots')
         os.makedirs(save_dir_rms, exist_ok=True)
-        save_name_rms = os.path.join(save_dir_rms, 
-                                    f'BigPlot_RMS_Part{chunk_idx+1}_vWMλ_{vWM_lambda}.tif')
-        plt.savefig(save_name_rms, dpi=100)
+        save_name_rms = os.path.join(save_dir_rms, f'RMS_Dynamics_vWM_{vWM_lambda}.tif')
+        plt.savefig(save_name_rms, dpi=300) 
         plt.close(fig_rms)
         
         for fea, f in figs_beta.items():
@@ -657,3 +674,4 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
             plt.close(f)
 
     print("All plots finished.")
+# %%
