@@ -566,6 +566,59 @@ if groupsTag == "LexDelay":
     # Plot the spatial locations of original groups of electrodes
     len_d=len(data_LexDelay_Aud.labels[0])
 
+    #Plot the distribution of different Delay electrodes within one brain
+    TypeLabel = f'wholebrain'
+    cols = np.full((len_d, 3), 0.5)
+    cols[list(LexDelay_Auditory_in_Delay_sig_idx), :] = Auditory_col
+    cols[list(LexDelay_Sensorimotor_in_Delay_sig_idx), :] = Sensorimotor_col
+    cols[list(LexDelay_DelayOnly_sig_idx), :] = Delay_col
+    cols[list(LexDelay_Motor_in_Delay_sig_idx), :] = Motor_col
+    cols_lst = cols[list(LexDelay_Auditory_in_Delay_sig_idx | LexDelay_Sensorimotor_in_Delay_sig_idx | LexDelay_DelayOnly_sig_idx | LexDelay_Motor_in_Delay_sig_idx)].tolist()
+    pick_labels = list(data_LexDelay_Aud.labels[0][list(LexDelay_Auditory_in_Delay_sig_idx | LexDelay_Sensorimotor_in_Delay_sig_idx | LexDelay_DelayOnly_sig_idx | LexDelay_Motor_in_Delay_sig_idx)])
+    plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.3, 0.2)
+
+    # Plot the distribution of different Delay electrodes in a pie chart
+    counts = [
+        len(LexDelay_Auditory_in_Delay_sig_idx), 
+        len(LexDelay_Sensorimotor_in_Delay_sig_idx),
+        len(LexDelay_Motor_in_Delay_sig_idx), 
+        len(LexDelay_DelayOnly_sig_idx),
+        len(LexDelay_Delay_sig_idx - (
+            LexDelay_Auditory_in_Delay_sig_idx | 
+            LexDelay_Sensorimotor_in_Delay_sig_idx | 
+            LexDelay_DelayOnly_sig_idx | 
+            LexDelay_Motor_in_Delay_sig_idx
+        ))
+    ]
+    DLREP_SM_inDLREP = np.array(counts)
+
+    labels = ["Auditory vWM", "Sensory-motor vWM", "Motor vWM", "Delay-only", "Others"]
+    colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col, [0.5, 0.5, 0.5]]
+
+    for l, c in zip(labels, DLREP_SM_inDLREP):
+        print(f"{l}: {c}")
+
+    plot_labels = [l.replace(" ", "\n") if l != "Others" else "" for l in labels]
+
+    plt.figure(figsize=(8, 8))
+
+    patches, texts, autotexts = plt.pie(
+        DLREP_SM_inDLREP, 
+        labels=plot_labels, 
+        colors=colors, 
+        startangle=90, 
+        autopct='%1.2f%%',
+        pctdistance=0.5,
+        labeldistance=1.05,
+        wedgeprops={'alpha': 0.75, 'edgecolor': 'w', 'linewidth': 1}
+    )
+
+    for l, a in zip(labels, autotexts):
+        if l == "Others":
+            a.set_text("")
+
+    plt.show()
+
     #Plot the overlapping []+Delay and [] without Delay electrodes
     # Delay & whether they are still Encoding electrodes in NoDelay
     for elec_idx,elec_col in zip((LexDelay_Aud_NoMotor_sig_idx,LexDelay_Sensorimotor_sig_idx,LexDelay_Motor_sig_idx,LexDelay_DelayOnly_sig_idx),
@@ -585,8 +638,8 @@ if groupsTag == "LexDelay":
         elif mode=='without_delay' and len(elec_idx - LexDelay_Delay_sig_idx)>0:
             cols_lst = cols[list(elec_idx - LexDelay_Delay_sig_idx)].tolist()
             pick_labels = list(data_LexDelay_Aud.labels[0][list(elec_idx - LexDelay_Delay_sig_idx)])
-        plot_brain(subjs, pick_labels, cols_lst, 1, os.path.join(fig_save_dir, f'brain1.png'), 0.3,hemi='lh')
-        plot_brain(subjs, pick_labels, cols_lst, 1, os.path.join(fig_save_dir, f'brain2.png'), 0.3,hemi='rh')
+        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain1.png'), 0.3,hemi='lh')
+        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain2.png'), 0.3,hemi='rh')
 
     for roi_idx,roi_idx_tag in zip(
             (LexDelay_Delay_sig_idx,LexDelay_all_sig_idx-LexDelay_Delay_sig_idx,),
@@ -618,64 +671,99 @@ if groupsTag == "LexDelay":
 
         # Waves for Auditory, Delay, Motor_Prep, and Motor electrodes
         # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
-        plt.figure(figsize=(Waveplot_wth*(280/350), Waveplot_hgt))
-        # plt.title('High gamma z-score traces (Stim aligned)',fontsize=20)
-        wav_bsl_corr = True
+        # roi_idx = LexDelay_Delay_sig_idx
+        # roi_idx_tag = 'Delay'
+
+        # --- 1. 缩小全局字体以适应更小的画布 ---
+        plt.rcParams['font.sans-serif'] = ['Arial']
+        plt.rcParams['pdf.fonttype'] = 42
+        plt.rcParams['axes.linewidth'] = 0.6
+        plt.rcParams['font.size'] = 9  # 全局基础字号调小
+
+        wav_bsl_corr_val = True
+        go_resp_bsl = range(631, 650)
+
+        # 时间跨度比例
+        w1, w2 = 1.75, 1.25
+
+        # --- 2. 缩小画布尺寸 (例如改为 6x5 英寸) ---
+        fig = plt.figure(figsize=(6, 5), dpi=300)
+
+        # 设置 GridSpec
+        # 我们需要让第一行图的绘图区宽度与时间跨度一致
+        # 这里通过 width_ratios 稍微微调，确保 ax1 宽度 = ax2 + ax3 的一半以上
+        gs = gridspec.GridSpec(2, 2, height_ratios=[1, 1], width_ratios=[1, 1])
+
+        # --- Row 1: Stimulus Aligned ---
+        # legend 占位稍微缩小到 0.35
+        gs_top = gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=gs[0, :], width_ratios=[w1, 0.45])
+        ax1 = fig.add_subplot(gs_top[0])
+
+        # 绘图逻辑保持不变
         plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_NoMotor_sig_idx & roi_idx, f'Auditory vWM n={len(LexDelay_Aud_NoMotor_sig_idx & roi_idx)}',
-                  Auditory_col, '-', wav_bsl_corr,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx & roi_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & roi_idx)}',Delay_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Aud,LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensory-motor vWM n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',Sensorimotor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx & roi_idx, f'Motor vWM n={len(LexDelay_Motor_sig_idx & roi_idx)}', Motor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plt.axvline(x=0, linestyle='--', color='k')
-        plt.axhline(y=0, linestyle='--', color='gray')
-        plt.legend(loc='upper right',fontsize=15)
-        plt.tick_params(axis='both', labelsize=16)
-        plt.xticks(rotation=45)
-        plt.gca().spines[['top', 'right']].set_visible(False)
-        plt.tight_layout()
-        plt.xlim([-0.5, 2.0])
-        plt.savefig(os.path.join(fig_save_dir,f'LexDelay_sig_zscore_org_cat_Aud_{roi_idx_tag}.tif'),dpi=300)
-        plt.close()
+                Auditory_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx & roi_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & roi_idx)}',
+                Delay_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorymotor vWM n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',
+                Sensorimotor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx & roi_idx, f'Motor vWM n={len(LexDelay_Motor_sig_idx & roi_idx)}',
+                Motor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
 
-        # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to Go onset)
-        plt.figure(figsize=(Waveplot_wth*(100/350), Waveplot_hgt))
-        wav_bsl_corr = range(631,650)
-        plot_wave(epoc_LexDelay_Go, LexDelay_Aud_NoMotor_sig_idx,
-                  f'Auditory_all n={len(LexDelay_Aud_NoMotor_sig_idx & roi_idx)}', Auditory_col, '-', False,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Go, LexDelay_DelayOnly_sig_idx & roi_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & roi_idx)}', Delay_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Go,LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorimotor n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',Sensorimotor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Go, LexDelay_Motor_sig_idx & roi_idx, f'Motor_noAud_all n={len(LexDelay_Motor_sig_idx & roi_idx)}', Motor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plt.axvline(x=0, linestyle='--', color='k')
-        plt.axhline(y=0, linestyle='--', color='gray')
-        # plt.title('(Go aligned)',fontsize=20)
-        plt.legend().set_visible(False)
-        plt.tick_params(axis='both', labelsize=16)
-        plt.xticks(rotation=45)
-        plt.xlim([-0.25,1])
-        plt.gca().spines[['top', 'right']].set_visible(False)
-        plt.tight_layout()
-        plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_org_cat_Go_{roi_idx_tag}.tif'), dpi=300)
-        plt.close()
+        ax1.set_xlim([-0.25, 1.5])
+        # 缩小图例字号
+        ax1.legend(loc='center left', bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=8)
 
-        # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
-        plt.figure(figsize=(Waveplot_wth*(100/350), Waveplot_hgt))
-        wav_bsl_corr = range(631,650)
-        plot_wave(epoc_LexDelay_Resp, LexDelay_Aud_NoMotor_sig_idx & roi_idx,
-                  f'Auditory_all n={len(LexDelay_Aud_NoMotor_sig_idx & roi_idx)}', Auditory_col, '-', False,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_DelayOnly_sig_idx & roi_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & roi_idx)}', Delay_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Resp,LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorimotor n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',Sensorimotor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_sig_idx & roi_idx, f'Motor_noAud_all n={len(LexDelay_Motor_sig_idx & roi_idx)}', Motor_col,'-',wav_bsl_corr,ylim=[-0.2,1.5])
-        plt.axvline(x=0, linestyle='--', color='k')
-        plt.axhline(y=0, linestyle='--', color='gray')
-        # plt.title('(Motor aligned)',fontsize=20)
-        plt.legend().set_visible(False)
-        plt.tick_params(axis='both', labelsize=16)
-        plt.xticks(rotation=45)
-        plt.xlim([-0.25,1])
-        plt.gca().spines[['top', 'right']].set_visible(False)
+        # --- Row 2 Left & Right ---
+        ax2 = fig.add_subplot(gs[1, 0])
+        plot_wave(epoc_LexDelay_Go, LexDelay_Aud_NoMotor_sig_idx & roi_idx, '', Auditory_col, '-', False, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Go, LexDelay_DelayOnly_sig_idx & roi_idx, '', Delay_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Go, LexDelay_Sensorimotor_sig_idx & roi_idx, '', Sensorimotor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Go, LexDelay_Motor_sig_idx & roi_idx, '', Motor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+        ax2.set_xlim([-0.25, 1.0])
+
+        ax3 = fig.add_subplot(gs[1, 1])
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Aud_NoMotor_sig_idx & roi_idx, '', Auditory_col, '-', False, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Resp, LexDelay_DelayOnly_sig_idx & roi_idx, '', Delay_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Sensorimotor_sig_idx & roi_idx, '', Sensorimotor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_sig_idx & roi_idx, '', Motor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+        ax3.set_xlim([-0.25, 1.0])
+
+        # --- 修饰细节 ---
+        for i, ax in enumerate([ax1, ax2, ax3]):
+            ax.spines[['top', 'right']].set_visible(False)
+            # --- 关键：缩小 Offset 距离 ---
+            ax.spines['left'].set_position(('outward', 5)) 
+            ax.spines['bottom'].set_position(('outward', 5))
+            
+            ax.axvline(x=0, linestyle='--', color='#444444', linewidth=0.6, dashes=(5, 5), zorder=0)
+            ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=0.5, zorder=0)
+            
+            # 缩小刻度大小
+            ax.tick_params(axis='both', which='major', labelsize=8, direction='out', length=3, pad=2)
+            ax.set_ylim([-0.2, 1.5])
+            
+            if i > 0:
+                ax.set_xlabel('Time (s)', fontsize=9, labelpad=2)
+            
+            if ax == ax3:
+                ax.set_ylabel('')
+                ax.set_yticklabels([])
+                ax.spines['left'].set_visible(False)
+                ax.tick_params(axis='y', left=False)
+            else:
+                ax.set_ylabel('High-gamma (z-score)', fontsize=9, labelpad=2)
+
+        # 自动对齐 Y 轴标签（防止左右错位）
+        fig.align_ylabels([ax1, ax2])
+
+        # --- 3. 使用 tight_layout 并手动微调边距 ---
         plt.tight_layout()
-        plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_org_cat_Resp_{roi_idx_tag}.tif'), dpi=300)
-        plt.close()
+        # 调整 top/bottom 比例，为顶部的 title 或底部的 label 留出固定空间
+        plt.subplots_adjust(hspace=0.4, wspace=0.2, right=0.85) 
+
+        plt.show()
+        # plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_org_cat_Resp_{roi_idx_tag}.tif'), dpi=300)
+        # plt.close()
 
     ## Plot Hikcok's ROI and traces:
 
