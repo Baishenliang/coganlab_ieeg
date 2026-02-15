@@ -226,7 +226,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         case '_huge':
             unified_y_scale = 2   # [请调节] _huge
         case '':
-            unified_y_scale = 0.6   # [请调节] 默认值 (类似 else)
+            unified_y_scale = 0.3   # [请调节] 默认值 (类似 else)
 
     # --- 定义所有要画的电极组 (使用统一的 Scale) ---
     all_elec_configs = [
@@ -609,7 +609,6 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                                 s_time = time_points_plot[clus[0]]
                                 e_time = time_points_plot[clus[-1]]
                                 sig_y = fea_plot_yscale - (0.05 * fea_plot_yscale * j_sig)
-                                sig_y = fea_plot_yscale * (1.02 + 0.05 * j_sig)
                                 ax_r.plot([s_time, e_time], [sig_y, sig_y],
                                         color=color, alpha=0.6, 
                                         label=plot_label if i == 0 else None,
@@ -641,7 +640,6 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                     ax_r.set_xlabel("Time (s)", fontsize=14, fontweight='medium', labelpad=10)
                     ax_r.set_xlim(xlim_align)
                     ax_r.set_ylim(-0.05 * fea_plot_yscale, fea_plot_yscale * 1.1)
-                    ax_r.set_ylim(-0.05 * fea_plot_yscale, fea_plot_yscale * 1.25)
                     ax_r.set_title(elec_grp, fontsize=16, fontweight='bold', pad=20)
 
         # --- 全局图例与保存设置 ---
