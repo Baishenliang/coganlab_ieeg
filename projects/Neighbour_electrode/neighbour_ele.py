@@ -79,13 +79,13 @@ data_LexDelay_Aud,subjs=gp.load_stats('mask','Auditory_inRep','ave',stats_root_d
 
 #Get electrodes in hickok SM ROIs
 ch_labels_roi,ch_labels=gp.chs2atlas(subjs,data_LexDelay_Aud.labels[0])
-hickok_roi_sets={'All':set(),'lIFG':set(),'lIPL':set(),'Spt':set(),'lPMC':set()}
+hickok_roi_sets={'All':set(),'lIFG':set(),'lIPL':set(),'Spt':set(),'lPMC':set(),'Wgw_a55b':set(),'Wgw_p55b':set()}
 
 chs=data_LexDelay_Aud.labels[0]
 # Load coordinates
 chs_coor=gp.get_coor(chs,get_coord_method)
 hickok_roi_labels=gp.hickok_roi_sphere(chs_coor)
-for i,item in enumerate(hickok_roi_labels.values()):
+for i,item in enumerate(hickok_roi_labels[0].values()):
     hickok_roi_sets['All'].add(i)
     if item!='N/A':
         hickok_roi_sets[item].add(i)
@@ -93,18 +93,20 @@ for i,item in enumerate(hickok_roi_labels.values()):
 with open(os.path.join('data', f'Lex_twin_idxes_{datasource}.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
 
-for roi in ['All','lIFG','lIPL','Spt','lPMC']:
-    #%% get Auditory, Sensory-motor, and Motor electrodes
-    chs_coor['Auditory']=chs_coor.index.isin(LexDelay_twin_idxes['LexDelay_Aud_NoMotor_sig_idx'] & hickok_roi_sets[roi]).astype(int)
-    chs_coor['Sensory-motor']=chs_coor.index.isin(LexDelay_twin_idxes['LexDelay_Sensorimotor_sig_idx'] & hickok_roi_sets[roi]).astype(int)
-    chs_coor['Motor']=chs_coor.index.isin(LexDelay_twin_idxes['LexDelay_Motor_sig_idx'] & hickok_roi_sets[roi]).astype(int)
+#for roi in ['All','lIFG','lIPL','Spt','lPMC']:
+for roi in ['All',]:
+
+    #% get Auditory, Sensory-motor, and Motor electrodes
+    chs_coor['Auditory']=chs_coor.index.isin(LexDelay_twin_idxes['LexDelay_Auditory_in_Delay_sig_idx'] & hickok_roi_sets[roi]).astype(int)
+    chs_coor['Sensory-motor']=chs_coor.index.isin(LexDelay_twin_idxes['LexDelay_Sensorimotor_in_Delay_sig_idx'] & hickok_roi_sets[roi]).astype(int)
+    chs_coor['Motor']=chs_coor.index.isin(LexDelay_twin_idxes['LexDelay_Motor_in_Delay_sig_idx'] & hickok_roi_sets[roi]).astype(int)
     # clean electrodes
     chs_coor_c = chs_coor[
         (chs_coor[['Auditory', 'Sensory-motor', 'Motor']].sum(axis=1)) > 0].reset_index(drop=True)
     # recode
     chs_coor_c = label_electrode_type(chs_coor_c)
 
-    #%% get neighbour profile:
+    #% get neighbour profile:
     dist_thres=15 #mm
     def euclidean_distance(row1, row2):
         return np.sqrt((row1['x'] - row2['x']) ** 2 + (row1['y'] - row2['y']) ** 2 + (row1['z'] - row2['z']) ** 2)
@@ -145,21 +147,22 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
             chs_coor_c.at[index, 'Neib_Motor'] = neigh_func(
                 distance_df[(distance_df['distance'] <= dist_thres) & (distance_df['type'] == 'Motor')])
 
-    #%% plot neighbouring
+    #% plot neighbouring
     #change data to long format
     hue_order = ['Neib_Auditory', 'Neib_SM', 'Neib_Motor']
     chs_coor_c['subj_label'] = chs_coor_c['subj'] + '-' + chs_coor_c['label']
     chs_coor_c_l = chs_coor_c.melt(id_vars=['subj_label', 'type'], value_vars=hue_order,
                                   var_name='neighbor_type', value_name='count')
     #plot
-    plt.figure(figsize=(8 * cm, 11 * cm))
+    plt.figure(figsize=(8 * cm, 8 * cm))
 
     boxplot_colors= [Auditory_col, Auditory_col, Auditory_col, Sensorimotor_col, Sensorimotor_col, Sensorimotor_col,Motor_col,Motor_col,Motor_col]
     stripplot_colors = [Auditory_col, Sensorimotor_col, Motor_col, Auditory_col, Sensorimotor_col, Motor_col,Auditory_col, Sensorimotor_col, Motor_col]
 
     if mode=='count':
         ytitles = ['No. Electrodes']
-        subtitles = [f'Neighboring Electrodes for Elec. in {roi}']
+        #subtitles = [f'Neighboring Electrodes for Elec. in {roi}']
+        subtitles = [f'Neighboring Electrodes for each Elec.']
     elif mode=='dist':
         ytitles = ['Distance (mm)']
         subtitles = [f'Distance of Neighboring Elec. for Elec. in {roi}']
@@ -171,8 +174,8 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
             y_limits = [(-0.1, 25)]  # Specify different y-axis limits for each subplot
             y_ticks = [range(0, 26, 5)]
         elif get_coord_method == 'group':
-            y_limits = [(-0.1, 105)]
-            y_ticks = [range(0, 106, 10)]
+            y_limits = [(-0.1, 60)]
+            y_ticks = [range(0, 60, 10)]
     elif mode=='count':
         if get_coord_method == 'individual':
             y_limits = [(-0.1, 6)]
@@ -232,7 +235,7 @@ for roi in ['All','lIFG','lIPL','Spt','lPMC']:
         plt.ylabel(ytitles[i - 1], y=gp.bsliang_align_yaxis(y_limits[i - 1], y_ticks[i - 1]))
         plt.ylim(y_limits[i - 1])
         plt.yticks(y_ticks[i - 1])
-        plt.title(subtitles[i - 1], y=1.4)
+        plt.title(subtitles[i - 1], y=1.2)
         plt.gca().tick_params(axis='x', direction='in', length=0, labelrotation=45)
         plt.gca().tick_params(axis='y', direction='in', length=2)
         plt.gca().get_legend().remove()
