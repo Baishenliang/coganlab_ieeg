@@ -72,6 +72,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
     clean_root_readdata = stats_root_readdata.replace('stats', 'clean')
 
     for i, subject in enumerate(subjs):
+        print(f"Loading stats for subject {subject} ({i+1}/{len(subjs)})...")
 
         subj_gamma_stats_dir = os.path.join(stats_root_readdata, subject)
 
@@ -1178,7 +1179,8 @@ def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f='x', dotsize=0.3,
     else:
         show=True
     fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi=hemi,
-                            label_every=label_every, size=dotsize,transparency=transparency, show=show,**kwargs)
+                            label_every=label_every,
+                            size=dotsize,transparency=transparency, show=show,**kwargs)
     if save_img:
         fig3d.save_image(fig_save_dir_f)
         fig3d.close()
