@@ -53,7 +53,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-from utils.group import get_roi_subj_matrix,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient
+from utils.group import generate_neuro_publication_plot,get_roi_subj_matrix,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient
 import matplotlib.pyplot as plt
 import projects.GLM.glm_utils as glm
 
@@ -724,6 +724,44 @@ if groupsTag == "LexDelay":
         plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain1.png'), 0.3,0.2,hemi='lh')
         plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain2.png'), 0.3,0.2,hemi='rh')
 
+    # Reassigning electrode indices by conditions for plotting (ROIS)
+    import collections
+    # Initialize the master dictionary
+    elec_roi = {}
+    # Iterate through Subgroups with new names
+    for roi_idx, roi_idx_tag in zip(
+            (LexDelay_Delay_sig_idx, LexDelay_all_sig_idx - LexDelay_Delay_sig_idx),
+            ('vWM', 'no_vWM',)): # Renamed from 'Delay' and 'Without_Delay'
+
+        for TypeLabel, sig in zip(
+                ('Auditory', 'Delay_only', 'Sensory-motor', 'Motor'), # TypeLabel also updated for consistency
+                (LexDelay_Aud_NoMotor_sig_idx & roi_idx,
+                LexDelay_DelayOnly_sig_idx & roi_idx,
+                LexDelay_Sensorimotor_sig_idx & roi_idx,
+                LexDelay_Motor_sig_idx & roi_idx)):
+            
+            # Skip the logically empty group
+            if roi_idx_tag == 'no_vWM' and TypeLabel == 'vWM': 
+                continue
+            
+            # Get electrode labels for the current selection
+            chs_sel = data_LexDelay_Aud.labels[0][list(sig)].tolist()
+            
+            if TypeLabel not in elec_roi:
+                elec_roi[TypeLabel] = {}
+            
+            # 1. Count ALL anatomical ROIs for this subgroup
+            temp_counts = collections.Counter([ch_labels_roi.get(ch, 'unknown') for ch in chs_sel])
+            
+            # 2. Identify the local Top 4
+            top4_rois = [r for r, count in temp_counts.most_common(4)]
+            
+            # 3. Save the counts only for the Top 4 (will be unified during plotting)
+            elec_roi[TypeLabel][roi_idx_tag] = {roi: temp_counts[roi] for roi in top4_rois}
+
+    generate_neuro_publication_plot(elec_roi)
+    plt.show()
+
     for roi_idx,roi_idx_tag in zip(
             (LexDelay_Delay_sig_idx,LexDelay_all_sig_idx-LexDelay_Delay_sig_idx,),
             ('Delay','Without_Delay',)):
@@ -739,6 +777,7 @@ if groupsTag == "LexDelay":
         ):
             if roi_idx_tag=='Without_Delay' and TypeLabel=='Delay':
                 continue
+            
             chs_sel = data_LexDelay_Aud.labels[0][list(sig)].tolist()
             cols = [col for i in range(0, len(sig))]
             plot_brain(subjs, chs_sel, cols, None, dotsize=0.3,
