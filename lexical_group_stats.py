@@ -3,9 +3,9 @@ from pickle import FALSE
 from matplotlib_venn import venn3
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
+#groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -244,12 +244,14 @@ if "LexNoDelay" in groupsTag:
 
     # (Auditory)
     data_LexNoDelay_Aud_sorted,_,_,LexNoDelay_Aud_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud,epoc_LexNoDelay_Aud, cluster_twin,[0,mean_word_len+auditory_decay])
+    _,_,_,LexNoDelay_Aud_narraw_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Aud,epoc_LexNoDelay_Aud, cluster_twin,[0,100])
 
     # (Motor prepare)
     data_LexNoDelay_Motor_Prep_sorted,_,_,LexNoDelay_Motor_Prep_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_prep_win)
 
     # (Motor response)
     data_LexNoDelay_Motor_Resp_sorted,_,_,LexNoDelay_Motor_Resp_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, motor_resp_win)
+    _,_,_,LexNoDelay_Motor_narraw_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, [0,100])
 
     # (NoDelay Silence trials Whole win: Encoding)
     # data_LexNoDelay_Silence_Encode_sorted,_,_,LexNoDelay_Silence_Encode_sig_idx,*_ = sort_chs_by_actonset(data_LexNoDelay_Silence_Aud,epoc_LexNoDelay_Silence_Aud, cluster_twin,[0,mean_word_len+auditory_decay])
@@ -285,6 +287,8 @@ if "LexNoDelay" in groupsTag:
     Lex_idxes['LexNoDelay_Motor_sig_idx'] = LexNoDelay_Motor_sig_idx
     Lex_idxes['LexNoDelay_Aud_sig_idx'] = LexNoDelay_Aud_sig_idx
     Lex_idxes['LexNoDelay_Motor_Resp_sig_idx'] = LexNoDelay_Motor_Resp_sig_idx
+    Lex_idxes['LexNoDelay_Motor_narraw_sig_idx'] = LexNoDelay_Motor_narraw_sig_idx
+    Lex_idxes['LexNoDelay_Aud_narraw_sig_idx'] = LexNoDelay_Aud_narraw_sig_idx
     # Lex_idxes['LexNoDelay_Silence_Encode_sig_idx'] = LexNoDelay_Silence_Encode_sig_idx
     # Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx'] = LexNoDelay_Silence_Encode_Only_sig_idx
     # Lex_idxes['LexNoDelay_Silence_Del_sig_idx'] = LexNoDelay_Silence_Del_sig_idx
@@ -1847,6 +1851,95 @@ elif groupsTag == "LexNoDelay":
 
 elif groupsTag=="LexDelay&LexNoDelay":
 
+    # New wave plot for LexDelay categories in NoDelay tasks
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
+
+    # --- 全局参数设置 ---
+    plt.rcParams['font.sans-serif'] = ['Arial']
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['axes.linewidth'] = 0.6
+    plt.rcParams['font.size'] = 9
+
+    wav_bsl_corr_val = True
+    go_resp_bsl = range(281, 300)
+
+    # 调整画布比例，一行两列通常使用更宽的 figsize
+    fig = plt.figure(figsize=(8, 3), dpi=300)
+
+    # 创建一行两列的布局，wspace 设小一点让图表靠近
+    gs = gridspec.GridSpec(1, 2, width_ratios=[1.75, 1], wspace=0.1)
+
+    # --- ax1: Stimulus-locked ---
+    ax1 = fig.add_subplot(gs[0])
+
+    # 注意：这里使用了你重命名后的变量名 vWM
+    plot_wave(epoc_LexNoDelay_Aud, LexDelay_Aud_NoMotor_sig_idx & LexDelay_Delay_sig_idx, 
+            f'Auditory vWM n={len(LexDelay_Aud_NoMotor_sig_idx & LexDelay_Delay_sig_idx)}',
+            Auditory_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+    plot_wave(epoc_LexNoDelay_Aud, LexDelay_DelayOnly_sig_idx & LexDelay_Delay_sig_idx, 
+            f'Delay only n={len(LexDelay_DelayOnly_sig_idx & LexDelay_Delay_sig_idx)}',
+            Delay_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+    plot_wave(epoc_LexNoDelay_Aud, LexDelay_Sensorimotor_sig_idx & LexDelay_Delay_sig_idx, 
+            f'Sensorymotor vWM n={len(LexDelay_Sensorimotor_sig_idx & LexDelay_Delay_sig_idx)}',
+            Sensorimotor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+    plot_wave(epoc_LexNoDelay_Aud, LexDelay_Motor_sig_idx & LexDelay_Delay_sig_idx, 
+            f'Motor vWM n={len(LexDelay_Motor_sig_idx & LexDelay_Delay_sig_idx)}',
+            Motor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+
+    ax1.set_xlim([-0.25, 1.5])
+    ax1.set_xlabel('Time (s)', fontsize=9, labelpad=2)
+
+    # --- ax3: Response-locked ---
+    ax3 = fig.add_subplot(gs[1])
+
+    plot_wave(epoc_LexNoDelay_Resp, LexDelay_Aud_NoMotor_sig_idx & LexDelay_Delay_sig_idx, '', Auditory_col, '-', False, ylim=[-0.2, 1.5])
+    plot_wave(epoc_LexNoDelay_Resp, LexDelay_DelayOnly_sig_idx & LexDelay_Delay_sig_idx, '', Delay_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+    plot_wave(epoc_LexNoDelay_Resp, LexDelay_Sensorimotor_sig_idx & LexDelay_Delay_sig_idx, '', Sensorimotor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+    plot_wave(epoc_LexNoDelay_Resp, LexDelay_Motor_sig_idx & LexDelay_Delay_sig_idx, '', Motor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+
+    ax3.set_xlim([-0.25, 1.0])
+    ax3.set_xlabel('Time (s)', fontsize=9, labelpad=2)
+
+    # --- 修饰细节 ---
+    for i, ax in enumerate([ax1, ax3]):
+        ax.spines[['top', 'right']].set_visible(False)
+        
+        # 缩小 Offset 距离
+        ax.spines['left'].set_position(('outward', 5)) 
+        ax.spines['bottom'].set_position(('outward', 5))
+        
+        # 辅助线
+        ax.axvline(x=0, linestyle='--', color='#444444', linewidth=0.6, dashes=(5, 5), zorder=0)
+        ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=0.5, zorder=0)
+        
+        # 刻度参数
+        ax.tick_params(axis='both', which='major', labelsize=8, direction='out', length=3, pad=2)
+        ax.set_ylim([-0.2, 1])
+        
+        if ax == ax3:
+            # 隐藏右侧图的 Y 轴
+            ax.set_ylabel('')
+            ax.set_yticklabels([])
+            ax.spines['left'].set_visible(False)
+            ax.tick_params(axis='y', left=False)
+        else:
+            ax.set_ylabel('High-gamma (z-score)', fontsize=9, labelpad=2)
+
+    # 在 plt.show() 之前添加
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, 
+           loc='upper right', 
+           bbox_to_anchor=(0.98, 0.95), 
+           frameon=False, 
+           fontsize=8)
+
+    # 记得调整 subplots_adjust 给右侧留出足够空间
+    plt.subplots_adjust(left=0.1, right=0.82, bottom=0.2, top=0.9, wspace=0.1)
+
+    plt.show()
+
+    # Old confusion matrix code for overlap between Delay and NoDelay significant electrodes in Lexical tasks
     tag1='DL'
     tag2='NDL'
     del_aud = Lex_idxes['LexDelay_Aud_NoMotor_sig_idx']
