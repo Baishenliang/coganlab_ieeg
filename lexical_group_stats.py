@@ -619,11 +619,94 @@ if groupsTag == "LexDelay":
 
     plt.show()
 
+
+    # Plot the distribution of different Delay electrodes in a surf plot
+    import nibabel as nib
+    from scipy import stats
+    from nilearn import plotting, datasets, surface
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap 
+    from IPython.display import display as ipy_display
+
+    # --- 核心修改：调整颜色节点的辅助函数 ---
+    def make_narrow_custom_cmap(rgb_list, name="narrow_custom"):
+        """
+        通过设置节点，使前 95% 的数值映射为底色（白色），
+        仅在最后 5% 显示目标颜色的渐变。
+        """
+        # 颜色序列：底色 (白色), 底色 (白色), 目标颜色 (RGB)
+        colors = [[1, 1, 1], [1, 1, 1], rgb_list]
+        # 对应位置：0 (起点), 0.95 (渐变起点), 1.0 (终点)
+        nodes = [0.0, 0.05, 1.0]
+        return LinearSegmentedColormap.from_list(name, list(zip(nodes, colors)), N=256)
+
+    def get_density_niimg(chs_coor, target_indices, bandwidth=8.0):
+        """计算 3D 空间概率密度并生成 Nifti 对象"""
+        target_df = chs_coor.iloc[list(target_indices)]
+        target_coords = target_df[['x', 'y', 'z']].values
+        
+        if len(target_coords) < 3:
+            return None
+
+        res = 2 
+        x_range, y_range, z_range = slice(-70, 71, res), slice(-100, 71, res), slice(-60, 81, res)
+        x_grid, y_grid, z_grid = np.mgrid[x_range, y_range, z_range]
+        grid_coords = np.vstack([x_grid.ravel(), y_grid.ravel(), z_grid.ravel()])
+        
+        kernel = stats.gaussian_kde(target_coords.T)
+        kernel.set_bandwidth(bw_method=bandwidth / np.std(target_coords))
+        density = kernel(grid_coords).reshape(x_grid.shape)
+        
+        affine = np.eye(4)
+        affine[0, 0], affine[1, 1], affine[2, 2] = res, res, res
+        affine[:3, 3] = [-70, -100, -60] 
+        return nib.Nifti1Image(density, affine)
+
+    # --- 交互式吹胀皮层视图逻辑 ---
+
+    # 1. 准备数据组 (使用你定义的变量)
+    groups_to_plot = ['Auditory', 'Sensorimotor', 'Motor', 'DelayOnly']
+    groups = {
+        'Auditory': {'idx': LexDelay_Auditory_in_Delay_sig_idx, 'rgb': Auditory_col},
+        'Sensorimotor': {'idx': LexDelay_Sensorimotor_in_Delay_sig_idx, 'rgb': Sensorimotor_col},
+        'Motor': {'idx': LexDelay_Motor_in_Delay_sig_idx, 'rgb': Motor_col},
+        'DelayOnly': {'idx': LexDelay_DelayOnly_sig_idx, 'rgb': Delay_col}
+    }
+
+    # 2. 循环生成交互式视图
+    for name in groups_to_plot:
+        cfg = groups[name]
+        ni_img = get_density_niimg(chs_coor, cfg['idx'], bandwidth=8.0)
+        
+        if ni_img:
+            print(f"Generating Narrow-Range Inflated View: {name}")
+            
+            # 使用量程压缩后的自定义 Colormap
+            custom_cmap = make_narrow_custom_cmap(cfg['rgb'], name=name)
+            
+            # 动态获取最大值以对齐色带
+            data = ni_img.get_fdata()
+            vmax_val = np.nanmax(data)
+            
+            view = plotting.view_img_on_surf(
+                ni_img, 
+                threshold='95%',       # 物理截断：过滤掉 95% 以下的低密度背景
+                vmax=vmax_val,         # 锁定上限
+                surf_mesh='fsaverage', 
+                vol_to_surf_kwargs={'n_samples': 15, 'radius': 1.5},
+                cmap=custom_cmap,      
+                symmetric_cmap=False,
+                #title=f"Density (Top 5% Range): {name}",
+                colorbar=False          # 建议开启以直观查看压缩效果
+            )
+            
+            ipy_display(view)
+
     #Plot the overlapping []+Delay and [] without Delay electrodes
     # Delay & whether they are still Encoding electrodes in NoDelay
     for elec_idx,elec_col in zip((LexDelay_Aud_NoMotor_sig_idx,LexDelay_Sensorimotor_sig_idx,LexDelay_Motor_sig_idx,LexDelay_DelayOnly_sig_idx),
                                  (Auditory_col,Sensorimotor_col,Motor_col,Delay_col)):
-        mode='all' #'all','with delay', 'without_delay'
+        mode='with_delay' #'all','with delay', 'without_delay'
         cols = np.full((len_d, 3), 0.5)
         cols[list(elec_idx & LexDelay_Delay_sig_idx), :] = elec_col
         if len(elec_idx - LexDelay_Delay_sig_idx)>0:
@@ -638,8 +721,8 @@ if groupsTag == "LexDelay":
         elif mode=='without_delay' and len(elec_idx - LexDelay_Delay_sig_idx)>0:
             cols_lst = cols[list(elec_idx - LexDelay_Delay_sig_idx)].tolist()
             pick_labels = list(data_LexDelay_Aud.labels[0][list(elec_idx - LexDelay_Delay_sig_idx)])
-        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain1.png'), 0.3,hemi='lh')
-        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain2.png'), 0.3,hemi='rh')
+        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain1.png'), 0.3,0.2,hemi='lh')
+        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain2.png'), 0.3,0.2,hemi='rh')
 
     for roi_idx,roi_idx_tag in zip(
             (LexDelay_Delay_sig_idx,LexDelay_all_sig_idx-LexDelay_Delay_sig_idx,),
