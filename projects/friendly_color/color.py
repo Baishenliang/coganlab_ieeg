@@ -3,12 +3,19 @@
 import glasbey
 import seaborn as sns
 
-from matplotlib.colors import to_rgb  # 将 hex/命名色 转为 [0,1] RGB
+from matplotlib.colors import to_hex, to_rgb  # 将 hex/命名色 转为 [0,1] RGB
 
 sns.set()
-palette = glasbey.create_palette(palette_size=5, colorblind_safe=True, cvd_severity=100, optimize_palette_search_radius=50)
+palette = glasbey.create_palette(palette_size=13, colorblind_safe=True, cvd_severity=100, optimize_palette_search_radius=50)
 sns.palplot(palette)
 
+print("Copy and paste this into your script:")
+print("colors = [")
+for i, c in enumerate(palette):
+    # 使用 to_hex 确保格式统一，并加上缩进
+    comma = "," if i < len(palette) - 1 else ""
+    print(f"    '{to_hex(c).upper()}'{comma}")
+print("]")
 
 # 2) 输出 RGB 值
 # 转为 [0,1] 浮点 RGB
