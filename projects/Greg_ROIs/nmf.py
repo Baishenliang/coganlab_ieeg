@@ -313,13 +313,10 @@ H = model.components_
 # --- 3. Plotting: Weighted Average Traces of Top 50% Electrodes ---
 import matplotlib.ticker as ticker
 
-# 确保使用原始信号进行绘图 (如果 X 被 shift 过，这里最好用原始的 final_array)
-# 假设 final_array 是 (n_channels, n_timepoints)
 signal_data = final_array 
 
 plt.figure(figsize=(12, 4))
 
-# 颜色定义 (保持不变)
 MotorPrep_col = [1.0, 0.0784, 0.5765] 
 Sensorimotor_col = [1, 0, 0]  
 Auditory_col = [0, 1, 0]  
@@ -337,58 +334,14 @@ colors = [
     '#8c564b'  
 ]
 colors_trace = [[1,0,0],[0,1,0],[1,165/255,0]] #Spt
-#colors_trace = [[1,0,0],[1,165/255,0]] #lPMC
-# colors_trace = [[191/255,191/255,191/255],[0,0,0],[127/255,127/255,127/255]] #lIFG
-
-# comp_names 需要在外面定义好，或者根据 n_components 生成
 comp_names = ['Auditory_continuous', 'Auditory_motor', 'Auditory_onset'] #Spt
-#comp_names = ['Auditory_continuous', 'Auditory_onset'] #PMC
-# comp_names = ['delay pre-articulation','articulation','both delay and articulation'] #lIFG
-# ==============================================================================
-# 1. 配置区域：在这里手动指定“名字-颜色”和“NMF索引-名字”的对应关系
-# ==============================================================================
 
-# --- A. 颜色配置 (请根据当前是 Spt, lPMC 还是 lIFG 选择解注) ---
-
-# [配置 1: lPMC] (Continuous=红, Onset=橙)
-# color_map = {
-#     'Auditory_continuous': [1, 0, 0],       # Red
-#     'Auditory_onset':      [1, 165/255, 0]  # Orange
-# }
-
-# [配置 2: Spt] (Motor=红, Onset=绿, Continuous=橙)
 color_map = {
     'Auditory_continuous':      [1, 0, 0],       # Red
     'Auditory_motor':      [0, 1, 0],       # Green
     'Auditory_onset': [1, 165/255, 0]  # Orange
 }
 
-# [配置 3: lIFG] (Delay=浅灰, Articulation=黑, Both=深灰) <--- 当前生效
-# color_map = {
-#     'delay pre-articulation':      [191/255, 191/255, 191/255], # Light Gray
-#     'articulation':                [0, 0, 0],                   # Black
-#     'both delay and articulation': [127/255, 127/255, 127/255]  # Dark Gray
-# }
-
-
-# --- B. 身份绑定 (CRITICAL STEP!) ---
-# 跑完 NMF 后，看一眼 W 或 H，确认 Component 0, 1, 2 分别是谁，然后修改这里。
-# Key 是 NMF 的 index, Value 必须是上面 color_map 里定义的 key
-
-# lIFG 配置示例 (请根据您的 NMF 实际结果修改 0, 1, 2 的对应关系!)
-# nmf_identity = {
-#     0: 'both delay and articulation', 
-#     1: 'delay pre-articulation',       
-#     2: 'articulation'            
-# }
-
-# (备用：lPMC 配置)
-# nmf_identity = {
-#     0: 'Auditory_continuous',
-#     1: 'Auditory_onset'
-# }
-
-# (Spt 配置)
 nmf_identity = {
     1: 'Auditory_motor',
     2: 'Auditory_onset',
@@ -396,65 +349,41 @@ nmf_identity = {
 }
 
 
-# --- C. 图例顺序 ---
-# 列表里的名字顺序决定了画图和图例的顺序 (谁在前面谁就在图例上面)
-
-# [lIFG 顺序]
-# legend_order = ['delay pre-articulation', 'articulation', 'both delay and articulation']
-
-# [lPMC / Spt 顺序 (备用)]
 legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
 
 
-# ==============================================================================
-# 2. 绘图循环 (已修改为按“名字”循环，而非按 Index 循环)
-# ==============================================================================
-
-# 筛选出当前任务中实际存在的名字进行循环
 active_names = [name for name in legend_order if name in nmf_identity.values()]
 
 for name in active_names:
     
-    # 1. 反向查找：找到该名字对应的 NMF Index
-    # (通过 Value 找 Key)
     target_indices = [k for k, v in nmf_identity.items() if v == name]
-    if not target_indices: continue #以防万一
+    if not target_indices: continue
     i = target_indices[0] 
     
-    # --- 以下逻辑保持您原本的处理流程 ---
-
-    # 2. 获取当前 Component 的权重
     component_weights = W[:, i]
     
-    # 3. 确定 Top 25% 的阈值 (75th percentile)
     threshold = np.percentile(component_weights, 75)
     
-    # 4. 找出符合条件的电极索引
     top_indices = np.where(component_weights >= threshold)[0]
     
     if len(top_indices) == 0:
         continue
 
-    # 5. 提取原始信号和权重
     selected_signals = signal_data[top_indices, :]  
     raw_weights = component_weights[top_indices]    
     
-    # 6. 权重归一化 (Normalization)
     weight_sum = np.sum(raw_weights)
     if weight_sum > 0:
         norm_weights = raw_weights / weight_sum
     else:
         norm_weights = np.ones_like(raw_weights) / len(raw_weights)
     
-    # 7. 计算加权平均 (Weighted Mean)
     weighted_mean = np.sum(selected_signals * norm_weights[:, np.newaxis], axis=0)
     
-    # 8. 计算加权标准误 (Weighted SEM)
     weighted_variance = np.sum(norm_weights[:, np.newaxis] * (selected_signals - weighted_mean)**2, axis=0)
     weighted_std = np.sqrt(weighted_variance)
     sem = weighted_std / np.sqrt(len(top_indices))
     
-    # 9. 绘图 (使用 color_map 中锁定的颜色)
     color = color_map[name]
     label_text = f"{name} (n={len(top_indices)})"
     
@@ -468,9 +397,8 @@ for idx in minus_point_five_indices:
 
 plt.title('Weighted Average Traces (Top 25% Electrodes per Component)')
 plt.xlabel('Time (s)')
-plt.ylabel('Amplitude (Z-score)') # 或者是 Arbitrary Unit，取决于 final_array 是什么
+plt.ylabel('Amplitude (Z-score)')
 
-# 设置坐标轴格式
 plt.gca().xaxis.set_major_locator(ticker.FixedLocator(tick_indices))
 plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(time_formatter))
 
@@ -481,36 +409,22 @@ plt.gca().spines['right'].set_visible(False)
 plt.tight_layout()
 plt.show()
 
-# --- 4. Generate DataFrame: Electrode Contributions [FIXED] ---
-
-# 1. 根据 nmf_identity 的索引顺序 (0, 1, 2...) 生成正确的列名列表
-# 确保列名与 W 矩阵的列 (0, 1, 2...) 一一对应
 sorted_comp_names = [nmf_identity[i] for i in range(n_components)]
 
-# 2. 使用排好序的名字创建 DataFrame
 df_weights = pd.DataFrame(W, columns=sorted_comp_names)
 
-# 3. 插入电极信息
 df_weights.insert(0, 'Channel', final_chs)
 df_weights.insert(1, 'Group', final_grps)
 
-# 4. 确定 Dominant Component
-# 现在列名是对的，idxmax 也就对了
 df_weights['Dominant_Comp'] = df_weights[sorted_comp_names].idxmax(axis=1)
 
-# --- 以下保存逻辑保持不变 ---
 # Save the new clusters
-# 1. Get the electrode categories from the Dominant_Comp column...
 for category in df_weights['Dominant_Comp'].unique():
-    # 2. transform each category of electrodes...
     category_chs = set(df_weights[df_weights['Dominant_Comp'] == category]['Channel'])
-    # 3. make a index set...
     category_idx = set([i for i, x in enumerate(data_LexDelay_Aud.labels[0]) if x in category_chs])
-    # 4. append the sets...
     LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
 
 if update_dict:
-    # 5. save...
     with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "wb") as f:
         pickle.dump(LexDelay_twin_idxes, f)
 
@@ -518,8 +432,6 @@ if update_dict:
 print("Electrode Weights DataFrame (First 5 rows):")
 print(df_weights.head())
 
-# --- Plot Pie Charts (Logic Updated) ---
-# 注意：这里我们也要用 sorted_comp_names 来画图，确保和 DataFrame 列名一致
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -528,9 +440,7 @@ df_mean_weights = df_weights.groupby('Group')[sorted_comp_names].mean()
 
 # Setup Colors
 groups = df_mean_weights.index
-# 确保颜色字典存在 (如果前面没定义)
 if 'color_dict' not in locals():
-    # 简单的 fallback 颜色
     import matplotlib.cm as cm
     color_dict = dict(zip(groups, cm.tab20.colors[:len(groups)]))
 
@@ -538,7 +448,6 @@ if 'color_dict' not in locals():
 fig, axes = plt.subplots(1, n_components, figsize=(5 * n_components, 6))
 if n_components == 1: axes = [axes]
 
-# 遍历排好序的名字
 for i, col_name in enumerate(sorted_comp_names):
     ax = axes[i]
     
@@ -550,10 +459,9 @@ for i, col_name in enumerate(sorted_comp_names):
         autopct='%1.1f%%', 
         colors=[color_dict.get(g, 'gray') for g in groups], 
         startangle=140,
-        textprops={'fontsize': 14} # 字体改小一点防止重叠
+        textprops={'fontsize': 14}
     )
     
-    # 标题加上对应的功能名
     ax.set_title(f'{col_name}\nMean Weight Distribution', fontsize=14, fontweight='bold')
 
 plt.tight_layout()
@@ -600,54 +508,22 @@ def export_electrode_weights(W, electrode_names=None):
     else:
         df.insert(0, 'Electrode_Idx', range(n_electrodes))
 
-# 3. Determine 'Hard Clustering' (Dominant Component) WITH NORMALIZATION
-    
-    # --- 修改开始 ---
-    # 创建一个临时的 W DataFrame 用于计算
     W_temp = df[comp_cols].copy()
     
-    # 【关键步骤】：列归一化 (Column Normalization)
-    # 将每一列除以该列的最大值。这样每一列的数值范围都是 [0, 1]。
-    # 这代表了："在这个 Component 内部，这个电极排老几？"
-    # 而不是："绝对数值是多少？"
     W_normalized = W_temp / W_temp.max(axis=0)
     
-    # 使用归一化后的矩阵来决定谁是老大
     df['Dominant_Cluster'] = W_normalized.idxmax(axis=1)
     
-    # (可选) 你也可以保留归一化后的值用于检查
-    # df[[f'{c}_Norm' for c in comp_cols]] = W_normalized
-    # --- 修改结束 ---
-
-    # 4. Calculate Relative Weights (这里可以用原始值，也可以用归一化值，看你定义)
-    # 通常计算百分比贡献时，使用原始值 W 是物理意义上正确的（能量贡献占比）。
-    # 但由于 Onset 的 W 虚高，这里的百分比可能也会偏向 Onset。
-    # 如果你想看“功能上的倾向性”，建议也使用 W_normalized 来算百分比。
-    
-    # 方案 A (物理能量占比 - 维持现状):
     row_sums = df[comp_cols].sum(axis=1) + 1e-9 
     
-    # 方案 B (功能倾向占比 - 推荐尝试):
-    # row_sums = W_normalized.sum(axis=1) + 1e-9
-    # 这里的 df[col] 也要改成 W_normalized[col]
-    
     for col in comp_cols:
-        # Create new columns like 'Comp_1_Percent'
         df[f'{col}_Percent'] = df[col] / row_sums
     
-    # 5. Calculate Selectivity (Confidence)
-    # Metric: Ratio of the dominant weight to the total weight sum.
-    # Range: [1/k, 1.0]. Higher values indicate the electrode is exclusive to one cluster.
     df['Selectivity'] = df[comp_cols].max(axis=1) / row_sums
 
     return df
 
 # --- Usage Example ---
-
-# Assuming 'W' is your spatial matrix from model.fit_transform(X)
-# and 'elec_names' is your list of channel labels
-
-# df_weights = export_electrode_weights(W, electrode_names=elec_names)
 
 # View the first few rows
 print(df_weights.head().round(3))
@@ -762,79 +638,49 @@ def plot_individual_traces_by_dominant_comp(epochs_list, epoch_names, df_weights
     Columns: Alignments (Stim, Go, Resp)
     """
     
-    # 1. 确定有哪些 Component (按字母顺序或自定义顺序)
-    # 如果想固定顺序，可以手动指定 comps 列表，例如 ['Auditory_onset', 'Auditory_continuous']
     comps = sorted(df_weights['Dominant_Comp'].unique())
     n_comps = len(comps)
     n_aligns = len(epochs_list)
-    
-    # 2. 准备画布
-    # sharey='row': 同一行的 Y 轴刻度共享，方便横向对比
     fig, axes = plt.subplots(nrows=n_comps, ncols=n_aligns, 
                              figsize=(5 * n_aligns, 3.5 * n_comps), 
                              sharey='row') 
-    
-    # 确保 axes 总是二维数组，防止 n=1 时报错
     if n_comps == 1: axes = np.array([axes])
     if n_aligns == 1: axes = axes.reshape(-1, 1)
-    # 如果只有一行多列，确保形状正确
     if axes.ndim == 1: axes = axes.reshape(n_comps, n_aligns)
 
-    # 3. 循环绘制
     for i, comp_name in enumerate(comps):
         
-        # 获取属于该 Component 的所有电极 ID
         comp_elecs = df_weights[df_weights['Dominant_Comp'] == comp_name]['Channel'].tolist()
         color = colors_dict.get(comp_name, 'k') if colors_dict else 'k'
         
         for j, (epoch, align_name, t_range) in enumerate(zip(epochs_list, epoch_names, time_windows)):
             ax = axes[i, j]
             
-            # --- 数据提取 (适配 MNE/Epochs 对象结构) ---
             try:
-                # 1. 找到时间索引
-                # 假设 epoch.labels[1] 是时间轴
-                # 如果 get_time_indexs 是外部函数，请确保它在上下文中可用
-                # 这里用简单的 np.where 模拟通用逻辑
                 full_times = np.array(epoch.labels[1], dtype=float)
                 t_idx_start = np.abs(full_times - t_range[0]).argmin()
                 t_idx_end = np.abs(full_times - t_range[1]).argmin()
                 
-                # 2. 切片时间 (使用 MNE 风格的 take 或 numpy 切片)
-                # 假设 epoch 是自定义对象，支持 take(indices, axis=1)
-                # 如果是 numpy array (chs, times)，直接切片即可
-                
-                # 这里沿用您之前的逻辑：先切片
                 indices = np.arange(t_idx_start, t_idx_end + 1)
                 sliced_epoch = epoch.take(indices, axis=1)
                 
-                # 3. 获取数据矩阵 (n_channels, n_times_sliced)
                 full_sig = sliced_epoch.__array__()
-                if full_sig.ndim == 3: # 如果是 (n_trials, n_chs, n_times)，做平均
+                if full_sig.ndim == 3:
                     full_sig = np.mean(full_sig, axis=0)
                 
-                # 更新时间轴
                 times = full_times[indices]
                 all_chs = sliced_epoch.labels[0]
                 ch_to_idx = {ch: k for k, ch in enumerate(all_chs)}
                 
-                # 4. 提取目标电极的 Trace
                 valid_traces = []
                 for ch in comp_elecs:
                     if ch in ch_to_idx:
                         valid_traces.append(full_sig[ch_to_idx[ch], :])
                 
-                # --- 绘图 (关键修改) ---
                 if valid_traces:
                     traces_arr = np.array(valid_traces) # (n_elecs, n_times)
                     
-                    # 绘制所有单根曲线
-                    # traces_arr.T 形状变为 (n_times, n_elecs)，matplotlib 会自动按列画多条线
                     ax.plot(times, traces_arr.T, color=color, linewidth=0.8, alpha=0.5)
-                    
-                    # (可选) 如果想叠一条加粗的平均线，解注下面两行
-                    # mean_trace = np.mean(traces_arr, axis=0)
-                    # ax.plot(times, mean_trace, color='k', linewidth=1.5, linestyle='--', alpha=0.8)
                     
                 else:
                     ax.text(0.5, 0.5, 'No Electrodes', ha='center', transform=ax.transAxes)
@@ -843,24 +689,18 @@ def plot_individual_traces_by_dominant_comp(epochs_list, epoch_names, df_weights
                 print(f"Error plotting {comp_name} - {align_name}: {e}")
                 ax.text(0.5, 0.5, 'Data Error', ha='center', transform=ax.transAxes)
 
-            # --- 格式化美化 ---
-            # 标题 (仅第一行)
             if i == 0:
                 ax.set_title(f"{align_name}", fontsize=14, fontweight='bold', pad=15)
             
-            # Y轴标签 (仅第一列，显示类别名和电极数)
             if j == 0:
                 ax.set_ylabel(f"{comp_name}\n(n={len(valid_traces)})", fontsize=12, fontweight='bold', rotation=90)
             
-            # 辅助线
-            ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, alpha=0.8)   # 0点
-            ax.axvline(x=-0.5, color='gray', linestyle='-', linewidth=1, alpha=0.5) # 基线/起始点
+            ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, alpha=0.8)
+            ax.axvline(x=-0.5, color='gray', linestyle='-', linewidth=1, alpha=0.5)
             
-            # 去框
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             
-            # X轴刻度
             ax.xaxis.set_major_locator(ticker.MultipleLocator(0.5)) 
             if i == n_comps - 1:
                 ax.set_xlabel('Time (s)', fontsize=12)
@@ -869,32 +709,16 @@ def plot_individual_traces_by_dominant_comp(epochs_list, epoch_names, df_weights
     plt.show()
 
 
-# ==========================================
-# 使用示例 (Configuration)
-# ==========================================
-
-# 1. 准备数据列表
 epochs_list = [epoc_LexDelayRep_Aud, epoc_LexDelayRep_Go, epoc_LexDelayRep_Resp]
 epoch_names = ['Stimulus Aligned', 'Go Aligned', 'Response Aligned']
-# 定义时间窗：画 -0.5s 到 2.0s
 time_windows = [(-0.5, 2.0), (-0.5, 2.0), (-0.5, 2.0)] 
 
-# 2. 定义颜色 (根据当前分析的脑区解注对应部分)
-
-# --- A. lPMC Configuration ---
-# colors_dict = {
-#     'Auditory_continuous': [1, 0, 0],       # Red
-#     'Auditory_onset':      [1, 165/255, 0]  # Orange
-# }
-
-# --- B. Spt Configuration ---
 colors_dict = {
     'Auditory_motor':      [1, 0, 0],       # Red
     'Auditory_onset':      [0, 1, 0],       # Green
     'Auditory_continuous': [1, 165/255, 0]  # Orange
 }
 
-# 3. 运行
 plot_individual_traces_by_dominant_comp(
     epochs_list, 
     epoch_names, 
@@ -902,18 +726,14 @@ plot_individual_traces_by_dominant_comp(
     time_windows=time_windows, 
     colors_dict=colors_dict
 )
-# %%
-# aud_motor correction
 t_range = [0, 1.5]
 roi_chs=data_LexDelay_Aud.labels[0].tolist()
 if groupsTag=="LexDelay":
     epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=False)
     epoc_LexDelayRep_Resp,_=gp.load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=False)
 
-    # 为r和p值在df_weights中添加新列
     df_weights['r'] = np.nan
     df_weights['p'] = np.nan
-    # 为了高效查找，将'Channel'设置为索引
     df_weights.set_index('Channel', inplace=True)
 
     for roi_ch in roi_chs:
@@ -930,32 +750,25 @@ if groupsTag=="LexDelay":
         Resp_s_e = Resp_s_e.take(get_time_indexs(Resp_s_e.labels[1], t_range[0], t_range[1]), axis=1)
         Resp_s_e_data = Resp_s_e.__array__() # (trials, samples)
 
-        # (1) 分别对这两个数据求所有samples的power之和（省略nan）
         aud_power_sum = np.nansum(Aud_s_e_data, axis=1)
         resp_power_sum = np.nansum(Resp_s_e_data, axis=1)
 
-        # (2) 对求和之后的n_trial的两个vector求出相关系数（省略nan）
-        # 创建一个mask来处理两个vector中可能存在的NaN值
         valid_mask = ~np.isnan(aud_power_sum) & ~np.isnan(resp_power_sum)
         
         aud_valid = aud_power_sum[valid_mask]
         resp_valid = resp_power_sum[valid_mask]
 
-        # 确保有足够的数据点来计算相关性 (至少需要2个点)
         if len(aud_valid) > 1:
             from scipy.stats import pearsonr
             corr, p_value = pearsonr(aud_valid, resp_valid)
             print(f"  Correlation for {roi_ch}: r = {corr:.4f}, p = {p_value:.4f}")
 
-            # 如果电极存在于df_weights中，则存储结果
             if roi_ch in df_weights.index:
                 df_weights.loc[roi_ch, ['r', 'p']] = corr, p_value
 
-    # 重置索引，以便'Channel'变回列
     df_weights.reset_index(inplace=True)
 
 
-# %% 对每个显性成分（Dominant_Comp）的r值进行可视化和统计检验
 import seaborn as sns
 import ptitprince as pt
 from scipy.stats import f_oneway
@@ -965,47 +778,39 @@ import matplotlib.pyplot as plt
 # 1. 数据准备：筛选掉没有r值或p值的行
 df_plot = df_weights.dropna(subset=['r', 'p'])
 
-# 准备顺序
 plot_order = sorted(df_plot['Dominant_Comp'].unique())
-# 准备调色板 (用于云层和小提琴图，保持组的颜色)
 palette_list = [comp_color_map.get(comp, (0.5, 0.5, 0.5)) for comp in plot_order]
 
-# 2. 绘制云雨图
 plt.figure(figsize=(12, 8))
 
-# --- 第一步：绘制云(密度图)和伞(箱线图)，但不画雨(散点) ---
 ax = pt.RainCloud(
     x='Dominant_Comp', 
     y='r', 
     data=df_plot,
     order=plot_order,
     palette=palette_list,
-    bw=0.2,              # 核密度估计带宽
-    width_viol=0.6,      # 小提琴图宽度
-    orient='v',          # 垂直方向
-    point_size=0,        # <--- 关键：设为0以隐藏默认散点，我们要自己画
-    alpha=0.65,          # 设置云层的透明度
-    box_showmeans=True   # 箱线图中显示均值
+    bw=0.2,
+    width_viol=0.6,
+    orient='v',
+    point_size=0,
+    alpha=0.65,
+    box_showmeans=True
 )
 
-# --- 第二步：手动添加“雨”(散点)，根据P值着色 ---
-
-# 2.1 画不显著的点 (p >= 0.05) -> 灰色
 non_sig_data = df_plot[df_plot['p'] >= 0.05]
 sns.stripplot(
     data=non_sig_data,
     x='Dominant_Comp',
     y='r',
     order=plot_order,
-    color='gray',        # 强制灰色
-    alpha=0.5,           # 稍微透明一点
-    jitter=True,         # 抖动以防重叠
+    color='gray',
+    alpha=0.5,
+    jitter=True,
     size=4,
     ax=ax,
-    zorder=1             # 图层顺序
+    zorder=1
 )
 
-# 2.2 画显著的点 (p < 0.05) -> 组别颜色
 sig_data = df_plot[df_plot['p'] < 0.05]
 if not sig_data.empty:
     sns.stripplot(
@@ -1013,30 +818,26 @@ if not sig_data.empty:
         x='Dominant_Comp',
         y='r',
         order=plot_order,
-        hue='Dominant_Comp',    # 基于组别着色
-        palette=comp_color_map, # 使用你的颜色字典
+        hue='Dominant_Comp',
+        palette=comp_color_map,
         jitter=True,
-        size=5,                 # 显著的点稍微大一点点
+        size=5,
         ax=ax,
         zorder=2,
-        legend=False            # 不要图例
+        legend=False
     )
 
-# 3. 调整外观 (去除边框和网格)
 plt.title('Distribution of Correlation Coefficients (r) by Dominant Component', fontsize=16)
 plt.ylabel('Pearson Correlation (r)', fontsize=12)
 plt.xlabel('Dominant Component', fontsize=12)
 
-# 去除上方和右侧的框线 (Spines)
 sns.despine() 
 
-# 确保不显示网格
 plt.grid(False) 
 
 plt.tight_layout()
 plt.show()
 
-# 4. 统计检验 (保持不变)
 print("--- Statistical Analysis of Correlation Coefficients (r) ---")
 groups = df_plot['Dominant_Comp'].unique()
 grouped_data = [df_plot['r'][df_plot['Dominant_Comp'] == g] for g in groups]
