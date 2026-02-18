@@ -3,9 +3,9 @@ from pickle import FALSE
 from matplotlib_venn import venn3
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
+groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -696,12 +696,15 @@ if groupsTag == "LexDelay":
                 ni_img, 
                 threshold='95%',       # 物理截断：过滤掉 95% 以下的低密度背景
                 vmax=vmax_val,         # 锁定上限
+                threshold='95%',
+                vmax=vmax_val,
                 surf_mesh='fsaverage', 
                 vol_to_surf_kwargs={'n_samples': 15, 'radius': 1.5},
                 cmap=custom_cmap,      
                 symmetric_cmap=False,
                 #title=f"Density (Top 5% Range): {name}",
                 colorbar=False          # 建议开启以直观查看压缩效果
+                colorbar=False
             )
             
             ipy_display(view)
@@ -769,6 +772,11 @@ if groupsTag == "LexDelay":
     for roi_idx,roi_idx_tag in zip(
             (LexDelay_Delay_sig_idx,LexDelay_all_sig_idx-LexDelay_Delay_sig_idx,),
             ('Delay','Without_Delay',)):
+        
+        roi_idx = LexDelay_Delay_sig_idx
+        roi_idx_tag = 'Delay'
+        # roi_idx = LexDelay_all_sig_idx-LexDelay_Delay_sig_idx
+        # roi_idx_tag = 'Without_Delay'
 
         for TypeLabel, sig, atlas_hist_ylim,col in zip(
                 ('Auditory', 'Delay', 'Sensory-motor','Motor'),
@@ -792,19 +800,22 @@ if groupsTag == "LexDelay":
             #                ylim=[0,50],is_percentage=True)
             plot_sig_roi_counts(hickok_roi_labels, col, sig, os.path.join(fig_save_dir, f'Hickok ROI histogram {TypeLabel} {roi_idx_tag}.tif'))
 
-        if roi_idx_tag=='Without_Delay':
-            continue
-
         # Waves for Auditory, Delay, Motor_Prep, and Motor electrodes
         # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
-        # roi_idx = LexDelay_Delay_sig_idx
-        # roi_idx_tag = 'Delay'
+
+        if roi_idx_tag == 'Without_Delay':
+            linestyle = '--'
+            wm_tag = 'novWM'
+        else:  # 'Delay'
+            linestyle = '-'
+            wm_tag = 'vWM'
 
         # --- 1. 缩小全局字体以适应更小的画布 ---
         plt.rcParams['font.sans-serif'] = ['Arial']
         plt.rcParams['pdf.fonttype'] = 42
         plt.rcParams['axes.linewidth'] = 0.6
         plt.rcParams['font.size'] = 9  # 全局基础字号调小
+        plt.rcParams['font.size'] = 9
 
         wav_bsl_corr_val = True
         go_resp_bsl = range(631, 650)
@@ -818,6 +829,7 @@ if groupsTag == "LexDelay":
         # 设置 GridSpec
         # 我们需要让第一行图的绘图区宽度与时间跨度一致
         # 这里通过 width_ratios 稍微微调，确保 ax1 宽度 = ax2 + ax3 的一半以上
+        from matplotlib import gridspec
         gs = gridspec.GridSpec(2, 2, height_ratios=[1, 1], width_ratios=[1, 1])
 
         # --- Row 1: Stimulus Aligned ---
@@ -826,14 +838,14 @@ if groupsTag == "LexDelay":
         ax1 = fig.add_subplot(gs_top[0])
 
         # 绘图逻辑保持不变
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_NoMotor_sig_idx & roi_idx, f'Auditory vWM n={len(LexDelay_Aud_NoMotor_sig_idx & roi_idx)}',
-                Auditory_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_NoMotor_sig_idx & roi_idx, f'Auditory {wm_tag} n={len(LexDelay_Aud_NoMotor_sig_idx & roi_idx)}',
+                Auditory_col, linestyle, wav_bsl_corr_val, ylim=[-0.2, 1.5])
         plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx & roi_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & roi_idx)}',
-                Delay_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorymotor vWM n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',
-                Sensorimotor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx & roi_idx, f'Motor vWM n={len(LexDelay_Motor_sig_idx & roi_idx)}',
-                Motor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+                Delay_col, linestyle, wav_bsl_corr_val, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorymotor {wm_tag} n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',
+                Sensorimotor_col, linestyle, wav_bsl_corr_val, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx & roi_idx, f'Motor {wm_tag} n={len(LexDelay_Motor_sig_idx & roi_idx)}',
+                Motor_col, linestyle, wav_bsl_corr_val, ylim=[-0.2, 1.5])
 
         ax1.set_xlim([-0.25, 1.5])
         # 缩小图例字号
@@ -841,17 +853,17 @@ if groupsTag == "LexDelay":
 
         # --- Row 2 Left & Right ---
         ax2 = fig.add_subplot(gs[1, 0])
-        plot_wave(epoc_LexDelay_Go, LexDelay_Aud_NoMotor_sig_idx & roi_idx, '', Auditory_col, '-', False, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Go, LexDelay_DelayOnly_sig_idx & roi_idx, '', Delay_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Go, LexDelay_Sensorimotor_sig_idx & roi_idx, '', Sensorimotor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Go, LexDelay_Motor_sig_idx & roi_idx, '', Motor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Go, LexDelay_Aud_NoMotor_sig_idx & roi_idx, '', Auditory_col, linestyle, False, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Go, LexDelay_DelayOnly_sig_idx & roi_idx, '', Delay_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Go, LexDelay_Sensorimotor_sig_idx & roi_idx, '', Sensorimotor_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Go, LexDelay_Motor_sig_idx & roi_idx, '', Motor_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
         ax2.set_xlim([-0.25, 1.0])
 
         ax3 = fig.add_subplot(gs[1, 1])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_Aud_NoMotor_sig_idx & roi_idx, '', Auditory_col, '-', False, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_DelayOnly_sig_idx & roi_idx, '', Delay_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_Sensorimotor_sig_idx & roi_idx, '', Sensorimotor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_sig_idx & roi_idx, '', Motor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Aud_NoMotor_sig_idx & roi_idx, '', Auditory_col, linestyle, False, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Resp, LexDelay_DelayOnly_sig_idx & roi_idx, '', Delay_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Sensorimotor_sig_idx & roi_idx, '', Sensorimotor_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
+        plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_sig_idx & roi_idx, '', Motor_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
         ax3.set_xlim([-0.25, 1.0])
 
         # --- 修饰细节 ---
@@ -994,8 +1006,10 @@ if groupsTag == "LexDelay":
         y_valid = y[valid_mask]
 
         if len(x_valid) > 2:  # pearsonr 需要至少2个数据点
+        if len(x_valid) > 2:
             corr_coefficient, p_value = pearsonr(x_valid, y_valid)
             df = len(x_valid) - 2  # 自由度
+            df = len(x_valid) - 2
             print(tag)
             print(f"Pearson correlation: r({df}) = {corr_coefficient:.4f}, p = {p_value:.4f}")
             
