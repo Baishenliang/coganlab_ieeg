@@ -663,19 +663,29 @@ if groupsTag == "LexDelay":
         ], dtype=float)
         return ListedColormap(arr)
 
-    def get_nan_mask_99(chs_coor, target_indices, bandwidth=8.0):
+    def get_nan_mask_balanced(chs_coor, target_indices, fixed_bw=0.3):
         target_df = chs_coor.iloc[list(target_indices)]
         target_coords = target_df[['x', 'y', 'z']].values
         if len(target_coords) < 3: return None
+
         res, x_range, y_range, z_range = 2, slice(-70, 71, 2), slice(-100, 71, 2), slice(-60, 81, 2)
         x_grid, y_grid, z_grid = np.mgrid[x_range, y_range, z_range]
         grid_coords = np.vstack([x_grid.ravel(), y_grid.ravel(), z_grid.ravel()])
+
         kernel = stats.gaussian_kde(target_coords.T)
-        kernel.set_bandwidth(bw_method=bandwidth / np.std(target_coords))
+        
+        # 核心修改：使用固定带宽，消除样本数量和分布离散度的影响
+        # 0.3 是一个经验值，你可以根据视觉效果微调（范围通常在 0.1 - 0.5）
+        kernel.set_bandwidth(bw_method=fixed_bw) 
+        
         density = kernel(grid_coords).reshape(x_grid.shape)
         non_zero_vals = density[density > 0]
         if len(non_zero_vals) == 0: return None
-        thresh = np.percentile(non_zero_vals, 95)
+        
+        # 使用相对分位数，确保比较的是各自的“核心区”
+        #thresh = np.percentile(non_zero_vals, 95)
+        # 绝对阈值，适用于固定带宽的情况，你可以根据实际数据微调
+        thresh = 1e-6 
         mask = np.full(density.shape, np.nan, dtype=np.float32)
         mask[density >= thresh] = 1.0 
         return mask
@@ -712,8 +722,8 @@ if groupsTag == "LexDelay":
             idx_novwm = idx_vwm
         base_color = groups[g_name]['rgb']
         
-        m_vwm = get_nan_mask_99(chs_coor, idx_vwm)
-        m_novwm = get_nan_mask_99(chs_coor, idx_novwm)
+        m_vwm = get_nan_mask_balanced(chs_coor, idx_vwm)
+        m_novwm = get_nan_mask_balanced(chs_coor, idx_novwm)
         
         if m_vwm is not None and m_novwm is not None:
             if g_name !='DelayOnly':
