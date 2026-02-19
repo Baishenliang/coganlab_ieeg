@@ -639,9 +639,10 @@ if groupsTag == "LexDelay":
         仅在最后 5% 显示目标颜色的渐变。
         """
         # 颜色序列：底色 (白色), 底色 (白色), 目标颜色 (RGB)
+        #colors = [[1, 1, 1], [1, 1, 1], rgb_list]
         colors = [[1, 1, 1], [1, 1, 1], rgb_list]
         # 对应位置：0 (起点), 0.95 (渐变起点), 1.0 (终点)
-        nodes = [0.0, 0.05, 1.0]
+        nodes = [0.0, 0.02, 1.0]
         return LinearSegmentedColormap.from_list(name, list(zip(nodes, colors)), N=256)
 
     def get_density_niimg(chs_coor, target_indices, bandwidth=8.0):
@@ -677,6 +678,13 @@ if groupsTag == "LexDelay":
         'DelayOnly': {'idx': LexDelay_DelayOnly_sig_idx, 'rgb': Delay_col}
     }
 
+    novWM_sig_idx = LexDelay_all_sig_idx - LexDelay_Delay_sig_idx
+    groups_novWM = {
+        'Auditory': {'idx': LexDelay_Aud_NoMotor_sig_idx & novWM_sig_idx, 'rgb': Auditory_col},
+        'Sensorimotor': {'idx': LexDelay_Sensorimotor_sig_idx & novWM_sig_idx, 'rgb': Sensorimotor_col},
+        'Motor': {'idx': LexDelay_Motor_sig_idx & novWM_sig_idx, 'rgb': Motor_col}
+    }
+
     # 2. 循环生成交互式视图
     for name in groups_to_plot:
         cfg = groups[name]
@@ -696,15 +704,12 @@ if groupsTag == "LexDelay":
                 ni_img, 
                 threshold='95%',       # 物理截断：过滤掉 95% 以下的低密度背景
                 vmax=vmax_val,         # 锁定上限
-                threshold='95%',
-                vmax=vmax_val,
                 surf_mesh='fsaverage', 
                 vol_to_surf_kwargs={'n_samples': 15, 'radius': 1.5},
                 cmap=custom_cmap,      
                 symmetric_cmap=False,
                 #title=f"Density (Top 5% Range): {name}",
                 colorbar=False          # 建议开启以直观查看压缩效果
-                colorbar=False
             )
             
             ipy_display(view)
@@ -1006,7 +1011,6 @@ if groupsTag == "LexDelay":
         y_valid = y[valid_mask]
 
         if len(x_valid) > 2:  # pearsonr 需要至少2个数据点
-        if len(x_valid) > 2:
             corr_coefficient, p_value = pearsonr(x_valid, y_valid)
             df = len(x_valid) - 2  # 自由度
             df = len(x_valid) - 2
