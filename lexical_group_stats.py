@@ -625,49 +625,14 @@ if groupsTag == "LexDelay":
 
 
     # Plot the distribution of different Delay electrodes in a surf plot
+    import numpy as np
     import nibabel as nib
     from scipy import stats
-    from nilearn import plotting, datasets, surface
+    from nilearn import plotting
     import matplotlib.pyplot as plt
-    from matplotlib.colors import LinearSegmentedColormap 
+    from matplotlib.colors import ListedColormap
+    import matplotlib.patches as mpatches
     from IPython.display import display as ipy_display
-
-    # --- 核心修改：调整颜色节点的辅助函数 ---
-    def make_narrow_custom_cmap(rgb_list, name="narrow_custom"):
-        """
-        通过设置节点，使前 95% 的数值映射为底色（白色），
-        仅在最后 5% 显示目标颜色的渐变。
-        """
-        # 颜色序列：底色 (白色), 底色 (白色), 目标颜色 (RGB)
-        #colors = [[1, 1, 1], [1, 1, 1], rgb_list]
-        colors = [[1, 1, 1], [1, 1, 1], rgb_list]
-        # 对应位置：0 (起点), 0.95 (渐变起点), 1.0 (终点)
-        nodes = [0.0, 0.02, 1.0]
-        return LinearSegmentedColormap.from_list(name, list(zip(nodes, colors)), N=256)
-
-    def get_density_niimg(chs_coor, target_indices, bandwidth=8.0):
-        """计算 3D 空间概率密度并生成 Nifti 对象"""
-        target_df = chs_coor.iloc[list(target_indices)]
-        target_coords = target_df[['x', 'y', 'z']].values
-        
-        if len(target_coords) < 3:
-            return None
-
-        res = 2 
-        x_range, y_range, z_range = slice(-70, 71, res), slice(-100, 71, res), slice(-60, 81, res)
-        x_grid, y_grid, z_grid = np.mgrid[x_range, y_range, z_range]
-        grid_coords = np.vstack([x_grid.ravel(), y_grid.ravel(), z_grid.ravel()])
-        
-        kernel = stats.gaussian_kde(target_coords.T)
-        kernel.set_bandwidth(bw_method=bandwidth / np.std(target_coords))
-        density = kernel(grid_coords).reshape(x_grid.shape)
-        
-        affine = np.eye(4)
-        affine[0, 0], affine[1, 1], affine[2, 2] = res, res, res
-        affine[:3, 3] = [-70, -100, -60] 
-        return nib.Nifti1Image(density, affine)
-
-    # --- 交互式吹胀皮层视图逻辑 ---
 
     # 1. 准备数据组 (使用你定义的变量)
     groups_to_plot = ['Auditory', 'Sensorimotor', 'Motor', 'DelayOnly']
@@ -685,33 +650,90 @@ if groupsTag == "LexDelay":
         'Motor': {'idx': LexDelay_Motor_sig_idx & novWM_sig_idx, 'rgb': Motor_col}
     }
 
-    # 2. 循环生成交互式视图
-    for name in groups_to_plot:
-        cfg = groups[name]
-        ni_img = get_density_niimg(chs_coor, cfg['idx'], bandwidth=8.0)
+    def get_desaturated_color(rgb, factor=0.4):
+        return [c + (1.0 - c) * factor for c in rgb]
+
+    def make_comparison_cmap(base_rgb, desat_rgb):
+        # 0: 背景, 1: vWM Unique, 2: novWM Unique, 3: Overlap (Yellow)
+        arr = np.array([
+            [1, 1, 1],    
+            base_rgb,     
+            desat_rgb,    
+            [1, 1, 0]     # 重叠部分改为黄色
+        ], dtype=float)
+        return ListedColormap(arr)
+
+    def get_nan_mask_99(chs_coor, target_indices, bandwidth=8.0):
+        target_df = chs_coor.iloc[list(target_indices)]
+        target_coords = target_df[['x', 'y', 'z']].values
+        if len(target_coords) < 3: return None
+        res, x_range, y_range, z_range = 2, slice(-70, 71, 2), slice(-100, 71, 2), slice(-60, 81, 2)
+        x_grid, y_grid, z_grid = np.mgrid[x_range, y_range, z_range]
+        grid_coords = np.vstack([x_grid.ravel(), y_grid.ravel(), z_grid.ravel()])
+        kernel = stats.gaussian_kde(target_coords.T)
+        kernel.set_bandwidth(bw_method=bandwidth / np.std(target_coords))
+        density = kernel(grid_coords).reshape(x_grid.shape)
+        non_zero_vals = density[density > 0]
+        if len(non_zero_vals) == 0: return None
+        thresh = np.percentile(non_zero_vals, 95)
+        mask = np.full(density.shape, np.nan, dtype=np.float32)
+        mask[density >= thresh] = 1.0 
+        return mask
+
+    def build_comparison_volume(m_vwm, m_novwm, voxel_size=2, origin=(-70, -100, -60),delay_only=False):
+        if m_vwm is None or m_novwm is None: return None
+        if not delay_only:
+            combined = np.full(m_vwm.shape, np.nan, dtype=np.float32)
+            is_vwm, is_novwm = m_vwm == 1.0, m_novwm == 1.0
+            combined[is_vwm & ~is_novwm] = 1.0  
+            combined[~is_vwm & is_novwm] = 2.0  
+            combined[is_vwm & is_novwm]  = 3.0  
+            affine = np.eye(4); affine[0,0]=affine[1,1]=affine[2,2]=float(voxel_size)
+            affine[:3, 3] = np.array(origin, dtype=float)
+            return nib.Nifti1Image(combined, affine)
+        else:
+            combined = np.full(m_vwm.shape, np.nan, dtype=np.float32)
+            is_vwm, is_novwm = m_vwm == 1.0, m_novwm == 1.0
+            combined[is_vwm & ~is_novwm] = 1.0  
+            combined[~is_vwm & is_novwm] = 1.0  
+            combined[is_vwm & is_novwm]  = 1.0  
+            affine = np.eye(4); affine[0,0]=affine[1,1]=affine[2,2]=float(voxel_size)
+            affine[:3, 3] = np.array(origin, dtype=float)
+            return nib.Nifti1Image(combined, affine)
+
+    # 遍历组别进行绘图
+    common_groups = ['Auditory', 'Sensorimotor', 'Motor', 'DelayOnly']
+
+    for g_name in common_groups:
+        idx_vwm = groups[g_name]['idx']
+        if g_name !='DelayOnly':
+            idx_novwm = groups_novWM[g_name]['idx']
+        else:
+            idx_novwm = idx_vwm
+        base_color = groups[g_name]['rgb']
         
-        if ni_img:
-            print(f"Generating Narrow-Range Inflated View: {name}")
+        m_vwm = get_nan_mask_99(chs_coor, idx_vwm)
+        m_novwm = get_nan_mask_99(chs_coor, idx_novwm)
+        
+        if m_vwm is not None and m_novwm is not None:
+            if g_name !='DelayOnly':
+                comp_img = build_comparison_volume(m_vwm, m_novwm)
+            else:
+                comp_img = build_comparison_volume(m_vwm, m_novwm,delay_only=True)
+            desat_color = get_desaturated_color(base_color, factor=0.6)
+            comp_cmap = make_comparison_cmap(base_color, desat_color)
             
-            # 使用量程压缩后的自定义 Colormap
-            custom_cmap = make_narrow_custom_cmap(cfg['rgb'], name=name)
-            
-            # 动态获取最大值以对齐色带
-            data = ni_img.get_fdata()
-            vmax_val = np.nanmax(data)
-            
+            # 生成 3D 视图（无标题）
             view = plotting.view_img_on_surf(
-                ni_img, 
-                threshold='95%',       # 物理截断：过滤掉 95% 以下的低密度背景
-                vmax=vmax_val,         # 锁定上限
-                surf_mesh='fsaverage', 
-                vol_to_surf_kwargs={'n_samples': 15, 'radius': 1.5},
-                cmap=custom_cmap,      
-                symmetric_cmap=False,
-                #title=f"Density (Top 5% Range): {name}",
-                colorbar=False          # 建议开启以直观查看压缩效果
+                comp_img, threshold=0, vmin=0, vmax=3,
+                surf_mesh='fsaverage',
+                vol_to_surf_kwargs={'n_samples': 1, 'radius': 0.0},
+                cmap=comp_cmap, symmetric_cmap=False,
+                title="", # 移除标题
+                colorbar=False
             )
             
+            # 显示图例和视图
             ipy_display(view)
 
     #Plot the overlapping []+Delay and [] without Delay electrodes
