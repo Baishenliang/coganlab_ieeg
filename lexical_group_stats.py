@@ -626,6 +626,7 @@ if groupsTag == "LexDelay":
 
     # Plot the distribution of different Delay electrodes in a surf plot
     import numpy as np
+    from scipy.spatial.distance import pdist
     import nibabel as nib
     from scipy import stats
     from nilearn import plotting
@@ -663,31 +664,33 @@ if groupsTag == "LexDelay":
         ], dtype=float)
         return ListedColormap(arr)
 
-    def get_nan_mask_balanced(chs_coor, target_indices, fixed_bw=0.3):
+    def get_nan_mask_balanced(chs_coor, target_indices, fixed_bw=0.3, abs_thresh=8e-4):
         target_df = chs_coor.iloc[list(target_indices)]
         target_coords = target_df[['x', 'y', 'z']].values
         if len(target_coords) < 3: return None
 
-        res, x_range, y_range, z_range = 2, slice(-70, 71, 2), slice(-100, 71, 2), slice(-60, 81, 2)
+        n_electrodes = len(target_coords)
+        avg_dist = np.mean(pdist(target_coords))
+        clustering_index = n_electrodes / avg_dist if avg_dist > 0 else 0
+        print(f"Group: N={n_electrodes} | Avg_Dist={avg_dist:.2f}mm | Clustering_Index={clustering_index:.4f}")
+
+        res = 2
+        x_range, y_range, z_range = slice(-70, 71, res), slice(-100, 71, res), slice(-60, 81, res)
         x_grid, y_grid, z_grid = np.mgrid[x_range, y_range, z_range]
         grid_coords = np.vstack([x_grid.ravel(), y_grid.ravel(), z_grid.ravel()])
 
         kernel = stats.gaussian_kde(target_coords.T)
-        
-        # 核心修改：使用固定带宽，消除样本数量和分布离散度的影响
-        # 0.3 是一个经验值，你可以根据视觉效果微调（范围通常在 0.1 - 0.5）
         kernel.set_bandwidth(bw_method=fixed_bw) 
         
-        density = kernel(grid_coords).reshape(x_grid.shape)
-        non_zero_vals = density[density > 0]
+        physical_density = kernel(grid_coords).reshape(x_grid.shape) * n_electrodes
+        mask = np.full(physical_density.shape, np.nan, dtype=np.float32)
+        # absolute thresholds
+        mask[physical_density >= abs_thresh] = 1.0
+        # relative thresholds
+        non_zero_vals = physical_density[physical_density > 0]
         if len(non_zero_vals) == 0: return None
-        
-        # 使用相对分位数，确保比较的是各自的“核心区”
-        #thresh = np.percentile(non_zero_vals, 95)
-        # 绝对阈值，适用于固定带宽的情况，你可以根据实际数据微调
-        thresh = 1e-6 
-        mask = np.full(density.shape, np.nan, dtype=np.float32)
-        mask[density >= thresh] = 1.0 
+        # thresh = np.percentile(non_zero_vals, 95)
+        # mask[physical_density >= thresh] = 1.0
         return mask
 
     def build_comparison_volume(m_vwm, m_novwm, voxel_size=2, origin=(-70, -100, -60),delay_only=False):
@@ -713,8 +716,9 @@ if groupsTag == "LexDelay":
 
     # 遍历组别进行绘图
     common_groups = ['Auditory', 'Sensorimotor', 'Motor', 'DelayOnly']
+    abs_threshs = [1e-3,1e-3,1e-3,1e-4]
 
-    for g_name in common_groups:
+    for g_name,abs_thresh in zip(common_groups,abs_threshs):
         idx_vwm = groups[g_name]['idx']
         if g_name !='DelayOnly':
             idx_novwm = groups_novWM[g_name]['idx']
@@ -722,7 +726,7 @@ if groupsTag == "LexDelay":
             idx_novwm = idx_vwm
         base_color = groups[g_name]['rgb']
         
-        m_vwm = get_nan_mask_balanced(chs_coor, idx_vwm)
+        m_vwm = get_nan_mask_balanced(chs_coor, idx_vwm, abs_thresh=abs_thresh)
         m_novwm = get_nan_mask_balanced(chs_coor, idx_novwm)
         
         if m_vwm is not None and m_novwm is not None:
