@@ -633,6 +633,7 @@ if groupsTag == "LexDelay":
     import matplotlib.pyplot as plt
     from matplotlib.colors import ListedColormap
     import matplotlib.patches as mpatches
+    from scipy.spatial.distance import cdist
     from IPython.display import display as ipy_display
 
     # 1. 准备数据组 (使用你定义的变量)
@@ -664,33 +665,41 @@ if groupsTag == "LexDelay":
         ], dtype=float)
         return ListedColormap(arr)
 
-    def get_nan_mask_balanced(chs_coor, target_indices, fixed_bw=0.3, abs_thresh=8e-4):
+    def get_nan_mask_balanced(chs_coor, target_indices, fixed_bw=0.3, abs_thresh=1e-3):
         target_df = chs_coor.iloc[list(target_indices)]
-        target_coords = target_df[['x', 'y', 'z']].values
-        if len(target_coords) < 3: return None
+        coords = target_df[['x', 'y', 'z']].values
+        n = len(coords)
+        if n < 3: return None
 
-        n_electrodes = len(target_coords)
-        avg_dist = np.mean(pdist(target_coords))
-        clustering_index = n_electrodes / avg_dist if avg_dist > 0 else 0
-        print(f"Group: N={n_electrodes} | Avg_Dist={avg_dist:.2f}mm | Clustering_Index={clustering_index:.4f}")
+        # --- 1. 计算权重 (1/avg_dist per point) ---
+        dist_matrix = cdist(coords, coords)
+        # 计算每个点到其他点的平均距离，防止除以0
+        avg_dists = np.sum(dist_matrix, axis=1) / (n - 1)
+        point_weights = 1.0 / (avg_dists + 1e-6) 
+        
+        # 打印组别统计指标
+        global_avg_dist = np.mean(pdist(coords))
+        spatial_intensity = n / global_avg_dist if global_avg_dist > 0 else 0
+        print(f"Group Stats: N={n} | Avg_Dist={global_avg_dist:.2f}mm | Intensity={spatial_intensity:.4f}")
 
+        # --- 2. 空间网格定义 ---
         res = 2
         x_range, y_range, z_range = slice(-70, 71, res), slice(-100, 71, res), slice(-60, 81, res)
         x_grid, y_grid, z_grid = np.mgrid[x_range, y_range, z_range]
         grid_coords = np.vstack([x_grid.ravel(), y_grid.ravel(), z_grid.ravel()])
 
-        kernel = stats.gaussian_kde(target_coords.T)
-        kernel.set_bandwidth(bw_method=fixed_bw) 
-        
-        physical_density = kernel(grid_coords).reshape(x_grid.shape) * n_electrodes
-        mask = np.full(physical_density.shape, np.nan, dtype=np.float32)
-        # absolute thresholds
-        mask[physical_density >= abs_thresh] = 1.0
-        # relative thresholds
-        non_zero_vals = physical_density[physical_density > 0]
+        # --- 3. 加权核密度估计 ---
+        kernel = stats.gaussian_kde(coords.T, weights=point_weights)
+        kernel.set_bandwidth(bw_method=fixed_bw)
+        density = kernel(grid_coords).reshape(x_grid.shape)
+
+        # --- 4. 95% 分位数阈值 ---
+        non_zero_vals = density[density > 0]
         if len(non_zero_vals) == 0: return None
-        # thresh = np.percentile(non_zero_vals, 95)
-        # mask[physical_density >= thresh] = 1.0
+        thresh = np.percentile(non_zero_vals, 95)
+        
+        mask = np.full(density.shape, np.nan, dtype=np.float32)
+        mask[density >= thresh] = 1.0 
         return mask
 
     def build_comparison_volume(m_vwm, m_novwm, voxel_size=2, origin=(-70, -100, -60),delay_only=False):
