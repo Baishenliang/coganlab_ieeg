@@ -64,6 +64,7 @@ stats_root_delay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS',
 stats_root_nodelay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BIDS', "derivatives", "stats")
 
 fig_save_dir = os.path.join(LAB_root, 'D_Data','LexicalDecRepDelay','Baishen_Figs','LexicalDecRepDelay','group')
+manuscript_save_dir = r"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements\Fig2"
 if not os.path.exists(os.path.join(fig_save_dir)):
     os.mkdir(os.path.join(fig_save_dir))
 
@@ -631,10 +632,94 @@ if groupsTag == "LexDelay":
     from scipy import stats
     from nilearn import plotting
     import matplotlib.pyplot as plt
+    import matplotlib.ticker as mticker
     from matplotlib.colors import ListedColormap
     import matplotlib.patches as mpatches
     from scipy.spatial.distance import cdist
     from IPython.display import display as ipy_display
+    from scipy.stats import skew, kurtosis, entropy
+    import seaborn as sns
+    from matplotlib.colors import LinearSegmentedColormap
+    pink_rgb = (1.0, 0.2, 0.6) 
+    pink_cmap = LinearSegmentedColormap.from_list("pink_density", ["white", pink_rgb], N=256)
+
+    def analyze_and_plot_density_comparison(density_vwm, density_novwm, mask_vwm, mask_novwm, g_name, base_color, desat_color):
+        """
+        更新后的顶级期刊风格绘图：
+        1. 移除 Y 轴及所有相关标签/刻度。
+        2. 移除 X 轴标题，保留并美化 X 轴刻度标签。
+        3. X 轴采用对数坐标 (Log Scale)。
+        4. 坐标轴加粗，采用偏置风格。
+        """
+        threshold_val = 1e-6
+        vals_vwm = density_vwm[density_vwm > threshold_val].ravel()
+        vals_novwm = density_novwm[density_novwm > threshold_val].ravel()
+        
+        # 对数坐标要求数据必须大于 0，进行简单的正值过滤
+        vals_vwm = vals_vwm[vals_vwm > 0]
+        vals_novwm = vals_novwm[vals_novwm > 0]
+        
+        if len(vals_vwm) == 0 or len(vals_novwm) == 0: return
+
+        # --- 统计计算（KL 散度计算基于原始分布） ---
+        bins_log = np.logspace(np.log10(min(vals_vwm.min(), vals_novwm.min())), 
+                            np.log10(max(vals_vwm.max(), vals_novwm.max())), 100)
+        p_vwm, _ = np.histogram(vals_vwm, bins=bins_log, density=True)
+        q_novwm, _ = np.histogram(vals_novwm, bins=bins_log, density=True)
+        kl_div = entropy(p_vwm + 1e-10, q_novwm + 1e-10)
+
+        # 阈值计算
+        vals_vwm_masked = density_vwm[mask_vwm > 0].ravel()
+        vals_novwm_masked = density_novwm[mask_novwm > 0].ravel()
+        thresh_v = np.min(vals_vwm_masked)
+        thresh_n = np.min(vals_novwm_masked)
+
+        # --- 绘图设置 ---
+        plt.figure(figsize=(6, 4))
+        ax = plt.gca()
+
+        # 设置 X 轴为对数坐标
+        ax.set_xscale('log')
+
+        # 绘制直方图和 KDE
+        # 注意：在 log 坐标下，log_scale=True 可以让 sns 处理得更好
+        sns.histplot(vals_vwm, color=base_color, kde=True, element="step", alpha=0.3, 
+                    stat="density", line_kws={'linewidth': 3.5}, ax=ax, log_scale=True)
+        sns.histplot(vals_novwm, color=desat_color, kde=True, element="step", alpha=0.3, 
+                    stat="density", line_kws={'linewidth': 3.5}, ax=ax, log_scale=True)
+        
+        # 显著性阈值虚线
+        plt.axvline(thresh_v, color=base_color, linestyle="--", linewidth=2.5, alpha=0.8)
+        plt.axvline(thresh_n, color=desat_color, linestyle="--", linewidth=2.5, alpha=0.8)
+
+        # --- 坐标轴美化 ---
+        # 1. 完全隐藏 Y 轴
+        ax.get_yaxis().set_visible(False)
+        
+        # 2. 移除 X 轴标签，仅保留刻度
+        ax.set_xlabel("") 
+        
+        # 3. 设置 X 轴刻度字体大小并加粗轴线
+        ax.tick_params(axis='x', labelsize=24)
+        for spine in ax.spines.values():
+            spine.set_linewidth(2)
+
+        # 4. “透气”风格：移除上方、右方和左方（Y轴）的轴线
+        # 因为 Y 轴已隐藏，despine 主要处理 offset
+        sns.despine(left=True, offset=10, trim=True)
+
+        # 5. 移除可能的图例
+        if ax.get_legend():
+            ax.get_legend().remove()
+
+        plt.tight_layout()
+        
+        # 保存
+        save_path = os.path.join(manuscript_save_dir, f"{g_name}_denhist.svg")
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.show()
+
+        return kl_div
 
     # 1. 准备数据组 (使用你定义的变量)
     groups_to_plot = ['Auditory', 'Sensorimotor', 'Motor', 'DelayOnly']
@@ -651,6 +736,8 @@ if groupsTag == "LexDelay":
         'Sensorimotor': {'idx': LexDelay_Sensorimotor_sig_idx & novWM_sig_idx, 'rgb': Sensorimotor_col},
         'Motor': {'idx': LexDelay_Motor_sig_idx & novWM_sig_idx, 'rgb': Motor_col}
     }
+
+    all_elec = set(range(len(data_LexDelay_Aud.labels[0])))
 
     def get_desaturated_color(rgb, factor=0.4):
         return [c + (1.0 - c) * factor for c in rgb]
@@ -700,7 +787,7 @@ if groupsTag == "LexDelay":
         
         mask = np.full(density.shape, np.nan, dtype=np.float32)
         mask[density >= thresh] = 1.0 
-        return mask
+        return mask, density
 
     def build_comparison_volume(m_vwm, m_novwm, voxel_size=2, origin=(-70, -100, -60),delay_only=False):
         if m_vwm is None or m_novwm is None: return None
@@ -723,6 +810,95 @@ if groupsTag == "LexDelay":
             affine[:3, 3] = np.array(origin, dtype=float)
             return nib.Nifti1Image(combined, affine)
 
+    def plot_all_electrodes_density(chs_coor, all_idx, fixed_bw=0.3):
+        res_data = get_nan_mask_balanced(chs_coor, list(all_idx), fixed_bw=fixed_bw)
+        if res_data is None: return
+        _, density = res_data 
+
+        voxel_size = 2
+        origin = (-70, -100, -60)
+        affine = np.eye(4)
+        affine[0, 0] = affine[1, 1] = affine[2, 2] = float(voxel_size)
+        affine[:3, 3] = np.array(origin, dtype=float)
+        
+        density_img = nib.Nifti1Image(density, affine)
+
+        view = plotting.view_img_on_surf(
+            density_img,
+            surf_mesh='fsaverage',
+            threshold='50%', 
+            cmap=pink_cmap,  
+            title="",
+            colorbar=False,
+            vol_to_surf_kwargs={'n_samples': 1, 'radius': 0.0}
+        )
+
+        ipy_display(view)
+
+    plot_all_electrodes_density(chs_coor, all_elec)
+
+    def plot_grouped_electrode_counts(groups, groups_novWM, save_dir):
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        labels = ['Auditory', 'Sensorimotor', 'Motor', 'DelayOnly']
+        vwm_counts = []
+        novwm_counts = []
+        vwm_colors = []
+        novwm_colors = []
+
+        for label in labels:
+            v_idx = groups[label]['idx']
+            vwm_counts.append(len(v_idx))
+            vwm_colors.append(groups[label]['rgb'])
+            
+            if label in groups_novWM:
+                n_idx = groups_novWM[label]['idx']
+                novwm_counts.append(len(n_idx))
+                novwm_colors.append(get_desaturated_color(groups[label]['rgb'], factor=0.6))
+            else:
+                novwm_counts.append(0)
+                novwm_colors.append([1, 1, 1, 0])
+
+        x = np.arange(len(labels))
+        width = 0.4 
+
+        plt.figure(figsize=(8, 6))
+        ax = plt.gca()
+
+        offsets = np.array([-width/2, -width/2, -width/2, 0])
+        ax.bar(x + offsets, vwm_counts, width, color=vwm_colors, edgecolor='none', linewidth=0)
+        ax.bar(x[:3] + width/2, novwm_counts[:3], width, color=novwm_colors[:3], edgecolor='none', linewidth=0)
+
+        # 坐标轴加粗
+        for spine in ax.spines.values():
+            spine.set_linewidth(3)
+        
+        # 顶级期刊“透气”偏置风格
+        sns.despine(offset=15, trim=True)
+        
+        # 移除所有文本标签
+        ax.set_xlabel('')
+        ax.set_ylabel('')
+        ax.set_title('')
+        
+        # 移除 X 轴刻度标签 (No x ticks)
+        ax.set_xticklabels([]) 
+        plt.yticks(fontsize=30)
+        
+        ax.yaxis.grid(False)
+        ax.xaxis.grid(False)
+
+        plt.tight_layout()
+
+        # 保存为 SVG 格式，方便在 Adobe Illustrator 中排版
+        save_path = os.path.join(save_dir, "ele_grp_counts.svg")
+        plt.savefig(save_path, format='svg', bbox_inches='tight')
+        plt.show()
+
+    # 
+    plot_grouped_electrode_counts(groups, groups_novWM, manuscript_save_dir)
+
     # 遍历组别进行绘图
     common_groups = ['Auditory', 'Sensorimotor', 'Motor', 'DelayOnly']
     abs_threshs = [1e-3,1e-3,1e-3,1e-4]
@@ -735,8 +911,8 @@ if groupsTag == "LexDelay":
             idx_novwm = idx_vwm
         base_color = groups[g_name]['rgb']
         
-        m_vwm = get_nan_mask_balanced(chs_coor, idx_vwm, abs_thresh=abs_thresh)
-        m_novwm = get_nan_mask_balanced(chs_coor, idx_novwm)
+        m_vwm, density_vwm = get_nan_mask_balanced(chs_coor, idx_vwm, abs_thresh=abs_thresh)
+        m_novwm, density_novwm = get_nan_mask_balanced(chs_coor, idx_novwm)
         
         if m_vwm is not None and m_novwm is not None:
             if g_name !='DelayOnly':
@@ -758,6 +934,8 @@ if groupsTag == "LexDelay":
             
             # 显示图例和视图
             ipy_display(view)
+            analyze_and_plot_density_comparison(density_vwm, density_novwm, m_vwm, m_novwm,g_name, base_color, desat_color)
+
 
     #Plot the overlapping []+Delay and [] without Delay electrodes
     # Delay & whether they are still Encoding electrodes in NoDelay
