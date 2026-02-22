@@ -1,6 +1,8 @@
 # %% groups of patients
 from pickle import FALSE
 from matplotlib_venn import venn3
+import seaborn as sns   
+import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
 groupsTag="LexDelay"
@@ -582,7 +584,7 @@ if groupsTag == "LexDelay":
     pick_labels = list(data_LexDelay_Aud.labels[0][list(LexDelay_Auditory_in_Delay_sig_idx | LexDelay_Sensorimotor_in_Delay_sig_idx | LexDelay_DelayOnly_sig_idx | LexDelay_Motor_in_Delay_sig_idx)])
     plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.3, 0.2)
 
-    # Plot the distribution of different Delay electrodes in a pie chart
+    # --- 1. 数据准备 (保持你的原始定义) ---
     counts = [
         len(LexDelay_Auditory_in_Delay_sig_idx), 
         len(LexDelay_Sensorimotor_in_Delay_sig_idx),
@@ -596,32 +598,47 @@ if groupsTag == "LexDelay":
         ))
     ]
     DLREP_SM_inDLREP = np.array(counts)
-
     labels = ["Auditory vWM", "Sensory-motor vWM", "Motor vWM", "Delay-only", "Others"]
-    colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col, [0.5, 0.5, 0.5]]
+    colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col, [0.8, 0.8, 0.8]] # 灰色稍调浅一点
 
-    for l, c in zip(labels, DLREP_SM_inDLREP):
-        print(f"{l}: {c}")
+    # --- 2. 自定义标签函数：电极数 \n (百分比) ---
+    def make_autopct(values):
+        def my_autopct(pct):
+            total = sum(values)
+            val = int(round(pct * total / 100.0))
+            # 按照你的要求：电极数-换行-（百分比）
+            return f'{val}\n({pct:.1f}%)'
+        return my_autopct
 
-    plot_labels = [l.replace(" ", "\n") if l != "Others" else "" for l in labels]
-
-    plt.figure(figsize=(8, 8))
-
+    # --- 3. 绘图 ---
+    plt.figure(figsize=(8, 8), dpi=300)
+    # 移除了 labels=plot_labels，改用空列表以删掉图外标签
     patches, texts, autotexts = plt.pie(
         DLREP_SM_inDLREP, 
-        labels=plot_labels, 
+        labels=None,  # 删掉图外的电极组 labels
         colors=colors, 
         startangle=90, 
-        autopct='%1.2f%%',
-        pctdistance=0.5,
-        labeldistance=1.05,
-        wedgeprops={'alpha': 0.75, 'edgecolor': 'w', 'linewidth': 1}
+        autopct=make_autopct(DLREP_SM_inDLREP),
+        pctdistance=0.6,
+        wedgeprops={'alpha': 0.8, 'edgecolor': 'w', 'linewidth': 2} # 增加加粗白边
     )
 
-    for l, a in zip(labels, autotexts):
+    # --- 4. 细节修饰 (字体与隐藏 Others) ---
+    for i, (l, a) in enumerate(zip(labels, autotexts)):
+        # 统一使用 48 号大字体，确保排版清晰
+        a.set_fontsize(36)
+        a.set_fontweight('bold')
+        a.set_color('black') # 或者用 'white'，取决于你底色的深浅
+        
+        # 隐藏 Others 的百分比显示 (如果你想保持图面纯净)
         if l == "Others":
             a.set_text("")
 
+    plt.tight_layout()
+
+    # --- 5. 保存 ---
+    save_path = os.path.join(manuscript_save_dir, "..","Fig1","vWM_Electrode_Distribution_Pie.svg")
+    plt.savefig(save_path, format='svg', bbox_inches='tight')
     plt.show()
 
 
@@ -997,140 +1014,109 @@ if groupsTag == "LexDelay":
     generate_neuro_publication_plot(elec_roi)
     plt.show()
 
-    for roi_idx,roi_idx_tag in zip(
-            (LexDelay_Delay_sig_idx,LexDelay_all_sig_idx-LexDelay_Delay_sig_idx,),
-            ('Delay','Without_Delay',)):
+    unit_scale = 3.0        # 每 1 秒数据在纸面上的物理长度 (inches/sec)
+    left_padding_with_y = 1.6  # 有 Y 轴时的留白 (用于 Stim)
+    left_padding_no_y = 0.2    # 无 Y 轴时的留白 (用于 Go/Resp, 仅保留极小呼吸空间)
+    right_padding = 0.4     
+    fig_height = 3.0        
+
+    plt.rcParams['font.sans-serif'] = ['Arial']
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['axes.linewidth'] = 2.0
+    # --- 2. 循环处理 vWM (Delay) 和 novWM (Without_Delay) ---
+    for roi_idx, roi_idx_tag in zip(
+            (LexDelay_Delay_sig_idx, LexDelay_all_sig_idx - LexDelay_Delay_sig_idx),
+            ('Delay', 'Without_Delay')):
+
+        wm_tag = 'vWM' if roi_idx_tag == 'Delay' else 'novWM'
+        linestyle = '-' if roi_idx_tag == 'Delay' else '--'
         
-        roi_idx = LexDelay_Delay_sig_idx
-        roi_idx_tag = 'Delay'
-        # roi_idx = LexDelay_all_sig_idx-LexDelay_Delay_sig_idx
-        # roi_idx_tag = 'Without_Delay'
+        # 定义功能组颜色
+        plot_groups = [
+            (LexDelay_Aud_NoMotor_sig_idx & roi_idx, 'Auditory', Auditory_col),
+            (LexDelay_DelayOnly_sig_idx & roi_idx, 'Delay Only', Delay_col),
+            (LexDelay_Sensorimotor_sig_idx & roi_idx, 'Sensorymotor', Sensorimotor_col),
+            (LexDelay_Motor_sig_idx & roi_idx, 'Motor', Motor_col)
+        ]
 
-        for TypeLabel, sig, atlas_hist_ylim,col in zip(
-                ('Auditory', 'Delay', 'Sensory-motor','Motor'),
-                (LexDelay_Aud_NoMotor_sig_idx & roi_idx,
-                 LexDelay_DelayOnly_sig_idx & roi_idx,
-                 LexDelay_Sensorimotor_sig_idx & roi_idx,
-                 LexDelay_Motor_sig_idx & roi_idx),
-                ([0, 200], [0, 200], [0, 200], [0, 200]),
-                (Auditory_col,Delay_col,Sensorimotor_col,Motor_col)
-        ):
-            if roi_idx_tag=='Without_Delay' and TypeLabel=='Delay':
-                continue
+        alignments = [
+            ('Stim', epoc_LexDelay_Aud, [-0.25, 1.5], True),
+            ('Go', epoc_LexDelay_Go, [-0.25, 1.0], range(631, 650)),
+            ('Resp', epoc_LexDelay_Resp, [-0.25, 1.0], range(631, 650))
+        ]
+
+        for align_tag, epoc_data, x_limits, bsl_val in alignments:
+            # --- 核心：判断是否保留 Y 轴并计算宽度 ---
+            has_y = (align_tag == 'Stim')
+            current_left_pad = left_padding_with_y if has_y else left_padding_no_y
             
-            chs_sel = data_LexDelay_Aud.labels[0][list(sig)].tolist()
-            cols = [col for i in range(0, len(sig))]
-            plot_brain(subjs, chs_sel, cols, None, dotsize=0.3,
-                       fig_save_dir_f=os.path.join('plot', 'x'))
-            atlas2_hist(ch_labels_roi, chs_sel, col, os.path.join(fig_save_dir, f'Atlas histogram {TypeLabel} {roi_idx_tag}.tif'),
-                        ylim=atlas_hist_ylim,pie_label_col_base=col)
-            # atlas2_hist(ch_labels_roi, chs_sel, col, os.path.join(fig_save_dir, f'Atlas histogram {TypeLabel} {roi_idx_tag} Percent.tif'),
-            #                ylim=[0,50],is_percentage=True)
-            plot_sig_roi_counts(hickok_roi_labels, col, sig, os.path.join(fig_save_dir, f'Hickok ROI histogram {TypeLabel} {roi_idx_tag}.tif'))
+            x_duration = x_limits[1] - x_limits[0]
+            # 物理宽度公式
+            fig_width = (x_duration * unit_scale) + current_left_pad + right_padding
+            
+            fig = plt.figure(figsize=(fig_width, fig_height), dpi=300)
+            fig.subplots_adjust(left=current_left_pad/fig_width, 
+                                right=1.0 - (right_padding/fig_width), 
+                                bottom=0.25, top=0.9)
+            ax = plt.gca()
 
-        # Waves for Auditory, Delay, Motor_Prep, and Motor electrodes
-        # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
+            # 调用波形绘制函数
+            for sig_idx, label_text, group_col in plot_groups:
+                if len(sig_idx) == 0: continue
+                plot_wave(epoc_data, sig_idx, f'{label_text}',
+                        group_col, linestyle, bsl_val, ylim=[-0.2, 1.5])
 
-        if roi_idx_tag == 'Without_Delay':
-            linestyle = '--'
-            wm_tag = 'novWM'
-        else:  # 'Delay'
-            linestyle = '-'
-            wm_tag = 'vWM'
-
-        # --- 1. 缩小全局字体以适应更小的画布 ---
-        plt.rcParams['font.sans-serif'] = ['Arial']
-        plt.rcParams['pdf.fonttype'] = 42
-        plt.rcParams['axes.linewidth'] = 0.6
-        plt.rcParams['font.size'] = 9  # 全局基础字号调小
-        plt.rcParams['font.size'] = 9
-
-        wav_bsl_corr_val = True
-        go_resp_bsl = range(631, 650)
-
-        # 时间跨度比例
-        w1, w2 = 1.75, 1.25
-
-        # --- 2. 缩小画布尺寸 (例如改为 6x5 英寸) ---
-        fig = plt.figure(figsize=(6, 5), dpi=300)
-
-        # 设置 GridSpec
-        # 我们需要让第一行图的绘图区宽度与时间跨度一致
-        # 这里通过 width_ratios 稍微微调，确保 ax1 宽度 = ax2 + ax3 的一半以上
-        from matplotlib import gridspec
-        gs = gridspec.GridSpec(2, 2, height_ratios=[1, 1], width_ratios=[1, 1])
-
-        # --- Row 1: Stimulus Aligned ---
-        # legend 占位稍微缩小到 0.35
-        gs_top = gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=gs[0, :], width_ratios=[w1, 0.45])
-        ax1 = fig.add_subplot(gs_top[0])
-
-        # 绘图逻辑保持不变
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Aud_NoMotor_sig_idx & roi_idx, f'Auditory {wm_tag} n={len(LexDelay_Aud_NoMotor_sig_idx & roi_idx)}',
-                Auditory_col, linestyle, wav_bsl_corr_val, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Aud, LexDelay_DelayOnly_sig_idx & roi_idx, f'Delay Only n={len(LexDelay_DelayOnly_sig_idx & roi_idx)}',
-                Delay_col, linestyle, wav_bsl_corr_val, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Sensorimotor_sig_idx & roi_idx, f'Sensorymotor {wm_tag} n={len(LexDelay_Sensorimotor_sig_idx & roi_idx)}',
-                Sensorimotor_col, linestyle, wav_bsl_corr_val, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Aud, LexDelay_Motor_sig_idx & roi_idx, f'Motor {wm_tag} n={len(LexDelay_Motor_sig_idx & roi_idx)}',
-                Motor_col, linestyle, wav_bsl_corr_val, ylim=[-0.2, 1.5])
-
-        ax1.set_xlim([-0.25, 1.5])
-        # 缩小图例字号
-        ax1.legend(loc='center left', bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=8)
-
-        # --- Row 2 Left & Right ---
-        ax2 = fig.add_subplot(gs[1, 0])
-        plot_wave(epoc_LexDelay_Go, LexDelay_Aud_NoMotor_sig_idx & roi_idx, '', Auditory_col, linestyle, False, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Go, LexDelay_DelayOnly_sig_idx & roi_idx, '', Delay_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Go, LexDelay_Sensorimotor_sig_idx & roi_idx, '', Sensorimotor_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Go, LexDelay_Motor_sig_idx & roi_idx, '', Motor_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
-        ax2.set_xlim([-0.25, 1.0])
-
-        ax3 = fig.add_subplot(gs[1, 1])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_Aud_NoMotor_sig_idx & roi_idx, '', Auditory_col, linestyle, False, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_DelayOnly_sig_idx & roi_idx, '', Delay_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_Sensorimotor_sig_idx & roi_idx, '', Sensorimotor_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
-        plot_wave(epoc_LexDelay_Resp, LexDelay_Motor_sig_idx & roi_idx, '', Motor_col, linestyle, go_resp_bsl, ylim=[-0.2, 1.5])
-        ax3.set_xlim([-0.25, 1.0])
-
-        # --- 修饰细节 ---
-        for i, ax in enumerate([ax1, ax2, ax3]):
+            # --- 3. 彻底移除 Y 轴逻辑 ---
             ax.spines[['top', 'right']].set_visible(False)
-            # --- 关键：缩小 Offset 距离 ---
-            ax.spines['left'].set_position(('outward', 5)) 
-            ax.spines['bottom'].set_position(('outward', 5))
+            ax.spines['bottom'].set_linewidth(3)
             
-            ax.axvline(x=0, linestyle='--', color='#444444', linewidth=0.6, dashes=(5, 5), zorder=0)
-            ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=0.5, zorder=0)
-            
-            # 缩小刻度大小
-            ax.tick_params(axis='both', which='major', labelsize=8, direction='out', length=3, pad=2)
-            ax.set_ylim([-0.2, 1.5])
-            
-            if i > 0:
-                ax.set_xlabel('Time (s)', fontsize=9, labelpad=2)
-            
-            if ax == ax3:
-                ax.set_ylabel('')
-                ax.set_yticklabels([])
+            if not has_y:
+                # 彻底隐藏左侧轴线、刻度和标签
                 ax.spines['left'].set_visible(False)
-                ax.tick_params(axis='y', left=False)
+                ax.set_yticks([])
+                ax.yaxis.set_visible(False) # 禁用整个 Y 轴对象
             else:
-                ax.set_ylabel('High-gamma (z-score)', fontsize=9, labelpad=2)
+                # 仅在 Stim 图中保留加粗 Y 轴
+                ax.spines['left'].set_linewidth(3)
+                ax.set_ylim([-0.2, 1.5])
+                ax.tick_params(axis='y', labelsize=24, length=6, width=2.5)
 
-        # 自动对齐 Y 轴标签（防止左右错位）
-        fig.align_ylabels([ax1, ax2])
+            # X 轴刻度设置
+            xticks = [0, 0.5, 1.0, 1.5]
+            xticks = [t for t in xticks if x_limits[0] <= t <= x_limits[1]]
+            ax.set_xticks(xticks)
+            ax.xaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f'))
+            
+            plt.draw()
+            labels = [l.get_text() for l in ax.get_xticklabels()]
+            new_labels = ["0" if (l == "0.0" or l == ".0") else l for l in labels]
+            ax.set_xticklabels(new_labels)
+            
+            # 呼吸透气风格 (despine 需要配合 has_y)
+            sns.despine(ax=ax, offset=10, trim=True, left=not has_y)
+            
+            # X 轴标准化
+            ax.set_xlim(x_limits)
+            ax.tick_params(axis='x', labelsize=24, length=6, width=2.5)
+            ax.spines['bottom'].set_bounds(x_limits[0], x_limits[1])
+            
+            ax.set_xlabel(''); ax.set_ylabel('')
+            
+            # 基准线
+            ax.axvline(x=0, linestyle='--', color='#444444', linewidth=1.5, dashes=(5, 5), zorder=0)
+            ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=1.0, zorder=0)
 
-        # --- 3. 使用 tight_layout 并手动微调边距 ---
-        plt.tight_layout()
-        # 调整 top/bottom 比例，为顶部的 title 或底部的 label 留出固定空间
-        plt.subplots_adjust(hspace=0.4, wspace=0.2, right=0.85) 
+            if ax.get_legend(): ax.get_legend().remove()
 
-        plt.show()
-        # plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_org_cat_Resp_{roi_idx_tag}.tif'), dpi=300)
-        # plt.close()
-
+            # --- 4. 保存至 Fig1 目录 ---
+            save_filename = f"Wave_{wm_tag}_{align_tag}.svg"
+            save_dir = os.path.join(manuscript_save_dir, '..', 'Fig1')
+            if not os.path.exists(save_dir): 
+                os.makedirs(save_dir)
+            
+            save_path = os.path.join(save_dir, save_filename)
+            plt.savefig(save_path, format='svg', bbox_inches=None)
+            plt.close()
     ## Plot Hikcok's ROI and traces:
 
     roi_idx_tag='Hickok ROI'
