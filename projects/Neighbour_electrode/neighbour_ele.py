@@ -9,6 +9,7 @@ current_dir = os.getcwd()
 if current_dir != script_dir:
     os.chdir(script_dir)
 
+manuscript_save_dir = r"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements\Fig2"
 import sys
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
@@ -18,6 +19,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle
+import os
+import matplotlib.ticker as mticker
 
 # set plotting themes
 #sns.set_theme(style="ticks", palette="pastel")
@@ -154,7 +157,7 @@ for roi in ['All',]:
     chs_coor_c_l = chs_coor_c.melt(id_vars=['subj_label', 'type'], value_vars=hue_order,
                                   var_name='neighbor_type', value_name='count')
     #plot
-    plt.figure(figsize=(8 * cm, 8 * cm))
+    #plt.figure(figsize=(8 * cm, 8 * cm))
 
     boxplot_colors= [Auditory_col, Auditory_col, Auditory_col, Sensorimotor_col, Sensorimotor_col, Sensorimotor_col,Motor_col,Motor_col,Motor_col]
     stripplot_colors = [Auditory_col, Sensorimotor_col, Motor_col, Auditory_col, Sensorimotor_col, Motor_col,Auditory_col, Sensorimotor_col, Motor_col]
@@ -186,62 +189,98 @@ for roi in ['All',]:
     elif mode=='dist':
         y_limits = [(-0.1, dist_thres-1)]
         y_ticks = [range(0, dist_thres, 1)]
+
+    # --- 1. 环境与颜色配置 ---
+    # 使用你定义的全局变量
+    manuscript_save_dir = r"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements\Fig2"
+    if not os.path.exists(manuscript_save_dir):
+        os.makedirs(manuscript_save_dir)
+
+    # 颜色映射字典
+    hue_colors = {
+        'Neib_Auditory': Auditory_col,
+        'Neib_SM': Sensorimotor_col,
+        'Neib_Motor': Motor_col
+    }
+
+    # --- 2. 绘图循环 ---
+    # 假设 chs_coor_c_l, x_order, hue_order, y_limits, y_ticks 均已定义
     for i, var in enumerate(['count'], start=1):
-        plt.subplot(1, 1, i)
+        plt.figure(figsize=(8, 4))
+        ax = plt.gca()
 
-        if roi=='All':
-            fillbar=True
-        else:
-            fillbar=False
+        # A. 绘制饱和底色柱状图 (vWM 配色，不加浅)
+        # alpha=1.0 确保颜色饱和，edgecolor='none' 移除轮廓
+        sns.barplot(
+            x='type', y=var, data=chs_coor_c_l, 
+            hue='neighbor_type', hue_order=hue_order, order=x_order,
+            palette=hue_colors, edgecolor='none', saturation=1, 
+            alpha=1.0, errorbar='se', capsize=0.05, 
+            err_kws={'linewidth': 1.5, 'color': 'black'}, zorder=1, ax=ax
+        )
 
-        barbar = sns.barplot(x='type', y=var, errorbar=None, data=chs_coor_c_l, hue='neighbor_type', hue_order=hue_order,order=x_order, saturation=1,
-                             fill=fillbar, alpha=1, linewidth=0.8, capsize=0.1, zorder=1)
+        # B. 绘制白底勾边散点图 (提高在深色背景下的辨识度)
+        # 使用与柱子相同的 palette 作为边框色，facecolor 设为白色
+        strip_plot = sns.stripplot(
+            data=chs_coor_c_l, x="type", y=var, 
+            hue='neighbor_type', hue_order=hue_order, order=x_order,
+            size=5, alpha=1.0, jitter=0.25, dodge=True,
+            marker='o', linewidth=1.0, edgecolor='white', # 白色勾边产生呼吸感
+            palette=hue_colors, zorder=2, ax=ax
+        )
 
-        if roi=='All':
-            j = 0
-            for patch in barbar.patches:
-                patch.set_facecolor(boxplot_colors[j])
-                j = j + 1
-                if j == 9:
-                    break
+        # C. 添加连接线 (使用浅灰色以防干扰深色背景)
+        import utils.group as gp
+        gp.bsliang_add_connecting_lines(plt, 0, strip_plot)
+        gp.bsliang_add_connecting_lines(plt, 1, strip_plot)
+        gp.bsliang_add_connecting_lines(plt, 3, strip_plot)
+        gp.bsliang_add_connecting_lines(plt, 4, strip_plot)
+        gp.bsliang_add_connecting_lines(plt, 6, strip_plot)
+        gp.bsliang_add_connecting_lines(plt, 7, strip_plot)
 
-        # ax=sns.boxplot(x='Group', y=var, data=data,showfliers=False, hue='Group',order=x_order,saturation=1)
-        sns.despine()
+        # --- 3. 顶级期刊“呼吸透气”视觉规范 ---
+        # 坐标轴加粗
+        for spine in ax.spines.values():
+            spine.set_linewidth(3)
 
-        if mode=='count':
+        # 设置偏置 (Offset) 与 修剪 (Trim)
+        sns.despine(offset=15, trim=True)
 
-            stripstrip = sns.stripplot(chs_coor_c_l, x="type", y=var, size=1, hue='neighbor_type', hue_order=hue_order, alpha=1, jitter=0.3, linewidth=0.1,
-                                       edgecolor='white', order=x_order, zorder=2, dodge=True)
-            # stripstrip.legend(title='Neighbor Type', loc='upper right')
+        # Y 轴科学计数法且隐藏 0 刻度
+        ax.yaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+        ax.yaxis.set_major_formatter(mticker.FormatStrFormatter('%d'))
+        #ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        #ax.yaxis.get_offset_text().set_fontsize(18)
 
-            if roi == 'All':
-                for k in range(9):
-                    path_collection = stripstrip.collections[k]
-                    path_collection.set_facecolor(stripplot_colors[k])
+        # 移除所有 Labels 和 Titles
+        ax.set_xlabel(''); ax.set_ylabel(''); ax.set_title('')
+        
+        # 设置 24 号字体并移除 X 轴刻度
+        plt.xticks(fontsize=0) # 移除 X 轴文字标签
+        plt.yticks(y_ticks[i-1], fontsize=30)
+        plt.ylim(y_limits[i-1])
+        ax.tick_params(axis='x', length=0) # 移除 X 轴刻度线线
 
-            gp.bsliang_add_connecting_lines(plt, 0, stripstrip)
-            gp.bsliang_add_connecting_lines(plt, 1, stripstrip)
-            gp.bsliang_add_connecting_lines(plt, 3, stripstrip)
-            gp.bsliang_add_connecting_lines(plt, 4, stripstrip)
-            gp.bsliang_add_connecting_lines(plt, 6, stripstrip)
-            gp.bsliang_add_connecting_lines(plt, 7, stripstrip)
+        # 移除图例
+        if ax.get_legend():
+            ax.get_legend().remove()
 
-        # Choice 3: bar plot with fill - errbar
-        ax2 = sns.barplot(x='type', y=var, errorbar='se', data=chs_coor_c_l, hue='neighbor_type', hue_order=hue_order,order=x_order, saturation=1,
-                          fill=False, alpha=0.5, linewidth=0, capsize=0.1, err_kws={'linewidth': 0.8, 'color': 'black'},
-                          zorder=3)
+        # 动态隐藏 Y 轴 0 刻度
+        # plt.draw()
+        # labels = [item.get_text() for item in ax.get_yticklabels()]
+        # if labels:
+        #     new_labels = ["" if (l in ["0", "0.0"]) else l for l in labels]
+        #     ax.set_yticklabels(new_labels)
 
-        plt.xlabel('')
-        plt.ylabel(ytitles[i - 1], y=gp.bsliang_align_yaxis(y_limits[i - 1], y_ticks[i - 1]))
-        plt.ylim(y_limits[i - 1])
-        plt.yticks(y_ticks[i - 1])
-        plt.title(subtitles[i - 1], y=1.2)
-        plt.gca().tick_params(axis='x', direction='in', length=0, labelrotation=45)
-        plt.gca().tick_params(axis='y', direction='in', length=2)
-        plt.gca().get_legend().remove()
+        plt.tight_layout()
 
-    plt.tight_layout(w_pad=1.5)
-    plt.savefig(os.path.join('..','Neighbour_electrode','plot',f'Neighbour_ele_{roi}_{mode}_{ind_tag}.tif'), dpi=300,bbox_inches='tight', transparent=False)
+        # --- 4. 矢量化保存 ---
+        save_name = f'Neighbor_Dist_{roi}.svg'
+        save_path = os.path.join(manuscript_save_dir, save_name)
+        plt.savefig(save_path, format='svg', bbox_inches='tight')
+        
+        plt.show()
+        print(f"Standardized plot saved to: {save_path}")
 
     #%% stats
     from scipy.stats import ttest_ind
