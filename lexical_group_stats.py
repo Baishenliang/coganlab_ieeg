@@ -5,9 +5,9 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
+#groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -55,7 +55,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-from utils.group import generate_neuro_publication_plot,get_roi_subj_matrix,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient
+from utils.group import bsliang_add_connecting_lines,generate_neuro_publication_plot,get_roi_subj_matrix,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient
 import matplotlib.pyplot as plt
 import projects.GLM.glm_utils as glm
 
@@ -2078,401 +2078,268 @@ elif groupsTag == "LexNoDelay":
 
 elif groupsTag=="LexDelay&LexNoDelay":
 
-    # New wave plot for LexDelay categories in NoDelay tasks
-    import matplotlib.pyplot as plt
     import matplotlib.gridspec as gridspec
 
-    # --- 全局参数设置 ---
+    # --- 1. 全局参数与环境设置 ---
     plt.rcParams['font.sans-serif'] = ['Arial']
     plt.rcParams['pdf.fonttype'] = 42
-    plt.rcParams['axes.linewidth'] = 0.6
-    plt.rcParams['font.size'] = 9
+    plt.rcParams['svg.fonttype'] = 'none'
+    plt.rcParams['font.size'] = 24  # 顶级期刊大字体
+    plt.rcParams['axes.linewidth'] = 3 
 
     wav_bsl_corr_val = True
     go_resp_bsl = range(281, 300)
 
-    # 调整画布比例，一行两列通常使用更宽的 figsize
-    fig = plt.figure(figsize=(8, 3), dpi=300)
+    if not os.path.exists(manuscript_save_dir):
+        os.makedirs(manuscript_save_dir)
 
-    # 创建一行两列的布局，wspace 设小一点让图表靠近
+    fig = plt.figure(figsize=(12, 4), dpi=300)
     gs = gridspec.GridSpec(1, 2, width_ratios=[1.75, 1], wspace=0.1)
 
-    # --- ax1: Stimulus-locked ---
+    # --- 2. ax1: Stimulus-locked ---
     ax1 = fig.add_subplot(gs[0])
+    x_lim_stim = [-0.25, 1.5] 
 
-    # 注意：这里使用了你重命名后的变量名 vWM
     plot_wave(epoc_LexNoDelay_Aud, LexDelay_Aud_NoMotor_sig_idx & LexDelay_Delay_sig_idx, 
-            f'Auditory vWM n={len(LexDelay_Aud_NoMotor_sig_idx & LexDelay_Delay_sig_idx)}',
-            Auditory_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+            '', Auditory_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
     plot_wave(epoc_LexNoDelay_Aud, LexDelay_DelayOnly_sig_idx & LexDelay_Delay_sig_idx, 
-            f'Delay only n={len(LexDelay_DelayOnly_sig_idx & LexDelay_Delay_sig_idx)}',
-            Delay_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+            '', Delay_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
     plot_wave(epoc_LexNoDelay_Aud, LexDelay_Sensorimotor_sig_idx & LexDelay_Delay_sig_idx, 
-            f'Sensorymotor vWM n={len(LexDelay_Sensorimotor_sig_idx & LexDelay_Delay_sig_idx)}',
-            Sensorimotor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+            '', Sensorimotor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
     plot_wave(epoc_LexNoDelay_Aud, LexDelay_Motor_sig_idx & LexDelay_Delay_sig_idx, 
-            f'Motor vWM n={len(LexDelay_Motor_sig_idx & LexDelay_Delay_sig_idx)}',
-            Motor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
-
-    ax1.set_xlim([-0.25, 1.5])
-    ax1.set_xlabel('Time (s)', fontsize=9, labelpad=2)
-
-    # --- ax3: Response-locked ---
+            '', Motor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
+    # --- 3. ax3: Response-locked ---
     ax3 = fig.add_subplot(gs[1])
+    x_lim_resp = [-0.25, 1.0]
 
     plot_wave(epoc_LexNoDelay_Resp, LexDelay_Aud_NoMotor_sig_idx & LexDelay_Delay_sig_idx, '', Auditory_col, '-', False, ylim=[-0.2, 1.5])
     plot_wave(epoc_LexNoDelay_Resp, LexDelay_DelayOnly_sig_idx & LexDelay_Delay_sig_idx, '', Delay_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
     plot_wave(epoc_LexNoDelay_Resp, LexDelay_Sensorimotor_sig_idx & LexDelay_Delay_sig_idx, '', Sensorimotor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
     plot_wave(epoc_LexNoDelay_Resp, LexDelay_Motor_sig_idx & LexDelay_Delay_sig_idx, '', Motor_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
 
-    ax3.set_xlim([-0.25, 1.0])
-    ax3.set_xlabel('Time (s)', fontsize=9, labelpad=2)
+    # --- 4. 核心：坐标轴精细化修饰 ---
+    for ax in [ax1, ax3]:
+        curr_xlim = x_lim_stim if ax == ax1 else x_lim_resp
+        
+        # A. 设定 X 轴刻度：明确从 0 开始，每 0.5s 一个
+        # 这样即便线段始于 -0.25，刻度也只从 0 出现
+        ax.set_xticks(np.arange(0, curr_xlim[1] + 0.01, 0.5))
+        ax.set_xlim(curr_xlim)
+        
+        # B. 设定 Y 轴刻度：仅保留 0 和 1
+        ax.set_yticks([0, 1])
+        ax.set_ylim([-0.2, 1.2]) 
 
-    # --- 修饰细节 ---
-    for i, ax in enumerate([ax1, ax3]):
-        ax.spines[['top', 'right']].set_visible(False)
+        # C. 移除边框并设置基础 Offset
+        sns.despine(ax=ax, offset=15, trim=False) # 禁用自动 trim
         
-        # 缩小 Offset 距离
-        ax.spines['left'].set_position(('outward', 5)) 
-        ax.spines['bottom'].set_position(('outward', 5))
+        # D. 手动设置线段起止点 (Trim 替代方案)
+        # X 轴线段：保持原定的 -0.25 到上限
+        ax.spines['bottom'].set_bounds(curr_xlim[0], curr_xlim[1])
+        # Y 轴线段：严格限制在 0 到 1 之间
+        if ax == ax1:
+            ax.spines['left'].set_bounds(0, 1)
         
-        # 辅助线
-        ax.axvline(x=0, linestyle='--', color='#444444', linewidth=0.6, dashes=(5, 5), zorder=0)
-        ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=0.5, zorder=0)
+        # E. 移除 Labels
+        ax.set_xlabel(''); ax.set_ylabel(''); ax.set_title('')
         
-        # 刻度参数
-        ax.tick_params(axis='both', which='major', labelsize=8, direction='out', length=3, pad=2)
-        ax.set_ylim([-0.2, 1])
+        # F. 辅助线与刻度样式 (24号字体)
+        ax.axvline(x=0, linestyle='--', color='#444444', linewidth=1.5, dashes=(5, 5), zorder=0)
+        ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=1, zorder=0)
+        ax.tick_params(axis='both', which='major', labelsize=24, direction='out', length=6, width=3)
         
         if ax == ax3:
-            # 隐藏右侧图的 Y 轴
-            ax.set_ylabel('')
             ax.set_yticklabels([])
             ax.spines['left'].set_visible(False)
             ax.tick_params(axis='y', left=False)
-        else:
-            ax.set_ylabel('High-gamma (z-score)', fontsize=9, labelpad=2)
 
-    # 在 plt.show() 之前添加
-    handles, labels = ax1.get_legend_handles_labels()
-    fig.legend(handles, labels, 
-           loc='upper right', 
-           bbox_to_anchor=(0.98, 0.95), 
-           frameon=False, 
-           fontsize=8)
+    # 调整布局
+    plt.subplots_adjust(left=0.15, right=0.95, bottom=0.2, top=0.9)
 
-    # 记得调整 subplots_adjust 给右侧留出足够空间
-    plt.subplots_adjust(left=0.1, right=0.82, bottom=0.2, top=0.9, wspace=0.1)
+    # --- 5. 导出 SVG 矢量图 ---
+    save_path = os.path.join(manuscript_save_dir, '..', 'Fig4', "Nodelay_trace.svg")
+    plt.savefig(save_path, format='svg', bbox_inches='tight')
 
     plt.show()
+    print(f"Standardized and trimmed wave plot saved to: {save_path}")
 
-    # Old confusion matrix code for overlap between Delay and NoDelay significant electrodes in Lexical tasks
-    tag1='DL'
-    tag2='NDL'
-    del_aud = Lex_idxes['LexDelay_Aud_NoMotor_sig_idx']
-    del_sm = Lex_idxes['LexDelay_Sensorimotor_sig_idx']
-    del_del = Lex_idxes['LexDelay_Delay_sig_idx']
-    del_mtr = Lex_idxes['LexDelay_Motor_sig_idx']
-    del_delol = Lex_idxes['LexDelay_DelayOnly_sig_idx']
-    Ndel_aud = Lex_idxes['LexNoDelay_Aud_NoMotor_sig_idx']
-    Ndel_sm = Lex_idxes['LexNoDelay_Sensorimotor_sig_idx']
-    Ndel_mtr = Lex_idxes['LexNoDelay_Motor_sig_idx']
-    Ndel_encode = Lex_idxes['LexNoDelay_Aud_sig_idx']
-    Ndel_response = Lex_idxes['LexNoDelay_Motor_Resp_sig_idx']
+    # Get electrodes HG power during the first 100ms after aud onset and after mtr onset
+    _, _, _, _, _, paras_aud, *_ = sort_chs_by_actonset(data_LexNoDelay_Aud, epoc_LexNoDelay_Aud, cluster_twin, [0.05, 0.15], mask_data=True, select_electrodes=False)
+    _, _, _, _, _, paras_mtr, *_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, [-0.05, 0.05], mask_data=True, select_electrodes=False)
 
-    del_all = (del_aud | del_sm | del_mtr | Lex_idxes['LexDelay_Motorprep_Only_sig_idx'] | Lex_idxes['LexDelay_DelayOnly_sig_idx'])
-    Ndel_all = (Ndel_aud | Ndel_sm | Ndel_mtr)
-
-    # Do the same things but for the Silent trials in lexical No Delay tasks (i.e., just listen)
-    # Ndel_S_encode_only=Lex_idxes['LexNoDelay_Silence_Encode_Only_sig_idx']
-    # Ndel_S_del=Lex_idxes['LexNoDelay_Silence_Del_sig_idx']
-    # Ndel_S_all=(Ndel_S_encode_only | Ndel_S_del)
-
-    import pandas as pd
     import seaborn as sns
-    data = {
-        "Auditory": [len(del_del & del_aud & Ndel_aud)/len(del_del & del_aud)*100,
-                     len(del_del & del_aud & Ndel_sm)/len(del_del & del_aud)*100,
-                     len(del_del & del_aud & Ndel_mtr)/len(del_del & del_aud)*100,
-                     len((del_del & del_aud).difference(Ndel_all))/len(del_del & del_aud)*100],
-        "Sensory-motor": [len(del_del & del_sm & Ndel_aud)/len(del_del & del_sm)*100,
-                          len(del_del & del_sm & Ndel_sm)/len(del_del & del_sm)*100,
-                          len(del_del & del_sm & Ndel_mtr)/len(del_del & del_sm)*100,
-                          len((del_del & del_sm).difference(Ndel_all))/len(del_del & del_sm)*100],
-        "Motor": [len(del_del & del_mtr & Ndel_aud)/len(del_del & del_mtr)*100,
-                  len(del_del & del_mtr & Ndel_sm)/len(del_del & del_mtr)*100,
-                  len(del_del & del_mtr & Ndel_mtr)/len(del_del & del_mtr)*100,
-                  len((del_del & del_mtr).difference(Ndel_all))/len(del_del & del_mtr)*100],
-        "Delay Only": [len(del_delol & Ndel_aud) / len(del_delol) * 100,
-                       len(del_delol & Ndel_sm) / len(del_delol) * 100,
-                       len(del_delol & Ndel_mtr) / len(del_delol) * 100,
-                       len(del_delol.difference(Ndel_all)) / len(del_delol) * 100]
+    import matplotlib.ticker as mticker
+    from scipy import stats
+    from statsmodels.stats.multitest import multipletests
+
+    # ==========================================
+    # 1. 数据准备与标签提取
+    # ==========================================
+    group_map = {
+        'Auditory': data_LexNoDelay_Aud.labels[0][list(LexDelay_Auditory_in_Delay_sig_idx)],
+        'Sensory-motor': data_LexNoDelay_Aud.labels[0][list(LexDelay_Sensorimotor_in_Delay_sig_idx)],
+        'Motor': data_LexNoDelay_Aud.labels[0][list(LexDelay_Motor_in_Delay_sig_idx)],
+        'Delay-only': data_LexNoDelay_Aud.labels[0][list(LexDelay_DelayOnly_sig_idx)]
     }
-    df_cm = pd.DataFrame(data, index=["Auditory", "Sensory-motor", "Motor", "Silent"]).transpose()
-    plt.figure(figsize=(6, 5))
-    sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=80, cbar=False)
-    plt.title(f"NoDelay Repeat (% in Delay)")
-    plt.ylabel("Delay electrodes in LexDelay Repeat")
-    plt.xlabel("LexNoDelay Repeat")
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_rep.tif'), dpi=300)
-    plt.close()
 
-    # Plot NoDelay Silence trials electrodes (Encoding + Delay)
-    plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
-    plot_wave(epoc_LexDelay_Aud,del_aud, f'Delay auditory n={len(del_aud)}', Auditory_col,'-',True)
-    plot_wave(epoc_LexDelay_Aud,del_sm, f'Delay sensory-motor n={len(del_sm)}', Sensorimotor_col,'-',True)
-    plot_wave(epoc_LexDelay_Aud,del_mtr, f'Delay motor n={len(del_mtr)}', Motor_col,'-',True)
-    plot_wave(epoc_LexDelay_Aud,del_delol, f'Delay only n={len(del_delol)}', Delay_col,'-',True)
-    plot_wave(epoc_LexNoDelay_Silence_Aud, Ndel_S_all, f'NoDelay Silence all n={len(Ndel_S_all)}', [0.5,0.5,0.5],'--',True)
-    plt.axvline(x=0, linestyle='--', color='k')
-    plt.axhline(y=0, linestyle='--', color='k')
-    plt.ylim([-0.1,0.9])
-    if datasource == 'hg':
-        plt.title('Z-scores in lexical nodelay silent (aligned to stim onset)',fontsize=20)
-        wav_bsl_corr = False
-    elif datasource.split('_')[0]=='glm':
-        plt.title('GLM Sum|β| in lexical nodelay silent (aligned to stim onset)',fontsize=20)
-        wav_bsl_corr = True
-    if datasource=='glm_Phonemic':
-        plt.xlim([2.5, 3.5])
-    plt.legend(loc='upper right',fontsize=15)
-    plt.xlim([-0.25,1.6])
-    plt.gca().spines[['top', 'right']].set_visible(False)
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir,'LexNoDelay_sig_zscore_Aud_delay_silence.tif'),dpi=300)
-    plt.close()
+    param = 'rms_value'
+    x_order = ['Auditory', 'Sensory-motor', 'Motor', 'Delay-only']
+    hue_colors_stage = {'Auditory Stage': Auditory_col, 'Motor Stage': Motor_col}
 
-    # Combine Auditory and Motor responses
-    data = {
-        "Aud responses": [len(del_del & (del_aud | del_sm) & (Ndel_aud | Ndel_sm))/len(del_del & (del_aud | del_sm))*100,
-                          len(del_del & (del_aud | del_sm) & Ndel_mtr)/len(del_del & (del_aud | del_sm))*100,
-                          len((del_del & (del_aud | del_sm)).difference(Ndel_all))/len(del_del & (del_aud | del_sm))*100],
-        "Mot responses": [len(del_del & (del_mtr | del_sm) & Ndel_aud)/len(del_del & (del_mtr | del_sm))*100,
-                          len(del_del & (del_mtr | del_sm) & (Ndel_mtr | Ndel_sm))/len(del_del & (del_mtr | del_sm))*100,
-                          len((del_del & (del_mtr | del_sm)).difference(Ndel_all))/len(del_del & (del_mtr | del_sm))*100],
-        "Delay Only": [len(del_delol & (Ndel_aud | Ndel_sm)) / len(del_delol) * 100,
-                       len(del_delol & (Ndel_mtr | Ndel_sm)) / len(del_delol) * 100,
-                       len(del_delol.difference(Ndel_all)) / len(del_delol) * 100]
-    }
-    df_cm = pd.DataFrame(data, index=["Aud responses", "Mot responses", "Silent"]).transpose()
-    plt.figure(figsize=(6, 5))
-    sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=80, cbar=False)
-    plt.title(f"NoDelay Repeat (% in Delay)")
-    plt.ylabel("Delay electrodes in LexDelay Repeat")
-    plt.xlabel("LexNoDelay Repeat")
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_rep_A_M.tif'), dpi=300)
-    plt.close()
+    fig4_dir = os.path.join(manuscript_save_dir, '..', 'Fig4')
+    if not os.path.exists(fig4_dir):
+        os.makedirs(fig4_dir)
 
-    # Combine Auditory and Motor responses but without delay only
-    data = {
-        "Auditory": [len(del_del & (del_aud | del_sm) & (Ndel_aud | Ndel_sm))/len(del_del & (del_aud | del_sm))*100,
-                          len(del_del & (del_aud | del_sm) & Ndel_mtr)/len(del_del & (del_aud | del_sm))*100,
-                          len((del_del & (del_aud | del_sm)).difference(Ndel_all))/len(del_del & (del_aud | del_sm))*100],
-        "Motor": [len(del_del & (del_mtr | del_sm) & Ndel_aud)/len(del_del & (del_mtr | del_sm))*100,
-                          len(del_del & (del_mtr | del_sm) & (Ndel_mtr | Ndel_sm))/len(del_del & (del_mtr | del_sm))*100,
-                          len((del_del & (del_mtr | del_sm)).difference(Ndel_all))/len(del_del & (del_mtr | del_sm))*100],
-        "Delay Only": [len(del_delol & (Ndel_aud | Ndel_sm)) / len(del_delol) * 100,
-                       len(del_delol & (Ndel_mtr | Ndel_sm)) / len(del_delol) * 100,
-                       len(del_delol.difference(Ndel_all)) / len(del_delol) * 100]
-    }
-    df_cm = pd.DataFrame(data, index=["Auditory", "Motor", "Silent"]).transpose()
-    plt.figure(figsize=(5, 5))
-    # Adjust font size for posters
-    NEW_BASE_FONT_SIZE = 20
-    plt.rcParams.update({
-        'font.size': NEW_BASE_FONT_SIZE * 1.8,
-        'axes.labelsize': NEW_BASE_FONT_SIZE,
-        'axes.titlesize': NEW_BASE_FONT_SIZE * 1.2,
-        'xtick.labelsize': NEW_BASE_FONT_SIZE * 0.7,
-        'ytick.labelsize': NEW_BASE_FONT_SIZE * 0.7,
-    })
-    sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=80, cbar=False)
-    # plt.title(f"% of electrodes in $NoDelay$")
-    plt.ylabel("vWM electrodes in $Delay$")
-    plt.xlabel("Same electrodes in $NoDelay$")
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_rep_A_M.tif'), dpi=300)
-    plt.close()
+    # ==========================================
+    # 2. 数据处理与参与度统计
+    # ==========================================
+    plot_data = []
+    participation_data = {}
 
-    # Auditory, SM, Motor, and Delay-only electrodes in NoDelay-Silent
-    data = {
-        "Aud responses": [len(del_del & (del_aud | del_sm) & Ndel_S_all)/len(del_del & (del_aud | del_sm))*100,
-                          len((del_del & (del_aud | del_sm)).difference(Ndel_S_all))/len(del_del & (del_aud | del_sm))*100],
-        "Mot responses": [len(del_del & (del_mtr | del_sm) & Ndel_S_all)/len(del_del & (del_mtr | del_sm))*100,
-                          len((del_del & (del_mtr | del_sm)).difference(Ndel_S_all))/len(del_del & (del_mtr | del_sm))*100],
-        "Delay Only": [len(del_delol & Ndel_S_all) / len(del_delol) * 100,
-                       len(del_delol.difference(Ndel_S_all)) / len(del_delol) * 100]
-    }
-    df_cm = pd.DataFrame(data, index=["Active", "Silent"]).transpose()
-    plt.figure(figsize=(4, 5))
-    sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=80, cbar=False)
-    plt.title(f"NoDelay Just Listen (% in Delay)")
-    plt.ylabel("Delay electrodes in LexDelay Silent")
-    plt.xlabel("LexNoDelay Just Listen")
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_rep_A_M_JL.tif'), dpi=300)
-    plt.close()
+    for g_name, labels in group_map.items():
+        if len(labels) == 0: continue
+        
+        # 提取原始数值
+        v_aud_raw = paras_aud.loc[paras_aud.index.intersection(labels), param]
+        v_mtr_raw = paras_mtr.loc[paras_mtr.index.intersection(labels), param]
+        total_n = len(labels)
+        
+        # 统计 0 值比例 (0 视为无效)
+        a_valid = np.sum(v_aud_raw != 0)
+        m_valid = np.sum(v_mtr_raw != 0)
+        
+        participation_data[g_name] = {
+            'aud': [a_valid, total_n - a_valid],
+            'mtr': [m_valid, total_n - m_valid]
+        }
 
-    # Auditory and Motor responses Delay-only electrodes in NoDelay-Silent
-    data = {
-        "Auditory": [len(del_del & del_aud & Ndel_S_all)/len(del_del & del_aud)*100,
-                     len((del_del & del_aud).difference(Ndel_S_all))/len(del_del & del_aud)*100],
-        "Sensory-motor": [len(del_del & del_sm & Ndel_S_all)/len(del_del & del_sm)*100,
-                          len((del_del & del_sm).difference(Ndel_S_all))/len(del_del & del_sm)*100],
-        "Motor": [len(del_del & del_mtr & Ndel_S_all)/len(del_del & del_mtr)*100,
-                  len((del_del & del_mtr).difference(Ndel_S_all))/len(del_del & del_mtr)*100],
-        "Delay Only": [len(del_delol & Ndel_S_all) / len(del_delol) * 100,
-                       len(del_delol.difference(Ndel_S_all)) / len(del_delol) * 100]
-    }
-    df_cm = pd.DataFrame(data, index=["Active", "Silent"]).transpose()
-    plt.figure(figsize=(4, 5))
-    sns.heatmap(df_cm, annot=True, fmt=".2f", cmap="rocket_r", annot_kws={"size": 14}, vmin=0, vmax=80, cbar=False)
-    plt.title(f"NoDelay Just Listen (% in Delay)")
-    plt.ylabel("Delay electrodes in LexDelay Repeat")
-    plt.xlabel("LexNoDelay Just Listen")
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir, f'Confuse_DelNoDeloverlap_jl.tif'), dpi=300)
-    plt.close()
+        # 构建长表
+        for label in labels:
+            if label in paras_aud.index and label in paras_mtr.index:
+                va, vm = paras_aud.loc[label, param], paras_mtr.loc[label, param]
+                # 过滤 0 值
+                va = va if va != 0 else np.nan
+                vm = vm if vm != 0 else np.nan
+                plot_data.append({'Group': g_name, 'Stage': 'Auditory Stage', 'Value': va})
+                plot_data.append({'Group': g_name, 'Stage': 'Motor Stage', 'Value': vm})
 
-    for D_sig,D_tag in zip(
-            (del_del,),#del_sm,del_delol),
-            ('DEL_DEL',)):#'SM_DEL','DELOL_DEL')):
+    df_long = pd.DataFrame(plot_data).dropna(subset=['Value'])
 
-        if D_tag!='DEL_DEL':
-            continue
+    # ==========================================
+    # 3. 绘制分阶段参与度饼图 (数量-换行-百分比 + 无外部标签)
+    # ==========================================
+    # 统一灰色背景
+    unified_grey = '#D3D3D3' 
 
-        # Pie chart (How the Lexical Delay Repeat SM electrodes are distributed )
-        plt.figure()
-        plt.title(f'{D_tag} in DelRep')
-        DLREP_SM_inDLREP = np.array([len(D_sig & del_aud), len(D_sig & del_sm),
-                                     len(D_sig & del_mtr), len(D_sig & del_delol)])
-        DLREP_SM_inDLREP_labels = [f"Auditory {len(D_sig & del_aud)}",
-                                   f"Sensory-motor {len(D_sig & del_sm)}",
-                                   f"Motor {len(D_sig & del_mtr)}",
-                                   f"Delay-only {len(D_sig & del_delol)}"]
-        DLREP_SM_inDLREP_colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col]
-        plt.pie(DLREP_SM_inDLREP,labels=DLREP_SM_inDLREP_labels,colors=DLREP_SM_inDLREP_colors,startangle=90,autopct='%1.2f%%')
+    # 定义自定义格式化函数：数量\n(百分比)
+    def make_participation_autopct(values):
+        def my_autopct(pct):
+            total = sum(values)
+            val = int(round(pct * total / 100.0))
+            # 按照要求：数量 - 换行 - (百分比)
+            return f'{val}\n({pct:.0f}%)'
+        return my_autopct
+
+    for g_name, counts in participation_data.items():
+        fig, axes = plt.subplots(1, 2, figsize=(10, 5), dpi=300)
+        
+        # 配色：饱和色 vs 统一灰色
+        colors_aud = [Auditory_col, unified_grey]
+        colors_mtr = [Motor_col, unified_grey]
+        
+        # A. Auditory Stage Pie
+        axes[0].pie(
+            counts['aud'], 
+            labels=None,      # 移除外部电极组标签
+            colors=colors_aud, 
+            autopct=None, # 先不显示百分比，后续通过自定义函数添加数量和百分比
+            #autopct=make_participation_autopct(counts['aud']), # 数量\n(百分比)
+            startangle=90,
+            pctdistance=0.5, # 调整文字在圆内的位置
+            textprops={'fontsize': 32, 'fontweight': 'bold', 'color': 'black'}, # 维持大字号
+            wedgeprops={'linewidth': 2.5, 'edgecolor': 'white'}
+        )
+        
+        # B. Motor Stage Pie
+        axes[1].pie(
+            counts['mtr'], 
+            labels=None,      # 移除外部电极组标签
+            colors=colors_mtr, 
+            autopct=None, # 先不显示百分比，后续通过自定义函数添加数量和百分比
+            #autopct=make_participation_autopct(counts['mtr']), # 数量\n(百分比)
+            startangle=90,
+            pctdistance=0.5,
+            textprops={'fontsize': 32, 'fontweight': 'bold', 'color': 'black'}, # 维持大字号
+            wedgeprops={'linewidth': 2.5, 'edgecolor': 'white'}
+        )
+        
+        # 环形化与视觉纯净处理
+        for ax in axes:
+            # 保持 Donut 风格，中间留白
+            ax.add_artist(plt.Circle((0,0), 0.5, fc='white'))
+            ax.axis('equal')
+            ax.set_title('') # 确保无标题
+
+        plt.tight_layout()
+        # 存入 Fig4 目录
+        plt.savefig(os.path.join(fig4_dir, f'Pie_Split_{g_name}.svg'), format='svg', bbox_inches='tight')
         plt.show()
 
-        # Pie chart
-        plt.figure()
-        plt.title(f'{D_tag} in NoDelRep')
-        DLREP_SM_inNDLREP = np.array([len(D_sig & Ndel_aud), len(D_sig & Ndel_sm),
-                                      len(D_sig & Ndel_mtr), len(D_sig - Ndel_all)])
-        DLREP_SM_inNDLREP_labels = [f"Auditory {len(D_sig & Ndel_aud)}",
-                                    f"Sensory-motor {len(D_sig & Ndel_sm)}",
-                                    f"Motor {len(D_sig & Ndel_mtr)}",
-                                    f"Silent {len(D_sig - Ndel_all)}"]
-        DLREP_SM_inNDLREP_colors = [Auditory_col, Sensorimotor_col, Motor_col, [0.5,0.5,0.5]]
-        plt.pie(DLREP_SM_inNDLREP,labels=DLREP_SM_inNDLREP_labels,colors=DLREP_SM_inNDLREP_colors,startangle=90,autopct='%1.2f%%')
-        plt.show()
+    # ==========================================
+    # 4. 统计检验 (非参数)
+    # ==========================================
+    def run_nonparametric(df, stage):
+        stage_df = df[df['Stage'] == stage]
+        group_data = [stage_df[stage_df['Group'] == g]['Value'] for g in x_order]
+        res = []
+        for i in range(len(x_order)):
+            for j in range(i + 1, len(x_order)):
+                u, p = stats.mannwhitneyu(group_data[i], group_data[j])
+                res.append({'Comparison': f'{x_order[i]} vs {x_order[j]}', 'p_raw': p})
+        p_raws = [r['p_raw'] for r in res]
+        _, p_fdr, _, _ = multipletests(p_raws, method='fdr_bh')
+        for idx, r in enumerate(res): r['p_fdr'] = p_fdr[idx]
+        return pd.DataFrame(res)
 
-        plt.figure()
-        plt.title(f'{D_tag} in NoDelJ')
-        DLREP_SM_inNDLJL = np.array([len(D_sig & Ndel_S_encode_only), len(D_sig & Ndel_S_del),
-                                     len(D_sig - Ndel_S_all)])
-        DLREP_SM_inNDLJL_labels = [f"Encode_Only{len(D_sig & Ndel_S_encode_only)}",
-                                   f"Delay{len(D_sig & Ndel_S_del)}",
-                                   f"Silent{len(D_sig - Ndel_S_all)}"]
-        DLREP_SM_inNDLJL_colors = [Auditory_col, Delay_col, [0.5,0.5,0.5]]
-        plt.pie(DLREP_SM_inNDLJL,labels=DLREP_SM_inNDLJL_labels,colors=DLREP_SM_inNDLJL_colors,startangle=90,autopct='%1.2f%%')
-        plt.show()
+    print("--- Statistics ---")
+    print("Auditory Stage:\n", run_nonparametric(df_long, 'Auditory Stage'))
+    print("\nMotor Stage:\n", run_nonparametric(df_long, 'Motor Stage'))
 
-        # Brain plot for electrodes in Delay (separated by functions in No Delay)
-        len_d=len(data_LexDelay_Aud.labels[0])
-        TypeLabel=f'{D_tag}_Delay_Rep in NoDelay Rep'
-        cols = np.full((len_d, 3), 0.5)
-        cols[list(D_sig & Ndel_aud),:] = Auditory_col
-        cols[list(D_sig & Ndel_sm),:] = Sensorimotor_col
-        cols[list(D_sig & Ndel_mtr),:] = Motor_col
-        cols[list(D_sig - Ndel_all),:] = (1,1,1)
-        cols_lst=cols[list(D_sig)].tolist()
-        pick_labels=list(data_LexDelay_Aud.labels[0][list(D_sig)])
-        plot_brain(subjs, pick_labels,cols_lst,None,os.path.join(fig_save_dir,f'{TypeLabel}_brain.tif'),0.5,0.2)
-        # atlas2_hist(ch_labels_roi,list(data_LexDelay_Aud.labels[0][list(del_sm - (Ndel_aud | Ndel_sm))]),[0.5,0.5,0.5],os.path.join(fig_save_dir,f'Atlas histogram silent SM in NDL rep.tif'))
+    # ==========================================
+    # 5. 绘制饱和色 Bar-Strip 图 (No Title)
+    # ==========================================
+    plt.figure(figsize=(12, 4))
+    ax = plt.gca()
 
-        # Brain plot for electrodes in Delay (separated by functions in No Delay)
-        len_d=len(data_LexDelay_Aud.labels[0])
-        TypeLabel=f'{D_tag}_Delay_Rep in NoDelay Rep'
-        cols = np.full((len_d, 3), 0.5)
-        cols[list(D_sig & Ndel_aud),:] = Auditory_col
-        cols[list(D_sig & Ndel_sm),:] = Sensorimotor_col
-        cols[list(D_sig & Ndel_mtr),:] = Motor_col
-        cols[list(D_sig - Ndel_all),:] = (1,1,1)
-        cols_lst=cols[list(D_sig)].tolist()
-        pick_labels=list(data_LexDelay_Aud.labels[0][list(D_sig)])
-        plot_brain(subjs, pick_labels,cols_lst,None,os.path.join(fig_save_dir,f'{TypeLabel}_brain.tif'),0.5,0.2)
+    # 柱状图
+    sns.barplot(
+        x='Group', y='Value', data=df_long, hue='Stage', hue_order=['Auditory Stage', 'Motor Stage'],
+        order=x_order, palette=hue_colors_stage, edgecolor='none', saturation=1, 
+        alpha=1.0, errorbar='se', capsize=0.05, err_kws={'linewidth': 3, 'color': 'black'}, zorder=1, ax=ax
+    )
 
-        # Brain plot for Aud and SM electrodes in
-        len_d=len(data_LexDelay_Aud.labels[0])
-        TypeLabel=f'{D_tag}_Delay_Rep in NoDelay Rep'
-        # Delay & whether they are still Encoding electrodes in NoDelay
-        cols = np.full((len_d, 3), 0.5)
-        cols[list(D_sig & (del_aud | del_sm) & Ndel_encode),:] = Auditory_col
-        cols[list(D_sig & (del_aud | del_sm) - Ndel_encode),:] = [0.5,0.5,0.5]
-        cols_lst=cols[list(D_sig & (del_aud | del_sm))].tolist()
-        pick_labels=list(data_LexDelay_Aud.labels[0][list(D_sig & (del_aud | del_sm))])
-        plot_brain(subjs, pick_labels,cols_lst,None,os.path.join(fig_save_dir,f'{TypeLabel}_brain.tif'),0.3,0.2)
-        # Delay & whether they are still Response electrodes in NoDelay
-        cols = np.full((len_d, 3), 0.5)
-        cols[list(D_sig & (del_mtr | del_sm) & Ndel_response),:] = Motor_col
-        cols[list(D_sig & (del_mtr | del_sm) - Ndel_response),:] = [0.5,0.5,0.5]
-        cols_lst=cols[list(D_sig & (del_mtr | del_sm))].tolist()
-        pick_labels=list(data_LexDelay_Aud.labels[0][list(D_sig & (del_aud | del_sm))])
-        plot_brain(subjs, pick_labels,cols_lst,None,os.path.join(fig_save_dir,f'{TypeLabel}_brain.tif'),0.3,0.2)
+    # 散点图
+    strip_plot = sns.stripplot(
+        data=df_long, x='Group', y='Value', hue='Stage', hue_order=['Auditory Stage', 'Motor Stage'],
+        order=x_order, size=7, alpha=1.0, jitter=0.25, dodge=True, marker='o', 
+        linewidth=1.2, edgecolor='white', palette=hue_colors_stage, zorder=2, ax=ax
+    )
 
-        TypeLabel = f'{D_tag}_Delay_Rep in NoDelay JL'
-        cols = np.full((len_d, 3), 0.5)
-        cols[list(D_sig & Ndel_S_encode_only), :] = Auditory_col
-        cols[list(D_sig & Ndel_S_del), :] = Delay_col
-        cols[list(D_sig - Ndel_S_all), :] = (1, 1, 1)
-        cols_lst = cols[list(D_sig)].tolist()
-        pick_labels = list(data_LexDelay_Aud.labels[0][list(D_sig)])
-        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.5, 0.2)
+    # 连线 (以后再搞吧累了真的)
+    # for group_idx in range(len(x_order)):
+    #     try: bsliang_add_connecting_lines(plt, group_idx, strip_plot)
+    #     except: pass
 
-        for ele_cat, ele_cat_tag,spec_col in zip(
-                ([D_sig & Ndel_aud,D_sig & Ndel_sm,D_sig & Ndel_mtr,D_sig.difference(Ndel_all)],
-                 [D_sig & del_aud,D_sig & del_sm,D_sig & del_mtr,del_delol]),
-                (['NDL_Aud','NDL_SM','NDL_M','NDL_Silent'],
-                 ['DL_Aud','DL_SM','DL_M','Delay_Only']),
-                ([0.5,0.5,0.5],Delay_col)
-        ):
-            for epch_data,epoch_taf,figwid,xlim in zip(
-                    (epoc_LexDelay_Aud,epoc_LexNoDelay_Aud,epoc_LexDelay_Resp,epoc_LexNoDelay_Resp),
-                    ('Del_Aud','NoDel_Aud','Del_Resp','NoDel_Resp'),
-                    (1,1,(150/350),(150/350)),
-                    ([-0.5,3],[-0.5,3],[-0.5,0.75],[-0.5,0.75])):
-                plt.figure(figsize=(Waveplot_wth*figwid, Waveplot_hgt))
-                plot_wave(epch_data, ele_cat[0], ele_cat_tag[0], Auditory_col, '-', False)
-                plot_wave(epch_data, ele_cat[1], ele_cat_tag[1], Sensorimotor_col, '-', False)
-                plot_wave(epch_data, ele_cat[2], ele_cat_tag[2], Motor_col, '-', False)
-                plot_wave(epch_data, ele_cat[3], ele_cat_tag[3],spec_col, '-', False)
-                plt.axvline(x=0, linestyle='--', color='k')
-                plt.axhline(y=0, linestyle='--', color='k')
-                plt.legend(loc='upper right', fontsize=8)
-                plt.gca().spines[['top', 'right']].set_visible(False)
-                plt.tight_layout()
-                plt.xlim(xlim)
-                plt.savefig(os.path.join(fig_save_dir, f'{D_tag}_Delay_Rep in NoDelay Rep {epoch_taf} Traces {ele_cat_tag[0]}.tif'), dpi=300)
-                plt.close()
+    # --- 顶级期刊视觉规范 (移除标题) ---
+    for spine in ax.spines.values(): spine.set_linewidth(3)
+    sns.despine(offset=15, trim=True) # 呼吸感偏置
 
-        # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
-        for epch_data,epoch_taf,figwid,xlim in zip(
-                (epoc_LexDelay_Aud,epoc_LexNoDelay_Silence_Aud,epoc_LexDelay_Resp),
-                ('Del_Aud','NoDel_Aud','Del_Resp'),
-                (1,1,(150/350)),
-                ([-0.5,3],[-0.5,3],[-0.5,0.75])):
-            plt.figure(figsize=(Waveplot_wth*figwid, Waveplot_hgt))
-            plot_wave(epch_data, D_sig & Ndel_S_encode_only, f'Encode Only', Auditory_col, '-', False)
-            plot_wave(epch_data, D_sig & Ndel_S_del, f'Delay', Delay_col, '-', False)
-            plot_wave(epch_data, D_sig - Ndel_all, f'Silent', [0.5,0.5,0.5], '-', False)
-            plt.axvline(x=0, linestyle='--', color='k')
-            plt.axhline(y=0, linestyle='--', color='k')
-            plt.legend(loc='upper right', fontsize=8)
-            plt.gca().spines[['top', 'right']].set_visible(False)
-            plt.tight_layout()
-            plt.xlim(xlim)
-            plt.savefig(os.path.join(fig_save_dir, f'{D_tag}_Delay_Rep in NoDelay JL {epoch_taf} Traces.tif'), dpi=300)
-            plt.close()
+    plt.yticks(fontsize=30); plt.xticks(fontsize=0) 
+    ax.set_title('') # 显式移除标题
+    ax.set_xlabel(''); ax.set_ylabel(''); ax.tick_params(axis='x', length=0)
+
+    if ax.get_legend(): ax.get_legend().remove()
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig4_dir, f"RMS_BarStrip.svg"), format='svg', bbox_inches='tight')
+    plt.show()

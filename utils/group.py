@@ -58,7 +58,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
     if not testsubj:
         subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
-        subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117'] # problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+        subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117' and subj != 'D0121' and subj != 'D0128' and subj != 'D0134' and subj != 'D0137' and subj != 'D0138' and subj != 'D0140']# problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     else:
         subjs = ['D0024','D0100']
     # else:
@@ -762,7 +762,7 @@ def sort_chs_by_actonset(mask_in,data_in,win_len,time_range,mask_data=False,bin:
 
             rms_value = np.sqrt(np.mean(not_nan_values ** 2))
 
-            mean_value = np.nansum(not_nan_values)/activity_length
+            mean_value = np.mean(not_nan_values)
 
             sum_value = np.nansum(not_nan_values)
 
@@ -2276,7 +2276,7 @@ def bsliang_add_connecting_lines(plt, k, strip):
 
     # Draw lines between the points
     for i in range(len(GroupA_Xpos)):
-        plt.plot(data_line.Categories[i], data_line.Values[i], color='grey', linewidth=0.05, linestyle='--',
+        plt.plot(data_line.Categories[i], data_line.Values[i], color='dimgrey', linewidth=0.05, linestyle='--',
                  zorder=1)  # Draw
 
     return plt
