@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import numpy as np
+import seaborn as sns
 import pandas as pd
 from ieeg.calc.stats import time_cluster
 import matplotlib.pyplot as plt
@@ -11,6 +12,7 @@ from partd.utils import suffix
 from requests.packages import target
 from statsmodels.stats.multitest import multipletests
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
+manuscript_save_dir = r"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements"
 current_dir = os.getcwd()
 if current_dir != script_dir:
     os.chdir(script_dir)
@@ -152,34 +154,52 @@ def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05, mode:str='time
 
     return time_point, r2_i_full, stat_out_full
 
-def add_alignment_vlines(ax, alignment):
+def add_alignment_vlines(ax, alignment, lower_bound=0, upper_bound=0.75):
     """
-    Adds vertical lines for specific event markers to a matplotlib Axes object
-    based on the alignment type.
-
+    为 matplotlib Axes 对象添加特定事件标记的垂直线段。
+    
     Args:
-        ax (matplotlib.axes.Axes): The Axes object to draw the lines on.
-        alignment (str): The alignment type ('Aud', 'Go', or 'Resp').
+        ax (matplotlib.axes.Axes): 绘图对象。
+        alignment (str): 对齐类型 ('Aud', 'Go', 或 'Resp')。
+        lower_bound (float): 线段底部的 y 值，默认 0。
+        upper_bound (float): 线段顶部的 y 值，默认 0.4。
     """
+    
+    # --- 1. 新增：x=0 的参考灰线参数 ---
+    # 保持与事件标记线相同的 bound 和 alpha，但宽度设为 1.5，颜色为灰色
+    ax.vlines(x=0, ymin=lower_bound, ymax=upper_bound, 
+              colors='gray', linestyles='--', alpha=0.7, linewidth=1.5)
+
+    # --- 2. 原始事件标记线参数 (深红色) ---
+    line_params = {
+        'ymin': lower_bound,
+        'ymax': upper_bound,
+        'colors': [138/255, 12/255, 0/255],
+        'linestyles': '--',
+        'alpha': 0.7,
+        'linewidth': 2.5  # 保持 2.5pt 粗细以区分基准线
+    }
+
     if alignment == 'Aud':
         # Stim offsets
-        ax.axvline(x=0.59, color=[138/255,12/255,0/255], linestyle='--', alpha=0.7, linewidth=1)
-        # ax.axvline(x=0.59 + 0.1480 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        # ax.axvline(x=0.59 - 0.1480 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
+        ax.vlines(x=0.59, **line_params)
         # Delay offsets
-        ax.axvline(x=1.5, color=[138/255,12/255,0/255], linestyle='--', alpha=0.7, linewidth=1)
-        # ax.axvline(x=1.7201 + 0.1459 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        # ax.axvline(x=1.7201 - 0.1459 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
+        ax.vlines(x=1.5, **line_params)
+        
     elif alignment == 'Go':
         # Motor onsets
-        ax.axvline(x=0.7961, color=[138/255,12/255,0/255], linestyle='--', alpha=0.7, linewidth=1)
-        # ax.axvline(x=0.7961 + 1.0532 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        # ax.axvline(x=0.7961 - 1.0532 / 2, color='red', linestyle='--', alpha=0.7, linewidth=1)
+        ax.vlines(x=0.7961, **line_params)
+        
     elif alignment == 'Resp':
         # Motor offsets
-        ax.axvline(x=0.6096, color=[138/255,12/255,0/255], linestyle='--', alpha=0.7, linewidth=1)
-        ax.axvline(x=0.6096 + 0.2190, color='red', linestyle='--', alpha=0.7, linewidth=1)
-        ax.axvline(x=0.6096 - 0.2190, color='red', linestyle='--', alpha=0.7, linewidth=1)
+        ax.vlines(x=0.6096, **line_params)
+        # 变体线段使用红色区分
+        ax.vlines(x=[0.6096 - 0.2190, 0.6096 + 0.2190], 
+                  ymin=lower_bound, ymax=upper_bound, 
+                  colors='red', linestyle='--', alpha=0.7, linewidth=2.5)
+
+    # 强制刷新视图范围以容纳线段
+    ax.set_ylim(bottom=min(ax.get_ylim()[0], lower_bound))
 
 #%% Plotting & Big Figure Generation
 import matplotlib.pyplot as plt
@@ -226,7 +246,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         case '_huge':
             unified_y_scale = 2   # [请调节] _huge
         case '':
-            unified_y_scale = 0.3   # [请调节] 默认值 (类似 else)
+            unified_y_scale = 0.9   # [请调节] 默认值 (类似 else)
 
     # --- 定义所有要画的电极组 (使用统一的 Scale) ---
     all_elec_configs = [
@@ -234,15 +254,17 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         ('Auditory', Auditory_col, unified_y_scale),
         ('Sensorymotor', Sensorimotor_col, unified_y_scale),
         ('Motor', Motor_col, unified_y_scale),
-        ('Delay_only', Delay_col, unified_y_scale),
-        ('Wgw_p55b', WGW_p55b_col, unified_y_scale),
-        ('Wgw_a55b', WGW_a55b_col, unified_y_scale)
+        ('Delay_only', Delay_col, unified_y_scale)
+        # ('Wgw_p55b', WGW_p55b_col, unified_y_scale),
+        # ('Wgw_a55b', WGW_a55b_col, unified_y_scale)
     ]
 
     # [修改] 定义列（Alignment）及其参数 - 现在 Go 在第二列，Resp 在第三列
     all_alignments = [
         # (Name, X-Lim)
-        ('Aud', [-0.2, 1.75])
+        ('Aud', [-0.25, 1.6]),
+        # ('Go', [-0.25, 1.5]),
+        # ('Resp', [-0.25, 1.5])
     ]
 
     # 计算每一列的时间长度，作为宽度的比例
@@ -345,24 +367,45 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                                     color=sig_bar_col, alpha=0.4, linewidth=10, solid_capstyle='butt')
                         j += 1
                     
-                    # --- 坐标轴修饰 ---
-                    ax.tick_params(axis='both', which='major', labelsize=12)
-                    ax.ticklabel_format(axis='y', style='sci', scilimits=(-2, -2), useMathText=True)
-                    ax.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
-                    ax.set_xlim(xlim_align)
-                    ax.set_ylim(-0.002, para_sig_bar[0] + 2 * para_sig_bar[1])
-                    ax.spines['top'].set_visible(False)
-                    ax.spines['right'].set_visible(False)
-                    
-                    # Title for each subplot is the electrode group
-                    ax.set_title(elec_grp, fontsize=16, fontweight='bold', pad=10)
-                    
-                    # YLabel only for the first plot
-                    if col_idx == 0:
-                        ax.set_ylabel("ACC", fontsize=16, fontweight='bold')
+                    # --- 统一视觉标准：坐标轴修饰更新 ---
+                    # 1. 基础刻度参数：24号字体，加粗刻度线
+                    ax.tick_params(axis='both', which='major', labelsize=24, length=6, width=2.5)
 
-                    # X 轴标签
-                    ax.set_xlabel("Time (s)", fontsize=14, fontweight='bold')
+                    # 2. 禁用科学计数法，改用标准浮点显示 (针对 ACC 数据)
+                    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f')) 
+
+                    # 3. X 轴定位：从 0 开始，每隔 0.5 步长
+                    xticks = [0, 0.5, 1.0, 1.5]
+                    xticks = [t for t in xticks if xlim_align[0] <= t <= xlim_align[1]]
+                    ax.set_xticks(xticks)
+
+                    # 4. 0.0 标签美化：将 "0.0" 简化为 "0"
+                    plt.draw()
+                    x_labels = [l.get_text() for l in ax.get_xticklabels()]
+                    new_x_labels = ["0" if (l == "0.0" or l == ".0") else l for l in x_labels]
+                    ax.set_xticklabels(new_x_labels)
+
+                    # 5. 范围限制与脊柱边界裁剪
+                    ax.set_xlim(xlim_align)
+                    curr_ylim = [-0.002, para_sig_bar[0] + 2 * para_sig_bar[1]]
+                    ax.set_ylim(curr_ylim)
+                    # 关键：强制黑线范围，消除 -0.25 之前的延伸线
+                    ax.spines['bottom'].set_bounds(xlim_align[0], xlim_align[1])
+                    ax.spines['left'].set_bounds(curr_ylim[0], curr_ylim[1])
+
+                    # 6. 顶级期刊“呼吸感”：移除顶部/右侧轴，设置偏置
+                    sns.despine(ax=ax, offset=10, trim=True)
+                    for spine in ['left', 'bottom']:
+                        ax.spines[spine].set_linewidth(3)
+
+                    # 7. 极简移除：删除 Title 和所有 Labels (统一在 AI 中排版)
+                    ax.set_title('') 
+                    ax.set_xlabel('')
+                    ax.set_ylabel('')
+
+                    # 如果是首列且需要特殊标识 (通常在 Fig4/Fig1 这种紧凑排版中也会移除)
+                    # if col_idx == 0:
+                    #     ax.set_ylabel("ACC", fontsize=24, fontweight='bold')
                         
         fig.suptitle(f"ACC Aligned to {all_alignments[0][0]}", fontsize=20, fontweight='bold')
         plt.tight_layout(rect=[0, 0, 1, 0.95]) 
@@ -376,7 +419,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
     # 2. 绘制 Beta (Feature) 和 RMS 大图
     # =============================================================================
     print("Starting Beta and RMS Big Plots...")
-
+    Fig_dir = 'Fig5' #'Fig6'
     group_beta_type = 'max' # 'rms' or 'max' or 'avg'
     match is_huge:
         case '_onlysem':
@@ -389,8 +432,10 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
             #target_beta_features = ['aco', 'pho', 'wordnessNonword:pho', 'sem']
             target_beta_features = ['aco_main', 'pho_main', 'sem']  
         case _:
-            target_beta_features = ['pho_word','pho_nonword','pho_gain']
-            #target_beta_features = ['aco_main','pho_main','pho_interact']
+            if Fig_dir == 'Fig5':
+                target_beta_features = ['aco_main','pho_main','sem']
+            elif Fig_dir == 'Fig6':
+                target_beta_features = ['pho_word','pho_nonword','pho_gain']
             #target_beta_features = ['aco_main','pho_main','sem']
 
     feature_colors = {
@@ -581,7 +626,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                     ax_r = axes_rms[col_idx]
                     
                     # 1. 基础参考线优化
-                    ax_r.axvline(x=0, color='#666666', linestyle='--', linewidth=1.5, alpha=0.8, zorder=0)
+                    #ax_r.axvline(x=0, color='#666666', linestyle='--', linewidth=1.5, alpha=0.8, zorder=0)
                     ax_r.axhline(y=0, color='#DDDDDD', linewidth=1, zorder=0)
                     
                     add_alignment_vlines(ax_r, alignment)
@@ -617,30 +662,59 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
 
                     # --- 子图坐标轴细节控制 ---
                     
-                    # 4. 基础解构
-                    ax_r.spines[['top', 'right']].set_visible(False)
-                    ax_r.spines['bottom'].set_position(('outward', 10))
-                    
-                    # 5. 根据位置决定是否保留 Y 轴
-                    if col_idx == 0:
-                        # 第一幅图保留 Y 轴及标签
-                        ax_r.spines['left'].set_visible(True)
-                        ax_r.spines['left'].set_position(('outward', 10))
-                        ax_r.set_ylabel(f"{group_beta_type.upper()} Beta", fontsize=14, fontweight='medium', labelpad=10)
-                        ax_r.tick_params(axis='y', which='major', direction='out', length=5, width=1.2, labelsize=12, pad=5,labelleft=True)
-                    else:
-                        # 第二、三幅图彻底隐藏 Y 轴
-                        ax_r.spines['left'].set_visible(False)
-                        ax_r.set_ylabel('')
-                        ax_r.set_yticklabels([])
-                        ax_r.tick_params(axis='y', left=False) # 隐藏刻度线
-                    
-                    # 6. X 轴通用设置
-                    ax_r.tick_params(axis='x', which='major', direction='out', length=5, width=1.2, labelsize=12, pad=5)
-                    ax_r.set_xlabel("Time (s)", fontsize=14, fontweight='medium', labelpad=10)
+                    # --- 统一视觉标准：Beta 曲线坐标轴修饰更新 ---
+
+                    # --- 统一视觉标准：防消失增强版 ---
+
+                    # 1. 基础参数与范围 (先设范围，防止 trim 误删)
                     ax_r.set_xlim(xlim_align)
-                    ax_r.set_ylim(-0.05 * fea_plot_yscale, fea_plot_yscale * 1.1)
-                    ax_r.set_title(elec_grp, fontsize=16, fontweight='bold', pad=20)
+                    curr_ylim = [-0.05 * fea_plot_yscale, fea_plot_yscale * 1.1]
+                    ax_r.set_ylim(curr_ylim)
+
+                    # 2. 显式控制 Y 轴可见性
+                    if col_idx == 0:
+                        ax_r.yaxis.set_visible(True) # 强制开启 Y 轴对象
+                        ax_r.spines['left'].set_visible(True)
+                        ax_r.tick_params(axis='y', labelleft=True, left=True) # 确保刻度和标签都在
+                        despine_left = False # sns.despine 的 left=False 表示不移除左轴
+                    else:
+                        ax_r.yaxis.set_visible(False)
+                        ax_r.spines['left'].set_visible(False)
+                        despine_left = True  # 移除左轴
+
+                    # 3. 基础格式：24号字体，加粗刻度线
+                    ax_r.tick_params(axis='both', which='major', labelsize=24, length=6, width=2.5)
+                    ax_r.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
+
+                    # 4. 核心：执行呼吸感 Offset
+                    # 注意：一定要把 left 状态传给 despine
+                    sns.despine(ax=ax_r, offset=10, trim=True, left=despine_left, top=True, right=True)
+
+                    # 5. 强制加粗与手动边界控制 (在 despine 之后再次确认)
+                    ax_r.spines['bottom'].set_linewidth(3)
+                    ax_r.spines['bottom'].set_bounds(0, 1.5)
+
+                    if col_idx == 0:
+                        ax_r.spines['left'].set_linewidth(3)
+                        ax_r.spines['left'].set_bounds(0,0.75)
+
+                    # 6. X 轴刻度步长与 0 刻度美化
+                    xticks = [0, 0.5, 1.0, 1.5]
+                    xticks = [t for t in xticks if xlim_align[0] <= t <= xlim_align[1]]
+                    ax_r.set_xticks(xticks)
+                    ax_r.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.1f'))
+
+                    # 执行渲染并优化 0.0 -> 0
+                    plt.draw()
+                    x_labels = [l.get_text() for l in ax_r.get_xticklabels()]
+                    new_x_labels = ["0" if (l == "0.0" or l == ".0") else l for l in x_labels]
+                    ax_r.set_xticklabels(new_x_labels)
+
+                    # 7. 移除冗余
+                    ax_r.set_title('') 
+                    ax_r.set_xlabel('')
+                    ax_r.set_ylabel('')
+                    ax_r.tick_params(axis='x', length=0) # 保持 X 轴纯净
 
         # --- 全局图例与保存设置 ---
         
@@ -653,23 +727,24 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         #             fontsize=11, ncol=1, bbox_to_anchor=(0.85, 0.5))
 
         # 9. 调整布局，rect 参数为图例留出右侧空间 (0.8 意味着绘图区只占左侧 80%)
-        plt.tight_layout(rect=[0.05, 0, 0.85, 0.95])
+        #plt.tight_layout(rect=[0.05, 0, 0.85, 0.95])
+        plt.tight_layout()
 
         # 保存设置
         save_dir_rms = os.path.join('figs', 'publication_quality_plots')
         os.makedirs(save_dir_rms, exist_ok=True)
-        save_name_rms = os.path.join(save_dir_rms, f'RMS_Dynamics_vWM_{vWM_lambda}.tif')
+        save_name_rms = os.path.join(save_dir_rms, f'RMS_Dynamics_vWM_{vWM_lambda}.svg')
         plt.savefig(save_name_rms, dpi=300) 
-        plt.close(fig_rms)
+        #plt.close(fig_rms)
         
-        for fea, f in figs_beta.items():
-            f.suptitle(f"Beta for {fea} Aligned to {all_alignments[0][0]}", fontsize=20, fontweight='bold')
-            plt.figure(f.number)
-            plt.tight_layout(rect=[0, 0, 1, 0.95])
-            save_name_beta = os.path.join('figs', f'z_score_unnormalized{is_yn}{is_huge}', 
-                                        f'BigPlot_Beta_Part{chunk_idx+1}_{fea.replace(":", "_")}.tif')
-            plt.savefig(save_name_beta, dpi=100)
-            plt.close(f)
+        # for fea, f in figs_beta.items():
+        #     f.suptitle(f"Beta for {fea} Aligned to {all_alignments[0][0]}", fontsize=20, fontweight='bold')
+        #     plt.figure(f.number)
+        #     plt.tight_layout(rect=[0, 0, 1, 0.95])
+        #     save_name_beta = os.path.join(manuscript_save_dir, Fig_dir,
+        #                                 f'Beta_Part{chunk_idx+1}_{fea.replace(":", "_")}.svg')
+        #     plt.savefig(save_name_beta, dpi=300)
+        #     plt.close(f)
 
     print("All plots finished.")
 # %%
