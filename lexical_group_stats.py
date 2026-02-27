@@ -5,9 +5,9 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
+groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -658,16 +658,10 @@ if groupsTag == "LexDelay":
     import seaborn as sns
     from matplotlib.colors import LinearSegmentedColormap
     pink_rgb = (1.0, 0.2, 0.6) 
-    pink_cmap = LinearSegmentedColormap.from_list("pink_density", ["white", pink_rgb], N=256)
+    pink_cmap = LinearSegmentedColormap.from_list("pink_density", ["grey", (1.0, 1.0, 1.0)], N=256)
 
     def analyze_and_plot_density_comparison(density_vwm, density_novwm, mask_vwm, mask_novwm, g_name, base_color, desat_color):
-        """
-        更新后的顶级期刊风格绘图：
-        1. 移除 Y 轴及所有相关标签/刻度。
-        2. 移除 X 轴标题，保留并美化 X 轴刻度标签。
-        3. X 轴采用对数坐标 (Log Scale)。
-        4. 坐标轴加粗，采用偏置风格。
-        """
+
         threshold_val = 1e-6
         vals_vwm = density_vwm[density_vwm > threshold_val].ravel()
         vals_novwm = density_novwm[density_novwm > threshold_val].ravel()
@@ -738,7 +732,6 @@ if groupsTag == "LexDelay":
 
         return kl_div
 
-    # 1. 准备数据组 (使用你定义的变量)
     groups_to_plot = ['Auditory', 'Sensorimotor', 'Motor', 'DelayOnly']
     groups = {
         'Auditory': {'idx': LexDelay_Auditory_in_Delay_sig_idx, 'rgb': Auditory_col},
@@ -760,51 +753,58 @@ if groupsTag == "LexDelay":
         return [c + (1.0 - c) * factor for c in rgb]
 
     def make_comparison_cmap(base_rgb, desat_rgb):
-        # 0: 背景, 1: vWM Unique, 2: novWM Unique, 3: Overlap (Yellow)
         arr = np.array([
             [1, 1, 1],    
             base_rgb,     
             desat_rgb,    
-            [1, 1, 0]     # 重叠部分改为黄色
+            [1, 1, 0] 
         ], dtype=float)
         return ListedColormap(arr)
 
     def get_nan_mask_balanced(chs_coor, target_indices, fixed_bw=0.3, abs_thresh=1e-3):
         target_df = chs_coor.iloc[list(target_indices)]
-        coords = target_df[['x', 'y', 'z']].values
-        n = len(coords)
-        if n < 3: return None
-
-        # --- 1. 计算权重 (1/avg_dist per point) ---
-        dist_matrix = cdist(coords, coords)
-        # 计算每个点到其他点的平均距离，防止除以0
-        avg_dists = np.sum(dist_matrix, axis=1) / (n - 1)
-        point_weights = 1.0 / (avg_dists + 1e-6) 
         
-        # 打印组别统计指标
-        global_avg_dist = np.mean(pdist(coords))
-        spatial_intensity = n / global_avg_dist if global_avg_dist > 0 else 0
-        print(f"Group Stats: N={n} | Avg_Dist={global_avg_dist:.2f}mm | Intensity={spatial_intensity:.4f}")
-
-        # --- 2. 空间网格定义 ---
         res = 2
         x_range, y_range, z_range = slice(-70, 71, res), slice(-100, 71, res), slice(-60, 81, res)
         x_grid, y_grid, z_grid = np.mgrid[x_range, y_range, z_range]
         grid_coords = np.vstack([x_grid.ravel(), y_grid.ravel(), z_grid.ravel()])
-
-        # --- 3. 加权核密度估计 ---
-        kernel = stats.gaussian_kde(coords.T, weights=point_weights)
-        kernel.set_bandwidth(bw_method=fixed_bw)
-        density = kernel(grid_coords).reshape(x_grid.shape)
-
-        # --- 4. 95% 分位数阈值 ---
-        non_zero_vals = density[density > 0]
-        if len(non_zero_vals) == 0: return None
-        thresh = np.percentile(non_zero_vals, 95)
         
-        mask = np.full(density.shape, np.nan, dtype=np.float32)
-        mask[density >= thresh] = 1.0 
-        return mask, density
+        final_density = np.zeros(x_grid.shape, dtype=np.float32)
+        final_mask = np.full(x_grid.shape, np.nan, dtype=np.float32)
+
+        hemi_logic = {
+            'LH': target_df[target_df['x'] < 0],
+            'RH': target_df[target_df['x'] > 0]
+        }
+
+        for hemi_name, hemi_df in hemi_logic.items():
+            coords = hemi_df[['x', 'y', 'z']].values
+            n = len(coords)
+            if n < 3: 
+                continue
+
+            dist_matrix = cdist(coords, coords)
+            avg_dists = np.sum(dist_matrix, axis=1) / (n - 1)
+            point_weights = 1.0 / (avg_dists + 1e-6) 
+            
+            point_weights = point_weights / np.sum(point_weights) 
+
+            kernel = stats.gaussian_kde(coords.T, weights=point_weights)
+            kernel.set_bandwidth(bw_method=fixed_bw)
+            
+            hemi_mask_in_grid = (x_grid.ravel() < 0) if hemi_name == 'LH' else (x_grid.ravel() > 0)
+            hemi_density_flat = np.zeros(grid_coords.shape[1])
+            hemi_density_flat[hemi_mask_in_grid] = kernel(grid_coords[:, hemi_mask_in_grid])
+            
+            hemi_density = hemi_density_flat.reshape(x_grid.shape)
+            final_density += hemi_density
+
+            non_zero_vals = hemi_density[hemi_density > 0]
+            if len(non_zero_vals) > 0:
+                thresh = np.percentile(non_zero_vals, 95)
+                final_mask[hemi_density >= thresh] = 1.0 
+
+        return final_mask, final_density
 
     def build_comparison_volume(m_vwm, m_novwm, voxel_size=2, origin=(-70, -100, -60),delay_only=False):
         if m_vwm is None or m_novwm is None: return None
