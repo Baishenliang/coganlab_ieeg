@@ -15,10 +15,11 @@ manuscript_save_dir = r"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elem
 
 # 物理尺寸常量 (与之前的 Wave Plots 严格对齐)
 # 宽度计算公式: Width = (Duration * unit_scale) + left_padding + right_padding
-unit_scale = 3.0        # 每 1 秒数据对应的物理长度 (inches/sec)
-left_padding = 1.6      # 左侧固定留白 (inches)，用于对齐 Y 轴
-right_padding = 0.4     # 右侧固定留白 (inches)
-fig_height = 3        # TFR 图像固定高度
+fig_scale = 0.5 # 全局缩放因子 (调整整体大小，保持宽高比不变)
+unit_scale = 3.0*fig_scale        # 每 1 秒数据对应的物理长度 (inches/sec)
+left_padding = 1.6*fig_scale      # 左侧固定留白 (inches)，用于对齐 Y 轴
+right_padding = 0.4*fig_scale     # 右侧固定留白 (inches)
+fig_height = 3*fig_scale        # TFR 图像固定高度
 dpi = 300
 
 plt.rcParams['pdf.fonttype'] = 42
@@ -42,7 +43,7 @@ def plot_tfr_scaled(tfr_data, pick, x_limits, save_name, is_auditory=False):
     ax = fig.add_subplot(111)
 
     # 绘图：show=False 防止弹出多余窗口
-    tfr_data.plot(picks=pick, vlim=(-2, 2), cmap=parula_map, axes=ax, colorbar=False, show=False)
+    tfr_data.plot(picks=pick, fmin=0, fmax=400, yscale='linear', vlim=(-2, 2), cmap=parula_map, axes=ax, colorbar=False, show=False)
     
     # 装饰线
     ax.axvline(x=0, linestyle='--', color='k', linewidth=2.5)
@@ -68,12 +69,12 @@ def plot_tfr_scaled(tfr_data, pick, x_limits, save_name, is_auditory=False):
     
     # Y 轴刻度逻辑
     if is_auditory:
-        ax.set_yticks([6, 19, 67, 300, 1065])
-        ax.tick_params(axis='y', labelsize=24)
+        # ax.set_yticks([6, 19, 67, 300, 1065]) # Let MNE handle ticks for linear scale
+        ax.tick_params(axis='y', labelsize=18)
     else:
         ax.set_yticks([])
 
-    ax.tick_params(axis='x', labelsize=24)#, rotation=45)
+    ax.tick_params(axis='x', labelsize=18)#, rotation=45)
     
     # 矢量化保存
     if not os.path.exists(manuscript_save_dir):
