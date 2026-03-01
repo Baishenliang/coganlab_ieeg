@@ -6,6 +6,22 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import os
+import sys
+import pickle
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+import matplotlib.colors as mcolors
+import seaborn as sns
+from sklearn.decomposition import NMF
+from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+from scipy.spatial.distance import pdist
+
+sys.path.append(os.path.abspath(os.path.join("..", "..")))
+import utils.group as gp
+
 HOME = os.path.expanduser("~")
 LAB_root = os.path.join(HOME, "Box", "CoganLab")
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
@@ -285,571 +301,437 @@ def plot_stability_metrics(results):
 metrics = evaluate_nmf_stability(final_array, k_range=range(2, 10))
 plot_stability_metrics(metrics)
 
-#%% NMF
-import numpy as np
-import pandas as pd
-from sklearn.decomposition import NMF
+# %% Auto define optimal k using BIC
 
-# --- 1. Data Preprocessing (NMF requires non-negative input) ---
-# Check if negative values exist in the data
-X = final_array.copy()
-if X.min() < 0:
-    print(f"Negative values detected (min={X.min():.2f}). Shifting data to satisfy NMF non-negativity constraint...")
-    X = X - X.min()
+def auto_find_optimal_k_nmf(X, k_range=range(2, 10), plot=True):
+    """
+    使用 BIC (Bayesian Information Criterion) 自动寻找 NMF 的最佳秩 (k)。
+    
+    原理：假设残差服从高斯分布，根据重建误差计算 BIC。寻找使 BIC 最小的 k。
+    """
+    
+    n_samples, n_features = X.shape
+    n_datapoints = n_samples * n_features  # 数据点总数 (N)
+    
+    bic_scores = []
+    
+    print("正在计算各 k 值的 BIC 准则...")
+    for k in k_range:
+        # 运行 NMF
+        model = NMF(n_components=k, init='nndsvd', max_iter=500, random_state=42)
+        model.fit(X)
+        
+        # 1. 计算 RSS (残差平方和)
+        rss = model.reconstruction_err_**2
+        
+        # 2. 计算自由度 (自由参数的数量 P)
+        # W 矩阵有 n_samples * k 个参数，H 矩阵有 k * n_features 个参数
+        n_parameters = k * (n_samples + n_features)
+        
+        # 3. 计算 BIC
+        # 公式: N * ln(RSS / N) + P * ln(N)
+        # 第一项代表误差 (越小越好)，第二项代表复杂度惩罚 (越小越好)
+        bic = n_datapoints * np.log(rss / n_datapoints) + n_parameters * np.log(n_datapoints)
+        
+        bic_scores.append(bic)
+        print(f"  k={k} | RSS={rss:.2f} | Parameters={n_parameters} | BIC={bic:.2f}")
 
-# --- 2. Run NMF ---
-n_components = 3
-# init='nndsvd' typically yields more consistent and sparse results
-model = NMF(n_components=n_components, init='nndsvd', random_state=42, max_iter=500)
+    # 自动找出 BIC 最小的 k
+    optimal_k = k_range[np.argmin(bic_scores)]
+    print(f"\n✅ 根据 BIC 准则，最佳的 Component 数量 (k) 是: {optimal_k}")
+    
+    if plot:
+        plt.figure(figsize=(8, 4))
+        plt.plot(k_range, bic_scores, 'o-', color='tab:purple', linewidth=2, markersize=8)
+        
+        # 标出最低点
+        min_bic = min(bic_scores)
+        plt.axvline(x=optimal_k, color='red', linestyle='--', alpha=0.7, label=f'Optimal k = {optimal_k}')
+        plt.plot(optimal_k, min_bic, 'r*', markersize=15)
+        
+        plt.title('NMF Optimal k Selection using BIC', fontsize=14, fontweight='bold')
+        plt.xlabel('Number of Components (k)', fontsize=12)
+        plt.ylabel('BIC Score (Lower is better)', fontsize=12)
+        plt.xticks(k_range)
+        plt.grid(True, linestyle='--', alpha=0.5)
+        plt.legend()
+        plt.gca().spines['top'].set_visible(False)
+        plt.gca().spines['right'].set_visible(False)
+        plt.tight_layout()
+        plt.show()
+        
+    return optimal_k
 
-# W: (n_samples, n_components) -> e.g., (91, 3) 
-# Contribution weights of each electrode (sample) to each component
-W = model.fit_transform(X)
+# --- 运行示例 ---
+# 假设 final_array 是你的数据
+optimal_k = auto_find_optimal_k_nmf(final_array, k_range=range(2, 10))
+print(f"你可以直接将 n_components 设为: {optimal_k}")
 
-# H: (n_components, n_features) -> e.g., (3, 900)
-# Time series (Trace) for each component
-H = model.components_
+#%% 0. Global Setup & Imports
 
-# --- 3. Plotting: Weighted Average Traces of Top 50% Electrodes ---
-import matplotlib.ticker as ticker
-
-signal_data = final_array 
-
-plt.figure(figsize=(12, 4))
-
-MotorPrep_col = [1.0, 0.0784, 0.5765] 
 Sensorimotor_col = [1, 0, 0]  
 Auditory_col = [0, 1, 0]  
-Delay_col = [1, 0.65, 0]  
 Motor_col = [0, 0, 1]  
-colors = [
-    Sensorimotor_col,
-    Motor_col, 
-    Delay_col,
-    Auditory_col, 
-    Delay_col, 
-    Sensorimotor_col, 
-    '#7f7f7f', 
-    '#9467bd', 
-    '#8c564b'  
-]
-colors_trace = [[1,0,0],[0,1,0],[1,165/255,0]] #Spt
-comp_names = ['Auditory_continuous', 'Auditory_motor', 'Auditory_onset'] #Spt
+Delay_col = [1, 0.65, 0]
 
-color_map = {
-    'Auditory_continuous':      [1, 0, 0],       # Red
-    'Auditory_motor':      [0, 1, 0],       # Green
-    'Auditory_onset': [1, 165/255, 0]  # Orange
+macro_color_dict = {
+    'SM_Auditory': Auditory_col,
+    'SM_Motor': Motor_col,
+    'Sustained': Delay_col
 }
 
-nmf_identity = {
-    1: 'Auditory_motor',
-    2: 'Auditory_onset',
-    0: 'Auditory_continuous'
-}
+#%% 1. NMF Data Preprocessing & Execution
+X = final_array.copy()
+if X.min() < 0:
+    X = X - X.min()
 
+n_components = 5
+model = NMF(n_components=n_components, init='nndsvd', random_state=42, max_iter=500)
 
-legend_order = ['Auditory_onset', 'Auditory_continuous', 'Auditory_motor']
+W = model.fit_transform(X)
+H = model.components_
 
+comp_names = [f'Comp_{i+1}' for i in range(n_components)]
 
-active_names = [name for name in legend_order if name in nmf_identity.values()]
+#%% 2. Plot NMF Component Traces (H Matrix)
+plt.figure(figsize=(10, 4))
+colors = plt.cm.tab10.colors
 
-for name in active_names:
-    
-    target_indices = [k for k, v in nmf_identity.items() if v == name]
-    if not target_indices: continue
-    i = target_indices[0] 
-    
-    component_weights = W[:, i]
-    
-    threshold = np.percentile(component_weights, 75)
-    
-    top_indices = np.where(component_weights >= threshold)[0]
-    
-    if len(top_indices) == 0:
-        continue
-
-    selected_signals = signal_data[top_indices, :]  
-    raw_weights = component_weights[top_indices]    
-    
-    weight_sum = np.sum(raw_weights)
-    if weight_sum > 0:
-        norm_weights = raw_weights / weight_sum
-    else:
-        norm_weights = np.ones_like(raw_weights) / len(raw_weights)
-    
-    weighted_mean = np.sum(selected_signals * norm_weights[:, np.newaxis], axis=0)
-    
-    weighted_variance = np.sum(norm_weights[:, np.newaxis] * (selected_signals - weighted_mean)**2, axis=0)
-    weighted_std = np.sqrt(weighted_variance)
-    sem = weighted_std / np.sqrt(len(top_indices))
-    
-    color = color_map[name]
-    label_text = f"{name} (n={len(top_indices)})"
-    
-    plt.plot(x_linear, weighted_mean, label=label_text, color=color, linewidth=2)
-    plt.fill_between(x_linear, weighted_mean - sem, weighted_mean + sem, color=color, alpha=0.2)
+for i in range(n_components):
+    plt.plot(x_linear, H[i, :], label=comp_names[i], color=colors[i], linewidth=2.5, alpha=0.85)
 
 for idx in zero_indices:
     plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
 for idx in minus_point_five_indices:
     plt.axvline(x=idx, color='k', linestyle='-', linewidth=1, alpha=0.5)
 
-plt.title('Weighted Average Traces (Top 25% Electrodes per Component)')
-plt.xlabel('Time (s)')
-plt.ylabel('Amplitude (Z-score)')
-
-plt.gca().xaxis.set_major_locator(ticker.FixedLocator(tick_indices))
-plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(time_formatter))
-
-plt.legend(fontsize=12, loc='upper right')
-plt.grid(True, alpha=0.3)
+plt.title(f'Temporal Traces of the {n_components} NMF Components (H Matrix)', fontsize=14, fontweight='bold')
+plt.xlabel('Time (s)', fontsize=12)
+plt.ylabel('Component Amplitude (a.u.)', fontsize=12)
+plt.gca().xaxis.set_major_locator(mticker.FixedLocator(tick_indices))
+plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(time_formatter))
+plt.legend(loc='upper right', bbox_to_anchor=(1.18, 1), frameon=False)
 plt.gca().spines['top'].set_visible(False)
 plt.gca().spines['right'].set_visible(False)
 plt.tight_layout()
+
+save_dir = '../Greg_ROIs/fig'
+if not os.path.exists(save_dir): 
+    os.makedirs(save_dir)
+    
+save_filename = "Comp_traces.svg"
+save_path = os.path.join(save_dir, save_filename)
+
+plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
+
 plt.show()
 
-sorted_comp_names = [nmf_identity[i] for i in range(n_components)]
+#%% 3. Hierarchical Clustering (Forcing 3 Macro Clusters)
+dist_matrix = pdist(H, metric='correlation')
+Z = linkage(dist_matrix, method='average')
 
-df_weights = pd.DataFrame(W, columns=sorted_comp_names)
+target_macro_clusters = 3
+macro_labels = fcluster(Z, target_macro_clusters, criterion='maxclust')
 
-df_weights.insert(0, 'Channel', final_chs)
-df_weights.insert(1, 'Group', final_grps)
+unique_labels = sorted(np.unique(macro_labels))
+custom_macro_names = ['SM_Auditory', 'SM_Motor', 'Sustained']
+label_to_name = {label: custom_macro_names[i] for i, label in enumerate(unique_labels)}
+macro_mapping = {comp_names[i]: label_to_name[macro_labels[i]] for i in range(n_components)}
 
-df_weights['Dominant_Comp'] = df_weights[sorted_comp_names].idxmax(axis=1)
+plt.figure(figsize=(6, 4))
+dendro = dendrogram(Z, labels=comp_names, orientation='top', 
+                    link_color_func=lambda x: 'tab:blue')
+plt.title(f'Hierarchical Clustering (Forced to {target_macro_clusters} Macro Clusters)', fontsize=12, fontweight='bold')
+plt.ylabel('Distance (1 - Pearson r)')
+plt.gca().spines['top'].set_visible(False)
+plt.gca().spines['right'].set_visible(False)
+plt.tight_layout()
 
-# Save the new clusters
-for category in df_weights['Dominant_Comp'].unique():
-    category_chs = set(df_weights[df_weights['Dominant_Comp'] == category]['Channel'])
-    category_idx = set([i for i, x in enumerate(data_LexDelay_Aud.labels[0]) if x in category_chs])
-    LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
+save_dir = '../Greg_ROIs/fig'
+if not os.path.exists(save_dir): 
+    os.makedirs(save_dir)
+    
+save_filename = "Dendrogram_Macro_Clusters.svg"
+save_path = os.path.join(save_dir, save_filename)
 
-if update_dict:
-    with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "wb") as f:
-        pickle.dump(LexDelay_twin_idxes, f)
+plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
+plt.show()
 
-# Display first few rows
-print("Electrode Weights DataFrame (First 5 rows):")
-print(df_weights.head())
+#%% 4. Hard Clustering & Saving Indices
+dist_matrix = pdist(H, metric='correlation')
+Z = linkage(dist_matrix, method='average')
 
-import matplotlib.pyplot as plt
-import numpy as np
+target_macro_clusters = 3
+macro_labels = fcluster(Z, target_macro_clusters, criterion='maxclust')
 
-# Calculate Mean Weights
-df_mean_weights = df_weights.groupby('Group')[sorted_comp_names].mean()
+unique_labels = sorted(np.unique(macro_labels))
+custom_macro_names = ['SM_Auditory', 'SM_Motor', 'Sustained']
+label_to_name = {label: custom_macro_names[i] for i, label in enumerate(unique_labels)}
+macro_mapping = {comp_names[i]: label_to_name[macro_labels[i]] for i in range(n_components)}
 
-# Setup Colors
+plt.rcParams['font.sans-serif'] = ['Arial']
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['axes.linewidth'] = 2.0
+plt.rcParams['lines.linewidth'] = 2.5
+
+fig = plt.figure(figsize=(6, 4), dpi=300)
+ax = plt.gca()
+
+dendro = dendrogram(Z, labels=comp_names, orientation='top', 
+                    link_color_func=lambda x: 'tab:blue', ax=ax)
+
+ax.spines[['top', 'right']].set_visible(False)
+ax.spines['left'].set_linewidth(3)
+ax.spines['bottom'].set_linewidth(3)
+
+ax.tick_params(axis='y', labelsize=16, length=6, width=2.5)
+ax.tick_params(axis='x', labelsize=16, length=0, width=2.5)
+plt.ylabel('Distance (1 - Pearson r)', fontsize=18, labelpad=10)
+
+sns.despine(ax=ax, offset=10, trim=True)
+
+plt.tight_layout()
+
+save_dir = '../Greg_ROIs/fig'
+if not os.path.exists(save_dir): 
+    os.makedirs(save_dir)
+    
+save_filename = "Dendrogram_Macro_Clusters.svg"
+save_path = os.path.join(save_dir, save_filename)
+
+plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
+plt.show()
+
+plt.rcParams['lines.linewidth'] = 1.5
+
+#%% 5. Anatomical Distribution Pie Charts
+df_mean_weights = df_weights.groupby('Group')[comp_names].mean()
 groups = df_mean_weights.index
+
 if 'color_dict' not in locals():
     import matplotlib.cm as cm
     color_dict = dict(zip(groups, cm.tab20.colors[:len(groups)]))
 
-# Draw Pie Charts
-fig, axes = plt.subplots(1, n_components, figsize=(5 * n_components, 6))
+fig, axes = plt.subplots(1, n_components, figsize=(4 * n_components, 5))
 if n_components == 1: axes = [axes]
 
-for i, col_name in enumerate(sorted_comp_names):
+for i, col_name in enumerate(comp_names):
     ax = axes[i]
-    
     values = df_mean_weights[col_name]
+    valid_idx = values > 0.01
+    valid_values = values[valid_idx]
+    valid_groups = groups[valid_idx]
     
-    wedges, texts, autotexts = ax.pie(
-        values, 
-        labels=groups, 
-        autopct='%1.1f%%', 
-        colors=[color_dict.get(g, 'gray') for g in groups], 
-        startangle=140,
-        textprops={'fontsize': 14}
-    )
+    if len(valid_values) == 0: continue
+        
+    ax.pie(valid_values, labels=valid_groups, autopct='%1.1f%%', 
+           colors=[color_dict.get(g, 'gray') for g in valid_groups], 
+           startangle=140, textprops={'fontsize': 12})
     
-    ax.set_title(f'{col_name}\nMean Weight Distribution', fontsize=14, fontweight='bold')
+    macro_belonging = macro_mapping[col_name]
+    ax.set_title(f'{col_name}\n({macro_belonging})', fontsize=12, fontweight='bold')
 
 plt.tight_layout()
 plt.show()
 
-# # Display the numerical table as well for reference
-# print("Mean Weights per Group:")
-# display(df_mean_weights)
-# %%
-import pandas as pd
-import numpy as np
+#%% 6. Plot Aligned Traces (Stim / Go / Resp)
+plot_groups = []
+target_macros = ['SM_Auditory', 'Sustained', 'SM_Motor']
 
-def export_electrode_weights(W, electrode_names=None):
-    """
-    Export NMF spatial weights (W matrix) into a detailed DataFrame.
+for macro in target_macros:
+    category_chs = set(df_weights[df_weights['Dominant_Comp'] == macro]['Channel'])
+    sig_idx = [i for i, x in enumerate(data_LexDelay_Aud.labels[0]) if x in category_chs]
+    group_col = macro_color_dict.get(macro, [0, 0, 0])
+    plot_groups.append((sig_idx, macro, group_col))
+
+unit_scale = 3.0
+left_padding_with_y = 1.6
+left_padding_no_y = 0.2
+right_padding = 0.4
+fig_height = 3.0
+
+plt.rcParams['font.sans-serif'] = ['Arial']
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['axes.linewidth'] = 2.0
+
+alignments = [
+    ('Stim', epoc_LexDelayRep_Aud, [-0.25, 1.5], True),
+    ('Go', epoc_LexDelayRep_Go, [-0.25, 1.0], range(631, 650)),
+    ('Resp', epoc_LexDelayRep_Resp, [-0.25, 1.0], range(631, 650))
+]
+
+for align_tag, epoc_data, x_limits, bsl_val in alignments:
     
-    Parameters:
-    -----------
-    W : numpy.ndarray
-        The NMF spatial weight matrix with shape (n_electrodes, n_components).
-    electrode_names : list of str, optional
-        List of electrode names (e.g., ['LA1', 'LA2']). 
-        If None, indices are used.
+    has_y = (align_tag == 'Stim')
+    current_left_pad = left_padding_with_y if has_y else left_padding_no_y
     
-    Returns:
-    --------
-    df : pd.DataFrame
-        DataFrame containing absolute weights, relative weights (%), 
-        and dominant cluster assignments.
-    """
-    n_electrodes, n_components = W.shape
+    x_duration = x_limits[1] - x_limits[0]
+    fig_width = (x_duration * unit_scale) + current_left_pad + right_padding
     
-    # 1. Create the base DataFrame with absolute weights
-    comp_cols = [f'Comp_{i+1}' for i in range(n_components)]
-    df = pd.DataFrame(W, columns=comp_cols)
+    fig = plt.figure(figsize=(fig_width, fig_height), dpi=300)
+    fig.subplots_adjust(left=current_left_pad/fig_width, right=1.0 - (right_padding/fig_width), bottom=0.25, top=0.9)
+    ax = plt.gca()
+
+    for sig_idx, label_text, group_col in plot_groups:
+        if len(sig_idx) == 0: continue
+        gp.plot_wave(epoc_data, sig_idx, f'{label_text}', group_col, '-', bsl_val, ylim=[-0.2, 4.2])
+
+    ax.set_ylim([-0.3, 4.2])
     
-    # 2. Add electrode identifiers
-    if electrode_names is not None:
-        if len(electrode_names) != n_electrodes:
-            print(f"Warning: Number of names ({len(electrode_names)}) "
-                  f"does not match W rows ({n_electrodes}).")
-        else:
-            df.insert(0, 'Electrode', electrode_names)
+    ax.spines[['top', 'right']].set_visible(False)
+    ax.spines['bottom'].set_linewidth(3)
+    
+    if not has_y:
+        ax.spines['left'].set_visible(False)
+        ax.set_yticks([])
+        ax.yaxis.set_visible(False) 
     else:
-        df.insert(0, 'Electrode_Idx', range(n_electrodes))
+        ax.spines['left'].set_linewidth(3)
+        ax.set_yticks([0, 2, 4])
+        ax.tick_params(axis='y', labelsize=24, length=6, width=2.5)
 
-    W_temp = df[comp_cols].copy()
+    xticks = [0, 0.5, 1.0, 1.5]
+    xticks = [t for t in xticks if x_limits[0] <= t <= x_limits[1]]
+    ax.set_xticks(xticks)
+    ax.xaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f'))
     
-    W_normalized = W_temp / W_temp.max(axis=0)
+    plt.draw()
+    labels = [l.get_text() for l in ax.get_xticklabels()]
+    new_labels = ["0" if (l == "0.0" or l == ".0") else l for l in labels]
+    ax.set_xticklabels(new_labels)
     
-    df['Dominant_Cluster'] = W_normalized.idxmax(axis=1)
+    sns.despine(ax=ax, offset=10, trim=True, left=not has_y)
     
-    row_sums = df[comp_cols].sum(axis=1) + 1e-9 
+    ax.set_xlim(x_limits)
+    ax.tick_params(axis='x', labelsize=24, length=6, width=2.5)
+    ax.spines['bottom'].set_bounds(x_limits[0], x_limits[1])
     
-    for col in comp_cols:
-        df[f'{col}_Percent'] = df[col] / row_sums
+    ax.set_xlabel(''); ax.set_ylabel('')
     
-    df['Selectivity'] = df[comp_cols].max(axis=1) / row_sums
+    ax.axvline(x=0, linestyle='--', color='#444444', linewidth=1.5, dashes=(5, 5), zorder=0)
+    ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=1.0, zorder=0)
 
-    return df
+    if align_tag == 'Resp':
+        ax.legend(loc='upper right', frameon=False, fontsize=12, handlelength=1.5)
+    else:
+        if ax.get_legend(): ax.get_legend().remove()
 
-# --- Usage Example ---
-
-# View the first few rows
-print(df_weights.head().round(3))
-manual_coding=pd.read_csv(os.path.join('..','Greg_ROIs', 'Hickok_ROI_electrode_manual_coding.csv'))
-manual_coding = manual_coding.rename(columns={'chs': 'Channel'})
-manual_coding = manual_coding.merge(df_weights[['Channel', 'Dominant_Comp']].drop_duplicates(), on='Channel', how='left')
-
-comp_color_map = dict(zip(comp_names, colors[:len(comp_names)]))
-
-unique_groups = manual_coding['Group'].unique()
-for group in unique_groups:
-    group_data = manual_coding[manual_coding['Group'] == group]
-    unique_tags = group_data['manual_tag'].unique()
-    fig, axes = plt.subplots(1, len(unique_tags), figsize=(5 * len(unique_tags), 6))
-    if len(unique_tags) == 1:
-        axes = [axes]
-    for i, tag in enumerate(unique_tags):
-        ax = axes[i]
-        tag_data = group_data[group_data['manual_tag'] == tag]
-        if not tag_data.empty:
-            type_counts = tag_data['Dominant_Comp'].value_counts()
-            pie_colors = [comp_color_map[comp] for comp in type_counts.index]
-            ax.pie(type_counts, labels=type_counts.index, autopct=lambda p: '{:.0f}'.format(p * sum(type_counts) / 100), startangle=140, textprops={'fontsize': 16}, colors=pie_colors)
-        ax.set_title(f'{group}\n{tag}', fontsize=18)
-    plt.tight_layout()
+    save_dir = '../Greg_ROIs/fig'
+    if not os.path.exists(save_dir): 
+        os.makedirs(save_dir)
+        
+    save_filename = f"Spt_trace_{align_tag}.svg"
+    save_path = os.path.join(save_dir, save_filename)
+    
+    plt.savefig(save_path, format='svg', dpi=300, bbox_inches=None)
     plt.show()
 
-ch_to_idx = {ch: i for i, ch in enumerate(final_chs)}
+#%% 7. Plot All Electrodes on Brain Map
+plot_df = df_weights.dropna(subset=['Dominant_Comp'])
+channels_all = plot_df['Channel'].tolist()
+cols_lst_all = [macro_color_dict.get(comp, [0.5, 0.5, 0.5]) for comp in plot_df['Dominant_Comp']]
 
-for group in unique_groups:
-    group_data = manual_coding[manual_coding['Group'] == group]
-    unique_tags = group_data['manual_tag'].unique()
-    for tag in unique_tags:
-        tag_data = group_data[group_data['manual_tag'] == tag]
-        unique_comps = tag_data['Dominant_Comp'].unique()
-        for comp in unique_comps:
-            channels = tag_data[tag_data['Dominant_Comp'] == comp]['Channel'].tolist()
-            indices = [ch_to_idx[ch] for ch in channels if ch in ch_to_idx]
-            
-            if not indices:
-                continue
-                
-            traces = final_array[indices, :]
-            
-            plt.figure(figsize=(12, 4))
-            plt.plot(x_linear, traces.T, color=comp_color_map[comp], alpha=0.5, linewidth=2)
-            for idx in zero_indices:
-                plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
-            for idx in minus_point_five_indices:
-                plt.axvline(x=idx, color='k', linestyle='-', linewidth=1, alpha=0.5)
-            plt.title(f'Traces for {group} | {tag} | {comp} (n={len(indices)})')
-            plt.xlabel('Time (s)')
-            plt.gca().xaxis.set_major_locator(ticker.FixedLocator(tick_indices))
-            plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(time_formatter))
-            plt.ylabel('Amplitude')
-            plt.gca().spines['top'].set_visible(False)
-            plt.gca().spines['right'].set_visible(False)
-            plt.tight_layout()
-            plt.show()
+try:
+    gp.plot_brain(subjs, channels_all, cols_lst_all, None, 'All Macro Clusters', 0.3, 0.2, hemi='lh')
+except Exception as e:
+    pass
 
-# Brain plot for projected weights:
-for i, comp in enumerate(comp_names):
-    w = df_weights[comp].values
-    w_norm = (w - w.min()) / (w.max() - w.min())
-    cols_lst = [list(np.array(colors_trace[i]) * val + np.array([1, 1, 1]) * (1 - val)) for val in w_norm]
-    gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, comp, 0.3, 0.2)
+# %% 8. Extract Power for Stats & Plot Brain Maps + Bar+Strip
+_, _, _, _, _, paras_aud, *_ = gp.sort_chs_by_actonset(data_LexDelay_Aud, epoc_LexDelayRep_Aud, 0.011, [0, 0.25], mask_data=True, select_electrodes=False)
+_, _, _, _, _, paras_mtr, *_  = gp.sort_chs_by_actonset(data_LexDelay_Resp, epoc_LexDelayRep_Resp, 0.011, [-0.25, 0], mask_data=True, select_electrodes=False)
+#% 1. Extract Power from DataFrames and Prepare Stats
+plot_df = df_weights.dropna(subset=['Dominant_Comp']).copy()
 
-# Brain plot for dominant component
-cols_lst = [comp_color_map[comp] for comp in df_weights['Dominant_Comp']]
-gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, 'Dominant_Comp', 0.3, 0.2)
+aud_powers = []
+mot_powers = []
+valid_chs = []
+clusters = []
 
-# --- 5. Identify Hub Electrodes ---
-# 1. Provincial Hubs: Top contributors for each component
-print("\n--- Provincial Hubs (Top 5 per Component) ---")
-for comp in comp_names:
-    print(f"\nComponent: {comp}")
-    print(df_weights.nlargest(5, comp)[['Channel', 'Group', comp]])
+for idx, row in plot_df.iterrows():
+    ch = row['Channel']
+    if ch in paras_aud.index and ch in paras_mtr.index:
+        p_aud = paras_aud.loc[ch, 'mean_value']
+        p_mot = paras_mtr.loc[ch, 'mean_value']
+        
+        aud_powers.append(p_aud)
+        mot_powers.append(p_mot)
+        valid_chs.append(ch)
+        clusters.append(row['Dominant_Comp'])
 
-# 2. Connector Hubs: Electrodes that are "hub" to the four components (high participation)
-# Participation Coefficient: P_i = 1 - sum((w_ij / w_i_total)^2)
-w_matrix = df_weights[comp_names].values
-w_total = w_matrix.sum(axis=1, keepdims=True)
-w_total[w_total == 0] = 1e-10 # Avoid division by zero
-df_weights['Total_Weight'] = w_total.flatten()
-df_weights['Participation_Coef'] = 1 - np.sum((w_matrix / w_total)**2, axis=1)
+aud_powers = np.array(aud_powers)
+mot_powers = np.array(mot_powers)
 
-print("\n--- Connector Hubs (High Participation across 4 components) ---")
-# Filter for electrodes with significant weight (e.g., top 50% of total weight) to avoid noise
-significant_elecs = df_weights[df_weights['Total_Weight'] > df_weights['Total_Weight'].quantile(0.75)]
-print(significant_elecs.nlargest(10, 'Participation_Coef')[['Channel', 'Group', 'Participation_Coef', 'Total_Weight']])
+aud_z = (aud_powers - np.mean(aud_powers)) / np.std(aud_powers)
+mot_z = (mot_powers - np.mean(mot_powers)) / np.std(mot_powers)
 
+df_stats = pd.DataFrame({
+    'Channel': valid_chs,
+    'Macro_Cluster': clusters,
+    'Auditory_Power_Raw': aud_powers,
+    'Motor_Power_Raw': mot_powers,
+    'Auditory_Power_Z': aud_z,
+    'Motor_Power_Z': mot_z
+})
 
+#% 2. Plot Brain Maps (Using Z-scores for better visual contrast)
+norm_aud = mcolors.Normalize(vmin=np.percentile(aud_z, 5), vmax=np.percentile(aud_z, 95))
+cmap_aud = plt.cm.Greens
+cols_aud = [cmap_aud(norm_aud(val))[:3] for val in df_stats['Auditory_Power_Z']]
 
-# Brain plot for participation coefficient of the hub electrodes
-w = significant_elecs['Participation_Coef'].values
-w_norm = (w - w.min()) / (w.max() - w.min())
-cols_lst = [list(np.array([1.0, 0.0784, 0.5765]) * val + np.array([1, 1, 1]) * (1 - val)) for val in w_norm]
-gp.plot_brain(subjs, significant_elecs.Channel.to_list(), cols_lst, None, 'Dominant_Comp', 0.3, 0.2)
+try:
+    gp.plot_brain(subjs, df_stats['Channel'].tolist(), cols_aud, None, 'Auditory Power Z-score (0-250ms)', 0.3, 0.2,hemi='lh')
+except Exception as e:
+    pass
 
-# %%
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
+norm_mot = mcolors.Normalize(vmin=np.percentile(mot_z, 5), vmax=np.percentile(mot_z, 95))
+cmap_mot = plt.cm.Blues
+cols_mot = [cmap_mot(norm_mot(val))[:3] for val in df_stats['Motor_Power_Z']]
 
-def plot_individual_traces_by_dominant_comp(epochs_list, epoch_names, df_weights, 
-                                            time_windows=[(-0.5, 2.0), (-0.5, 2.0), (-0.5, 2.0)],
-                                            colors_dict=None):
-    """
-    Plots INDIVIDUAL traces for each electrode, grouped by Dominant Component.
-    Rows: Components
-    Columns: Alignments (Stim, Go, Resp)
-    """
+try:
+    gp.plot_brain(subjs, df_stats['Channel'].tolist(), cols_mot, None, 'Motor Power Z-score (-250-0ms)', 0.3, 0.2,hemi='lh')
+except Exception as e:
+    pass
+
+#% 3. Plot Bar+Strip (Using Raw Power for intuitive interpretation)
+plt.rcParams['font.sans-serif'] = ['Arial']
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['axes.linewidth'] = 2.0
+
+order = ['SM_Auditory', 'Sustained', 'SM_Motor']
+palette = {'SM_Auditory': Auditory_col, 'Sustained': Delay_col, 'SM_Motor': Motor_col}
+
+metrics = [
+    ('Auditory_Power_Raw', 'Auditory Power (a.u.)', 'BarStrip_Auditory_Power_Raw.svg'),
+    ('Motor_Power_Raw', 'Motor Power (a.u.)', 'BarStrip_Motor_Power_Raw.svg')
+]
+
+for col, ylabel, save_name in metrics:
+    fig, ax = plt.subplots(figsize=(6, 5), dpi=300)
     
-    comps = sorted(df_weights['Dominant_Comp'].unique())
-    n_comps = len(comps)
-    n_aligns = len(epochs_list)
-    fig, axes = plt.subplots(nrows=n_comps, ncols=n_aligns, 
-                             figsize=(5 * n_aligns, 3.5 * n_comps), 
-                             sharey='row') 
-    if n_comps == 1: axes = np.array([axes])
-    if n_aligns == 1: axes = axes.reshape(-1, 1)
-    if axes.ndim == 1: axes = axes.reshape(n_comps, n_aligns)
-
-    for i, comp_name in enumerate(comps):
-        
-        comp_elecs = df_weights[df_weights['Dominant_Comp'] == comp_name]['Channel'].tolist()
-        color = colors_dict.get(comp_name, 'k') if colors_dict else 'k'
-        
-        for j, (epoch, align_name, t_range) in enumerate(zip(epochs_list, epoch_names, time_windows)):
-            ax = axes[i, j]
-            
-            try:
-                full_times = np.array(epoch.labels[1], dtype=float)
-                t_idx_start = np.abs(full_times - t_range[0]).argmin()
-                t_idx_end = np.abs(full_times - t_range[1]).argmin()
-                
-                indices = np.arange(t_idx_start, t_idx_end + 1)
-                sliced_epoch = epoch.take(indices, axis=1)
-                
-                full_sig = sliced_epoch.__array__()
-                if full_sig.ndim == 3:
-                    full_sig = np.mean(full_sig, axis=0)
-                
-                times = full_times[indices]
-                all_chs = sliced_epoch.labels[0]
-                ch_to_idx = {ch: k for k, ch in enumerate(all_chs)}
-                
-                valid_traces = []
-                for ch in comp_elecs:
-                    if ch in ch_to_idx:
-                        valid_traces.append(full_sig[ch_to_idx[ch], :])
-                
-                if valid_traces:
-                    traces_arr = np.array(valid_traces) # (n_elecs, n_times)
-                    
-                    ax.plot(times, traces_arr.T, color=color, linewidth=0.8, alpha=0.5)
-                    
-                else:
-                    ax.text(0.5, 0.5, 'No Electrodes', ha='center', transform=ax.transAxes)
-
-            except Exception as e:
-                print(f"Error plotting {comp_name} - {align_name}: {e}")
-                ax.text(0.5, 0.5, 'Data Error', ha='center', transform=ax.transAxes)
-
-            if i == 0:
-                ax.set_title(f"{align_name}", fontsize=14, fontweight='bold', pad=15)
-            
-            if j == 0:
-                ax.set_ylabel(f"{comp_name}\n(n={len(valid_traces)})", fontsize=12, fontweight='bold', rotation=90)
-            
-            ax.axvline(x=0, color='gray', linestyle='--', linewidth=1.5, alpha=0.8)
-            ax.axvline(x=-0.5, color='gray', linestyle='-', linewidth=1, alpha=0.5)
-            
-            ax.spines['top'].set_visible(False)
-            ax.spines['right'].set_visible(False)
-            
-            ax.xaxis.set_major_locator(ticker.MultipleLocator(0.5)) 
-            if i == n_comps - 1:
-                ax.set_xlabel('Time (s)', fontsize=12)
-            
+    sns.barplot(data=df_stats, x='Macro_Cluster', y=col, order=order, palette=palette, 
+                alpha=0.5, capsize=0.1, errwidth=2.5, ax=ax, edgecolor='none')
+    
+    sns.stripplot(data=df_stats, x='Macro_Cluster', y=col, order=order, palette=palette, 
+                  jitter=True, alpha=0.8, size=6, ax=ax)
+    
+    ax.spines[['top', 'right']].set_visible(False)
+    ax.spines['left'].set_linewidth(3)
+    ax.spines['bottom'].set_linewidth(3)
+    
+    ax.tick_params(axis='y', labelsize=16, length=6, width=2.5)
+    ax.tick_params(axis='x', labelsize=14, length=6, width=2.5)
+    
+    plt.ylabel(ylabel, fontsize=16, fontweight='bold')
+    plt.xlabel('')
+    
+    sns.despine(ax=ax, offset=10, trim=True)
     plt.tight_layout()
-    plt.show()
-
-
-epochs_list = [epoc_LexDelayRep_Aud, epoc_LexDelayRep_Go, epoc_LexDelayRep_Resp]
-epoch_names = ['Stimulus Aligned', 'Go Aligned', 'Response Aligned']
-time_windows = [(-0.5, 2.0), (-0.5, 2.0), (-0.5, 2.0)] 
-
-colors_dict = {
-    'Auditory_motor':      [1, 0, 0],       # Red
-    'Auditory_onset':      [0, 1, 0],       # Green
-    'Auditory_continuous': [1, 165/255, 0]  # Orange
-}
-
-plot_individual_traces_by_dominant_comp(
-    epochs_list, 
-    epoch_names, 
-    df_weights, 
-    time_windows=time_windows, 
-    colors_dict=colors_dict
-)
-t_range = [0, 1.5]
-roi_chs=data_LexDelay_Aud.labels[0].tolist()
-if groupsTag=="LexDelay":
-    epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=False)
-    epoc_LexDelayRep_Resp,_=gp.load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=False)
-
-    df_weights['r'] = np.nan
-    df_weights['p'] = np.nan
-    df_weights.set_index('Channel', inplace=True)
-
-    for roi_ch in roi_chs:
-        s,e = roi_ch.split('-')
-        print(f"Processing {s} in {e}...")
-
-        Aud_s = epoc_LexDelayRep_Aud[s]
-        Aud_s_e = Aud_s.take(e, axis=1)
-        Aud_s_e = Aud_s_e.take(get_time_indexs(Aud_s_e.labels[1], t_range[0], t_range[1]), axis=1)
-        Aud_s_e_data = Aud_s_e.__array__()
-
-        Resp_s = epoc_LexDelayRep_Resp[s]
-        Resp_s_e = Resp_s.take(e, axis=1)
-        Resp_s_e = Resp_s_e.take(get_time_indexs(Resp_s_e.labels[1], t_range[0], t_range[1]), axis=1)
-        Resp_s_e_data = Resp_s_e.__array__() # (trials, samples)
-
-        aud_power_sum = np.nansum(Aud_s_e_data, axis=1)
-        resp_power_sum = np.nansum(Resp_s_e_data, axis=1)
-
-        valid_mask = ~np.isnan(aud_power_sum) & ~np.isnan(resp_power_sum)
+    
+    save_dir = '../Greg_ROIs/fig'
+    if not os.path.exists(save_dir): 
+        os.makedirs(save_dir)
         
-        aud_valid = aud_power_sum[valid_mask]
-        resp_valid = resp_power_sum[valid_mask]
-
-        if len(aud_valid) > 1:
-            from scipy.stats import pearsonr
-            corr, p_value = pearsonr(aud_valid, resp_valid)
-            print(f"  Correlation for {roi_ch}: r = {corr:.4f}, p = {p_value:.4f}")
-
-            if roi_ch in df_weights.index:
-                df_weights.loc[roi_ch, ['r', 'p']] = corr, p_value
-
-    df_weights.reset_index(inplace=True)
-
-
-import seaborn as sns
-import ptitprince as pt
-from scipy.stats import f_oneway
-from statsmodels.stats.multicomp import pairwise_tukeyhsd
-import matplotlib.pyplot as plt
-
-# 1. 数据准备：筛选掉没有r值或p值的行
-df_plot = df_weights.dropna(subset=['r', 'p'])
-
-plot_order = sorted(df_plot['Dominant_Comp'].unique())
-palette_list = [comp_color_map.get(comp, (0.5, 0.5, 0.5)) for comp in plot_order]
-
-plt.figure(figsize=(12, 8))
-
-ax = pt.RainCloud(
-    x='Dominant_Comp', 
-    y='r', 
-    data=df_plot,
-    order=plot_order,
-    palette=palette_list,
-    bw=0.2,
-    width_viol=0.6,
-    orient='v',
-    point_size=0,
-    alpha=0.65,
-    box_showmeans=True
-)
-
-non_sig_data = df_plot[df_plot['p'] >= 0.05]
-sns.stripplot(
-    data=non_sig_data,
-    x='Dominant_Comp',
-    y='r',
-    order=plot_order,
-    color='gray',
-    alpha=0.5,
-    jitter=True,
-    size=4,
-    ax=ax,
-    zorder=1
-)
-
-sig_data = df_plot[df_plot['p'] < 0.05]
-if not sig_data.empty:
-    sns.stripplot(
-        data=sig_data,
-        x='Dominant_Comp',
-        y='r',
-        order=plot_order,
-        hue='Dominant_Comp',
-        palette=comp_color_map,
-        jitter=True,
-        size=5,
-        ax=ax,
-        zorder=2,
-        legend=False
-    )
-
-plt.title('Distribution of Correlation Coefficients (r) by Dominant Component', fontsize=16)
-plt.ylabel('Pearson Correlation (r)', fontsize=12)
-plt.xlabel('Dominant Component', fontsize=12)
-
-sns.despine() 
-
-plt.grid(False) 
-
-plt.tight_layout()
-plt.show()
-
-print("--- Statistical Analysis of Correlation Coefficients (r) ---")
-groups = df_plot['Dominant_Comp'].unique()
-grouped_data = [df_plot['r'][df_plot['Dominant_Comp'] == g] for g in groups]
-
-f_stat, p_val_anova = f_oneway(*grouped_data)
-print(f"\nOne-way ANOVA results: F-statistic = {f_stat:.4f}, p-value = {p_val_anova:.4f}")
-
-if p_val_anova < 0.05:
-    print("\nANOVA is significant. Performing Tukey's HSD post-hoc test:")
-    tukey_results = pairwise_tukeyhsd(endog=df_plot['r'], groups=df_plot['Dominant_Comp'], alpha=0.05)
-    print(tukey_results)
-else:
-    print("\nANOVA is not significant.")
-
+    save_path = os.path.join(save_dir, save_name)
+    plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
+    plt.show()
 # %%
