@@ -358,6 +358,16 @@ def auto_find_optimal_k_nmf(X, k_range=range(2, 10), plot=True):
         plt.gca().spines['top'].set_visible(False)
         plt.gca().spines['right'].set_visible(False)
         plt.tight_layout()
+        save_dir = '../Greg_ROIs/fig'
+        if not os.path.exists(save_dir): 
+            os.makedirs(save_dir)
+            
+        save_filename = "auto_find_optimal_k_nmf.svg"
+        save_path = os.path.join(save_dir, save_filename)
+
+        plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
+
+        plt.show()
         plt.show()
         
     return optimal_k
@@ -458,51 +468,30 @@ plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
 plt.show()
 
 #%% 4. Hard Clustering & Saving Indices
-dist_matrix = pdist(H, metric='correlation')
-Z = linkage(dist_matrix, method='average')
+# 1. 构建包含空间权重矩阵 W 的 DataFrame
+df_weights = pd.DataFrame(W, columns=comp_names)
+df_weights.insert(0, 'Channel', final_chs)
+df_weights.insert(1, 'Group', final_grps)
 
-target_macro_clusters = 3
-macro_labels = fcluster(Z, target_macro_clusters, criterion='maxclust')
+# 2. 为每个电极分配主导成分和宏观大类 (Macro Cluster)
+df_weights['Base_Comp'] = df_weights[comp_names].idxmax(axis=1)
+df_weights['Dominant_Comp'] = df_weights['Base_Comp'].map(macro_mapping)
 
-unique_labels = sorted(np.unique(macro_labels))
-custom_macro_names = ['SM_Auditory', 'SM_Motor', 'Sustained']
-label_to_name = {label: custom_macro_names[i] for i, label in enumerate(unique_labels)}
-macro_mapping = {comp_names[i]: label_to_name[macro_labels[i]] for i in range(n_components)}
+# 3. 将硬分类结果对应的电极 index 更新到字典中并保存
+for category in df_weights['Dominant_Comp'].dropna().unique():
+    category_chs = set(df_weights[df_weights['Dominant_Comp'] == category]['Channel'])
+    try:
+        category_idx = set([i for i, x in enumerate(data_LexDelay_Aud.labels[0]) if x in category_chs])
+        LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
+    except NameError:
+        pass 
 
-plt.rcParams['font.sans-serif'] = ['Arial']
-plt.rcParams['pdf.fonttype'] = 42
-plt.rcParams['axes.linewidth'] = 2.0
-plt.rcParams['lines.linewidth'] = 2.5
-
-fig = plt.figure(figsize=(6, 4), dpi=300)
-ax = plt.gca()
-
-dendro = dendrogram(Z, labels=comp_names, orientation='top', 
-                    link_color_func=lambda x: 'tab:blue', ax=ax)
-
-ax.spines[['top', 'right']].set_visible(False)
-ax.spines['left'].set_linewidth(3)
-ax.spines['bottom'].set_linewidth(3)
-
-ax.tick_params(axis='y', labelsize=16, length=6, width=2.5)
-ax.tick_params(axis='x', labelsize=16, length=0, width=2.5)
-plt.ylabel('Distance (1 - Pearson r)', fontsize=18, labelpad=10)
-
-sns.despine(ax=ax, offset=10, trim=True)
-
-plt.tight_layout()
-
-save_dir = '../Greg_ROIs/fig'
-if not os.path.exists(save_dir): 
-    os.makedirs(save_dir)
-    
-save_filename = "Dendrogram_Macro_Clusters.svg"
-save_path = os.path.join(save_dir, save_filename)
-
-plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
-plt.show()
-
-plt.rcParams['lines.linewidth'] = 1.5
+try:
+    if update_dict:
+        with open(os.path.join('..', 'GLM', 'data', f'Lex_twin_idxes_hg.npy'), "wb") as f:
+            pickle.dump(LexDelay_twin_idxes, f)
+except NameError:
+    pass
 
 #%% 5. Anatomical Distribution Pie Charts
 df_mean_weights = df_weights.groupby('Group')[comp_names].mean()
@@ -544,7 +533,7 @@ for macro in target_macros:
     group_col = macro_color_dict.get(macro, [0, 0, 0])
     plot_groups.append((sig_idx, macro, group_col))
 
-unit_scale = 3.0
+unit_scale = 2.0
 left_padding_with_y = 1.6
 left_padding_no_y = 0.2
 right_padding = 0.4
@@ -701,12 +690,12 @@ order = ['SM_Auditory', 'Sustained', 'SM_Motor']
 palette = {'SM_Auditory': Auditory_col, 'Sustained': Delay_col, 'SM_Motor': Motor_col}
 
 metrics = [
-    ('Auditory_Power_Raw', 'Auditory Power (a.u.)', 'BarStrip_Auditory_Power_Raw.svg'),
-    ('Motor_Power_Raw', 'Motor Power (a.u.)', 'BarStrip_Motor_Power_Raw.svg')
+    ('Auditory_Power_Raw', 'Auditory z-score (avg.)', 'BarStrip_Auditory_Power_Raw.svg'),
+    ('Motor_Power_Raw', 'Motor z-score (avg.)', 'BarStrip_Motor_Power_Raw.svg')
 ]
 
 for col, ylabel, save_name in metrics:
-    fig, ax = plt.subplots(figsize=(6, 5), dpi=300)
+    fig, ax = plt.subplots(figsize=(4, 5), dpi=300)
     
     sns.barplot(data=df_stats, x='Macro_Cluster', y=col, order=order, palette=palette, 
                 alpha=0.5, capsize=0.1, errwidth=2.5, ax=ax, edgecolor='none')
