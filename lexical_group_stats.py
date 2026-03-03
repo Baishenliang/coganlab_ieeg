@@ -799,10 +799,14 @@ if groupsTag == "LexDelay":
             hemi_density = hemi_density_flat.reshape(x_grid.shape)
             final_density += hemi_density
 
-            non_zero_vals = hemi_density[hemi_density > 0]
-            if len(non_zero_vals) > 0:
-                thresh = np.percentile(non_zero_vals, 95)
-                final_mask[hemi_density >= thresh] = 1.0 
+            #non_zero_vals = hemi_density[hemi_density > 0]
+            # if len(non_zero_vals) > 0:
+            #     thresh = np.percentile(non_zero_vals, 95)
+            #     final_mask[hemi_density >= thresh] = 1.0 
+        non_zero_vals = hemi_density[final_density > 0]
+        if len(non_zero_vals) > 0:
+            thresh = np.percentile(non_zero_vals, 95)
+            final_mask[final_density >= thresh] = 1.0         
 
         return final_mask, final_density
 
