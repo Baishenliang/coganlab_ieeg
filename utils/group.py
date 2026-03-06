@@ -2289,65 +2289,44 @@ def bsliang_align_yaxis(LIM, TICKS):
     return pos
 
 def generate_neuro_publication_plot(data, title_label="Anatomy Distribution", save_path=None):
-    """
-    Plots a clustered stacked bar chart with a globally consistent legend.
-    Ensures ALL ROIs across all groups are included in the legend.
-    """
     import matplotlib.pyplot as plt
     import numpy as np
     import matplotlib.ticker as ticker
 
-    # 1. Publication Quality Settings
+    # 1. 顶级期刊规格设置 (针对 1/3 Letter 纸张优化)
     plt.rcParams.update({
         'font.family': 'sans-serif',
         'font.sans-serif': ['Arial'],
         'pdf.fonttype': 42,
-        'axes.linewidth': 1.2,
+        'axes.linewidth': 1.5,
         'xtick.major.size': 0, 
         'ytick.major.size': 5,
-        'axes.labelsize': 12,
-        'legend.fontsize': 9,
+        'legend.fontsize': 10,
         'legend.frameon': False,
     })
 
-    # 2. Extract Data Structure and ROIs
     groups = sorted(data.keys())
     all_rois_union = sorted(list(set(roi for g_dict in data.values() for counts in g_dict.values() for roi in counts.keys())))
     
-    # 15 Discrete Colors
+    # --- 保持：原始色盲友好配色方案 (13色) ---
     colors = [
-        '#146DFF',
-        '#DF3D04',
-        '#0400FB',
-        '#FFC200',
-        '#EB3D9A',
-        '#96087D',
-        '#5D0000',
-        '#082DC6',
-        '#61EBFF',
-        '#B6C69A',
-        '#A21851',
-        '#10AAEB',
-        '#142045'
+        '#146DFF', '#DF3D04', '#0400FB', '#FFC200', '#EB3D9A', '#96087D', 
+        '#5D0000', '#082DC6', '#61EBFF', '#B6C69A', '#A21851', '#10AAEB', '#142045'
     ]
     roi_colors = {roi: colors[i % len(colors)] for i, roi in enumerate(all_rois_union)}
 
-    fig, ax = plt.subplots(figsize=(max(8, len(groups)*2.5), 5), dpi=300)
+    # 进一步缩小宽度以适应更紧凑的组间距
+    fig, ax = plt.subplots(figsize=(len(groups) * 1.5 + 1, 4.0), dpi=300)
     
-    # Layout Parameters
-    bar_width = 0.4
-    group_gap = 0.6  
+    bar_width = 0.35
+    # --- 修改 1: 进一步缩短组间距 (从 0.6 降至 0.2) ---
+    group_gap = 0.2  
     x_ptr = 0        
-    group_labels_pos = []
-    max_val = 0
-    
-    # --- 新增：用于跟踪已添加到图例的 ROI ---
     added_to_legend = set()
 
-    # 3. Clustered Plotting Logic
+    # 2. 绘图逻辑
     for g_idx, g_name in enumerate(groups):
-        subgroups = sorted(data[g_name].keys()) 
-        group_start_x = x_ptr
+        subgroups = sorted(data[g_name].keys(), reverse=True) 
         
         for i, sg_name in enumerate(subgroups):
             curr_x = x_ptr
@@ -2357,52 +2336,49 @@ def generate_neuro_publication_plot(data, title_label="Anatomy Distribution", sa
             for roi in all_rois_union:
                 val = current_counts.get(roi, 0)
                 if val > 0:
-                    # 关键修改：如果这个 ROI 还没进过图例，就给它 label
-                    if roi not in added_to_legend:
-                        curr_label = roi
-                        added_to_legend.add(roi)
-                    else:
-                        curr_label = ""
+                    # 统一缩放至 10^4
+                    val_scaled = val / 10000.0
+                    curr_label = roi if roi not in added_to_legend else ""
+                    if curr_label: added_to_legend.add(roi)
 
-                    ax.bar(curr_x, val, bar_width, bottom=bottom, 
-                           color=roi_colors[roi], edgecolor='white', linewidth=0.5,
+                    ax.bar(curr_x, val_scaled, bar_width, bottom=bottom, 
+                           color=roi_colors[roi], edgecolor='white', linewidth=0.8,
                            label=curr_label)
-                    bottom += val
-            
-            # Subgroup label on top of bar
-            ax.text(curr_x, bottom + 0.5, sg_name, ha='center', va='bottom', fontsize=8)
-            
-            if bottom > max_val: 
-                max_val = bottom
+                    bottom += val_scaled
             
             x_ptr += bar_width 
             
-        group_end_x = x_ptr - bar_width
-        group_labels_pos.append((group_start_x + group_end_x) / 2)
         x_ptr += group_gap
 
-    # 4. Axes & Styling
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=5, integer=True))
-    ax.set_ylim(0, max_val * 1.3) 
-    
+    # 3. 视觉修饰与 Y 轴优化
+    ax.set_ylim(0, 0.8) 
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.1f'))
+    # 加大 Y 轴刻度字号
+    ax.tick_params(axis='y', labelsize=18, width=1.5)
+
+    # 呼吸感 Offset
     ax.spines['left'].set_position(('outward', 12))
     ax.spines['bottom'].set_position(('outward', 12))
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
+    ax.spines[['top', 'right']].set_visible(False)
 
-    ax.set_xticks(group_labels_pos)
-    ax.set_xticklabels(groups, fontweight='bold', fontsize=11)
-    ax.set_ylabel('Electrode Count', labelpad=12)
-    ax.set_title(title_label, pad=30)
-    
-    # 5. Legend Generation
-    # 此时 handles 和 labels 将包含所有出现过的脑区
+    # --- 修改 2: 彻底不显示 X 轴的 LH/RH labels 和 Ticks ---
+    ax.set_xticks([])
+    ax.set_xticklabels([])
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+
+    # 4. 图例配置 (置于正下方)
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    # 移除空 Label 并排序
     clean_labels = sorted([l for l in by_label.keys() if l != ""])
+    
     ax.legend([by_label[l] for l in clean_labels], clean_labels, 
-              title='Anatomical ROI', loc='upper left', bbox_to_anchor=(1, 1))
+              title='Anatomical ROI', 
+              loc='upper center', 
+              bbox_to_anchor=(0.5, -0.25), 
+              ncol=min(5, len(clean_labels)), 
+              columnspacing=1.0,
+              title_fontproperties={'weight':'bold'})
 
     plt.tight_layout()
     if save_path: 

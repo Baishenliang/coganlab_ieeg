@@ -647,7 +647,7 @@ if groupsTag == "LexDelay":
     from scipy.spatial.distance import pdist
     import nibabel as nib
     from scipy import stats
-    from nilearn import plotting
+    from nilearn import plotting,image
     import matplotlib.pyplot as plt
     import matplotlib.ticker as mticker
     from matplotlib.colors import ListedColormap
@@ -657,8 +657,119 @@ if groupsTag == "LexDelay":
     from scipy.stats import skew, kurtosis, entropy
     import seaborn as sns
     from matplotlib.colors import LinearSegmentedColormap
+    import nibabel as nib
     pink_rgb = (1.0, 0.2, 0.6) 
-    pink_cmap = LinearSegmentedColormap.from_list("pink_density", ["grey", (1.0, 1.0, 1.0)], N=256)
+    pink_cmap = LinearSegmentedColormap.from_list("pink_density", [ (0.8, 0.8, 0.8), (1.0, 1.0, 1.0)], N=256)
+
+
+    def analyze_bna_activation(final_mask, atlas_path):
+        """
+        Maps a custom density mask to the Brainnetome Atlas (BNA) and calculates 
+        activation ratios for specific clusters (SFG, MFG, IFG, PreCG).
+        
+        Parameters:
+        -----------
+        final_mask : np.ndarray
+            3D array containing the binary mask (1.0 for active voxels, NaN/0 for others).
+        atlas_path : str
+            Path to the 'BN_Atlas_246_1mm.nii.gz' file.
+            
+        Returns:
+        --------
+        pd.DataFrame
+            A summary table grouped by Cluster and Hemisphere.
+        """
+        
+        # --- Step 1: Create NIfTI object from numpy array ---
+        # Define the Affine matrix based on the grid: 
+        # x_range: -70 to 71, y_range: -100 to 71, z_range: -60 to 81 with res=2.
+        # The translation parameters (-70, -100, -60) are the starting coordinates.
+        affine = np.array([
+            [2, 0, 0, -70],
+            [0, 2, 0, -100],
+            [0, 0, 2, -60],
+            [0, 0, 0, 1]
+        ])
+        
+        # Replace NaNs with 0 and ensure float32 type for Nifti compatibility
+        mask_clean = np.nan_to_num(final_mask).astype(np.float32)
+        mask_img = nib.Nifti1Image(mask_clean, affine)
+
+        # --- Step 2: Resample Atlas to match Mask Space ---
+        # Load the high-res atlas (1mm) and resample it to the 2mm mask grid.
+        # 'nearest' interpolation is crucial to preserve the integer Label IDs.
+        atlas_img = image.load_img(atlas_path)
+        atlas_resampled = image.resample_to_img(atlas_img, mask_img, interpolation='nearest')
+        atlas_data = atlas_resampled.get_fdata()
+
+        # --- Step 3: Define Region Mapping Logic ---
+        def get_cluster_info(r_id):
+            """Helper to map ID to Cluster name and Hemisphere."""
+            if 1 <= r_id <= 14:
+                name = 'SFG'
+            elif 15 <= r_id <= 28:
+                name = 'MFG'
+            elif 29 <= r_id <= 40:
+                name = 'IFG'
+            elif 53 <= r_id <= 64:
+                name = 'PreCG'
+            else:
+                return None, None
+                
+            # Lateralization: Odd IDs = Left Hemisphere (LH), Even IDs = Right (RH)
+            hemi = 'LH' if r_id % 2 != 0 else 'RH'
+            return name, hemi
+
+        # Get unique IDs present in the resampled atlas data
+        all_ids = np.unique(atlas_data)
+        results = []
+
+        # --- Step 4: Iterative Voxel Counting ---
+        for r_id in all_ids:
+            if r_id == 0: continue # Skip background
+            
+            cluster, hemi = get_cluster_info(r_id)
+            if cluster:
+                # Create a boolean mask for the current specific region ID
+                region_mask = (atlas_data == r_id)
+                
+                # Count total voxels in this region and how many are 'active' (1.0)
+                total_vox = np.sum(region_mask)
+                active_vox = np.sum(mask_clean[region_mask] == 1.0)
+                
+                results.append({
+                    'Cluster': cluster,
+                    'Hemi': hemi,
+                    'Active_Voxel': active_vox,
+                    'Total_Voxel': total_vox
+                })
+
+        # --- Step 5: Data Aggregation and Optimization ---
+        df_raw = pd.DataFrame(results)
+        
+        # Group by the specified clusters and hemispheres
+        summary = df_raw.groupby(['Cluster', 'Hemi']).agg({
+            'Active_Voxel': 'sum',
+            'Total_Voxel': 'sum'
+        }).reset_index()
+
+        # Calculate the percentage ratio: (Active / Total) * 100
+        # Formula: $$ \text{Ratio} = \frac{\sum \text{Active Voxels}}{\sum \text{Total Voxels}} \times 100 $$
+        summary['Ratio_Percent'] = (summary['Active_Voxel'] / summary['Total_Voxel']) * 100
+        
+        # Sort the table for better readability
+        sort_mapping = {'SFG': 0, 'MFG': 1, 'IFG': 2, 'PreCG': 3}
+        summary['Sort_ID'] = summary['Cluster'].map(sort_mapping)
+        summary = summary.sort_values(['Sort_ID', 'Hemi']).drop(columns=['Sort_ID'])
+
+        def convert_table_to_dict(df):
+            hemi_dict = {}
+            for hemi in ['LH', 'RH']:
+                hemi_df = df[df['Hemi'] == hemi]
+                hemi_dict[hemi] = dict(zip(hemi_df['Cluster'], hemi_df['Active_Voxel']))
+            return hemi_dict
+        
+        return convert_table_to_dict(summary)
 
     def analyze_and_plot_density_comparison(density_vwm, density_novwm, mask_vwm, mask_novwm, g_name, base_color, desat_color):
 
@@ -924,6 +1035,13 @@ if groupsTag == "LexDelay":
     common_groups = ['Auditory', 'Sensorimotor', 'Motor', 'DelayOnly']
     abs_threshs = [1e-3,1e-3,1e-3,1e-4]
 
+    def swap_dict_layers(d):
+        swapped = {}
+        for k1, v1 in d.items():
+            for k2, v2 in v1.items():
+                swapped.setdefault(k2, {})[k1] = v2
+        return swapped
+
     for g_name,abs_thresh in zip(common_groups,abs_threshs):
         idx_vwm = groups[g_name]['idx']
         if g_name !='DelayOnly':
@@ -955,6 +1073,23 @@ if groupsTag == "LexDelay":
             
             # 显示图例和视图
             ipy_display(view)
+            df_vwm = analyze_bna_activation(m_vwm, 'BN_Atlas_246_1mm.nii.gz')
+            df_novwm = analyze_bna_activation(m_novwm, 'BN_Atlas_246_1mm.nii.gz')
+            if g_name !='DelayOnly':
+                final_data = {
+                    "vWM": df_vwm,
+                    "no vWM": df_novwm
+                }
+            else:
+                final_data = {
+                    "vWM": df_vwm,
+                    "no vWM": {'LH': {'SFG': 0, 'MFG': 0, 'IFG': 0, 'PreCG': 0},
+                                'RH': {'SFG': 0, 'MFG': 0, 'IFG': 0, 'PreCG': 0}}
+                }
+            final_data = swap_dict_layers(final_data)
+            # bar plots for frontal
+            generate_neuro_publication_plot(final_data,save_path=os.path.join(manuscript_save_dir, f"frontal_distrib_{g_name}.svg"))
+            # Desnity plots
             analyze_and_plot_density_comparison(density_vwm, density_novwm, m_vwm, m_novwm,g_name, base_color, desat_color)
 
 
@@ -2347,3 +2482,4 @@ elif groupsTag=="LexDelay&LexNoDelay":
     plt.tight_layout()
     plt.savefig(os.path.join(fig4_dir, f"RMS_BarStrip.svg"), format='svg', bbox_inches='tight')
     plt.show()
+# %%
