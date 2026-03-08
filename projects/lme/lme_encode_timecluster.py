@@ -11,6 +11,8 @@ import matplotlib.ticker as ticker
 from partd.utils import suffix
 from requests.packages import target
 from statsmodels.stats.multitest import multipletests
+import matplotlib
+matplotlib.use('TkAgg')  # <-- 设置后端
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
 manuscript_save_dir = r"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements"
 current_dir = os.getcwd()
@@ -419,7 +421,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
     # 2. 绘制 Beta (Feature) 和 RMS 大图
     # =============================================================================
     print("Starting Beta and RMS Big Plots...")
-    Fig_dir = 'Fig5' #'Fig6'
+    Fig_dir = 'Fig6' #'Fig5'
     group_beta_type = 'max' # 'rms' or 'max' or 'avg'
     match is_huge:
         case '_onlysem':
@@ -474,16 +476,16 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                                         sharey=True)
         if n_cols == 1: axes_rms = [axes_rms]
         
-        # 2. Beta 画布字典
-        figs_beta = {}
-        axes_beta = {}
-        for fea in target_beta_features:
-            f, a = plt.subplots(n_rows, n_cols, 
-                                figsize=(5 * n_cols, 5 * n_rows), 
-                                sharey=True)
-            if n_cols == 1: a = [a]
-            figs_beta[fea] = f
-            axes_beta[fea] = a
+        # # 2. Beta 画布字典 (注释掉以避免产生空图)
+        # figs_beta = {}
+        # axes_beta = {}
+        # for fea in target_beta_features:
+        #     f, a = plt.subplots(n_rows, n_cols, 
+        #                         figsize=(5 * n_cols, 5 * n_rows), 
+        #                         sharey=True)
+        #     if n_cols == 1: a = [a]
+        #     figs_beta[fea] = f
+        #     axes_beta[fea] = a
 
         # if is_huge!='':
         #     continue
@@ -735,6 +737,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         os.makedirs(save_dir_rms, exist_ok=True)
         save_name_rms = os.path.join(save_dir_rms, f'RMS_Dynamics_vWM_{vWM_lambda}.svg')
         plt.savefig(save_name_rms, dpi=300) 
+        plt.show()
         #plt.close(fig_rms)
         
         # for fea, f in figs_beta.items():
