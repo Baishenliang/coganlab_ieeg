@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 import itertools
 from statsmodels.stats.multitest import multipletests
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
@@ -35,14 +36,14 @@ aco_col = [0, 0.502, 0.502]      # Teal
 pho_col = [0.502, 0, 0.502]      # Purple
 wordness_col = [1, 0, 1]         # Magenta
 sem_col = [0.2, 0.8, 0.2]        # Green
-
 feature_colors = {
-    'aco': aco_col, 'pho': pho_col, 'wordnessNonword_vWM': wordness_col,
-    'wordnessNonword:aco': aco_col, 'wordnessNonword:pho': [0.5,0.5,0.5], 'sem': [0.2, 0.8, 0.2],
-    'pho_word': pho_col,
-    'pho_nonword': [0.7, 0.3, 0.7], # Lighter purple for non-words
-    'pho_main': [0.3, 0, 0.3],     # Darker purple for main effect
-    'pho_gain': Delay_col          # Orange for gain
+    'aco_main': [243/255,65/255,162/255], 'pho_main': [138/255,12/255,0/255], 'wordnessNonword_vWM': wordness_col,
+    'wordnessNonword:aco': aco_col, 'wordnessNonword:pho': [0.5,0.5,0.5], 'sem': [101/255, 69/255, 1],
+    'pho_word': [138/255,12/255,0/255],
+    'pho_nonword': [1, 108/255, 93/255],  # Lighter purple for non-words
+    'pho_gain': Delay_col,          # Orange for gain
+    'aco_interact': [0.7, 0.7, 0.7], # Light grey
+    'pho_interact': [0.4, 0.4, 0.4]  # Dark grey
 }
 
 # --- Feature Tags for Plotting ---
@@ -119,7 +120,7 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
     ] 
 
     # Split electrodes into chunks (3 rows per figure)
-    elec_chunks = list(chunks(all_elec_configs, 3))
+    elec_chunks = list(chunks(all_elec_configs, 4))
     
     if is_yn == "_yn":
         delay_nodelay_target = 'LexDelayRep'
@@ -133,7 +134,7 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
     # --- Iterate through chunks (Figures) ---
     for chunk_idx, current_chunk in enumerate(elec_chunks):
         n_rows = len(current_chunk)
-        n_cols = 3
+        n_cols = 4
 
         # Initialize Figure - electrode groups as columns
         fig_rms, axes_rms = plt.subplots(1, n_rows, figsize=(16, 7), sharey=True)
@@ -378,28 +379,32 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
 
                 # --- 7. Formatting ---
                 ax.set_xticks(indices)
-                ax.set_xticklabels(time_labels)
-                # ax.set_xticklabels(time_labels, rotation=45, ha='right')
+                #ax.set_xticklabels(time_labels, rotation=45, ha='right', visible=False)
+                ax.set_xticklabels([])
                 
-                # Adjust Y-Limits dynamically or fixed
-                ax.set_ylim(-0.4*fea_plot_yscale, fea_plot_yscale)
-                
-                ax.spines['top'].set_visible(False)
-                ax.spines['right'].set_visible(False)
+                # 严格锁定 Y 轴范围并增强“透气感”
+                ax.set_ylim(-0.2, 0.4)
+                if row_idx > 0:
+                    ax.yaxis.set_visible(False)
+                    sns.despine(ax=ax, offset=10, trim=True, left=True)
+                else:
+                    sns.despine(ax=ax, offset=10, trim=True)
+                    ax.spines['left'].set_linewidth(3)
+                ax.spines['bottom'].set_linewidth(3)
                 
                 # Headers
-                ax.set_title(elec_grp, fontsize=18, fontweight='bold', pad=20)
+                #ax.set_title(elec_grp, fontsize=18, fontweight='bold', pad=20)
                 
                 # Row Labels
-                if row_idx == 0:
-                    ax.set_ylabel("Avg Beta Gain", fontsize=16, fontweight='bold')
+                #if row_idx == 0:
+                    #ax.set_ylabel("Avg Beta Gain", fontsize=16, fontweight='bold')
                 
                 # X Labels
-                ax.set_xlabel("Time Window (s)", fontsize=14, fontweight='bold')
+                #ax.set_xlabel("Time Window (s)", fontsize=14, fontweight='bold')
                 
                 # Legend (Top Left of Third Column)
-                if row_idx == 2:
-                    ax.legend(loc='upper right', frameon=False, fontsize=14)
+                #if row_idx == 2:
+                    #ax.legend(loc='upper right', frameon=False, fontsize=14)
 
         # --- Save Figure ---
         fig_rms.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust layout to prevent overlap
