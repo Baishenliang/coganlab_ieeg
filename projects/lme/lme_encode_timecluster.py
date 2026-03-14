@@ -156,7 +156,7 @@ def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05, mode:str='time
 
     return time_point, r2_i_full, stat_out_full
 
-def add_alignment_vlines(ax, alignment, lower_bound=0, upper_bound=0.75):
+def add_alignment_vlines(ax, alignment, lower_bound=0, upper_bound=0.25):
     """
     为 matplotlib Axes 对象添加特定事件标记的垂直线段。
     
@@ -248,7 +248,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         case '_huge':
             unified_y_scale = 2   # [请调节] _huge
         case '':
-            unified_y_scale = 0.9   # [请调节] 默认值 (类似 else)
+            unified_y_scale = 0.3   # [请调节] 默认值 (类似 else)
 
     # --- 定义所有要画的电极组 (使用统一的 Scale) ---
     all_elec_configs = [
@@ -390,7 +390,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                     # 5. 范围限制与脊柱边界裁剪
                     ax.set_xlim(xlim_align)
                     curr_ylim = [-0.002, para_sig_bar[0] + 2 * para_sig_bar[1]]
-                    ax.set_ylim(curr_ylim)
+                    ax.set_ylim(curr_ylim)               
                     # 关键：强制黑线范围，消除 -0.25 之前的延伸线
                     ax.spines['bottom'].set_bounds(xlim_align[0], xlim_align[1])
                     ax.spines['left'].set_bounds(curr_ylim[0], curr_ylim[1])
@@ -698,7 +698,8 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
 
                     if col_idx == 0:
                         ax_r.spines['left'].set_linewidth(3)
-                        ax_r.spines['left'].set_bounds(0,0.75)
+                        #ax_r.spines['left'].set_bounds(0,0.75)
+                        ax_r.spines['left'].set_bounds(0, fea_plot_yscale)
 
                     # 6. X 轴刻度步长与 0 刻度美化
                     xticks = [0, 0.5, 1.0, 1.5]
