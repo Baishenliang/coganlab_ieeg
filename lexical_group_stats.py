@@ -5,9 +5,9 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
+#groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 stat_type='mask'
@@ -2232,7 +2232,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
     if not os.path.exists(manuscript_save_dir):
         os.makedirs(manuscript_save_dir)
 
-    fig = plt.figure(figsize=(12, 4), dpi=300)
+    fig = plt.figure(figsize=(11.5, 4), dpi=300)
     gs = gridspec.GridSpec(1, 2, width_ratios=[1.75, 1], wspace=0.1)
 
     # --- 2. ax1: Stimulus-locked ---
@@ -2447,7 +2447,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
     # ==========================================
     # 5. 绘制饱和色 Bar-Strip 图 (No Title)
     # ==========================================
-    plt.figure(figsize=(12, 4))
+    plt.figure(figsize=(10.5, 4))
     ax = plt.gca()
 
     # 柱状图
