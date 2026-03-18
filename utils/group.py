@@ -1083,7 +1083,7 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
         )
 
     # fig.colorbar(im, ax=ax)
-    ax.set_title(title)
+    # ax.set_title(title)
 
     # Set channel names with adjusted gap
     channel_names = chs[::ch_gap]
@@ -1097,7 +1097,7 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
     # time_stamps = [round(t, 3) for t in times[::time_gap]]
     # ax.set_xticks(range(0, len(time_stamps) * time_gap, time_gap))
     # ax.set_xticklabels(time_stamps)
-
+    ax.xaxis.set_visible(False)
     visible_indices = []
     visible_labels = []
 
@@ -1109,8 +1109,8 @@ def plot_chs(data_in, fig_save_dir_fm,title,is_ytick=False,bin:bool=False,discre
             visible_labels.append(t)
 
     # visible_x_positions = [i * time_gap for i in visible_indices]
-    ax.set_xticks(visible_indices)
-    ax.set_xticklabels(visible_labels,rotation=45)
+    # ax.set_xticks(visible_indices)
+    # ax.set_xticklabels(visible_labels,rotation=45)
 
     # Find the zero time index and add a vertical line
     try:

@@ -1,4 +1,4 @@
-# Set dir
+#%% Set dir
 import os
 import sys
 import glob
@@ -96,8 +96,11 @@ def get_subj_elec(filename,del_nodel_tag,elec_typ,pred_onset):
     return extracted_part
 
 #%% Get data
-pred_onsets=('resp_onset','aud_onset')
-del_nodel_tags = ('epoc_LexDelay_Cue','epoc_LexNoDelay_Cue')#, 'epoc_LexDelay_Go')
+# For plotting Figure 3 for the paper, now only need to calculate the resp onset for the delay condition.
+#pred_onsets=('resp_onset','aud_onset')
+#del_nodel_tags = ('epoc_LexDelay_Cue','epoc_LexNoDelay_Cue')#, 'epoc_LexDelay_Go')
+pred_onsets=('resp_onset',)
+del_nodel_tags = ('epoc_LexDelay_Cue',)#, 'epoc_LexNoDelay_Cue')#, 'epoc_LexDelay_Go')
 elec_typs = ('Sensorymotor_vWM', 'Motor_vWM', 'Auditory_vWM', 'Delay_only_vWM', 'Sensorymotor_novWM','Motor_novWM', 'Auditory_novWM')
 
 #%% Plotting
@@ -119,7 +122,6 @@ for pred_onset in pred_onsets:
         cross_corr_lsts = dict()
         subj_elec_lists = dict()
         for elec_typ in elec_typs:
-            #%% read raw hg data
             r2_lst=[]
             clus_lst=[]
             cross_corr_lst=[]
@@ -136,7 +138,6 @@ for pred_onset in pred_onsets:
             matching_files = glob.glob(file_pattern, recursive=False)
             ymax=2e-1
 
-            #%% loop for each electrodes
             for filename in matching_files:
                 para_sig_bar=[1e-1,0]
                 if plot_elec_pic:
@@ -537,188 +538,155 @@ for pred_onset in pred_onsets:
         subj_elec_lists_onset[del_nodel_tag] = subj_elec_lists
         #%% compare predicting onset r^2 (ttests between each other)
 
-        for onset_pred_data,onset_pred_tag,vert_boxplot in zip(
-                (onset_pred_lags,onset_pred_pows),
-                ('peak_lag','pred_pow'),
-                (False,True)
+        MotorPrep_col = [1.0, 0.0784, 0.5765]  # Motor prepare
+        Sensorimotor_col = [1, 0, 0]  # Sensorimotor
+        Auditory_col = [0, 1, 0]  # Auditory
+        Delay_col = [1, 0.65, 0]  # Delay
+        Motor_col = [0, 0, 1]  # Motor
+        # %%
+        import matplotlib.ticker as ticker
+        from contextlib import redirect_stdout
+        import pingouin as pg
 
+        # --- Global RC Parameters for Publication Quality ---
+
+        font_scale = 3
+        save_dir = r"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements\Fig3"
+        plt.rcParams.update({
+            'font.family': 'sans-serif',
+            'font.sans-serif': ['Arial'],
+            'pdf.fonttype': 42,
+            'axes.linewidth': 3.0,       # 3pt Axis width
+            'xtick.major.size': 0, 
+            'ytick.major.size': 6,
+            'ytick.major.width': 3.0,
+            'axes.labelsize': 14 * font_scale,
+            'axes.titlesize': 16 * font_scale,
+            'xtick.labelsize': 16 * font_scale,
+            'ytick.labelsize': 16 * font_scale,
+            'legend.fontsize': 10 * font_scale,
+            'legend.frameon': False,
+
+        }) 
+
+        # --- Main Stats and Boxplot Loop ---
+        for onset_pred_data, onset_pred_tag, vert_boxplot in zip(
+                (onset_pred_lags, onset_pred_pows),
+                ('peak_lag', 'pred_pow'),
+                (False, True)
         ):
-            with open(os.path.join('figs', f'stats_{del_nodel_tag}_{pred_onset}_{onset_pred_tag}.txt'), 'w', encoding='utf-8') as f:
+            stats_filename = os.path.join('figs', f'stats_{del_nodel_tag}_{pred_onset}_{onset_pred_tag}.txt')
+            with open(stats_filename, 'w', encoding='utf-8') as f:
                 with redirect_stdout(f):
+                    # --- Convert Dictionary to Long Format ---
+                    stats_dict = onset_pred_data.copy()
+                    stats_dict.pop('Delay_only_vWM', None)
+                    df_long = pd.DataFrame({'Lag_Value': [], 'Factor_Combined': []})
 
-                    # --- 2. Convert Dictionary to Long Format DataFrame ---
-                    onset_pred_lags_stats=onset_pred_data.copy()
-                    onset_pred_lags_stats.pop('Delay_only_vWM', None)
-                    df_long_independent = pd.DataFrame({
-                        'Lag_Value': [],
-                        'Factor_Combined': []
-                    })
+                    for factor, values in stats_dict.items():
+                        temp_df = pd.DataFrame({'Lag_Value': values, 'Factor_Combined': factor})
+                        df_long = pd.concat([df_long, temp_df], ignore_index=True)
 
-                    for factor, values in onset_pred_lags_stats.items():
-                        temp_df = pd.DataFrame({
-                            'Lag_Value': values,
-                            'Factor_Combined': factor
-                        })
-                        df_long_independent = pd.concat([df_long_independent, temp_df], ignore_index=True)
-
-                    # --- 3. Separate Independent Factors (Electrode and Activity) ---
-                    df_long_independent['Activity'] = df_long_independent['Factor_Combined'].apply(lambda x: x.split('_')[-1])
-                    df_long_independent['Electrode'] = df_long_independent['Factor_Combined'].apply(
+                    df_long['Activity'] = df_long['Factor_Combined'].apply(lambda x: x.split('_')[-1])
+                    df_long['Electrode'] = df_long['Factor_Combined'].apply(
                         lambda x: '_'.join(x.split('_')[:-1]))
 
-                    print("--- Long Format Data Head ---")
-                    print(df_long_independent.head())
-                    print("-" * 50)
+                    # --- ANOVA Analysis ---
+                    aov_results = pg.anova(data=df_long, dv='Lag_Value', between=['Electrode', 'Activity'])
+                    print("--- Independent ANOVA Results ---")
+                    pg.print_table(aov_results)
 
-                    # --- 4. Perform Two-Way Independent ANOVA ---
-                    aov_results_independent = pg.anova(
-                        data=df_long_independent,
-                        dv='Lag_Value',
-                        between=['Electrode', 'Activity']
-                    )
-
-                    print("--- Independent ANOVA Results (Main Effects & Interaction) ---")
-                    pg.print_table(aov_results_independent)
-                    print("-" * 50)
-
-                    # --- 5. Post-Hoc Contrasts ---
-                    # --- Simple Effects Analysis with FDR Correction ---
-
-                    print("--- Simple Effect 1: Electrode within Activity (FDR corrected) ---")
-                    posthoc_results = pd.DataFrame()
-                    for activity_level, group_df in df_long_independent.groupby('Activity'):
-                        # Run independent T-tests for all pairs of 'Electrode' within this 'Activity' level
-                        ttests_result = pg.pairwise_tests(
-                            data=group_df,
-                            dv='Lag_Value',
-                            between='Electrode',  # Compares Electrode levels
-                            padjust='fdr'
-                        )
-
-                        ttests_result['Grouping_Factor'] = 'Activity'
-                        ttests_result['Grouping_Level'] = activity_level
-                        posthoc_results = pd.concat([posthoc_results, ttests_result], ignore_index=True)
-
-                    pg.print_table(posthoc_results[posthoc_results['Grouping_Factor'] == 'Activity'])
-                    print("-" * 50)
-
-                    print("--- Simple Effect 2: Activity within Electrode (FDR corrected) ---")
-
-                    for electrode_level, group_df in df_long_independent.groupby('Electrode'):
-                        # Run independent T-tests for all pairs of 'Activity' within this 'Electrode' level
-                        ttests_result = pg.pairwise_tests(
-                            data=group_df,
-                            dv='Lag_Value',
-                            between='Activity',  # Compares Activity levels (only 2 levels, so it's a single T-test)
-                            padjust='fdr'
-                        )
-
-                        ttests_result['Grouping_Factor'] = 'Electrode'
-                        ttests_result['Grouping_Level'] = electrode_level
-                        posthoc_results = pd.concat([posthoc_results, ttests_result], ignore_index=True)
-
-                    pg.print_table(posthoc_results[posthoc_results['Grouping_Factor'] == 'Electrode'])
-                    print("-" * 50)
-
-            #%% boxplot: compare predicting onset r^2 (ttests between each other)
-            MotorPrep_col = [1.0, 0.0784, 0.5765]  # Motor prepare
-            Sensorimotor_col = [1, 0, 0]  # Sensorimotor
-            Auditory_col = [0, 1, 0]  # Auditory
-            Delay_col = [1, 0.65, 0]  # Delay
-            Motor_col = [0, 0, 1]  # Motor
-
-            ordered_keys=['Sensorymotor_vWM','Sensorymotor_novWM','Auditory_vWM','Auditory_novWM','Motor_vWM','Motor_novWM','Delay_only_vWM']
+            # --- Boxplot Rendering ---
+            ordered_keys = ['Sensorymotor_vWM','Sensorymotor_novWM','Auditory_vWM','Auditory_novWM','Motor_vWM','Motor_novWM','Delay_only_vWM']
             new_tick_labels = ['SM_vWM', 'SM_novWM', 'Aud_vWM','Aud_novWM', 'M_vWM', 'M_novWM', 'DelOnly_vWM']
-            onset_pred_lags_data = [onset_pred_data[key] for key in ordered_keys]
-            colors = [Sensorimotor_col,Sensorimotor_col, Auditory_col, Auditory_col, Motor_col,Motor_col, Delay_col]
+            plot_data = [onset_pred_data[key] for key in ordered_keys]
+            colors = [Sensorimotor_col, Sensorimotor_col, Auditory_col, Auditory_col, Motor_col, Motor_col, Delay_col]
 
-            fig, ax = plt.subplots(figsize=(8, 7))
+            fig, ax = plt.subplots(figsize=(12, 6), dpi=300)
             boxplot_parts = ax.boxplot(
-                onset_pred_lags_data,
+                plot_data,
                 tick_labels=new_tick_labels,
                 vert=vert_boxplot,
                 patch_artist=True,
-                showmeans=True
+                showmeans=True,
+                widths=0.6,
+                medianprops={'color': 'black', 'linewidth': 2.5},
+                meanprops={'marker': 'o', 'markerfacecolor': 'white', 'markeredgecolor': 'black', 'markersize': 10}
             )
-            # --- Modification for "nonvWM" boxes (Indices 1, 3, 5) ---
-            novWM_indices = [1, 3, 5]
+
+            # Styling and Hatching for novWM groups (Indices 1, 3, 5)
             for i, (patch, color) in enumerate(zip(boxplot_parts['boxes'], colors)):
                 patch.set_facecolor(color)
                 patch.set_edgecolor('black')
-                patch.set_alpha(0.6)
-                # Apply hatch to 'novWM' boxes
-                if i in novWM_indices:
-                    patch.set_hatch('//')
+                patch.set_alpha(0.7)
+                if i in [1, 3, 5]:
+                    patch.set_hatch('////')
 
-            if onset_pred_tag=='peak_lag':
-                ax.axvline(0, color='gray', linestyle='-', linewidth=0.5)
-                ax.set_title('Peak')
-                ax.set_xlabel('Peak within ±1.5s window')
-                ax.set_ylabel('Electrode group')
-                ax.set_yticklabels([])
-                ax.grid(False)
+            # Breathable Axis Offset (12pt)
+            ax.spines['left'].set_position(('outward', 12))
+            ax.spines['bottom'].set_position(('outward', 12))
+            ax.spines[['right', 'top']].set_visible(False)
+
+            if onset_pred_tag == 'peak_lag':
+                # X-axis limits for Peak Lag
+                ax.set_xlim(-1.5, 1.5)
+                ax.axvline(0, color='gray', linestyle='-', linewidth=1.5, alpha=0.5)
             else:
-                ax.set_title('CC $R^2$ at motor onsets')
-                ax.set_ylabel('Power at ±1.5s')
-                ax.set_xlabel('Electrode group')
-                ax.set_xticklabels([])
+                # Y-axis limits for Predictive Power [0, 0.2]
+                ax.set_ylim(0, 0.2)
+                ax.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
                 plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-            ax.spines['right'].set_visible(False)
-            ax.spines['top'].set_visible(False)
+
+            # --- UPDATED: Keep Ticks but Remove Labels & Titles ---
+            ax.set_title("")
+            ax.set_xlabel("")
+            ax.set_ylabel("")
+            # Increase tick label size for visibility in paper
+            ax.tick_params(axis='x', bottom=False, labelbottom=False)
+
             plt.tight_layout()
-            plt.savefig(os.path.join('figs', f'boxplot_{del_nodel_tag}_{pred_onset}_{onset_pred_tag}.tif'), dpi=100)
+            plt.savefig(os.path.join(save_dir, f'boxplot_{del_nodel_tag}_{pred_onset}_{onset_pred_tag}.svg'), transparent=True)
 
-        #%% Traceplots: crosscorr
+        # --- Traceplots: Cross-correlation ---
         results = {}
-
         for key, data_array in cross_corr_lsts.items():
-            mean_curve = np.mean(data_array, axis=0)
-            std_dev_curve = np.std(data_array, axis=0)
-            N = data_array.shape[0]
-            sem_curve = std_dev_curve / np.sqrt(N)
             results[key] = {
-                'mean': mean_curve,
-                'sem': sem_curve
+                'mean': np.mean(data_array, axis=0),
+                'sem': np.std(data_array, axis=0) / np.sqrt(data_array.shape[0])
             }
 
-        fig, ax = plt.subplots(figsize=(8, 7))
+        fig, ax = plt.subplots(figsize=(10, 10), dpi=300)
+        line_styles = ['-', '--', '-', '--', '-', '--', '-']
 
-        colors = [Sensorimotor_col, Sensorimotor_col, Auditory_col,Auditory_col, Motor_col,Motor_col, Delay_col]
-        ln_stls = ['-','--','-','--','-','--','-']
-        color_idx = 0
-
-        for key in ordered_keys:
+        for i, key in enumerate(ordered_keys):
             res = results[key]
-            mean = res['mean']
-            sem = res['sem']
+            ax.plot(time_lags, res['mean'], label=key, color=colors[i], 
+                    linewidth=3.5, linestyle=line_styles[i], alpha=0.9)
+            ax.fill_between(time_lags, res['mean'] - res['sem'], res['mean'] + res['sem'],
+                            color=colors[i], alpha=0.15)
 
-            color = colors[color_idx]
-            linestyle = ln_stls[color_idx]
+        # Axis Limits for Traces
+        ax.set_ylim(0, 0.06)
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(0.02))
+        ax.set_xlim(-4, 4)
 
-            ax.plot(time_lags, mean, label=key, color=color, linewidth=2, linestyle=linestyle)
+        # Breathable Axis Offset
+        ax.spines['left'].set_position(('outward', 12))
+        ax.spines['bottom'].set_position(('outward', 12))
+        ax.spines[['right', 'top']].set_visible(False)
+        ax.axvline(x=0, color='grey', linestyle='--', alpha=0.5, linewidth=2.5)
 
-            ax.fill_between(
-                time_lags,
-                mean - sem,
-                mean + sem,
-                color=color,
-                alpha=0.2
-            )
+        # --- UPDATED: Keep Ticks but Remove Labels & Titles ---
+        ax.set_title("")
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        # Ensure numerical tick labels are large and bold for publication
+        #ax.tick_params(axis='x', bottom=False, labelbottom=False)
 
-            color_idx += 1
-
-        ax.axvline(x=0, color='grey', linestyle='--', alpha=0.7, linewidth=1)
-
-        ax.set_title('CC $R^2$ traces')
-        ax.set_xlabel('Lag aligned to speech onset (s)')
-        ax.set_ylabel('$R^2$ mean ± SEM')
-        ax.spines['right'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-        # ax.legend(loc='best')
-        # ax.grid(axis='y', linestyle=':', alpha=0.6)
-        ax.set_xlim(-4,4)
         plt.tight_layout()
-        plt.savefig(os.path.join('figs', f'cctimetraces_{del_nodel_tag}_{pred_onset}.tif'), dpi=100)
+        plt.savefig(os.path.join(save_dir, f'cctimetraces_{del_nodel_tag}_{pred_onset}.svg'), transparent=True)
+        plt.show()
+        #plt.savefig(os.path.join('figs', f'cctimetraces_{del_nodel_tag}_{pred_onset}.tif'), dpi=100)
 
     onset_pred_lags_all[pred_onset] = onset_pred_lags_onset
     onset_pred_pows_all[pred_onset] = onset_pred_pows_onset
@@ -763,8 +731,9 @@ def plot_crr_scat(x_data, y_data, pred_onset, elec_typ,data_tag):
     plt.gca().set_aspect('equal', adjustable='box')
     plt.gca().set_box_aspect(1.3)
     plt.tight_layout()
-    plt.savefig(os.path.join('figs', f'corr_{elec_typ}_{pred_onset}_{data_tag}.tif'), dpi=100)
-    plt.close()
+    plt.show()
+    #plt.savefig(os.path.join('figs', f'corr_{elec_typ}_{pred_onset}_{data_tag}.tif'), dpi=100)
+    #plt.close()
 
     return r_pearson, p_pearson
 
