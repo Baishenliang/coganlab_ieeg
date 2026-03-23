@@ -490,6 +490,8 @@ for comp in comp_names:
 
 colors_tab10 = plt.cm.tab10.colors
 
+chs_coor=gp.get_coor(df_weights.Channel.to_list(),'group')
+
 for i, comp in enumerate(comp_names):
     w = df_weights[comp].values
     w_norm = w / w.max() if w.max() > 0 else w
@@ -653,3 +655,114 @@ for col, ylabel, save_name in metrics:
     plt.savefig(os.path.join(save_dir, save_name), format='svg', dpi=300, bbox_inches='tight')
     plt.show()
 # %%
+# %%
+import seaborn as sns
+from sklearn.linear_model import LinearRegression
+
+chs_coor_stats = gp.get_coor(df_stats['Channel'].tolist(), 'group')
+
+analysis_targets = [
+    ('Auditory_Power_Z', aud_z, np.array(plt.cm.tab10.colors[2][:3])),
+    ('Motor_Power_Z', mot_z, np.array(plt.cm.tab10.colors[0][:3]))
+]
+
+for name, z_vals, base_col in analysis_targets:
+    x_coords = chs_coor_stats['x'].values
+    y_coords = chs_coor_stats['y'].values
+    z_coords = chs_coor_stats['z'].values
+    
+    valid_mask = ~np.isnan(x_coords) & ~np.isnan(y_coords) & ~np.isnan(z_coords) & ~np.isnan(z_vals)
+    
+    xyz_valid = np.column_stack((x_coords[valid_mask], y_coords[valid_mask], z_coords[valid_mask]))
+    vals_valid = z_vals[valid_mask]
+    y_valid = y_coords[valid_mask] 
+    
+    reg = LinearRegression().fit(xyz_valid, vals_valid)
+    
+    grad_vector = reg.coef_
+    grad_norm = np.linalg.norm(grad_vector)
+    
+    if grad_norm > 0:
+        grad_unit = grad_vector / grad_norm
+        projection_1d = np.dot(xyz_valid, grad_unit)
+    else:
+        projection_1d = np.zeros_like(vals_valid)
+
+    plt.rcParams['font.sans-serif'] = ['Arial']
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['axes.linewidth'] = 2.0
+    
+    fig1, axes = plt.subplots(1, 2, figsize=(10, 5), dpi=300)
+    
+    sns.regplot(x=y_valid, y=vals_valid, ax=axes[0], color=base_col,
+                scatter_kws={'alpha': 0.7, 's': 50, 'edgecolors': 'white', 'linewidths': 0.5},
+                line_kws={'linewidth': 3, 'color': '#333333', 'alpha': 0.8})
+    axes[0].set_title(f'{name} | Y-Axis (A-P) Gradient', fontsize=14, fontweight='bold', pad=15)
+    axes[0].set_xlabel('Y Coordinate (mm)', fontsize=14, fontweight='bold')
+    axes[0].set_ylabel('Z-scored Power', fontsize=14, fontweight='bold')
+    axes[0].invert_xaxis()
+    
+    sns.regplot(x=projection_1d, y=vals_valid, ax=axes[1], color=base_col,
+                scatter_kws={'alpha': 0.7, 's': 50, 'edgecolors': 'white', 'linewidths': 0.5},
+                line_kws={'linewidth': 3, 'color': '#333333', 'alpha': 0.8})
+    axes[1].set_title(f'{name} | Optimal 3D Gradient', fontsize=14, fontweight='bold', pad=15)
+    axes[1].set_xlabel('Optimal Gradient Projection', fontsize=14, fontweight='bold')
+    axes[1].set_ylabel('Z-scored Power', fontsize=14, fontweight='bold')
+    
+    for ax in axes:
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.spines['left'].set_linewidth(3)
+        ax.spines['bottom'].set_linewidth(3)
+        ax.tick_params(axis='both', labelsize=12, length=6, width=2.5)
+        sns.despine(ax=ax, offset=10, trim=True)
+        
+    plt.tight_layout()
+    
+    save_dir = '../Greg_ROIs/fig'
+    if not os.path.exists(save_dir): 
+        os.makedirs(save_dir)
+    plt.savefig(os.path.join(save_dir, f"Gradient_Scatter_2D_{name}.svg"), format='svg', dpi=300, bbox_inches='tight')
+    plt.show()
+
+    fig2 = plt.figure(figsize=(6, 6), dpi=300)
+    ax2 = fig2.add_subplot(111, projection='3d')
+    ax2.scatter(xyz_valid[:, 1], xyz_valid[:, 0], xyz_valid[:, 2], 
+                c=base_col.reshape(1,-1), s=40, alpha=0.6, edgecolors='white', linewidths=0.5)
+    
+    mean_xyz = np.mean(xyz_valid, axis=0)
+    
+    if grad_norm > 0:
+        scale_factor = (np.max(xyz_valid[:, 1]) - np.min(xyz_valid[:, 1])) * 0.7
+        arrow_vector = grad_unit * scale_factor
+        
+        ax2.quiver(mean_xyz[1], mean_xyz[0], mean_xyz[2], 
+                   arrow_vector[1], arrow_vector[0], arrow_vector[2], 
+                   color='#333333', linewidth=4, arrow_length_ratio=0.2, pivot='tail', zorder=10)
+
+    ax2.set_xlabel('Y (P-A)', fontsize=12, fontweight='bold')
+    ax2.set_ylabel('X (L-R)', fontsize=12, fontweight='bold')
+    ax2.set_zlabel('Z (I-S)', fontsize=12, fontweight='bold')
+    
+    ax2.invert_xaxis()
+    
+    x_lim = ax2.get_xlim(); y_lim = ax2.get_ylim(); z_lim = ax2.get_zlim()
+    max_range = np.array([x_lim[1]-x_lim[0], y_lim[1]-y_lim[0], z_lim[1]-z_lim[0]]).max() / 2.0
+    mid_x = (x_lim[1]+x_lim[0])/2.0; mid_y = (y_lim[1]+y_lim[0])/2.0; mid_z = (z_lim[1]+z_lim[0])/2.0
+    ax2.set_xlim(mid_x - max_range, mid_x + max_range)
+    ax2.set_ylim(mid_y - max_range, mid_y + max_range)
+    ax2.set_zlim(mid_z - max_range, mid_z + max_range)
+    
+    ax2.view_init(elev=20, azim=-60) 
+    ax2.set_title(f'{name} | Vector View', fontsize=14, fontweight='bold', pad=10)
+    
+    ax2.xaxis.pane.fill = False
+    ax2.yaxis.pane.fill = False
+    ax2.zaxis.pane.fill = False
+    ax2.xaxis.pane.set_edgecolor('white')
+    ax2.yaxis.pane.set_edgecolor('white')
+    ax2.zaxis.pane.set_edgecolor('white')
+    ax2.grid(True, linestyle='--', alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, f"Gradient_3D_Vector_{name}.svg"), format='svg', dpi=300, bbox_inches='tight')
+    plt.show()
