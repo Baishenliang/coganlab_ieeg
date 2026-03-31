@@ -1420,6 +1420,33 @@ if groupsTag == "LexDelay":
                 # Clus plots
                 Hickok_ROI_data = select_electrodes(data_epoch, Hickok_roi_gp)
                 Hickok_ROI_epoch = select_electrodes(epoc_epoch, Hickok_roi_gp)
+                
+                # Export 
+                # %%
+                
+                for Hickok_ROI_data_type, Hickok_ROI_data_type_tag in zip(
+                    (Hickok_ROI_data, Hickok_ROI_epoch),
+                    ('mask','epoch')
+                ):
+                    # Create directory if it doesn't exist
+                    output_dir = os.path.join("projects", "Greg_ROIs", f"{tag}")
+                    os.makedirs(output_dir, exist_ok=True)
+
+                    Hickok_ROI_data_type_dict = Hickok_ROI_data_type.to_dict()
+                    Hickok_ROI_data_type_frame = pd.DataFrame(Hickok_ROI_data_type_dict)
+
+                    Hickok_ROI_data_type_frame.columns = Hickok_ROI_data_type_frame.columns.astype(str).str.replace("#", "", regex=False)
+                    Hickok_ROI_data_type_frame.index = Hickok_ROI_data_type_frame.index.astype(str).str.replace("#", "", regex=False)
+
+
+                    Hickok_rawdata_save_dir = os.path.join("projects", "Greg_ROIs", f"{tag}")
+                    os.makedirs(Hickok_rawdata_save_dir, exist_ok=True)
+
+                    Hickok_ROI_data_type_frame.to_csv(
+                        os.path.join(Hickok_rawdata_save_dir, f"{tag}_{epoch_tag}_{Hickok_ROI_data_type_tag}.csv"),
+                        index=True
+                    )
+
                 if epoch_tag == 'Resp':
                     _, _, Hickok_ROI_epoch_sort_idx, _,_,Hickok_ROI_epoch_sort_paras_tab = sort_chs_by_actonset(Hickok_ROI_data,
                                                                                Hickok_ROI_epoch,
