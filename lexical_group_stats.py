@@ -590,16 +590,15 @@ if groupsTag == "LexDelay":
         len(LexDelay_Auditory_in_Delay_sig_idx), 
         len(LexDelay_Sensorimotor_in_Delay_sig_idx),
         len(LexDelay_Motor_in_Delay_sig_idx), 
-        len(LexDelay_DelayOnly_sig_idx)#,
+        len(LexDelay_DelayOnly_sig_idx)]#,
         # len(LexDelay_Delay_sig_idx - (
         #     LexDelay_Auditory_in_Delay_sig_idx | 
         #     LexDelay_Sensorimotor_in_Delay_sig_idx | 
         #     LexDelay_DelayOnly_sig_idx | 
         #     LexDelay_Motor_in_Delay_sig_idx
         # ))
-    ]
     DLREP_SM_inDLREP = np.array(counts)
-    labels = ["Auditory vWM", "Sensory-motor vWM", "Motor vWM", "Delay-only"], "Others"]
+    labels = ["Auditory vWM", "Sensory-motor vWM", "Motor vWM", "Delay-only"]#, "Others"]
     colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col]#, [0.8, 0.8, 0.8]] # 灰色稍调浅一点
 
     # --- 2. 自定义标签函数：电极数 \n (百分比) ---
