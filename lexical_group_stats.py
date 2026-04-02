@@ -208,8 +208,8 @@ if "LexDelay" in groupsTag:
     LexDelay_Motor_sig_idx = LexDelay_Motor_Prep_sig_idx - LexDelay_Aud_sig_idx
 
     # Channel selection: Delay only electrodes (delay electrodes ,with: auditory window:0, motor prep: 0, motor resp: 0)
-    LexDelay_DelayOnly_sig_idx = LexDelay_Delay_sig_idx - (LexDelay_Aud_sig_idx | LexDelay_Motor_Prep_sig_idx | LexDelay_Motor_Resp_sig_idx)
-
+    #LexDelay_DelayOnly_sig_idx = LexDelay_Delay_sig_idx - (LexDelay_Aud_sig_idx | LexDelay_Motor_Prep_sig_idx | LexDelay_Motor_Resp_sig_idx)
+    LexDelay_DelayOnly_sig_idx = LexDelay_Delay_sig_idx - (LexDelay_Aud_sig_idx | LexDelay_Motor_Prep_sig_idx)
     # Channel selection: Auditory electrodes in Delay electrodes
     LexDelay_Auditory_in_Delay_sig_idx = LexDelay_Delay_sig_idx & LexDelay_Aud_NoMotor_sig_idx
 
@@ -590,17 +590,17 @@ if groupsTag == "LexDelay":
         len(LexDelay_Auditory_in_Delay_sig_idx), 
         len(LexDelay_Sensorimotor_in_Delay_sig_idx),
         len(LexDelay_Motor_in_Delay_sig_idx), 
-        len(LexDelay_DelayOnly_sig_idx),
-        len(LexDelay_Delay_sig_idx - (
-            LexDelay_Auditory_in_Delay_sig_idx | 
-            LexDelay_Sensorimotor_in_Delay_sig_idx | 
-            LexDelay_DelayOnly_sig_idx | 
-            LexDelay_Motor_in_Delay_sig_idx
-        ))
+        len(LexDelay_DelayOnly_sig_idx)#,
+        # len(LexDelay_Delay_sig_idx - (
+        #     LexDelay_Auditory_in_Delay_sig_idx | 
+        #     LexDelay_Sensorimotor_in_Delay_sig_idx | 
+        #     LexDelay_DelayOnly_sig_idx | 
+        #     LexDelay_Motor_in_Delay_sig_idx
+        # ))
     ]
     DLREP_SM_inDLREP = np.array(counts)
-    labels = ["Auditory vWM", "Sensory-motor vWM", "Motor vWM", "Delay-only", "Others"]
-    colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col, [0.8, 0.8, 0.8]] # 灰色稍调浅一点
+    labels = ["Auditory vWM", "Sensory-motor vWM", "Motor vWM", "Delay-only"], "Others"]
+    colors = [Auditory_col, Sensorimotor_col, Motor_col, Delay_col]#, [0.8, 0.8, 0.8]] # 灰色稍调浅一点
 
     # --- 2. 自定义标签函数：电极数 \n (百分比) ---
     def make_autopct(values):
