@@ -33,7 +33,7 @@ delay_len=1.125 # average length from sound offset to Go onset
 # auditory_decay=0 # a short period of time that we may assume auditory decay takes
 # delay_len=1.525 # average length from sound offset to Go onset
 
-motor_prep_win=[-0.75,0] # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
+motor_prep_win=[-0.75,0] #May try -200ms - 9ms later # get windows for motor preparation (0.1s to avoid high gamma filter leakage)
 motor_resp_win=[0,1] # get windows for motor response (0.75s to avoid too much auditory feedback)
 go_resp_win=[0, 0.75] # speech preparation signals from Go onset. 0.25s cut
 pre_stimonset_win=[-0.5,0]
@@ -637,7 +637,7 @@ if groupsTag == "LexDelay":
     plt.tight_layout()
 
     # --- 5. 保存 ---
-    save_path = os.path.join(manuscript_save_dir, "..","Fig1","vWM_Electrode_Distribution_Pie.svg")
+    save_path = os.path.join(manuscript_save_dir, "..","Fig1","vWM_Electrode_Distribution_Pie_der.svg")
     plt.savefig(save_path, format='svg', bbox_inches='tight')
     plt.show()
 
