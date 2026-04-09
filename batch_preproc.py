@@ -74,9 +74,9 @@ from matplotlib import pyplot as plt
 #     "D0115": "gamma",
 #     "D0117": "gamma"
 # }
-subject_processing_dict_org = {
-     "D0128": "gamma",
-}
+# subject_processing_dict_org = {
+#      "D0128": "gamma",
+# }
 # subject_processing_dict_org = {
 #     # "D0121": "multitaper/gamma",
 #     # "D0128": "multitaper/gamma",
@@ -93,6 +93,10 @@ subject_processing_dict_org = {
 #     "D0139": "linernoise/outlierchs/wavelet",
 #     "D0140": "linernoise/outlierchs/wavelet",
 # }
+subject_processing_dict_org = {
+    "D0143": "linernoise/outlierchs/wavelet",
+}
+
 
 
 
