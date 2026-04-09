@@ -10,6 +10,7 @@ groupsTag="LexDelay"
 #groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
+get_atlaslabels_from_ecogRecon = False # whether get atlas labels for each electrode, which is used for later analysis of the distribution of electrodes in different ROIs. If True, it will take a long time to run the code. So we set it to False after we get the labels and save them in the utils folder.
 stat_type='mask'
 contrast='ave' # average, not contrasting different conditions
 #contrast='ave_YN_Rep' # contrasting yesno to repetition
@@ -79,15 +80,16 @@ if groupsTag=="LexDelay":
     if datasource=='hg':
 
         data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
-        data_LexDelay_Cue, _ = load_stats(stat_type, 'Cue'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
+        #data_LexDelay_Cue, _ = load_stats(stat_type, 'Cue'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
         data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
         data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
         # Get the ROI of labels
-        ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
+        if get_atlaslabels_from_ecogRecon:
+            ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
 
         epoc_LexDelay_Aud,_=load_stats('zscore','Auditory'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
-        epoc_LexDelay_Cue,_=load_stats('zscore','Cue'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
+        #poc_LexDelay_Cue,_=load_stats('zscore','Cue'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         epoc_LexDelay_Go,_=load_stats('zscore','Go'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         epoc_LexDelay_Resp,_=load_stats('zscore','Resp'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
 
@@ -100,7 +102,8 @@ if groupsTag=="LexDelay":
         data_LexDelay_Aud,epoc_LexDelay_Aud,_=glm.load_stats('Auditory'+Delayseleted,'zscore','Repeat','cluster_mask',datasource.split('_')[1],subjs,chs,times,'ALL')
         _, _, _, _, times = glm.fifread('Resp_inRep', 'zscore', 'Repeat','ALL')
         data_LexDelay_Resp,epoc_LexDelay_Resp,_=glm.load_stats('Resp'+Delayseleted,'zscore','Repeat','cluster_mask',datasource.split('_')[1],subjs,chs,times,'ALL')
-        ch_labels_roi, ch_labels = chs2atlas(subjs, data_LexDelay_Aud.labels[0])
+        if get_atlaslabels_from_ecogRecon:
+            ch_labels_roi, ch_labels = chs2atlas(subjs, data_LexDelay_Aud.labels[0])
 
 elif groupsTag=="LexNoDelay":
 
@@ -111,7 +114,8 @@ elif groupsTag=="LexNoDelay":
     # data_LexNoDelay_Silence_Aud,_=load_stats(stat_type,'Auditory_inSilence',contrast,stats_root_nodelay,stats_root_nodelay)
 
     # Get the ROI of labels
-    ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexNoDelay_Aud.labels[0])
+    if get_atlaslabels_from_ecogRecon:
+        ch_labels_roi, ch_labels = chs2atlas(subjs, data_LexNoDelay_Aud.labels[0])
 
     epoc_LexNoDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
     epoc_LexNoDelay_Cue,_=load_stats('zscore','Cue_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
@@ -136,7 +140,8 @@ elif groupsTag=="LexDelay&LexNoDelay":
     # data_LexNoDelay_Silence_Aud,_=load_stats(stat_type,'Auditory_inSilence',contrast,stats_root_nodelay,stats_root_nodelay)
 
     # Get the ROI of labels
-    ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
+    if get_atlaslabels_from_ecogRecon:
+        ch_labels_roi, ch_labels = chs2atlas(subjs, data_LexDelay_Aud.labels[0])
 
     data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_nodelay, stats_root_delay)
     data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay)
@@ -387,9 +392,10 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
     #     paras_col=paras[column_name]
     #     cols = onsets2col(paras_col, chs_sel)
     #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
-    atlas2_hist(ch_labels_roi, chs_sel, [0.5,0.5,0.5,0.4],
-                os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
-                ylim=[0,100])
+    if get_atlaslabels_from_ecogRecon:
+        atlas2_hist(ch_labels_roi, chs_sel, [0.5,0.5,0.5,0.4],
+                    os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
+                    ylim=[0,100])
 
     # Cue alinged
     data_LexDelay_in_Delay_Cue = select_electrodes(data_LexDelay_Cue, sig_idx)
@@ -436,7 +442,8 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
     #     paras_col=paras[column_name]
     #     cols = onsets2col(paras_col, chs_sel)
     #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
-    atlas2_hist(ch_labels_roi, chs_sel, [0.5,0.5,0.5,0.4],
+    if get_atlaslabels_from_ecogRecon:
+        atlas2_hist(ch_labels_roi, chs_sel, [0.5,0.5,0.5,0.4],
                 os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
                 ylim=[0,100])
 
@@ -484,10 +491,11 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
         #     paras_col = paras[column_name]
         #     cols = onsets2col(paras_col, chs_sel)
         #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
-        atlas2_hist(ch_labels_roi, chs_sel, [0.5, 0.5, 0.5, 0.4],
-                    os.path.join(fig_save_dir,
-                                 f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
-                    ylim=[0, 100])
+        if get_atlaslabels_from_ecogRecon:
+            atlas2_hist(ch_labels_roi, chs_sel, [0.5, 0.5, 0.5, 0.4],
+                        os.path.join(fig_save_dir,
+                                     f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
+                        ylim=[0, 100])
 
         # Motor aligned
         data_LexNoDelay_in_Delay_Resp = select_electrodes(data_LexNoDelay_Resp, sig_idx)
@@ -515,10 +523,11 @@ for sig_idx, sig_tag,align_data,align_epoc in zip(
         #     paras_col = paras[column_name]
         #     cols = onsets2col(paras_col, chs_sel)
         #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
-        atlas2_hist(ch_labels_roi, chs_sel, [0.5, 0.5, 0.5, 0.4],
-                    os.path.join(fig_save_dir,
-                                 f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
-                    ylim=[0, 100])
+        if get_atlaslabels_from_ecogRecon:
+            atlas2_hist(ch_labels_roi, chs_sel, [0.5, 0.5, 0.5, 0.4],
+                        os.path.join(fig_save_dir,
+                                     f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
+                        ylim=[0, 100])
 
 # Summing up key electrodes
 electrode_activity_length_dfs=[]
@@ -637,7 +646,7 @@ if groupsTag == "LexDelay":
     plt.tight_layout()
 
     # --- 5. 保存 ---
-    save_path = os.path.join(manuscript_save_dir, "..","Fig1","vWM_Electrode_Distribution_Pie_der.svg")
+    save_path = os.path.join(manuscript_save_dir, "..","Fig1","vWM_Electrode_Distribution_Pie.svg")
     plt.savefig(save_path, format='svg', bbox_inches='tight')
     plt.show()
 
@@ -1116,42 +1125,43 @@ if groupsTag == "LexDelay":
         plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain2.png'), 0.3,0.2,hemi='rh')
 
     # Reassigning electrode indices by conditions for plotting (ROIS)
-    import collections
-    # Initialize the master dictionary
-    elec_roi = {}
-    # Iterate through Subgroups with new names
-    for roi_idx, roi_idx_tag in zip(
-            (LexDelay_Delay_sig_idx, LexDelay_all_sig_idx - LexDelay_Delay_sig_idx),
-            ('vWM', 'no_vWM',)): # Renamed from 'Delay' and 'Without_Delay'
+    if get_atlaslabels_from_ecogRecon:
+        import collections
+        # Initialize the master dictionary
+        elec_roi = {}
+        # Iterate through Subgroups with new names
+        for roi_idx, roi_idx_tag in zip(
+                (LexDelay_Delay_sig_idx, LexDelay_all_sig_idx - LexDelay_Delay_sig_idx),
+                ('vWM', 'no_vWM',)): # Renamed from 'Delay' and 'Without_Delay'
 
-        for TypeLabel, sig in zip(
-                ('Auditory', 'Delay_only', 'Sensory-motor', 'Motor'), # TypeLabel also updated for consistency
-                (LexDelay_Aud_NoMotor_sig_idx & roi_idx,
-                LexDelay_DelayOnly_sig_idx & roi_idx,
-                LexDelay_Sensorimotor_sig_idx & roi_idx,
-                LexDelay_Motor_sig_idx & roi_idx)):
-            
-            # Skip the logically empty group
-            if roi_idx_tag == 'no_vWM' and TypeLabel == 'vWM': 
-                continue
-            
-            # Get electrode labels for the current selection
-            chs_sel = data_LexDelay_Aud.labels[0][list(sig)].tolist()
-            
-            if TypeLabel not in elec_roi:
-                elec_roi[TypeLabel] = {}
-            
-            # 1. Count ALL anatomical ROIs for this subgroup
-            temp_counts = collections.Counter([ch_labels_roi.get(ch, 'unknown') for ch in chs_sel])
-            
-            # 2. Identify the local Top 4
-            top4_rois = [r for r, count in temp_counts.most_common(4)]
-            
-            # 3. Save the counts only for the Top 4 (will be unified during plotting)
-            elec_roi[TypeLabel][roi_idx_tag] = {roi: temp_counts[roi] for roi in top4_rois}
+            for TypeLabel, sig in zip(
+                    ('Auditory', 'Delay_only', 'Sensory-motor', 'Motor'), # TypeLabel also updated for consistency
+                    (LexDelay_Aud_NoMotor_sig_idx & roi_idx,
+                    LexDelay_DelayOnly_sig_idx & roi_idx,
+                    LexDelay_Sensorimotor_sig_idx & roi_idx,
+                    LexDelay_Motor_sig_idx & roi_idx)):
+                
+                # Skip the logically empty group
+                if roi_idx_tag == 'no_vWM' and TypeLabel == 'vWM': 
+                    continue
+                
+                # Get electrode labels for the current selection
+                chs_sel = data_LexDelay_Aud.labels[0][list(sig)].tolist()
+                
+                if TypeLabel not in elec_roi:
+                    elec_roi[TypeLabel] = {}
+                
+                # 1. Count ALL anatomical ROIs for this subgroup
+                temp_counts = collections.Counter([ch_labels_roi.get(ch, 'unknown') for ch in chs_sel])
+                
+                # 2. Identify the local Top 4
+                top4_rois = [r for r, count in temp_counts.most_common(4)]
+                
+                # 3. Save the counts only for the Top 4 (will be unified during plotting)
+                elec_roi[TypeLabel][roi_idx_tag] = {roi: temp_counts[roi] for roi in top4_rois}
 
-    generate_neuro_publication_plot(elec_roi)
-    plt.show()
+        generate_neuro_publication_plot(elec_roi)
+        plt.show()
 
     unit_scale = 3.0        # 每 1 秒数据在纸面上的物理长度 (inches/sec)
     left_padding_with_y = 1.6  # 有 Y 轴时的留白 (用于 Stim)
