@@ -74,9 +74,9 @@ from matplotlib import pyplot as plt
 #     "D0115": "gamma",
 #     "D0117": "gamma"
 # }
-# subject_processing_dict_org = {
-#      "D0134": "multitaper",
-# }
+subject_processing_dict_org = {
+     "D0128": "gamma",
+}
 # subject_processing_dict_org = {
 #     # "D0121": "multitaper/gamma",
 #     # "D0128": "multitaper/gamma",
@@ -86,13 +86,13 @@ from matplotlib import pyplot as plt
 #     # "D0139": "multitaper/gamma"
 #     # "D0140": "multitaper/gamma"
 # }
-subject_processing_dict_org = {
-    "D0132": "linernoise/outlierchs/wavelet",
-    "D0135": "linernoise/outlierchs/wavelet",
-    "D0137": "linernoise/outlierchs/wavelet",
-    "D0139": "linernoise/outlierchs/wavelet",
-    "D0140": "linernoise/outlierchs/wavelet",
-}
+# subject_processing_dict_org = {
+#     "D0132": "linernoise/outlierchs/wavelet",
+#     "D0135": "linernoise/outlierchs/wavelet",
+#     "D0137": "linernoise/outlierchs/wavelet",
+#     "D0139": "linernoise/outlierchs/wavelet",
+#     "D0140": "linernoise/outlierchs/wavelet",
+# }
 
 
 

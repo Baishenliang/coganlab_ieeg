@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -e data/DCCbatchout/slurm_%a.err
-#SBATCH -a 130-140
+#SBATCH -a 126-130
 #SBATCH --mem=200G
 #SBATCH --cpus-per-task=10
 #SBATCH --partition=common,scavenger
