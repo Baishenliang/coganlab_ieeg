@@ -78,13 +78,13 @@ from matplotlib import pyplot as plt
 #      "D0128": "gamma",
 # }
 subject_processing_dict_org = {
-    "D0132": "multitaper/gamma",
-    "D0135": "multitaper/gamma",
-    "D0137": "multitaper/gamma",
-    "D0138": "multitaper/gamma",
-    "D0139": "multitaper/gamma",
-    #"D0140": "multitaper/gamma",
-    "D0143": "multitaper/gamma"
+    # "D0132": "multitaper/gamma",
+    # "D0135": "multitaper/gamma",
+    # "D0137": "multitaper/gamma",
+    # "D0138": "multitaper/gamma",
+    # "D0139": "multitaper/gamma",
+    "D0140": "multitaper/gamma"
+    # "D0143": "multitaper/gamma"
 }
 # subject_processing_dict_org = {
 #     "D0132": "linernoise/outlierchs/wavelet",
