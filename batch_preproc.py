@@ -86,16 +86,17 @@ from matplotlib import pyplot as plt
 #     # "D0139": "multitaper/gamma"
 #     # "D0140": "multitaper/gamma"
 # }
-subject_processing_dict_org = {
-    "D0132": "linernoise/outlierchs/wavelet",
-    "D0135": "linernoise/outlierchs/wavelet",
-    "D0137": "linernoise/outlierchs/wavelet",
-    "D0138": "linernoise/outlierchs/wavelet",
-    "D0139": "linernoise/outlierchs/wavelet",
-}
 # subject_processing_dict_org = {
-#     "D0143": "linernoise/outlierchs/wavelet",
+#     "D0132": "linernoise/outlierchs/wavelet",
+#     "D0135": "linernoise/outlierchs/wavelet",
+#     "D0137": "linernoise/outlierchs/wavelet",
+#     "D0138": "linernoise/outlierchs/wavelet",
+#     "D0139": "linernoise/outlierchs/wavelet",
 # }
+subject_processing_dict_org = {
+    "D0140": "linernoise/outlierchs/wavelet",
+    "D0143": "linernoise/outlierchs/wavelet"
+}
 
 
 
