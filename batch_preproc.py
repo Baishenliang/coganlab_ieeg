@@ -78,13 +78,11 @@ from matplotlib import pyplot as plt
 #      "D0128": "gamma",
 # }
 subject_processing_dict_org = {
-    # "D0132": "multitaper/gamma",
-    # "D0135": "multitaper/gamma",
-    # "D0137": "multitaper/gamma",
-    # "D0138": "multitaper/gamma",
-    # "D0139": "multitaper/gamma",
-    "D0140": "multitaper/gamma"
-    # "D0143": "multitaper/gamma"
+    "D0128": "multitaper/gamma/multitaper/gamma",
+    "D0137": "multitaper/gamma/multitaper/gamma",
+    "D0138": "multitaper/gamma/multitaper/gamma",
+    "D0139": "multitaper/gamma/multitaper/gamma",
+    "D0140": "multitaper/gamma/multitaper/gamma"
 }
 # subject_processing_dict_org = {
 #     "D0132": "linernoise/outlierchs/wavelet",
@@ -167,8 +165,14 @@ for subject, processing_type in subject_processing_dict.items():
             # drop eeg and marker channels
             eeg_electrode_list = load_eeg_chs(subject)
             eeg_electrode_list = [item for item in eeg_electrode_list if isinstance(item, str)]
-            if subject!='D0103' and subject!='D0121' and subject!='D0128' and subject!='D0133' and subject!='D0134'  and subject!='D0137'  and subject!='D0138'  and subject!='D0139' and subject!='D0140':
-                eeg_electrode_list.append('Trigger')
+            if Task_Tag == "LexicalDecRepNoDelay":
+                # This part is temporary. It aims at solving a problem that in BIDS coding some patients had the trigger channel named "" in channel.tsv, which causes the problem of dropping all the channels when executing raw.drop_channels. The real trigger channel name should be "Trigger", and it is confirmed by checking the original data and the events.tsv. So we add "Trigger" to the drop channel list for these patients. After we confirm that all the patients have the correct trigger channel name in channel.tsv, we can remove this part.
+                # But the ultimate solution should be fixing the channel.tsv in BIDS coding instead of adding this temporary solution in the code, which may cause confusion and potential problems in the future. So please check the channel.tsv for these patients and fix the trigger channel name if it is wrong.
+                if subject!='D0103' and subject!='D0121' and subject!='D0128' and subject!='D0133' and subject!='D0134'  and subject!='D0137'  and subject!='D0138'  and subject!='D0139' and subject!='D0140':
+                    eeg_electrode_list.append('Trigger')
+            elif Task_Tag == "LexicalDecRepDelay":
+                if subject!='D0103':
+                    eeg_electrode_list.append('Trigger')
             raw.drop_channels(eeg_electrode_list)
 
             # line noise filtering
