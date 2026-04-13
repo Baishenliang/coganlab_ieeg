@@ -89,13 +89,15 @@ stats_root_nodelay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BI
 if groupsTag=="LexDelay":
     data_LexDelay_Aud,subjs=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay,cbind_subjs=False)
     elec_labels=data_LexDelay_Aud.labels[0]
-    data_LexDelay_Cue, _ = gp.load_stats('mask', 'Cue_inRep', 'ave', stats_root_delay, stats_root_delay,cbind_subjs=False)
+    #data_LexDelay_Cue, _ = gp.load_stats('mask', 'Cue_inRep', 'ave', stats_root_delay, stats_root_delay,cbind_subjs=False)
     data_LexDelay_Go, _ = gp.load_stats('mask', 'Go_inRep', 'ave', stats_root_delay, stats_root_delay,cbind_subjs=False)
     data_LexDelay_Resp, _ = gp.load_stats('mask', 'Resp_inRep', 'ave', stats_root_delay, stats_root_delay,cbind_subjs=False)
 
     epoc_LexDelayRep_Aud,_=gp.load_stats('zscore','Auditory_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=False,cbind_subjs=False)
     epoc_LexDelayRep_Go,_=gp.load_stats('zscore','Go_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=False,cbind_subjs=False)
     epoc_LexDelayRep_Resp,_=gp.load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=False,cbind_subjs=False)
+
+    chs_coor=gp.get_coor(data_LexDelay_Aud.labels[0],'group')
 
 arrays_to_hstack = []
 final_chs = None
@@ -260,12 +262,17 @@ Sensorimotor_col = [1, 0, 0]
 Auditory_col = [0, 1, 0]  
 Motor_col = [0, 0, 1]  
 Delay_col = [1, 0.65, 0]
+Yellow_col = [1, 1, 0]        # 黄色 (RGB: 255, 255, 0)
+Purple_col = [0.5, 0, 0.5]    # 紫色 (RGB: 128, 0, 128)
 
 macro_color_dict = {
-    'SM_Auditory': Auditory_col,
-    'SM_Motor': Motor_col,
-    'Sustained': Delay_col
+    'Auditory_sustained': Yellow_col,
+    'Delay': Delay_col,
+    'Auditory_transient': Auditory_col,
+    'Auditory_Motor': Motor_col,
+    'Auditory_Motorprep': Purple_col
 }
+
 
 #%% 1. NMF Data Preprocessing & Execution
 X = final_array.copy()
@@ -277,14 +284,14 @@ model = NMF(n_components=n_components, init='nndsvd', random_state=42, max_iter=
 
 W = model.fit_transform(X)
 H = model.components_
-comp_names = [f'Comp_{i+1}' for i in range(n_components)]
+comp_names = [list(macro_color_dict.keys())[i] for i in range(n_components)]
 
 #%% 2. Plot NMF Component Traces (H Matrix)
 plt.figure(figsize=(10, 4))
 colors = plt.cm.tab10.colors
 
 for i in range(n_components):
-    plt.plot(x_linear, H[i, :], label=comp_names[i], color=colors[i], linewidth=2.5, alpha=0.85)
+    plt.plot(x_linear, H[i, :], label=comp_names[i], color=macro_color_dict.get(comp_names[i]), linewidth=2.5, alpha=0.85)
 
 for idx in zero_indices:
     plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
@@ -307,38 +314,38 @@ plt.savefig(os.path.join(save_dir, "Comp_traces.svg"), format='svg', dpi=300, bb
 plt.show()
 
 #%% 3. Hierarchical Clustering (Forcing 3 Macro Clusters)
-dist_matrix = pdist(H, metric='correlation')
-Z = linkage(dist_matrix, method='average')
+# dist_matrix = pdist(H, metric='correlation')
+# Z = linkage(dist_matrix, method='average')
 
-target_macro_clusters = 3
-macro_labels = fcluster(Z, target_macro_clusters, criterion='maxclust')
+# target_macro_clusters = 3
+# macro_labels = fcluster(Z, target_macro_clusters, criterion='maxclust')
 
-unique_labels = sorted(np.unique(macro_labels))
-custom_macro_names = ['SM_Auditory', 'SM_Motor', 'Sustained']
-label_to_name = {label: custom_macro_names[i] for i, label in enumerate(unique_labels)}
-macro_mapping = {comp_names[i]: label_to_name[macro_labels[i]] for i in range(n_components)}
+# unique_labels = sorted(np.unique(macro_labels))
+# custom_macro_names = ['SM_Auditory', 'SM_Motor', 'Sustained']
+# label_to_name = {label: custom_macro_names[i] for i, label in enumerate(unique_labels)}
+# macro_mapping = {comp_names[i]: label_to_name[macro_labels[i]] for i in range(n_components)}
 
-plt.rcParams['font.sans-serif'] = ['Arial']
-plt.rcParams['pdf.fonttype'] = 42
-plt.rcParams['axes.linewidth'] = 2.0
-plt.rcParams['lines.linewidth'] = 2.5
+# plt.rcParams['font.sans-serif'] = ['Arial']
+# plt.rcParams['pdf.fonttype'] = 42
+# plt.rcParams['axes.linewidth'] = 2.0
+# plt.rcParams['lines.linewidth'] = 2.5
 
-fig = plt.figure(figsize=(6, 4), dpi=300)
-ax = plt.gca()
-dendro = dendrogram(Z, labels=comp_names, orientation='top', link_color_func=lambda x: 'tab:blue', ax=ax)
+# fig = plt.figure(figsize=(6, 4), dpi=300)
+# ax = plt.gca()
+# dendro = dendrogram(Z, labels=comp_names, orientation='top', link_color_func=lambda x: 'tab:blue', ax=ax)
 
-ax.spines[['top', 'right']].set_visible(False)
-ax.spines['left'].set_linewidth(3)
-ax.spines['bottom'].set_linewidth(3)
-ax.tick_params(axis='y', labelsize=16, length=6, width=2.5)
-ax.tick_params(axis='x', labelsize=16, length=0, width=2.5)
-plt.ylabel('Distance (1 - Pearson r)', fontsize=18, labelpad=10)
+# ax.spines[['top', 'right']].set_visible(False)
+# ax.spines['left'].set_linewidth(3)
+# ax.spines['bottom'].set_linewidth(3)
+# ax.tick_params(axis='y', labelsize=16, length=6, width=2.5)
+# ax.tick_params(axis='x', labelsize=16, length=0, width=2.5)
+# plt.ylabel('Distance (1 - Pearson r)', fontsize=18, labelpad=10)
 
-sns.despine(ax=ax, offset=10, trim=True)
-plt.tight_layout()
-plt.savefig(os.path.join(save_dir, "Dendrogram_Macro_Clusters.svg"), format='svg', dpi=300, bbox_inches='tight')
-plt.show()
-plt.rcParams['lines.linewidth'] = 1.5
+# sns.despine(ax=ax, offset=10, trim=True)
+# plt.tight_layout()
+# plt.savefig(os.path.join(save_dir, "Dendrogram_Macro_Clusters.svg"), format='svg', dpi=300, bbox_inches='tight')
+# plt.show()
+# plt.rcParams['lines.linewidth'] = 1.5
 
 #%% 4. Hard Clustering & Saving Indices
 df_weights = pd.DataFrame(W, columns=comp_names)
@@ -346,10 +353,9 @@ df_weights.insert(0, 'Channel', final_chs)
 df_weights.insert(1, 'Group', final_grps)
 
 df_weights['Base_Comp'] = df_weights[comp_names].idxmax(axis=1)
-df_weights['Dominant_Comp'] = df_weights['Base_Comp'].map(macro_mapping)
 
-for category in df_weights['Dominant_Comp'].dropna().unique():
-    category_chs = set(df_weights[df_weights['Dominant_Comp'] == category]['Channel'])
+for category in df_weights['Base_Comp'].dropna().unique():
+    category_chs = set(df_weights[df_weights['Base_Comp'] == category]['Channel'])
     try:
         category_idx = set([i for i, x in enumerate(data_LexDelay_Aud.labels[0]) if x in category_chs])
         LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
@@ -385,19 +391,19 @@ for i, col_name in enumerate(comp_names):
         
     ax.pie(valid_values, labels=valid_groups, autopct='%1.1f%%', 
            colors=[color_dict.get(g, 'gray') for g in valid_groups], startangle=140, textprops={'fontsize': 12})
-    ax.set_title(f'{col_name}\n({macro_mapping[col_name]})', fontsize=12, fontweight='bold')
+    ax.set_title(f'{col_name}', fontsize=12, fontweight='bold')
 
 plt.tight_layout()
 plt.show()
 
 #%% 6. Plot Aligned Traces (Stim / Go / Resp)
 plot_groups = []
-target_macros = ['SM_Auditory', 'Sustained', 'SM_Motor']
+target_macros = ['Auditory_transient', 'Auditory_sustained', 'Delay','Auditory_Motorprep','Auditory_Motor']
 
 for macro in target_macros:
-    category_chs = set(df_weights[df_weights['Dominant_Comp'] == macro]['Channel'])
+    category_chs = set(df_weights[df_weights['Base_Comp'] == macro]['Channel'])
     sig_idx = [i for i, x in enumerate(data_LexDelay_Aud.labels[0]) if x in category_chs]
-    plot_groups.append((sig_idx, macro, macro_color_dict.get(macro, [0, 0, 0])))
+    plot_groups.append((sig_idx, macro, macro_color_dict.get(macro, [0.5, 0.5, 0.5])))
 
 unit_scale = 2.0
 left_padding_with_y = 1.6
@@ -411,56 +417,67 @@ alignments = [
     ('Resp', epoc_LexDelayRep_Resp, [-0.25, 1.0], range(631, 650))
 ]
 
+target_macros_as = target_macros + ['All']
 for align_tag, epoc_data, x_limits, bsl_val in alignments:
     has_y = (align_tag == 'Stim')
     current_left_pad = left_padding_with_y if has_y else left_padding_no_y
     x_duration = x_limits[1] - x_limits[0]
     fig_width = (x_duration * unit_scale) + current_left_pad + right_padding
     
-    fig = plt.figure(figsize=(fig_width, fig_height), dpi=300)
-    fig.subplots_adjust(left=current_left_pad/fig_width, right=1.0 - (right_padding/fig_width), bottom=0.25, top=0.9)
-    ax = plt.gca()
+    for macro in target_macros_as:
+        fig = plt.figure(figsize=(fig_width, fig_height), dpi=300)
+        fig.subplots_adjust(left=current_left_pad/fig_width, right=1.0 - (right_padding/fig_width), bottom=0.25, top=0.9)
+        ax = plt.gca()
 
-    for sig_idx, label_text, group_col in plot_groups:
-        if len(sig_idx) == 0: continue
-        gp.plot_wave(epoc_data, sig_idx, f'{label_text}', group_col, '-', bsl_val, ylim=[-0.2, 4.2])
+        if macro == 'All':
+            for sig_idx, label_text, group_col in plot_groups:
+                if len(sig_idx) == 0: continue
+                gp.plot_wave(epoc_data, sig_idx, f'{label_text}', group_col, '-', bsl_val, ylim=[-0.3, 5],average_trace=True)
+        else:
+            sig_idx, label_text, group_col = plot_groups[target_macros.index(macro)]
+            if len(sig_idx) == 0: continue
+            gp.plot_wave(epoc_data, sig_idx, f'{label_text}', group_col, '-', bsl_val, ylim=[-0.3, 6],average_trace=False)
+             
 
-    ax.set_ylim([-0.3, 4.2])
-    ax.spines[['top', 'right']].set_visible(False)
-    ax.spines['bottom'].set_linewidth(3)
-    
-    if not has_y:
-        ax.spines['left'].set_visible(False)
-        ax.set_yticks([])
-        ax.yaxis.set_visible(False) 
-    else:
-        ax.spines['left'].set_linewidth(3)
-        ax.set_yticks([0, 2, 4])
-        ax.tick_params(axis='y', labelsize=24, length=6, width=2.5)
+        #ax.set_ylim([-0.3, 5])
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.spines['bottom'].set_linewidth(3)
+        
+        if not has_y:
+            ax.spines['left'].set_visible(False)
+            ax.set_yticks([])
+            ax.yaxis.set_visible(False) 
+        else:
+            ax.spines['left'].set_linewidth(3)
+            ax.set_yticks([0, 2, 4])
+            ax.tick_params(axis='y', labelsize=24, length=6, width=2.5)
 
-    xticks = [0, 0.5, 1.0, 1.5]
-    ax.set_xticks([t for t in xticks if x_limits[0] <= t <= x_limits[1]])
-    ax.xaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f'))
-    
-    plt.draw()
-    ax.set_xticklabels(["0" if (l == "0.0" or l == ".0") else l for l in [l.get_text() for l in ax.get_xticklabels()]])
-    sns.despine(ax=ax, offset=10, trim=True, left=not has_y)
-    
-    ax.set_xlim(x_limits)
-    ax.tick_params(axis='x', labelsize=24, length=6, width=2.5)
-    ax.spines['bottom'].set_bounds(x_limits[0], x_limits[1])
-    ax.set_xlabel(''); ax.set_ylabel('')
-    
-    ax.axvline(x=0, linestyle='--', color='#444444', linewidth=1.5, dashes=(5, 5), zorder=0)
-    ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=1.0, zorder=0)
+        xticks = [0, 0.5, 1.0, 1.5]
+        ax.set_xticks([t for t in xticks if x_limits[0] <= t <= x_limits[1]])
+        ax.xaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f'))
+        
+        plt.draw()
+        ax.set_xticklabels(["0" if (l == "0.0" or l == ".0") else l for l in [l.get_text() for l in ax.get_xticklabels()]])
+        sns.despine(ax=ax, offset=10, trim=True, left=not has_y)
+        
+        ax.set_xlim(x_limits)
+        ax.tick_params(axis='x', labelsize=24, length=6, width=2.5)
+        ax.spines['bottom'].set_bounds(x_limits[0], x_limits[1])
+        ax.set_xlabel(''); ax.set_ylabel('')
+        
+        ax.axvline(x=0, linestyle='--', color='#444444', linewidth=1.5, dashes=(5, 5), zorder=0)
+        ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=1.0, zorder=0)
 
-    if align_tag == 'Resp':
-        ax.legend(loc='upper right', frameon=False, fontsize=12, handlelength=1.5)
-    else:
+        # if align_tag == 'Resp':
+        #     ax.legend(loc='upper right', frameon=False, fontsize=12, handlelength=1.5)
+        # else:
+        #     if ax.get_legend(): ax.get_legend().remove()
         if ax.get_legend(): ax.get_legend().remove()
 
-    plt.savefig(os.path.join(save_dir, f"Spt_trace_{align_tag}.svg"), format='svg', dpi=300, bbox_inches=None)
-    plt.show()
+        plt.savefig(os.path.join(save_dir, f"Spt_trace_{macro}_{align_tag}.svg"), format='svg', dpi=300, bbox_inches=None)
+        plt.show()
+
+    #
 
 #%% 7. NMF Brain Maps & Hub Electrodes
 ch_to_idx = {ch: i for i, ch in enumerate(final_chs)}
@@ -471,7 +488,7 @@ for comp in comp_names:
     
     if not indices: continue
     traces = final_array[indices, :]
-    comp_col = macro_color_dict[macro_mapping[comp]]
+    comp_col = macro_color_dict[comp]
     
     plt.figure(figsize=(10, 3), dpi=300)
     plt.plot(x_linear, traces.T, color=comp_col, alpha=0.3, linewidth=1.5)
@@ -480,7 +497,7 @@ for comp in comp_names:
     for idx in minus_point_five_indices:
         plt.axvline(x=idx, color='k', linestyle='-', linewidth=1, alpha=0.5)
         
-    plt.title(f'Raw Traces | {comp} ({macro_mapping[comp]}) | n={len(indices)}', fontsize=12, fontweight='bold')
+    plt.title(f'Raw Traces | {comp} | n={len(indices)}', fontsize=12, fontweight='bold')
     plt.xlabel('Time (s)', fontsize=12)
     plt.gca().xaxis.set_major_locator(mticker.FixedLocator(tick_indices))
     plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(time_formatter))
@@ -488,27 +505,28 @@ for comp in comp_names:
     plt.tight_layout()
     plt.show()
 
-colors_tab10 = plt.cm.tab10.colors
-
 chs_coor=gp.get_coor(df_weights.Channel.to_list(),'group')
 
 for i, comp in enumerate(comp_names):
     w = df_weights[comp].values
     w_norm = w / w.max() if w.max() > 0 else w
     
-    base_col = np.array(colors_tab10[i][:3])
+    base_col = np.array(macro_color_dict.get(comp, [0.5, 0.5, 0.5]))
     
     cols_lst = [list(base_col * val + np.array([1, 1, 1]) * (1 - val)) for val in w_norm]
     try:
-        gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, f'Weight: {comp}', 0.3, 0.2, hemi='lh')
+        #gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, f'Weight: {comp}', 0.3, 0.2, hemi='lh')
+        gp.plot_brain(picks=df_weights.Channel.to_list(), chs_coor=chs_coor, chs_cols= cols_lst, dotsize=0.2, transparency=0.2)
+
     except Exception:
         pass
 
-cols_lst = [macro_color_dict.get(comp, [0.5, 0.5, 0.5]) for comp in df_weights['Dominant_Comp']]
-try:
-    gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, 'Dominant_Comp', 0.3, 0.2, hemi='lh')
-except Exception:
-    pass
+# cols_lst = [macro_color_dict.get(comp, [0.5, 0.5, 0.5]) for comp in df_weights['Dominant_Comp']]
+# try:
+#     #gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, 'Dominant_Comp', 0.3, 0.2, hemi='lh')
+#     gp.plot_brain(picks=df_weights.Channel.to_list(), chs_coor=chs_coor, chs_cols= cols_lst, dotsize=0.2, transparency=0.2)
+# except Exception:
+#     pass
 
 print("\n--- Provincial Hubs (Top 5 per Component) ---")
 for comp in comp_names:
@@ -538,7 +556,7 @@ if len(w) > 0:
 _, _, _, _, _, paras_aud, *_ = gp.sort_chs_by_actonset(data_LexDelay_Aud, epoc_LexDelayRep_Aud, 0.011, [0.05, 0.25], mask_data=True, select_electrodes=False)
 _, _, _, _, _, paras_mtr, *_  = gp.sort_chs_by_actonset(data_LexDelay_Resp, epoc_LexDelayRep_Resp, 0.011, [-0.25, -0.05], mask_data=True, select_electrodes=False)
 
-plot_df = df_weights.dropna(subset=['Dominant_Comp']).copy()
+plot_df = df_weights.dropna(subset=['Base_Comp']).copy()
 
 aud_powers = []
 mot_powers = []
@@ -554,7 +572,7 @@ for idx, row in plot_df.iterrows():
         aud_powers.append(p_aud)
         mot_powers.append(p_mot)
         valid_chs.append(ch)
-        clusters.append(row['Dominant_Comp'])
+        clusters.append(row['Base_Comp'])
 
 aud_powers = np.array(aud_powers)
 mot_powers = np.array(mot_powers)
@@ -576,7 +594,8 @@ cmap_aud = plt.cm.Greens
 cols_aud = [cmap_aud(norm_aud(val))[:3] for val in df_stats['Auditory_Power_Z']]
 
 try:
-    gp.plot_brain(subjs, df_stats['Channel'].tolist(), cols_aud, None, 'Auditory Power Z-score (0-250ms)', 0.3, 0.2,hemi='lh')
+    #gp.plot_brain(subjs, df_stats['Channel'].tolist(), cols_aud, None, 'Auditory Power Z-score (0-250ms)', 0.3, 0.2,hemi='lh')
+    gp.plot_brain(picks=df_stats['Channel'].tolist(), chs_coor=chs_coor, chs_cols= cols_aud, dotsize=0.2, transparency=0.2)
 except Exception:
     pass
 
@@ -585,7 +604,9 @@ cmap_mot = plt.cm.Blues
 cols_mot = [cmap_mot(norm_mot(val))[:3] for val in df_stats['Motor_Power_Z']]
 
 try:
-    gp.plot_brain(subjs, df_stats['Channel'].tolist(), cols_mot, None, 'Motor Power Z-score (-250-0ms)', 0.3, 0.2,hemi='lh')
+    #gp.plot_brain(subjs, df_stats['Channel'].tolist(), cols_mot, None, 'Motor Power Z-score (-250-0ms)', 0.3, 0.2,hemi='lh')
+    gp.plot_brain(picks=df_stats['Channel'].tolist(), chs_coor=chs_coor, chs_cols= cols_mot, dotsize=0.2, transparency=0.2)
+
 except Exception:
     pass
 
@@ -645,7 +666,8 @@ for col, ylabel, save_name in metrics:
     ax.spines['bottom'].set_linewidth(3)
     
     ax.tick_params(axis='y', labelsize=16, length=6, width=2.5)
-    ax.tick_params(axis='x', labelsize=14, length=6, width=2.5)
+    #ax.tick_params(axis='x', labelsize=14, length=6, width=2.5)
+    ax.tick_params(axis='x', bottom=False, labelbottom=False)
     
     plt.ylabel(ylabel, fontsize=16, fontweight='bold')
     plt.xlabel('')
@@ -766,3 +788,4 @@ for name, z_vals, base_col in analysis_targets:
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, f"Gradient_3D_Vector_{name}.svg"), format='svg', dpi=300, bbox_inches='tight')
     plt.show()
+# %%

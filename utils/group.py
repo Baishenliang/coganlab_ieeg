@@ -58,7 +58,9 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
     if not testsubj:
         subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
-        subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117' and subj != 'D0121' and subj != 'D0128' and subj != 'D0134' and subj != 'D0137' and subj != 'D0138' and subj != 'D0140']# problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+        #subjs = [subj for subj in subjs if subj != 'D0107' and subj != 'D0042' and subj != 'D0115' and subj != 'D0117' and subj != 'D0121' and subj != 'D0128' and subj != 'D0134' and subj != 'D0137' and subj != 'D0138' and subj != 'D0140']
+        subjs = [subj for subj in subjs if subj != 'D0042' and subj != 'D0115']# problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
+# problematic patients: 102 and 103: eeg electrodes, 107, plotting issues, 42: bad heading, each should be dealed with
     else:
         subjs = ['D0024','D0100']
     # else:
@@ -1171,19 +1173,72 @@ def onsets2col(onsets, chs_sel, colormap_type: str = 'jet',treat_zero_as_nan:boo
         onset_idx += 1
     return cols
 
-def plot_brain(subjs,picks,chs_cols,label_every,fig_save_dir_f='x', dotsize=0.3,transparency=0.3,hemi: str='split',save_img: bool=False,**kwargs):
-    subjs = ['D' + subj[1:].lstrip('0') for subj in subjs]
-    from ieeg.viz.mri import plot_on_average
-    if save_img:
-        show=False
-    else:
-        show=True
-    fig3d = plot_on_average(subjs, picks=picks,color=chs_cols,hemi=hemi,
-                            label_every=label_every,
-                            size=dotsize,transparency=transparency, show=show,**kwargs)
-    if save_img:
-        fig3d.save_image(fig_save_dir_f)
-        fig3d.close()
+
+import mne
+import numpy as np
+from mne.viz import Brain
+import os
+
+fs_dir = mne.datasets.fetch_fsaverage(verbose=False)
+if not os.path.exists(os.path.join(fs_dir, 'surf', 'lh.pial')):
+    fs_dir = mne.datasets.fetch_fsaverage(verbose=True)
+actual_subjects_dir = os.path.dirname(fs_dir)
+def plot_brain(picks, chs_cols, chs_coor, subjects_dir=actual_subjects_dir, dotsize=0.2, 
+               transparency=0.3, hemi: str='split', add_annotate: bool=False, **kwargs):
+    
+    coords = []
+    valid_cols = []
+    
+    # 1. 提取坐標和顏色
+    for i, p in enumerate(picks):
+        subj_part, elec_part = p.split('-')
+        s_clean = 'D' + subj_part[1:].lstrip('0')
+        
+        row = chs_coor[(chs_coor['subj'] == s_clean) & (chs_coor['label'] == elec_part)]
+        
+        if not row.empty:
+            pos = row[['x', 'y', 'z']].values[0]
+            if not np.isnan(pos).any():
+                coords.append(pos)
+                valid_cols.append(chs_cols[i])
+
+    # 2. 初始化 Brain 對象（show=True 確保窗口彈出）
+    brain = Brain('fsaverage', hemi=hemi, surf='pial', alpha=transparency, 
+                  subjects_dir=subjects_dir, background='white',show=True, **kwargs)
+    if add_annotate:
+        brain.add_annotation('aparc.a2009s', borders=False, alpha=0.7)
+
+    if len(coords) > 0:
+        coords = np.array(coords)
+        valid_cols = np.array(valid_cols)
+        
+        lh_mask = coords[:, 0] < 0
+        rh_mask = ~lh_mask
+        
+        # 3. 循環添加點（解決 MNE 的顏色矩陣報錯問題）
+        if any(lh_mask):
+            for c, col in zip(coords[lh_mask], valid_cols[lh_mask]):
+                brain.add_foci(c, hemi='lh', color=tuple(col), 
+                               scale_factor=dotsize, alpha=1.0, coords_as_verts=False)
+        
+        if any(rh_mask):
+            for c, col in zip(coords[rh_mask], valid_cols[rh_mask]):
+                brain.add_foci(c, hemi='rh', color=tuple(col), 
+                               scale_factor=dotsize, alpha=1.0, coords_as_verts=False)
+
+    # 4. 現場顯示（不調用 close，否則窗口會秒關）
+    brain.show()
+    return brain
+
+# --- 調用示例 ---
+# plot_brain(
+#     pick_labels, 
+#     cols_lst, 
+#     chs_coor, 
+#     actual_subjects_dir, 
+#     dotsize=3, 
+#     transparency=0.2
+# )
 
 
 def get_subj_elec_idx(subjs,grp_labels):
@@ -1849,7 +1904,7 @@ def plot_wave(data_in,sig_idx,con_label,col,Lstyle,bsl_crr=None,errtype='se',nor
         # Add shaded region for SEM
         plt.fill_between(times, mean_waveform - sem_waveform, mean_waveform + sem_waveform, color=col, alpha=0.3)
     else:
-        cols_lst=create_gradient(col,np.shape(data_selected)[0]+6)
+        cols_lst=create_gradient(col,np.shape(data_selected)[0]+15)
         for trace_idx_selected in range(np.shape(data_selected)[0]):
             plt.plot(times, data_selected[trace_idx_selected,:].T, color=cols_lst[trace_idx_selected], alpha=1)
 
@@ -1989,6 +2044,22 @@ def chs2atlas(subjs,chs_all):
                 ch_labels_roi[key] = 'unknown'
     return ch_labels_roi,ch_labels_clean
 
+
+import nibabel as nib
+from nilearn import datasets
+from scipy.spatial.distance import euclidean
+
+# ==========================================
+# [重要] 在迴圈「外」先載入一次 Atlas，避免效能崩潰
+# ==========================================
+destrieux = datasets.fetch_atlas_destrieux_2009()
+atlas_img = nib.load(destrieux.maps)
+atlas_data = atlas_img.get_fdata()
+inv_affine = np.linalg.inv(atlas_img.affine)
+# 計算體素大小(mm)，用來換算搜尋半徑
+voxel_size = np.sqrt(np.sum(atlas_img.affine[:3, :3] ** 2, axis=0)).min() 
+labels = destrieux.labels
+
 def hickok_roi_sphere(df_coords,thres: float=15):
 
     # The fs_average mri space is actually MNI space:
@@ -2004,39 +2075,213 @@ def hickok_roi_sphere(df_coords,thres: float=15):
     activation_peaks = {
         'lIFG': (-56, 8, 20),
         'Spt': (-54, -40, 20),
-        'lPMC': (-50, -4, 46),
-        'lIPL': (-42, -50, 42),
-        'Wgw_p55b': (-48, 4, 52),
-        'Wgw_a55b':(-39, 8, 50)
+        'lPMC': (-50, -4, 46)
+        # 'lIPL': (-42, -50, 42),
+        # 'Wgw_p55b': (-48, 4, 52),
+        # 'Wgw_a55b':(-39, 8, 50)
     }
 
     hickok_roi_labels = {}
+    destrieux_labels = {}
 
     # Iterate through each electrode in the DataFrame
     for index, row in df_coords.iterrows():
         subj = row['subj']
         label = row['label']
-        electrode_coord = (row['x'], row['y'], row['z'])
-        assigned_roi = 'N/A'
+        x, y, z = row['x'], row['y'], row['z']
+        electrode_coord = (x, y, z)
+        
+        # 使用 best_roi 替代 assigned_roi 避免混淆
+        best_roi = 'N/A'
         min_distance = float('inf')
 
-        # Check distance to each activation peak
+        # 只在循环里寻找距离最短且符合阈值的脑区
         for roi_name, peak_coord in activation_peaks.items():
             distance = euclidean(electrode_coord, peak_coord)
-            if distance <= thres:
-                assigned_roi = roi_name
-                hickok_roi_sig_idx[assigned_roi].add(index)
-                # If multiple peaks are within the threshold, assign to the closest one
-                if distance < min_distance:
-                    min_distance = distance
-                    assigned_roi = roi_name
+            
+            # 只有当距离在阈值内，且比当前记录的最短距离还小时，才更新赢家
+            if distance <= thres and distance < min_distance:
+                min_distance = distance
+                best_roi = roi_name
 
-        # Create a unique identifier for the electrode
+        # 等所有脑区都比对完毕，确定了唯一最佳脑区后，再执行写入操作
+        if best_roi != 'N/A':
+            hickok_roi_sig_idx[best_roi].add(index)
+
+        # 记录每个电极最终对应的脑区标签
         electrode_id = f"{subj}-{label}"
-        hickok_roi_labels[electrode_id] = assigned_roi
+        hickok_roi_labels[electrode_id] = best_roi
 
-    return hickok_roi_labels, hickok_roi_sig_idx
+        assigned_destrieux_roi = get_destrieux_label_for_coord(
+            x=x, y=y, z=z, 
+            atlas_data=atlas_data, 
+            inv_affine=inv_affine, 
+            labels=labels, 
+            voxel_size=voxel_size,
+            search_radius_mm=5  # 如果電極偏離皮層，往外找 5mm
+        )
+        
+        destrieux_labels[electrode_id] = assigned_destrieux_roi
 
+    return hickok_roi_labels, hickok_roi_sig_idx, destrieux_labels
+
+
+import numpy as np
+
+def get_destrieux_label_for_coord(x, y, z, atlas_data, inv_affine, labels, voxel_size, search_radius_mm=5):
+    """
+    輸入單一 MNI 坐標，回傳對應的 Destrieux atlas 標籤。
+    """
+    # 1. 將 MNI 物理坐標轉換為圖譜體素矩陣的索引 (i, j, k)
+    voxel_coords = np.dot(inv_affine, [x, y, z, 1])
+    i, j, k = np.round(voxel_coords[:3]).astype(int)
+    
+    # 2. 邊界防呆檢查
+    if not ((0 <= i < atlas_data.shape[0]) and 
+            (0 <= j < atlas_data.shape[1]) and 
+            (0 <= k < atlas_data.shape[2])):
+        return "Out_of_Bounds"
+        
+    val = int(atlas_data[i, j, k])
+    search_radius_vox = int(np.ceil(search_radius_mm / voxel_size))
+    
+    # 3. 容錯機制：如果剛好落在沒有標籤的腦脊液/背景(0)，尋找鄰近皮層
+    if val == 0 and search_radius_vox > 0:
+        i_min, i_max = max(0, i - search_radius_vox), min(atlas_data.shape[0], i + search_radius_vox + 1)
+        j_min, j_max = max(0, j - search_radius_vox), min(atlas_data.shape[1], j + search_radius_vox + 1)
+        k_min, k_max = max(0, k - search_radius_vox), min(atlas_data.shape[2], k + search_radius_vox + 1)
+        
+        local_data = atlas_data[i_min:i_max, j_min:j_max, k_min:k_max]
+        non_zero_coords = np.argwhere(local_data > 0)
+        
+        if len(non_zero_coords) > 0:
+            target_local = np.array([i - i_min, j - j_min, k - k_min])
+            distances = np.linalg.norm(non_zero_coords - target_local, axis=1)
+            closest_idx = np.argmin(distances)
+            best_coord = non_zero_coords[closest_idx]
+            val = int(local_data[best_coord[0], best_coord[1], best_coord[2]])
+            
+    # 4. 將數值解碼為可讀的字串標籤
+    if val == 0:
+        return "Unknown_or_Background"
+        
+    raw_label = labels[val]
+    if isinstance(raw_label, bytes):
+        return raw_label.decode('utf-8')
+    elif isinstance(raw_label, (tuple, np.void)): 
+        return raw_label[0].decode('utf-8') if isinstance(raw_label[0], bytes) else str(raw_label[0])
+    return str(raw_label)
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+def process_and_plot_roi_labels(hickok_roi_labels, hickok_roi_atlas_labels, save_dir='projects/Greg_ROIs/fig'):
+    """
+    整合 ROI 和 Atlas 標籤，篩選數據，並為每個 Hickok ROI 繪製 Atlas 標籤分佈餅圖。
+    """
+    # 確保保存路徑存在
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    # ==========================================
+    # 1. 基礎 DataFrame 整併
+    # ==========================================
+    df_combined_labels = pd.DataFrame({
+        'Hickok_ROI': hickok_roi_labels,
+        'Atlas_Label': hickok_roi_atlas_labels
+    })
+    df_combined_labels.reset_index(inplace=True)
+    df_combined_labels.rename(columns={'index': 'Electrode_ID'}, inplace=True)
+
+    # ==========================================
+    # 2. 表格 A：正規的 Hickok ROI 電極
+    # ==========================================
+    df_filtered_labels = df_combined_labels[df_combined_labels['Hickok_ROI'] != 'N/A'].copy()
+    df_filtered_labels.reset_index(drop=True, inplace=True)
+
+    # ==========================================
+    # 3. 表格 B：被標記為 N/A，但共享 Atlas Label 的電極
+    # ==========================================
+    atlas_to_hickok = df_filtered_labels.groupby('Atlas_Label')['Hickok_ROI'].apply(lambda x: ', '.join(x.unique())).to_dict()
+    
+    mask_na = df_combined_labels['Hickok_ROI'] == 'N/A'
+    mask_shared = df_combined_labels['Atlas_Label'].isin(atlas_to_hickok.keys())
+    
+    df_shared_labels = df_combined_labels[mask_na & mask_shared].copy()
+    df_shared_labels['Hickok_ROI'] = df_shared_labels['Atlas_Label'].map(atlas_to_hickok)
+    df_shared_labels.rename(columns={'Hickok_ROI': 'shared ROI'}, inplace=True)
+    df_shared_labels.reset_index(drop=True, inplace=True)
+
+    # ==========================================
+    # 4. 繪製並保存每個 Hickok ROI 的 Atlas 分佈餅圖
+    # ==========================================
+    def make_autopct(values):
+        def my_autopct(pct):
+            total = sum(values)
+            val = int(round(pct * total / 100.0))
+            # 只有當百分比大於 0 時才顯示標籤，避免太小的扇區文字重疊
+            if pct > 0:
+                return f'{val}\n({pct:.1f}%)'
+            else:
+                return ''
+        return my_autopct
+
+    # 針對每個 ROI 進行分組繪圖
+    for roi_name, group in df_filtered_labels.groupby('Hickok_ROI'):
+        # 計算各個 Atlas_Label 的數量
+        atlas_counts = group['Atlas_Label'].value_counts()
+        values = atlas_counts.values
+        labels = atlas_counts.index.tolist()
+        
+        # 動態生成顏色 (使用 matplotlib 內建的 categorical 色板)
+        colors = plt.cm.tab20(np.linspace(0, 1, len(labels)))
+
+        plt.figure(figsize=(8, 8), dpi=300)
+        
+        # 繪製餅圖
+        patches, texts, autotexts = plt.pie(
+            values, 
+            labels=None,  # 刪掉圖外的電極組 labels
+            colors=colors, 
+            startangle=90, 
+            autopct=make_autopct(values),
+            pctdistance=0.6,
+            wedgeprops={'alpha': 0.8, 'edgecolor': 'w', 'linewidth': 2}
+        )
+
+        # 調整字體細節
+        for a in autotexts:
+            a.set_fontsize(20)
+            a.set_fontweight('bold')
+            a.set_color('black')
+
+        # 添加圖例 (因為隱藏了 labels，必須加圖例才看得懂哪塊是什麼腦區)
+        plt.legend(
+            patches, 
+            labels, 
+            title="Atlas Labels",
+            loc="center left", 
+            bbox_to_anchor=(1.05, 0.5), # 放在圖表右側外圍
+            fontsize=14,
+            title_fontsize=16
+        )
+        
+        plt.title(f'Atlas Distribution in {roi_name}', fontsize=24, fontweight='bold', pad=20)
+        
+        # 保存圖片
+        safe_roi_name = str(roi_name).replace("/", "_").replace(" ", "_")
+        save_path = os.path.join(save_dir, f"{safe_roi_name}_Atlas_Distribution_Pie.svg")
+        plt.savefig(save_path, format='svg', bbox_inches='tight')
+        plt.close() # 關閉當前圖片，釋放內存
+
+    return df_filtered_labels, df_shared_labels
+
+# === 呼叫方式 ===
+# df_filtered, df_shared = process_and_plot_roi_labels(hickok_roi_labels, hickok_roi_atlas_labels)
+# print(df_filtered.head())
+# print(df_shared.head())
 
 def hickok_roi(ch_labels_roi,ch_labels):
     hickok_roi_labels = dict()
@@ -2058,6 +2303,7 @@ def hickok_roi(ch_labels_roi,ch_labels):
         except KeyError as e:
             hickok_roi_labels[key] = 'unknown'
     return hickok_roi_labels
+
 
 def plot_sig_roi_counts(hickok_roi_labels, color, sig_idx,savedir):
     import matplotlib.pyplot as plt
@@ -2175,6 +2421,70 @@ def plot_roi_counts_comparison(df_roi_counts, savedir, y_label='Number of Electr
         plt.savefig(f"{savedir}_{roi_label}_counts.png", dpi=300)
         plt.close() # Close the figure to free up memory
 
+
+def fill_missing_coords(df, reference_coords=None):
+
+    import pandas as pd
+    import numpy as np
+    import re
+
+    """
+    對 DataFrame 中的 NaN 坐標進行線性插值/外推。
+    
+    df: 包含 ['subj', 'label', 'x', 'y', 'z'] 的 DataFrame
+    reference_coords: 可選，字典形式 {label: [x,y,z]}，提供額外的參考點以增強擬合精度
+    """
+    def split_label(l):
+        match = re.match(r"([a-zA-Z]+)([0-9]+)", l)
+        return (match.group(1), int(match.group(2))) if match else (None, None)
+
+    # 如果有參考坐標，先將其整合進去
+    if reference_coords:
+        ref_list = []
+        for l, pos in reference_coords.items():
+            if not np.isnan(pos).any():
+                prefix, num = split_label(l)
+                if prefix:
+                    ref_list.append({'prefix': prefix, 'num': num, 'pos': pos})
+        ref_df = pd.DataFrame(ref_list)
+
+    # 處理每一行
+    for idx, row in df.iterrows():
+        if np.isnan([row['x'], row['y'], row['z']]).any():
+            subj = row['subj']
+            label = row['label']
+            prefix, target_num = split_label(label)
+            
+            if not prefix: continue
+
+            # 尋找同一個被試、同一個 Shank 的有效坐標作為參考點
+            # 優先從當前 df 中找，如果提供了 reference_coords 則從 reference 中找更多點
+            mask = (df['subj'] == subj) & (df['label'].str.startswith(prefix)) & (~df['x'].isna())
+            current_known = df[mask].copy()
+            current_known['prefix_num'] = current_known['label'].apply(lambda x: split_label(x)[1])
+            
+            indices = current_known['prefix_num'].values
+            coords = current_known[['x', 'y', 'z']].values
+
+            # 如果參考點不足 2 個，嘗試從全域參考字典中補
+            if len(indices) < 2 and reference_coords:
+                sub_ref = ref_df[ref_df['prefix'] == prefix]
+                indices = sub_ref['num'].values
+                coords = np.array(list(sub_ref['pos'].values))
+                # 注意：如果 reference_coords 是米，這里可能需要根據 df 單位統一
+
+            # 執行回歸
+            if len(indices) >= 2:
+                new_xyz = []
+                for i in range(3): # x, y, z
+                    coeffs = np.polyfit(indices, coords[:, i], 1)
+                    new_xyz.append(np.polyval(coeffs, target_num))
+                
+                df.at[idx, 'x'], df.at[idx, 'y'], df.at[idx, 'z'] = new_xyz
+                # print(f"Interpolated {subj}-{label}")
+
+    return df
+
 def get_coor(chs,method: str='individual'):
     """
     Given a list of channels like ['D23-RASF1', 'D23-RASF2', ...],
@@ -2189,6 +2499,7 @@ def get_coor(chs,method: str='individual'):
     # Parse into (subject, label)
     import pandas as pd
     import os
+    import re
     import mne
     import numpy as np
     from ieeg.viz.mri import subject_to_info, force2frame, get_sub_dir
@@ -2205,15 +2516,22 @@ def get_coor(chs,method: str='individual'):
 
     for subj, labels in parsed.items():
 
+        if subj=='D107':
+            subj_tag='D107B'
+        elif subj=='D139':
+            subj_tag='D139A'
+        else:
+            subj_tag=subj
+            
         if method == 'individual':
             trans = mne.transforms.Transform(fro='head', to='mri')
         elif method == 'group':
             # get_subject_dir
-            to_fsaverage = mne.read_talxfm(subj, get_sub_dir())
+            to_fsaverage = mne.read_talxfm(subj_tag, get_sub_dir())
             trans = mne.transforms.Transform(fro='head', to='mri',trans=to_fsaverage['trans'])
         elif method == 'ras':
             # File path
-            path = os.path.join(HOME,f"Box\\ECoG_Recon\\{subj}\\elec_recon\\{subj}_elec_locations_RAS.txt")
+            path = os.path.join(HOME,f"Box\\ECoG_Recon\\{subj_tag}\\elec_recon\\{subj_tag}_elec_locations_RAS.txt")
 
             try:
                 with open(path, 'r') as f:
@@ -2234,7 +2552,7 @@ def get_coor(chs,method: str='individual'):
                     continue
 
         if method == 'individual' or method == 'group':
-            info = subject_to_info(subj)
+            info = subject_to_info(subj_tag)
             montage = info.get_montage()
             force2frame(montage, trans.from_str)
             montage.apply_trans(trans)
@@ -2242,8 +2560,17 @@ def get_coor(chs,method: str='individual'):
 
         # Add matching labels
         for label in labels:
-            if label in coord_map:
-                x, y, z = coord_map[label]
+            match = re.match(r"([a-zA-Z]+)([0-9]+)", label)
+            prefix, suffix = match.groups() if match else (label, "")
+            if subj == 'D128' and prefix == 'LAI':
+                label_tag = 'LIA' + suffix
+            elif subj == 'D128' and prefix == 'RAI':
+                label_tag = 'RIA' + suffix
+            else:
+                label_tag = label
+            if label_tag in coord_map:
+
+                x, y, z = coord_map[label_tag]
                 if method == 'individual' or method == 'group':
                     x = 1000*x
                     y = 1000*y
@@ -2251,6 +2578,8 @@ def get_coor(chs,method: str='individual'):
                 df_coords.loc[len(df_coords)] = [subj, label, x, y, z]
             else:
                 df_coords.loc[len(df_coords)] = [subj, label, np.nan, np.nan, np.nan]
+
+    df_coords = fill_missing_coords(df_coords)
 
     return df_coords
 
