@@ -78,13 +78,7 @@ from matplotlib import pyplot as plt
 #      "D0128": "gamma",
 # }
 subject_processing_dict_org = {
-    "D0128": "gamma",
-    "D0132": "gamma",
-    "D0137": "gamma",
-    "D0138": "gamma",
-    "D0139": "gamma",
-    "D0140": "gamma",
-    "D0143": "gamma"
+    "D0132": "gamma"
 }
 # subject_processing_dict_org = {
 #     "D0132": "linernoise/outlierchs/wavelet",
@@ -671,11 +665,11 @@ for subject, processing_type in subject_processing_dict.items():
                 # )
 
                 gamma_epoc_zip = zip(
-                    ('Resp/Repeat/CORRECT', 'Auditory_stim/Yes_No/CORRECT', 'Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT'),
-                    ('Cue/Repeat/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT'),
-                    ( (-5, 1.5), (-2.5, 4), (-4.5, 2), (-5, 1.5)),
-                    ('Resp_inRep', 'Auditory_inYN', 'Go_inYN', 'Resp_inYN'),
-                    (True, True, True, True)
+                    ('Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT'),
+                    ('Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT'),
+                    ((-4.5, 2), (-5, 1.5)),
+                    ('Go_inYN', 'Resp_inYN'),
+                    (True, True)
                 )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
