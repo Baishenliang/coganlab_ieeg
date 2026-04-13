@@ -1124,9 +1124,9 @@ if groupsTag == "LexDelay":
             cols_lst = cols[list(elec_idx - LexDelay_Delay_sig_idx)].tolist()
             pick_labels = list(data_LexDelay_Aud.labels[0][list(elec_idx - LexDelay_Delay_sig_idx)])
         #plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain1.png'), 0.3,0.2,hemi='lh')
-        plot_brain(picks=pick_labels,chs_cols=cols_lst,dotsize=0.2,transparency=0.2,hemi='lh')
+        plot_brain(picks=pick_labels,chs_coor=chs_coor,chs_cols=cols_lst,dotsize=0.2,transparency=0.2)
         #plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain2.png'), 0.3,0.2,hemi='rh')
-        plot_brain(picks=pick_labels,chs_cols=cols_lst,dotsize=0.2,transparency=0.2,hemi='rh')
+        plot_brain(picks=pick_labels,chs_coor=chs_coor,chs_cols=cols_lst,dotsize=0.2,transparency=0.2)
 
 
     # Reassigning electrode indices by conditions for plotting (ROIS)
