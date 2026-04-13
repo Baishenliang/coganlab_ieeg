@@ -56,7 +56,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-from utils.group import bsliang_add_connecting_lines,generate_neuro_publication_plot,get_roi_subj_matrix,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient
+from utils.group import bsliang_add_connecting_lines,generate_neuro_publication_plot,get_roi_subj_matrix,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient, process_and_plot_roi_labels 
 import matplotlib.pyplot as plt
 import projects.GLM.glm_utils as glm
 
@@ -168,7 +168,9 @@ if groupsTag=="LexNoDelay":
     chs_coor=get_coor(data_LexNoDelay_Aud.labels[0],'group')
 else:
     chs_coor=get_coor(data_LexDelay_Aud.labels[0],'group')
-hickok_roi_labels, hickok_roi_sig_idx=hickok_roi_sphere(chs_coor)
+hickok_roi_labels, hickok_roi_sig_idx, hickok_roi_atlas_labels =hickok_roi_sphere(chs_coor)
+# Note the here the Spt, lPMC, and lIFG electrodes are not conjunction with Delay electrodes. They are just electrodes, all electrodes.
+_,*_ = process_and_plot_roi_labels(hickok_roi_labels, hickok_roi_atlas_labels)
 
 #%% Get sorted electrodes
 Lex_idxes = dict()
@@ -340,10 +342,10 @@ Wgw_a55b_sig_idx = LexDelay_all_sig_idx & hickok_roi_sig_idx['Wgw_a55b']
 
 Lex_idxes['Hikock_Spt']=Spt_sig_idx
 Lex_idxes['Hikock_lPMC']=lPMC_sig_idx
-Lex_idxes['Hikock_lIPL']=lIPL_sig_idx
+# Lex_idxes['Hikock_lIPL']=lIPL_sig_idx
 Lex_idxes['Hikock_lIFG']=lIFG_sig_idx
-Lex_idxes['Wgw_p55b']=Wgw_p55b_sig_idx
-Lex_idxes['Wgw_a55b']=Wgw_a55b_sig_idx
+# Lex_idxes['Wgw_p55b']=Wgw_p55b_sig_idx
+# Lex_idxes['Wgw_a55b']=Wgw_a55b_sig_idx
 
 with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.npy'), "wb") as f:
     pickle.dump(Lex_idxes, f)
@@ -592,7 +594,7 @@ if groupsTag == "LexDelay":
     cols[list(LexDelay_Motor_in_Delay_sig_idx), :] = Motor_col
     cols_lst = cols[list(LexDelay_Auditory_in_Delay_sig_idx | LexDelay_Sensorimotor_in_Delay_sig_idx | LexDelay_DelayOnly_sig_idx | LexDelay_Motor_in_Delay_sig_idx)].tolist()
     pick_labels = list(data_LexDelay_Aud.labels[0][list(LexDelay_Auditory_in_Delay_sig_idx | LexDelay_Sensorimotor_in_Delay_sig_idx | LexDelay_DelayOnly_sig_idx | LexDelay_Motor_in_Delay_sig_idx)])
-    plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.3, 0.2)
+    plot_brain(picks=pick_labels, chs_coor=chs_coor, chs_cols= cols_lst, dotsize=0.3, transparency=0.2)
 
     # --- 1. 数据准备 (保持你的原始定义) ---
     counts = [
@@ -1121,8 +1123,11 @@ if groupsTag == "LexDelay":
         elif mode=='without_delay' and len(elec_idx - LexDelay_Delay_sig_idx)>0:
             cols_lst = cols[list(elec_idx - LexDelay_Delay_sig_idx)].tolist()
             pick_labels = list(data_LexDelay_Aud.labels[0][list(elec_idx - LexDelay_Delay_sig_idx)])
-        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain1.png'), 0.3,0.2,hemi='lh')
-        plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain2.png'), 0.3,0.2,hemi='rh')
+        #plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain1.png'), 0.3,0.2,hemi='lh')
+        plot_brain(picks=pick_labels,chs_cols=cols_lst,dotsize=0.2,transparency=0.2,hemi='lh')
+        #plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain2.png'), 0.3,0.2,hemi='rh')
+        plot_brain(picks=pick_labels,chs_cols=cols_lst,dotsize=0.2,transparency=0.2,hemi='rh')
+
 
     # Reassigning electrode indices by conditions for plotting (ROIS)
     if get_atlaslabels_from_ecogRecon:
@@ -1279,21 +1284,24 @@ if groupsTag == "LexDelay":
     cols = np.full((len_d, 3), 0.5)
     cols[list(Spt_sig_idx), :] = Auditory_col
     cols[list(lPMC_sig_idx), :] = Sensorimotor_col
-    cols[list(lIPL_sig_idx), :] = Delay_col
+    # cols[list(lIPL_sig_idx), :] = Delay_col
     cols[list(lIFG_sig_idx), :] = Motor_col
-    cols[list(Wgw_p55b_sig_idx),:] = WGW_p55b_col
-    cols[list(Wgw_a55b_sig_idx),:] = WGW_a55b_col
-    cols_lst = cols[list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_p55b_sig_idx | Wgw_a55b_sig_idx)].tolist()
-    pick_labels = list(data_LexDelay_Aud.labels[0][list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_p55b_sig_idx | Wgw_a55b_sig_idx)])
-    plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.3, 0.2)
+    # cols[list(Wgw_p55b_sig_idx),:] = WGW_p55b_col
+    # cols[list(Wgw_a55b_sig_idx),:] = WGW_a55b_col
+    # cols_lst = cols[list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_p55b_sig_idx | Wgw_a55b_sig_idx)].tolist()
+    cols_lst = cols[list(Spt_sig_idx | lPMC_sig_idx | lIFG_sig_idx)].tolist()
+    # pick_labels = list(data_LexDelay_Aud.labels[0][list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_p55b_sig_idx | Wgw_a55b_sig_idx)])
+    pick_labels = list(data_LexDelay_Aud.labels[0][list(Spt_sig_idx | lPMC_sig_idx | lIFG_sig_idx)])
+    #plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.3, 0.2)
+    plot_brain(picks=pick_labels,chs_cols=cols_lst,chs_coor=chs_coor,dotsize=0.2,transparency=0.2,add_annotate=True)
 
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
     # plt.title('High gamma z-score traces (Stim aligned)', fontsize=20)
     wav_bsl_corr = True
-    plot_wave(epoc_LexDelay_Aud, Spt_sig_idx,f'Spt n={len(Spt_sig_idx)}',Auditory_col, '-', wav_bsl_corr, ylim=[-0.2, 1.6])
-    plot_wave(epoc_LexDelay_Aud, lPMC_sig_idx,f'lPMC n={len(lPMC_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 1.6])
-    plot_wave(epoc_LexDelay_Aud, lIPL_sig_idx,f'lIPL n={len(lIPL_sig_idx)}', Delay_col, '-',wav_bsl_corr, ylim=[-0.2, 1.6])
-    plot_wave(epoc_LexDelay_Aud, lIFG_sig_idx,f'lIFG n={len(lIFG_sig_idx)}', Motor_col, '-', wav_bsl_corr, ylim=[-0.2, 1.6])
+    plot_wave(epoc_LexDelay_Aud, Spt_sig_idx,f'Spt n={len(Spt_sig_idx)}',Auditory_col, '-', wav_bsl_corr, ylim=[-0.2, 2])
+    plot_wave(epoc_LexDelay_Aud, lPMC_sig_idx,f'lPMC n={len(lPMC_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 2])
+    #plot_wave(epoc_LexDelay_Aud, lIPL_sig_idx,f'lIPL n={len(lIPL_sig_idx)}', Delay_col, '-',wav_bsl_corr, ylim=[-0.2, 2])
+    plot_wave(epoc_LexDelay_Aud, lIFG_sig_idx,f'lIFG n={len(lIFG_sig_idx)}', Motor_col, '-', wav_bsl_corr, ylim=[-0.2, 2])
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='gray')
     plt.legend(loc='upper right', fontsize=15)
@@ -1309,10 +1317,10 @@ if groupsTag == "LexDelay":
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to Go onset)
     plt.figure(figsize=(Waveplot_wth * (100 / 350), Waveplot_hgt))
     wav_bsl_corr = False
-    plot_wave(epoc_LexDelay_Go, Spt_sig_idx,f'Spt n={len(Spt_sig_idx)}',Auditory_col, '-', wav_bsl_corr, ylim=[-0.2, 1.6])
-    plot_wave(epoc_LexDelay_Go, lPMC_sig_idx,f'lPMC n={len(lPMC_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 1.6])
-    plot_wave(epoc_LexDelay_Go, lIPL_sig_idx,f'lIPL n={len(lIPL_sig_idx)}', Delay_col, '-',wav_bsl_corr, ylim=[-0.2, 1.6])
-    plot_wave(epoc_LexDelay_Go, lIFG_sig_idx,f'lIFG n={len(lIFG_sig_idx)}', Motor_col, '-', wav_bsl_corr, ylim=[-0.2, 1.6])
+    plot_wave(epoc_LexDelay_Go, Spt_sig_idx,f'Spt n={len(Spt_sig_idx)}',Auditory_col, '-', wav_bsl_corr, ylim=[-0.2, 2])
+    plot_wave(epoc_LexDelay_Go, lPMC_sig_idx,f'lPMC n={len(lPMC_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 2])
+    #plot_wave(epoc_LexDelay_Go, lIPL_sig_idx,f'lIPL n={len(lIPL_sig_idx)}', Delay_col, '-',wav_bsl_corr, ylim=[-0.2, 2])
+    plot_wave(epoc_LexDelay_Go, lIFG_sig_idx,f'lIFG n={len(lIFG_sig_idx)}', Motor_col, '-', wav_bsl_corr, ylim=[-0.2, 2])
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='gray')
     plt.title('(Go aligned)', fontsize=20)
@@ -1328,10 +1336,10 @@ if groupsTag == "LexDelay":
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
     plt.figure(figsize=(Waveplot_wth * (100 / 350), Waveplot_hgt))
     wav_bsl_corr = False
-    plot_wave(epoc_LexDelay_Resp, Spt_sig_idx,f'lPMC n={len(Spt_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 1.6])
-    plot_wave(epoc_LexDelay_Resp, lPMC_sig_idx,f'lPMC n={len(lPMC_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 1.6])
-    plot_wave(epoc_LexDelay_Resp, lIPL_sig_idx,f'lIPL n={len(lIPL_sig_idx)}', Delay_col, '-',wav_bsl_corr, ylim=[-0.2, 1.6])
-    plot_wave(epoc_LexDelay_Resp, lIFG_sig_idx,f'lIFG n={len(lIFG_sig_idx)}', Motor_col, '-', wav_bsl_corr, ylim=[-0.2, 1.6])
+    plot_wave(epoc_LexDelay_Resp, Spt_sig_idx,f'Spt n={len(Spt_sig_idx)}', Auditory_col, '-', wav_bsl_corr,ylim=[-0.2, 2])
+    plot_wave(epoc_LexDelay_Resp, lPMC_sig_idx,f'lPMC n={len(lPMC_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 2])
+    #plot_wave(epoc_LexDelay_Resp, lIPL_sig_idx,f'lIPL n={len(lIPL_sig_idx)}', Delay_col, '-',wav_bsl_corr, ylim=[-0.2, 2])
+    plot_wave(epoc_LexDelay_Resp, lIFG_sig_idx,f'lIFG n={len(lIFG_sig_idx)}', Motor_col, '-', wav_bsl_corr, ylim=[-0.2, 2])
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='gray')
     plt.title('(Motor aligned)', fontsize=20)
