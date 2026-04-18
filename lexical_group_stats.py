@@ -5,9 +5,9 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
+#groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 get_atlaslabels_from_ecogRecon = False # whether get atlas labels for each electrode, which is used for later analysis of the distribution of electrodes in different ROIs. If True, it will take a long time to run the code. So we set it to False after we get the labels and save them in the utils folder.
@@ -56,7 +56,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-from utils.group import bsliang_add_connecting_lines,generate_neuro_publication_plot,get_roi_subj_matrix,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient, process_and_plot_roi_labels 
+from utils.group import bsliang_add_connecting_lines,generate_neuro_publication_plot,get_roi_subj_matrix,read_sex_age_and_stats,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient, process_and_plot_roi_labels 
 import matplotlib.pyplot as plt
 import projects.GLM.glm_utils as glm
 
@@ -584,6 +584,10 @@ if groupsTag == "LexDelay":
 
     # Plot the spatial locations of original groups of electrodes
     len_d=len(data_LexDelay_Aud.labels[0])
+
+    # Plot the distribution of all included electrodes regardless of activation, to show the coverage of the dataset
+    cols = np.full((len_d, 3), 1)
+    plot_brain(picks=data_LexDelay_Aud.labels[0], chs_coor=chs_coor, chs_cols= cols,dotsize=0.2, transparency=0.2)
 
     #Plot the distribution of different Delay electrodes within one brain
     TypeLabel = f'wholebrain'
@@ -1124,9 +1128,9 @@ if groupsTag == "LexDelay":
             cols_lst = cols[list(elec_idx - LexDelay_Delay_sig_idx)].tolist()
             pick_labels = list(data_LexDelay_Aud.labels[0][list(elec_idx - LexDelay_Delay_sig_idx)])
         #plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain1.png'), 0.3,0.2,hemi='lh')
-        plot_brain(picks=pick_labels,chs_coor=chs_coor,chs_cols=cols_lst,dotsize=0.2,transparency=0.2)
+        plot_brain(picks=pick_labels,chs_coor=chs_coor,chs_cols=cols_lst,dotsize=0.3,transparency=0.2)
         #plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'brain2.png'), 0.3,0.2,hemi='rh')
-        plot_brain(picks=pick_labels,chs_coor=chs_coor,chs_cols=cols_lst,dotsize=0.2,transparency=0.2)
+        #plot_brain(picks=pick_labels,chs_coor=chs_coor,chs_cols=cols_lst,dotsize=0.2,transparency=0.2)
 
 
     # Reassigning electrode indices by conditions for plotting (ROIS)
@@ -2262,6 +2266,8 @@ elif groupsTag == "LexNoDelay":
 
 elif groupsTag=="LexDelay&LexNoDelay":
 
+    aud_win=[0.05, 0.15]
+    mtr_win =[-0.05, 0.05]
     import matplotlib.gridspec as gridspec
 
     # --- 1. 全局参数与环境设置 ---
@@ -2284,6 +2290,8 @@ elif groupsTag=="LexDelay&LexNoDelay":
     ax1 = fig.add_subplot(gs[0])
     x_lim_stim = [-0.25, 1.5] 
 
+    ax1.axvspan(aud_win[0], aud_win[1], color=Auditory_col, alpha=0.1, lw=0, zorder=0)
+
     plot_wave(epoc_LexNoDelay_Aud, LexDelay_Aud_NoMotor_sig_idx & LexDelay_Delay_sig_idx, 
             '', Auditory_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
     plot_wave(epoc_LexNoDelay_Aud, LexDelay_DelayOnly_sig_idx & LexDelay_Delay_sig_idx, 
@@ -2294,7 +2302,10 @@ elif groupsTag=="LexDelay&LexNoDelay":
             '', Motor_col, '-', wav_bsl_corr_val, ylim=[-0.2, 1.5])
     # --- 3. ax3: Response-locked ---
     ax3 = fig.add_subplot(gs[1])
+
     x_lim_resp = [-0.25, 1.0]
+
+    ax3.axvspan(mtr_win[0], mtr_win[1], color=Motor_col, alpha=0.1, lw=0, zorder=0)
 
     plot_wave(epoc_LexNoDelay_Resp, LexDelay_Aud_NoMotor_sig_idx & LexDelay_Delay_sig_idx, '', Auditory_col, '-', False, ylim=[-0.2, 1.5])
     plot_wave(epoc_LexNoDelay_Resp, LexDelay_DelayOnly_sig_idx & LexDelay_Delay_sig_idx, '', Delay_col, '-', go_resp_bsl, ylim=[-0.2, 1.5])
@@ -2311,8 +2322,8 @@ elif groupsTag=="LexDelay&LexNoDelay":
         ax.set_xlim(curr_xlim)
         
         # B. 设定 Y 轴刻度：仅保留 0 和 1
-        ax.set_yticks([0, 1])
-        ax.set_ylim([-0.2, 1.2]) 
+        ax.set_yticks([0, 0.5])
+        ax.set_ylim([-0.2, 0.8]) 
 
         # C. 移除边框并设置基础 Offset
         sns.despine(ax=ax, offset=15, trim=False) # 禁用自动 trim
@@ -2322,7 +2333,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
         ax.spines['bottom'].set_bounds(curr_xlim[0], curr_xlim[1])
         # Y 轴线段：严格限制在 0 到 1 之间
         if ax == ax1:
-            ax.spines['left'].set_bounds(0, 1)
+            ax.spines['left'].set_bounds(0, 0.5)
         
         # E. 移除 Labels
         ax.set_xlabel(''); ax.set_ylabel(''); ax.set_title('')
@@ -2348,8 +2359,10 @@ elif groupsTag=="LexDelay&LexNoDelay":
     print(f"Standardized and trimmed wave plot saved to: {save_path}")
 
     # Get electrodes HG power during the first 100ms after aud onset and after mtr onset
-    _, _, _, _, _, paras_aud, *_ = sort_chs_by_actonset(data_LexNoDelay_Aud, epoc_LexNoDelay_Aud, cluster_twin, [0.05, 0.15], mask_data=True, select_electrodes=False)
-    _, _, _, _, _, paras_mtr, *_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, [-0.05, 0.05], mask_data=True, select_electrodes=False)
+    _, _, _, _, _, paras_aud_Delay, *_ = sort_chs_by_actonset(data_LexDelay_Aud, epoc_LexDelay_Aud, cluster_twin, aud_win, mask_data=False, select_electrodes=False)
+    _, _, _, _, _, paras_mtr_Delay, *_ = sort_chs_by_actonset(data_LexDelay_Resp, epoc_LexDelay_Resp, cluster_twin, mtr_win, mask_data=False, select_electrodes=False)
+    _, _, _, _, _, paras_aud_NoDelay, *_ = sort_chs_by_actonset(data_LexNoDelay_Aud, epoc_LexNoDelay_Aud, cluster_twin, aud_win, mask_data=False, select_electrodes=False)
+    _, _, _, _, _, paras_mtr_NoDelay, *_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, mtr_win, mask_data=False, select_electrodes=False)
 
     import seaborn as sns
     import matplotlib.ticker as mticker
@@ -2360,14 +2373,14 @@ elif groupsTag=="LexDelay&LexNoDelay":
     # 1. 数据准备与标签提取
     # ==========================================
     group_map = {
-        'Auditory': data_LexNoDelay_Aud.labels[0][list(LexDelay_Auditory_in_Delay_sig_idx)],
-        'Sensory-motor': data_LexNoDelay_Aud.labels[0][list(LexDelay_Sensorimotor_in_Delay_sig_idx)],
-        'Motor': data_LexNoDelay_Aud.labels[0][list(LexDelay_Motor_in_Delay_sig_idx)],
-        'Delay-only': data_LexNoDelay_Aud.labels[0][list(LexDelay_DelayOnly_sig_idx)]
+        'Auditory_vWM': data_LexNoDelay_Aud.labels[0][list(LexDelay_Auditory_in_Delay_sig_idx)],
+        'Sensory-motor_vWM': data_LexNoDelay_Aud.labels[0][list(LexDelay_Sensorimotor_in_Delay_sig_idx)],
+        'Motor_vWM': data_LexNoDelay_Aud.labels[0][list(LexDelay_Motor_in_Delay_sig_idx)],
+        'Delay-only_vWM': data_LexNoDelay_Aud.labels[0][list(LexDelay_DelayOnly_sig_idx)]
     }
 
     param = 'rms_value'
-    x_order = ['Auditory', 'Sensory-motor', 'Motor', 'Delay-only']
+    x_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
     hue_colors_stage = {'Auditory Stage': Auditory_col, 'Motor Stage': Motor_col}
 
     fig4_dir = os.path.join(manuscript_save_dir, '..', 'Fig4')
@@ -2378,153 +2391,409 @@ elif groupsTag=="LexDelay&LexNoDelay":
     # 2. 数据处理与参与度统计
     # ==========================================
     plot_data = []
-    participation_data = {}
 
     for g_name, labels in group_map.items():
         if len(labels) == 0: continue
         
-        # 提取原始数值
-        v_aud_raw = paras_aud.loc[paras_aud.index.intersection(labels), param]
-        v_mtr_raw = paras_mtr.loc[paras_mtr.index.intersection(labels), param]
-        total_n = len(labels)
-        
-        # 统计 0 值比例 (0 视为无效)
-        a_valid = np.sum(v_aud_raw != 0)
-        m_valid = np.sum(v_mtr_raw != 0)
-        
-        participation_data[g_name] = {
-            'aud': [a_valid, total_n - a_valid],
-            'mtr': [m_valid, total_n - m_valid]
-        }
-
-        # 构建长表
         for label in labels:
-            if label in paras_aud.index and label in paras_mtr.index:
-                va, vm = paras_aud.loc[label, param], paras_mtr.loc[label, param]
-                # 过滤 0 值
-                va = va if va != 0 else np.nan
-                vm = vm if vm != 0 else np.nan
-                plot_data.append({'Group': g_name, 'Stage': 'Auditory Stage', 'Value': va})
-                plot_data.append({'Group': g_name, 'Stage': 'Motor Stage', 'Value': vm})
+            # 確保該 label 在所有 DataFrame 中都存在
+            dfs = [paras_aud_Delay, paras_mtr_Delay, paras_aud_NoDelay, paras_mtr_NoDelay]
+            if all(label in df.index for df in dfs):
+                plot_data.append({
+                    'Label': label,
+                    'Group': g_name,
+                    'Auditory_Delay': paras_aud_Delay.loc[label, param],
+                    'Motor_Delay': paras_mtr_Delay.loc[label, param],
+                    'Auditory_NoDelay': paras_aud_NoDelay.loc[label, param],
+                    'Motor_NoDelay': paras_mtr_NoDelay.loc[label, param]
+                })
 
-    df_long = pd.DataFrame(plot_data).dropna(subset=['Value'])
+    df_final = pd.DataFrame(plot_data).dropna()
 
     # ==========================================
-    # 3. 绘制分阶段参与度饼图 (数量-换行-百分比 + 无外部标签)
+    # 3. 绘图： Delay Nodelay scatter plot
     # ==========================================
-    # 统一灰色背景
-    unified_grey = '#D3D3D3' 
+    # Option 1: a group of scatter plots with regression line and stats annotation
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import numpy as np
+    import pandas as pd
+    from scipy import stats
 
-    # 定义自定义格式化函数：数量\n(百分比)
-    def make_participation_autopct(values):
-        def my_autopct(pct):
-            total = sum(values)
-            val = int(round(pct * total / 100.0))
-            # 按照要求：数量 - 换行 - (百分比)
-            return f'{val}\n({pct:.0f}%)'
-        return my_autopct
+    # 1. 數據預處理
+    # --- 1. 剔除微弱信號 (小於 1e-3) ---
+    # 只有當所有相關列的數值都大於 1e-3 時，我們才保留該電極
+    df_filtered = df_final.copy()
+    cols = [f'{s}_{d}' for s in ['Auditory', 'Motor'] for d in ['Delay', 'NoDelay']]
 
-    for g_name, counts in participation_data.items():
-        fig, axes = plt.subplots(1, 2, figsize=(10, 5), dpi=300)
+    # 這裡使用 .all(axis=1) 確保四個階段的響應都達標
+    # 如果你想只要其中一個達標就保留，可以使用 .any(axis=1)
+    df_filtered = df_filtered[(df_filtered[cols] > 1e-3).all(axis=1)]
+
+    # --- 2. 取 Log ---
+    df_log = df_filtered.copy()
+    df_log[cols] = np.log10(df_log[cols]) # 此時不再需要 .clip，因為數據已經過濾過了
+
+    # 2. 確定統一刻度
+    all_vals = df_log[cols_to_log].values
+    vmin, vmax = int(np.floor(all_vals.min())), int(np.ceil(all_vals.max()))
+    ticks = np.arange(vmin, vmax + 1)
+
+    def get_p_stars(p):
+        if p < 0.001: return '***'
+        if p < 0.01: return '**'
+        if p < 0.05: return '*'
+        return 'n.s.'
+
+    sns.set_style("ticks")
+    groups = df_log['Group'].unique()
+    n_groups = len(groups)
+
+    fig, axes = plt.subplots(n_groups, 2, figsize=(10, 4 * n_groups), constrained_layout=True)
+    if n_groups == 1: axes = np.expand_dims(axes, axis=0)
+
+    for i, g_name in enumerate(groups):
+        group_data = df_log[df_log['Group'] == g_name]
         
-        # 配色：饱和色 vs 统一灰色
-        colors_aud = [Auditory_col, unified_grey]
-        colors_mtr = [Motor_col, unified_grey]
+        for j, stage in enumerate(['Auditory', 'Motor']):
+            ax = axes[i, j]
+            x_col, y_col = f'{stage}_NoDelay', f'{stage}_Delay'
+            x, y = group_data[x_col], group_data[y_col]
+            
+            # 執行線性回歸
+            slope, intercept, r_val, p_val, _ = stats.linregress(x, y)
+            r_sq = r_val**2
+            stars = get_p_stars(p_val)
+            
+            # 繪圖
+            color = '#55A868' if j == 0 else '#4C72B0'
+            sns.scatterplot(x=x, y=y, color=color, alpha=0.5, s=35, edgecolor='w', linewidth=0.5, ax=ax)
+            
+            line_range = np.array([vmin, vmax])
+            ax.plot(line_range, line_range, color='#777777', linestyle='--', linewidth=0.8, alpha=0.4)
+            ax.plot(line_range, slope * line_range + intercept, color='#C44E52', linewidth=1.2)
+            
+            ax.set_xlim(vmin, vmax)
+            ax.set_ylim(vmin, vmax)
+            ax.set_xticks(ticks)
+            ax.set_yticks(ticks)
+            
+            ax.spines['bottom'].set_bounds(ticks[0], ticks[-1])
+            ax.spines['left'].set_bounds(ticks[0], ticks[-1])
+            
+            if j == 0: 
+                ax.set_ylabel(f'{g_name}\n\nLog HG z-score (Delay)', fontsize=10, fontweight='bold')
+            else: 
+                ax.set_ylabel('')
+                
+            if i == 0: 
+                ax.set_title(f'{stage} Shift', fontsize=12, pad=20)
+            
+            if i == n_groups - 1: 
+                ax.set_xlabel('Log HG z-score (NoDelay)', fontsize=10)
+            else: 
+                ax.set_xlabel('')
+                
+            # 增強版參數標註：包含 p 值和顯著性星號
+            stats_text = (f'$slope={slope:.2f}$\n'
+                        f'$intercept={intercept:.2f}$\n'
+                        f'$R^2={r_sq:.2f}$ {stars}\n'
+                        f'$p={p_val:.3e}$')
+            
+            ax.text(0.08, 0.92, stats_text, transform=ax.transAxes, 
+                    verticalalignment='top', fontsize=8, color='#C44E52',
+                    bbox=dict(facecolor='white', alpha=0.5, edgecolor='none'))
+            
+            sns.despine(ax=ax, offset=10, trim=True)
+
+    plt.show()
+
+    # Option 2: piled scatter plots with 地形圖
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import numpy as np
+    import pandas as pd
+    from scipy import stats
+
+    # 1. 數據預處理 (保持你的邏輯)
+    df_filtered = df_final.copy()
+    cols = [f'{s}_{d}' for s in ['Auditory', 'Motor'] for d in ['Delay', 'NoDelay']]
+    # 僅保留所有階段均 > 1e-3 的電極
+    df_filtered = df_filtered[(df_filtered[cols] > 1e-3).all(axis=1)]
+
+    df_log = df_filtered.copy()
+    df_log[cols] = np.log10(df_log[cols])
+
+    # 2. 確定統一刻度
+    all_vals = df_log[cols].values
+    vmin, vmax = int(np.floor(all_vals.min())), int(np.ceil(all_vals.max()))
+    ticks = np.arange(-1, 1)
+
+    # 3. 設置色彩與分組
+    group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
+    palette = sns.color_palette("Set2", len(group_order))
+    color_map = {
+    'Auditory_vWM': Auditory_col,
+    'Sensory-motor_vWM': Sensorimotor_col,
+    'Motor_vWM': Motor_col,
+    'Delay-only_vWM': Delay_col}
+
+    # 4. 繪圖
+    sns.set_style("ticks")
+
+    for j, stage in enumerate(['Auditory', 'Motor']):
         
-        # A. Auditory Stage Pie
-        axes[0].pie(
-            counts['aud'], 
-            labels=None,      # 移除外部电极组标签
-            colors=colors_aud, 
-            autopct=None, # 先不显示百分比，后续通过自定义函数添加数量和百分比
-            #autopct=make_participation_autopct(counts['aud']), # 数量\n(百分比)
-            startangle=90,
-            pctdistance=0.5, # 调整文字在圆内的位置
-            textprops={'fontsize': 32, 'fontweight': 'bold', 'color': 'black'}, # 维持大字号
-            wedgeprops={'linewidth': 2.5, 'edgecolor': 'white'}
-        )
+        fig, ax = plt.subplots(1, 1, figsize=(7, 6), constrained_layout=True)
+
+        x_col, y_col = f'{stage}_NoDelay', f'{stage}_Delay'
         
-        # B. Motor Stage Pie
-        axes[1].pie(
-            counts['mtr'], 
-            labels=None,      # 移除外部电极组标签
-            colors=colors_mtr, 
-            autopct=None, # 先不显示百分比，后续通过自定义函数添加数量和百分比
-            #autopct=make_participation_autopct(counts['mtr']), # 数量\n(百分比)
-            startangle=90,
-            pctdistance=0.5,
-            textprops={'fontsize': 32, 'fontweight': 'bold', 'color': 'black'}, # 维持大字号
-            wedgeprops={'linewidth': 2.5, 'edgecolor': 'white'}
-        )
+        # A. 基準對角線
+        line_range = np.array([vmin, vmax])
+        ax.plot(line_range, line_range, color='#777777', linestyle='--', linewidth=3, alpha=0.4, zorder=1)
         
-        # 环形化与视觉纯净处理
-        for ax in axes:
-            # 保持 Donut 风格，中间留白
-            ax.add_artist(plt.Circle((0,0), 0.5, fc='white'))
-            ax.axis('equal')
-            ax.set_title('') # 确保无标题
+        for i, g_name in enumerate(group_order):
+            group_data = df_log[df_log['Group'] == g_name]
+            if group_data.empty: continue
+            
+            x, y = group_data[x_col], group_data[y_col]
+            color = color_map[g_name]
+            
+            # B. 繪製密度等高線 (KDE Contour) - 這是「錯開」視覺感的關鍵
+            # levels=1 表示只畫出最核心的 50% 分佈區域
+            sns.kdeplot(x=x, y=y, ax=ax, color=color, levels=[0.3], 
+                        linewidths=3, alpha=0.95, zorder=2)
+            
+            # C. 散點圖 - 設置極高透明度，僅作為背景支撐
+            sns.scatterplot(x=x, y=y, color=color, alpha=0.4, s=60, 
+                            edgecolor='none', ax=ax, zorder=2)
+        
+        # 5. 坐標軸美化
+        ax.set_xlim(-2, vmax)
+        ax.set_ylim(-2, vmax)
+        ax.set_xticks(ticks)
+        ax.set_yticks(ticks)
+        
+        # 根據你的要求：不顯示 xtick labels
+        #ax.set_xticklabels([])
+        
+        ax.set_title('')
+        ax.set_xlabel('')
+        ax.spines['left'].set_bounds(ticks[0], ticks[-1])
+        ax.spines['left'].set_linewidth(5)   # 左側軸線
+        ax.set_ylabel('')
+        ax.spines['bottom'].set_linewidth(5) # 底部軸線
+        ax.spines['bottom'].set_bounds(ticks[0], ticks[-1])
+        sns.despine(ax=ax, offset=10, trim=True)
+        ax.tick_params(axis='both', which='major',labelsize=40, direction='out')
+
 
         plt.tight_layout()
-        # 存入 Fig4 目录
-        plt.savefig(os.path.join(fig4_dir, f'Pie_Split_{g_name}.svg'), format='svg', bbox_inches='tight')
+        save_path = os.path.join(manuscript_save_dir, '..', 'Fig4', f"Scatter_{stage}.svg")
+        plt.savefig(save_path, format='svg', bbox_inches='tight')
+        plt.close()
+    #plt.show()
+
+    # ==========================================
+    # 5. R-squared Analysis & Statistical Comparison
+    # ==========================================
+    from sklearn.utils import resample
+
+    # --- 參數設置 ---
+    n_bootstrap = 1000  # Bootstrap 次數
+    group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
+    color_map = {
+        'Auditory_vWM': Auditory_col,
+        'Sensory-motor_vWM': Sensorimotor_col,
+        'Motor_vWM': Motor_col,
+        'Delay-only_vWM': Delay_col
+    }
+
+    def get_stars(p):
+        if p < 0.001: return '***'
+        if p < 0.01: return '**'
+        if p < 0.05: return '*'
+        return ''
+
+    # 儲存結果
+    results_list = []
+
+    for stage in ['Auditory', 'Motor']:
+        x_col, y_col = f'{stage}_NoDelay', f'{stage}_Delay'
+        
+        for g_name in group_order:
+            g_data = df_log[df_log['Group'] == g_name]
+            if len(g_data) < 3: continue
+            
+            # 1. 原始線性回歸
+            slope, intercept, r_val, p_val, _ = stats.linregress(g_data[x_col], g_data[y_col])
+            r_sq = r_val**2
+            
+            # 2. Bootstrap 獲取 R^2 的置信區間和分佈 (用於後續統計檢驗)
+            boot_r2 = []
+            for _ in range(n_bootstrap):
+                boot_sample = resample(g_data, replace=True)
+                _, _, b_r, _, _ = stats.linregress(boot_sample[x_col], boot_sample[y_col])
+                boot_r2.append(b_r**2)
+                
+            results_list.append({
+                'Stage': stage,
+                'Group': g_name,
+                'R2': r_sq,
+                'P_val': p_val,
+                'Boot_R2': boot_r2,
+                'SEM': np.std(boot_r2)
+            })
+
+    # 轉化為 DataFrame 方便繪圖
+    df_res = pd.DataFrame(results_list)
+
+    # --- 繪製 R-squared Bar Plot ---
+    sns.set_style("ticks")
+    for stage in ['Auditory', 'Motor']:
+        fig, ax = plt.subplots(figsize=(8, 8))
+        
+        stage_df = df_res[df_res['Stage'] == stage]
+        
+        # 畫 Bar 圖
+        bars = sns.barplot(data=stage_df, x='Group', y='R2', palette=color_map, 
+                        order=group_order, ax=ax, edgecolor='none', alpha=0.9, linewidth=3)
+        
+        # 加上誤差棒 (來自 Bootstrap 的標準差)
+        #ax.errorbar(x=range(len(group_order)), y=stage_df['R2'], 
+                    #yerr=stage_df['SEM'], fmt='none', c='k', capsize=10, elinewidth=3)
+
+        # 標註回歸本身的顯著性星號 (是否顯著不為 0)
+        for i, g_name in enumerate(group_order):
+            row = stage_df[stage_df['Group'] == g_name].iloc[0]
+            star = get_stars(row['P_val'])
+            ax.text(i, row['R2'] + row['SEM'] + 0.02, star, ha='center', fontsize=80, fontweight='bold')
+
+        # 座標軸美化 (延續你的硬核風格)
+        ax.set_ylim(-0, 0.8)
+        ax.set_yticks([0, 0.5])
+        ax.set_yticklabels(['0', '0.5'], fontsize=80, fontweight='bold')
+        ax.set_xticklabels([]) # 依你要求隱藏，若需顯示可註釋掉
+        
+        ax.spines['left'].set_linewidth(12)
+        ax.spines['bottom'].set_linewidth(12)
+        ax.spines['left'].set_bounds(0, 1.0)
+        ax.spines['bottom'].set_bounds(0, 3)
+        
+        ax.set_ylabel('')
+        ax.set_xlabel('')
+        sns.despine(offset=15, trim=True)
+        ax.tick_params(axis='both', width=4, length=12,labelsize=80)
+
+        save_path = os.path.join(manuscript_save_dir, '..', 'Fig4', f"R2_Bar_{stage}.svg")
+        plt.savefig(save_path, format='svg', bbox_inches='tight',transparent=True,)
         plt.show()
 
-    # ==========================================
-    # 4. 统计检验 (非参数)
-    # ==========================================
-    def run_nonparametric(df, stage):
-        stage_df = df[df['Stage'] == stage]
-        group_data = [stage_df[stage_df['Group'] == g]['Value'] for g in x_order]
-        res = []
-        for i in range(len(x_order)):
-            for j in range(i + 1, len(x_order)):
-                u, p = stats.mannwhitneyu(group_data[i], group_data[j])
-                res.append({'Comparison': f'{x_order[i]} vs {x_order[j]}', 'p_raw': p})
-        p_raws = [r['p_raw'] for r in res]
-        _, p_fdr, _, _ = multipletests(p_raws, method='fdr_bh')
-        for idx, r in enumerate(res): r['p_fdr'] = p_fdr[idx]
-        return pd.DataFrame(res)
 
-    print("--- Statistics ---")
-    print("Auditory Stage:\n", run_nonparametric(df_long, 'Auditory Stage'))
-    print("\nMotor Stage:\n", run_nonparametric(df_long, 'Motor Stage'))
+    # --- 統計檢驗：R^2 之間的組間比較 (Bootstrap 檢驗) ---
+    print("\n--- R-squared Group Comparison (Bootstrap Test) ---")
+    for stage in ['Auditory', 'Motor']:
+        print(f"\nStage: {stage}")
+        # 舉例：比較 Sensorimotor vs Auditory
+        sm_r2 = np.array(df_res[(df_res['Stage'] == stage) & (df_res['Group'] == 'Sensory-motor_vWM')]['Boot_R2'].iloc[0])
+        au_r2 = np.array(df_res[(df_res['Stage'] == stage) & (df_res['Group'] == 'Auditory_vWM')]['Boot_R2'].iloc[0])
+        
+        # 計算 p 值：Sensorimotor R2 大於 Auditory R2 的概率
+        p_comp = np.mean(sm_r2 <= au_r2) 
+        print(f"Sensory-motor vs Auditory: p = {p_comp:.4f}")
 
-    # ==========================================
-    # 5. 绘制饱和色 Bar-Strip 图 (No Title)
-    # ==========================================
-    plt.figure(figsize=(10.5, 4))
-    ax = plt.gca()
 
-    # 柱状图
-    sns.barplot(
-        x='Group', y='Value', data=df_long, hue='Stage', hue_order=['Auditory Stage', 'Motor Stage'],
-        order=x_order, palette=hue_colors_stage, edgecolor='none', saturation=1, 
-        alpha=1.0, errorbar='se', capsize=0.05, err_kws={'linewidth': 3, 'color': 'black'}, zorder=1, ax=ax
-    )
+# ==========================================
+# 6. Sign Test Plot for Delay vs NoDelay
+# ==========================================
 
-    # 散点图
-    strip_plot = sns.stripplot(
-        data=df_long, x='Group', y='Value', hue='Stage', hue_order=['Auditory Stage', 'Motor Stage'],
-        order=x_order, size=7, alpha=1.0, jitter=0.25, dodge=True, marker='o', 
-        linewidth=1.2, edgecolor='white', palette=hue_colors_stage, zorder=2, ax=ax
-    )
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import numpy as np
+    import pandas as pd
+    from scipy.stats import binomtest
+    import os
 
-    # 连线 (以后再搞吧累了真的)
-    # for group_idx in range(len(x_order)):
-    #     try: bsliang_add_connecting_lines(plt, group_idx, strip_plot)
-    #     except: pass
+    group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
 
-    # --- 顶级期刊视觉规范 (移除标题) ---
-    for spine in ax.spines.values(): spine.set_linewidth(3)
-    sns.despine(offset=15, trim=True) # 呼吸感偏置
+    # --- 2. 核心繪圖函數 ---
+    def plot_vwm_sign_test_standardized(stage_name):
+        sns.set_style("ticks")
+        fig, ax = plt.subplots(figsize=(12, 10))
+        
+        diff_col = f'{stage_name}_Diff'
+        current_df = df_plot[df_plot['Group'].isin(group_order)].copy()
+        
+        # A. Boxplot
+        sns.boxplot(data=current_df, x='Group', y=diff_col, order=group_order, 
+                    whis=[5, 95], showfliers=False, width=0.3,
+                    palette=color_map, 
+                    boxprops=dict(alpha=0.15, linewidth=2), 
+                    medianprops=dict(linewidth=5), # 中位數加粗以匹配大座標軸
+                    ax=ax)
+        
+        # B. Stripplot
+        sns.stripplot(data=current_df, x='Group', y=diff_col, order=group_order,
+                    palette=color_map, alpha=0.5, s=12, jitter=0.25, ax=ax)
 
-    plt.yticks(fontsize=30); plt.xticks(fontsize=0) 
-    ax.set_title('') # 显式移除标题
-    ax.set_xlabel(''); ax.set_ylabel(''); ax.tick_params(axis='x', length=0)
+        # C. y=0 基準線
+        ax.axhline(0, color='#333333', linestyle='--', linewidth=2, alpha=0.7)
+        
+        # --- 關鍵修正：統一 Y 軸 Ticks 與範圍 ---
+        y_min_fixed, y_max_fixed = -1.5, 1.5
+        y_ticks = np.arange(-1, 1.1, 1) # -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5
+        ax.set_ylim(y_min_fixed, y_max_fixed)
+        ax.set_yticks(y_ticks)
+        # 設定 Y 軸 Label 字體為 30
+        ax.set_yticklabels([f'{y:.1f}' for y in y_ticks], fontsize=40)
+        
+        # D. Sign Test 統計與標註 (動態調整位置以適應固定量程)
+        for i, g_name in enumerate(group_order):
+            group_diffs = current_df[current_df['Group'] == g_name][diff_col].dropna()
+            if len(group_diffs) == 0: continue
+            
+            n_above = np.sum(group_diffs > 0)
+            n_total = len(group_diffs)
+            res = binomtest(n_above, n_total, p=0.5, alternative='two-sided')
+            p_val = res.pvalue
+            
+            stars = '***' if p_val < 0.001 else '**' if p_val < 0.01 else '*' if p_val < 0.05 else ''
+            
+            # 星號標註在固定範圍的高處
+            ax.text(i, 1.2, stars, ha='center', va='bottom',
+                    fontsize=40, fontweight='bold', color='k')
 
-    if ax.get_legend(): ax.get_legend().remove()
+        # --- 視覺優化：6pt 粗軸與 Tufte 截斷 ---
+        ax.spines['left'].set_linewidth(8)
+        ax.spines['bottom'].set_linewidth(8)
+        
+        # 軸線絕對不超過 -1.5 和 1.5
+        ax.spines['left'].set_bounds(-1.5, 1.5)
+        ax.spines['bottom'].set_bounds(0, len(group_order)-1)
+        
+        # 設置刻度線參數
+        # 隱藏 X 軸標籤 (根據之前需求)
+        ax.set_xticklabels([])
+        
+        # 清除其餘標籤
+        ax.set_xlabel('')
+        ax.set_ylabel('')
+        ax.set_title('')
+        ax.tick_params(axis='both', which='major', labelsize=60,width=6, length=12, direction='out')
+        
+        # 移除頂部和右側
+        sns.despine(ax=ax, offset=20, trim=True)
+        
+        plt.tight_layout()
+        
+        # 保存 SVG
+        save_dir = os.path.join(manuscript_save_dir, '..', 'Fig4')
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+            
+        save_path = os.path.join(save_dir, f"Sign_test_{stage_name}.svg")
+        plt.savefig(save_path, format='svg', bbox_inches='tight')
+        plt.close()
 
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig4_dir, f"RMS_BarStrip.svg"), format='svg', bbox_inches='tight')
-    plt.show()
-# %%
+    # --- 3. 執行繪圖 ---
+    plot_vwm_sign_test_standardized('Auditory')
+    plot_vwm_sign_test_standardized('Motor')
