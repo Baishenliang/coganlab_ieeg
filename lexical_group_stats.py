@@ -2413,100 +2413,6 @@ elif groupsTag=="LexDelay&LexNoDelay":
     # ==========================================
     # 3. 绘图： Delay Nodelay scatter plot
     # ==========================================
-    # Option 1: a group of scatter plots with regression line and stats annotation
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    import numpy as np
-    import pandas as pd
-    from scipy import stats
-
-    # 1. 數據預處理
-    # --- 1. 剔除微弱信號 (小於 1e-3) ---
-    # 只有當所有相關列的數值都大於 1e-3 時，我們才保留該電極
-    df_filtered = df_final.copy()
-    cols = [f'{s}_{d}' for s in ['Auditory', 'Motor'] for d in ['Delay', 'NoDelay']]
-
-    # 這裡使用 .all(axis=1) 確保四個階段的響應都達標
-    # 如果你想只要其中一個達標就保留，可以使用 .any(axis=1)
-    df_filtered = df_filtered[(df_filtered[cols] > 1e-3).all(axis=1)]
-
-    # --- 2. 取 Log ---
-    df_log = df_filtered.copy()
-    df_log[cols] = np.log10(df_log[cols]) # 此時不再需要 .clip，因為數據已經過濾過了
-
-    # 2. 確定統一刻度
-    all_vals = df_log[cols_to_log].values
-    vmin, vmax = int(np.floor(all_vals.min())), int(np.ceil(all_vals.max()))
-    ticks = np.arange(vmin, vmax + 1)
-
-    def get_p_stars(p):
-        if p < 0.001: return '***'
-        if p < 0.01: return '**'
-        if p < 0.05: return '*'
-        return 'n.s.'
-
-    sns.set_style("ticks")
-    groups = df_log['Group'].unique()
-    n_groups = len(groups)
-
-    fig, axes = plt.subplots(n_groups, 2, figsize=(10, 4 * n_groups), constrained_layout=True)
-    if n_groups == 1: axes = np.expand_dims(axes, axis=0)
-
-    for i, g_name in enumerate(groups):
-        group_data = df_log[df_log['Group'] == g_name]
-        
-        for j, stage in enumerate(['Auditory', 'Motor']):
-            ax = axes[i, j]
-            x_col, y_col = f'{stage}_NoDelay', f'{stage}_Delay'
-            x, y = group_data[x_col], group_data[y_col]
-            
-            # 執行線性回歸
-            slope, intercept, r_val, p_val, _ = stats.linregress(x, y)
-            r_sq = r_val**2
-            stars = get_p_stars(p_val)
-            
-            # 繪圖
-            color = '#55A868' if j == 0 else '#4C72B0'
-            sns.scatterplot(x=x, y=y, color=color, alpha=0.5, s=35, edgecolor='w', linewidth=0.5, ax=ax)
-            
-            line_range = np.array([vmin, vmax])
-            ax.plot(line_range, line_range, color='#777777', linestyle='--', linewidth=0.8, alpha=0.4)
-            ax.plot(line_range, slope * line_range + intercept, color='#C44E52', linewidth=1.2)
-            
-            ax.set_xlim(vmin, vmax)
-            ax.set_ylim(vmin, vmax)
-            ax.set_xticks(ticks)
-            ax.set_yticks(ticks)
-            
-            ax.spines['bottom'].set_bounds(ticks[0], ticks[-1])
-            ax.spines['left'].set_bounds(ticks[0], ticks[-1])
-            
-            if j == 0: 
-                ax.set_ylabel(f'{g_name}\n\nLog HG z-score (Delay)', fontsize=10, fontweight='bold')
-            else: 
-                ax.set_ylabel('')
-                
-            if i == 0: 
-                ax.set_title(f'{stage} Shift', fontsize=12, pad=20)
-            
-            if i == n_groups - 1: 
-                ax.set_xlabel('Log HG z-score (NoDelay)', fontsize=10)
-            else: 
-                ax.set_xlabel('')
-                
-            # 增強版參數標註：包含 p 值和顯著性星號
-            stats_text = (f'$slope={slope:.2f}$\n'
-                        f'$intercept={intercept:.2f}$\n'
-                        f'$R^2={r_sq:.2f}$ {stars}\n'
-                        f'$p={p_val:.3e}$')
-            
-            ax.text(0.08, 0.92, stats_text, transform=ax.transAxes, 
-                    verticalalignment='top', fontsize=8, color='#C44E52',
-                    bbox=dict(facecolor='white', alpha=0.5, edgecolor='none'))
-            
-            sns.despine(ax=ax, offset=10, trim=True)
-
-    plt.show()
 
     # Option 2: piled scatter plots with 地形圖
     import matplotlib.pyplot as plt
@@ -2714,6 +2620,8 @@ elif groupsTag=="LexDelay&LexNoDelay":
     import os
 
     group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
+    df_plot=df_log.copy()
+
 
     # --- 2. 核心繪圖函數 ---
     def plot_vwm_sign_test_standardized(stage_name):
