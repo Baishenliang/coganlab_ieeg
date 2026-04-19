@@ -51,7 +51,7 @@ contrast='ave' # average, not contrasting different conditions
 trial_labels='CORRECT'
 epoc_bsl_type='zscore'# 'zscore' or 'power' or 'rawpower'
 rep_or_yn='inYN' # 'inRep' or 'inYN'
-output_suffix='_yn'
+output_suffix='_yn' #  '' for inRep, '_yn' for inYN
 
 # %% Sort data and get significant electrode lists
 import os
@@ -61,7 +61,7 @@ stats_root_delay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS',
 stats_root_nodelay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepNoDelay', 'BIDS', "derivatives", "stats")
 
 if groupsTag=="LexDelay":
-    data_LexDelay_Aud,_=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay)
+    data_LexDelay_Aud,subjs=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay)
     elec_labels=data_LexDelay_Aud.labels[0]
     NoDelay_append_startings=False
     epoc_LexDelayRep_Aud,_=gp.load_stats(epoc_bsl_type,f'Auditory_{rep_or_yn}','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=True,cbind_subjs=cbind_subjs)
@@ -153,11 +153,11 @@ loaded_data={}
 if groupsTag=="LexDelay":
 
     #elec_grps=('SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
-    elec_grps=('Motor_vWM','Auditory_vWM','Sensorymotor_vWM','Delay_only','Motor_novWM','Auditory_novWM','Sensorymotor_novWM','Wgw_p55b','Wgw_a55b')#,'Delay_only')
+    elec_grps=('Motor_vWM','Auditory_vWM','Sensorymotor_vWM','Delay_only')#,'Motor_novWM','Auditory_novWM','Sensorymotor_novWM','Wgw_p55b','Wgw_a55b')#,'Delay_only')
              #'Hickok_Spt','Hickok_lPMC','Hickok_lIPL','Hickok_lIFG')
     #elec_idxs=('LexDelay_Sensorimotor_in_Delay_sig_idx_Auditory_early','LexDelay_Sensorimotor_in_Delay_sig_idx_Auditory_late','LexDelay_Sensorimotor_in_Delay_sig_idx_Delay','LexDelay_Sensorimotor_in_Delay_sig_idx_Motor')
-    elec_idxs=('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx',
-               'LexDelay_Motor_not_in_Delay_sig_idx','LexDelay_Auditory_not_in_Delay_sig_idx','LexDelay_Sensorimotor_not_in_Delay_sig_idx','Wgw_p55b','Wgw_a55b')
+    elec_idxs=('LexDelay_Motor_in_Delay_sig_idx','LexDelay_Auditory_in_Delay_sig_idx','LexDelay_Sensorimotor_in_Delay_sig_idx','LexDelay_DelayOnly_sig_idx')#,
+               #'LexDelay_Motor_not_in_Delay_sig_idx','LexDelay_Auditory_not_in_Delay_sig_idx','LexDelay_Sensorimotor_not_in_Delay_sig_idx','Wgw_p55b','Wgw_a55b')
              #'Hikock_Spt','Hikock_lPMC','Hikock_lIPL','Hikock_lIFG')
     for epoc,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                              ('epoc_LexDelayRep_Aud','epoc_LexDelayRep_Go','epoc_LexDelayRep_Resp')):

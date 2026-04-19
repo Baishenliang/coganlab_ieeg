@@ -148,11 +148,11 @@ model_func <- function(current_data){
   
   term_aco <- paste0('aco', 1:9, "*wordness")
   term_pho <- paste0('pho', 1:11, "*wordness")
-  term_sem <- paste0('sem', 1:75)
+  term_sem <- paste0('sem', 1:67)
   
   #all_terms <- c(term_aco, term_pho, term_sem, "wordness")
-  #all_terms <- c(term_aco, term_pho, "wordness")
-  all_terms <- c(term_sem)
+  all_terms <- c(term_aco, term_pho, "wordness")
+  #all_terms <- c(term_sem)
   
   fml <- as.formula(paste0("value ~ 1 + ", paste(all_terms, collapse = " + ")))
   
@@ -240,49 +240,49 @@ model_func <- function(current_data){
 }
 
 #%% Parameters
-delay_nodelays <- c("LexDelay","LexNoDelay","LexDelayRep")#c("LexDelayRep","LexDelay","LexNoDelay")
+delay_nodelays <- c("LexDelayRep")#c("LexDelay","LexNoDelay","LexDelayRep")#c("LexDelayRep","LexDelay","LexNoDelay")
 alignments <- c("Aud")#,"Go","Resp")
 #alignments <- c("Resp")
 # alignments <- c("Aud")
 #elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
-elec_grps <- c('Auditory','Sensorymotor','Motor')#,'Delay_only','Wgw_p55b','Wgw_a55b')
+elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')#,'Wgw_p55b','Wgw_a55b')
 #elec_grps <- c('Wgw_p55b','Wgw_a55b')
 #elec_grps <- c('Motor')
 
 a = 0
 #Make fixed lambda (from cv or anything optimized)
 
-ridge_lambda_speech <- data.frame( # lambda adjusted according to electrode size
-  vWM = c(1e-5,  # Auditory vWM
-          0.1, # Sensorymotor vWM
-          1, # Motor vWM
-          10, # Delay only vWM
-          0.001,# Wgw_p55b
-          0.001)# Wgw_a55b
-)
-rownames(ridge_lambda_speech) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
-
-
-ridge_lambda_nonword <- data.frame( # lambda adjusted according to electrode size
-  vWM = c(0.001,  # Auditory vWM
-          0.001, # Sensorymotor vWM
-          0.001, # Motor vWM
-          0.001, # Delay only vWM
-          0.001,# Wgw_p55b
-          0.001)# Wgw_a55b
-)
-rownames(ridge_lambda_nonword) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
-
-
-ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode size
-  vWM = c(1e-5,  # Auditory vWM
-          1, # Sensorymotor vWM
-          1e-5, # Motor vWM
-          10, # Delay only vWM
-          0.001,# Wgw_p55b
-          10)# Wgw_a55b
-)
-rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
+# ridge_lambda_speech <- data.frame( # lambda adjusted according to electrode size
+#   vWM = c(1e-5,  # Auditory vWM
+#           0.1, # Sensorymotor vWM
+#           1, # Motor vWM
+#           10, # Delay only vWM
+#           0.001,# Wgw_p55b
+#           0.001)# Wgw_a55b
+# )
+# rownames(ridge_lambda_speech) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
+# 
+# 
+# ridge_lambda_nonword <- data.frame( # lambda adjusted according to electrode size
+#   vWM = c(0.001,  # Auditory vWM
+#           0.001, # Sensorymotor vWM
+#           0.001, # Motor vWM
+#           0.001, # Delay only vWM
+#           0.001,# Wgw_p55b
+#           0.001)# Wgw_a55b
+# )
+# rownames(ridge_lambda_nonword) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
+# 
+# 
+# ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode size
+#   vWM = c(1e-5,  # Auditory vWM
+#           1, # Sensorymotor vWM
+#           1e-5, # Motor vWM
+#           10, # Delay only vWM
+#           0.001,# Wgw_p55b
+#           10)# Wgw_a55b
+# )
+# rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
@@ -303,7 +303,7 @@ pho_fea_T$stim <- rownames(pho_fea_T)
 pho_fea_T <- pho_fea_T[, c("stim", setdiff(names(pho_fea_T), "stim"))]
 
 #Load semantic parameters
-sem_tag<-'syllables_sem_proxy_pca'
+sem_tag<-'syllables_sem_pca'
 sem_path <- paste(home_dir,
                   "data/",sem_tag,".csv",
                   sep = "")
@@ -321,7 +321,8 @@ lambda_test=0.001
 #for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
   #for (lambda_test in c(20,40,60,80,200,500,1000,10000)){
   #for (lambda_test in c(0.2,0.4,0.6,0.8,2,4,6,8)){
-for (rep_yn in c('_forSilence')){#,'','_yn')){
+for (rep_yn in c('','_yn')){
+  #'_forSilence')){#,
   for (delay_nodelay in delay_nodelays){
     for (alignment in alignments){
       for (elec_grp in elec_grps){
@@ -419,7 +420,8 @@ for (rep_yn in c('_forSilence')){#,'','_yn')){
         print(perm_compare_df)
         
         #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,"_onlysem_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,"_onlysem_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
         
       }
     }
