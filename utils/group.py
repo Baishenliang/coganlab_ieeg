@@ -2713,3 +2713,128 @@ def generate_neuro_publication_plot(data, title_label="Anatomy Distribution", sa
     if save_path: 
         plt.savefig(save_path, transparent=True, bbox_inches='tight')
     return fig, ax
+
+from datetime import date, datetime
+from typing import Dict, List
+import pandas as pd
+import math
+import re
+
+# ------------------------------------------------------------------
+# Manually specified demographics (PLACEHOLDER VALUES)
+# TODO: replace with correct information
+# ------------------------------------------------------------------
+MANUAL_DEMOGRAPHICS = {
+    #"D24": {"sex": "X", "dob_raw": 99999999}
+    #PHI protected: please fill in the correct values before use
+}
+
+def normalize_subject_id(sid: str) -> str:
+    return re.sub(r'([A-Za-z]+)0+(\d+)', r'\1\2', sid)
+
+
+def find_column_by_keyword(columns, keyword: str):
+    keyword = keyword.lower()
+    for col in columns:
+        if keyword in col.lower():
+            return col
+    return None
+
+
+def read_sex_age_and_stats(
+    subject_ids: List[str],
+    xlsx_path: str
+) -> Dict:
+
+    subjects = {}
+    ages = []
+    n_female = 0
+    today = date.today()
+
+    for sid in subject_ids:
+
+        # ----------------------------------------------------------
+        # 1. Hard-coded manual override (highest priority)
+        # ----------------------------------------------------------
+        if normalize_subject_id(sid) in MANUAL_DEMOGRAPHICS:
+            sex = MANUAL_DEMOGRAPHICS[normalize_subject_id(sid)]["sex"]
+            dob_raw = MANUAL_DEMOGRAPHICS[normalize_subject_id(sid)]["dob_raw"]
+            dob = datetime.strptime(dob_raw, "%Y%m%d").date()
+            age = today.year - dob.year - (
+                (today.month, today.day) < (dob.month, dob.day)
+            )
+            subjects[sid] = {"sex": sex, "age": age}
+            ages.append(age)
+            if sex == "F":
+                n_female += 1
+            continue
+
+        # ----------------------------------------------------------
+        # 2. Automatic Excel-based reading
+        # ----------------------------------------------------------
+        sheet_candidates = [sid, normalize_subject_id(sid)]
+        df = None
+
+        for sheet_name in dict.fromkeys(sheet_candidates):
+            try:
+                df = pd.read_excel(
+                    xlsx_path,
+                    sheet_name=sheet_name,
+                    engine="openpyxl"
+                )
+                break
+            except Exception:
+                continue
+
+        try:
+            if df is None:
+                raise FileNotFoundError("No matching worksheet")
+
+            dob_col = find_column_by_keyword(df.columns, "dob")
+            sex_col = find_column_by_keyword(df.columns, "sex")
+
+            if dob_col is None or sex_col is None:
+                raise ValueError("Required columns not found")
+
+            row = df.iloc[0]
+
+            sex = str(row[sex_col]).strip().upper()
+            dob_raw = str(row[dob_col])
+            dob = datetime.strptime(dob_raw, "%Y%m%d").date()
+
+            age = today.year - dob.year - (
+                (today.month, today.day) < (dob.month, dob.day)
+            )
+
+            subjects[sid] = {"sex": sex, "age": age}
+            ages.append(age)
+            if sex == "F":
+                n_female += 1
+
+        except Exception as e:
+            subjects[sid] = {"sex": None, "age": None}
+            print(f"[Warning] Failed to process subject {sid}: {e}")
+
+    # ----------------------------------------------------------
+    # Summary statistics
+    # ----------------------------------------------------------
+    n_total = len(ages)
+    age_mean = sum(ages) // n_total if n_total > 0 else None
+
+    if n_total > 1:
+        mean_float = sum(ages) / n_total
+        variance = sum((x - mean_float) ** 2 for x in ages) / (n_total - 1)
+        age_sd = round(math.sqrt(variance), 2)
+    else:
+        age_sd = None
+
+    return {
+        "subjects": subjects,
+        "summary": {
+            "n_total": n_total,
+            "n_female": n_female,
+            "ages": ages,
+            "age_mean": age_mean,
+            "age_sd": age_sd
+        }
+    }

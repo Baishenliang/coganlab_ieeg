@@ -81,7 +81,7 @@ stats_root_delay = os.path.join(LAB_root, 'BIDS-1.0_LexicalDecRepDelay', 'BIDS',
 data_LexDelay_Aud,subjs=gp.load_stats('mask','Auditory_inRep','ave',stats_root_delay,stats_root_delay)
 
 #Get electrodes in hickok SM ROIs
-ch_labels_roi,ch_labels=gp.chs2atlas(subjs,data_LexDelay_Aud.labels[0])
+#ch_labels_roi,ch_labels=gp.chs2atlas(subjs,data_LexDelay_Aud.labels[0])
 hickok_roi_sets={'All':set(),'lIFG':set(),'lIPL':set(),'Spt':set(),'lPMC':set(),'Wgw_a55b':set(),'Wgw_p55b':set()}
 
 chs=data_LexDelay_Aud.labels[0]
@@ -96,6 +96,7 @@ for i,item in enumerate(hickok_roi_labels[0].values()):
 with open(os.path.join('data', f'Lex_twin_idxes_{datasource}.npy'), "rb") as f:
     LexDelay_twin_idxes = pickle.load(f)
 
+#%% 
 #for roi in ['All','lIFG','lIPL','Spt','lPMC']:
 for roi in ['All',]:
 
@@ -177,8 +178,8 @@ for roi in ['All',]:
             y_limits = [(-0.1, 25)]  # Specify different y-axis limits for each subplot
             y_ticks = [range(0, 26, 5)]
         elif get_coord_method == 'group':
-            y_limits = [(-0.1, 60)]
-            y_ticks = [range(0, 60, 10)]
+            y_limits = [(-0.1, 80)]
+            y_ticks = [range(0, 80, 10)]
     elif mode=='count':
         if get_coord_method == 'individual':
             y_limits = [(-0.1, 6)]
@@ -295,3 +296,5 @@ for roi in ['All',]:
         t_stat, p_value = ttest_ind(Aud, Mot, nan_policy='omit')
         print(f"Aud vs. Mot in {nei_type} for {roi}: {t_stat}, p-value: {p_value}")
         print("=========================================================================")
+
+# %%
