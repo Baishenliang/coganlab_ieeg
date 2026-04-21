@@ -350,231 +350,6 @@ Lex_idxes['Hikock_lIFG']=lIFG_sig_idx
 with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.npy'), "wb") as f:
     pickle.dump(Lex_idxes, f)
 
-# %% brain plot and electrode plot for HG time traces
-DelNoDel_Aud_paras={}
-for sig_idx, sig_tag,align_data,align_epoc in zip(
-        (LexDelay_all_sig_idx,LexDelay_Delay_sig_idx,LexDelay_DelayOnly_sig_idx, LexDelay_Auditory_in_Delay_sig_idx, LexDelay_Sensorimotor_in_Delay_sig_idx,
-         LexDelay_Motor_in_Delay_sig_idx, LexDelay_Motorprep_Only_sig_idx),
-        ('all_sig','Delay_all','DelOnly', 'Auditory_Del', 'SM_Del', 'Motor_Del', 'Motorpreponly'),
-        (data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud,data_LexDelay_Aud),
-        (epoc_LexDelay_Aud,epoc_LexDelay_Aud,epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud, epoc_LexDelay_Aud)
-):
-    # Debug:
-    # DelNoDel_Aud_paras = {}
-    # sig_idx=LexDelay_Sensorimotor_in_Delay_sig_idx
-    # sig_tag='SM'
-    # align_data=data_LexDelay_Aud
-    # align_epoc=epoc_LexDelay_Aud
-
-
-    # Get sorted indexs (sorted by onsets aligned to xx)
-    data_LexDelay_in_Delay = select_electrodes(align_data, sig_idx)
-    epoc_LexDelay_in_Delay = select_electrodes(align_epoc, sig_idx)
-    _, _, LexDelay_in_Delay_sorted_indices, LexDelay_in_Delay_chs_s_all_idx,onsets_aud,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay, epoc_LexDelay_in_Delay,
-                                                                                                                 cluster_twin, [-0.1, 10], mask_data=True,select_electrodes=False)
-    chs_sel = data_LexDelay_Aud.labels[0][list(sig_idx)].tolist()
-    # # if sig_tag=='all_sig':
-    # cols = onsets2col(onsets_aud, chs_sel)
-    # plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
-
-    # Aud alinged
-    data_LexDelay_in_Delay_Aud = select_electrodes(data_LexDelay_Aud, sig_idx)
-    epoc_LexDelay_in_Delay_Aud = select_electrodes(epoc_LexDelay_Aud, sig_idx)
-    LexDelay_in_Delay_sorted_Aud,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Aud, epoc_LexDelay_in_Delay_Aud,
-                                                           cluster_twin, [-2, 3], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,select_electrodes=False)
-    plot_chs(LexDelay_in_Delay_sorted_Aud, os.path.join(fig_save_dir,
-                                                        f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-             f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
-    _, _, _, _, _, paras,*_ = sort_chs_by_actonset(
-        data_LexDelay_in_Delay_Aud, epoc_LexDelay_in_Delay_Aud,
-        cluster_twin, [mean_word_len+auditory_decay, mean_word_len+auditory_decay+delay_len], mask_data=True, sorted_indices=LexDelay_in_Delay_sorted_indices,
-        chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx, select_electrodes=False)
-    DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']=paras
-    # for column_name in ['activity_length', 'peak_location']:
-    #     paras_col=paras[column_name]
-    #     cols = onsets2col(paras_col, chs_sel)
-    #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
-    if get_atlaslabels_from_ecogRecon:
-        atlas2_hist(ch_labels_roi, chs_sel, [0.5,0.5,0.5,0.4],
-                    os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
-                    ylim=[0,100])
-
-    # Cue alinged
-    data_LexDelay_in_Delay_Cue = select_electrodes(data_LexDelay_Cue, sig_idx)
-    epoc_LexDelay_in_Delay_Cue = select_electrodes(epoc_LexDelay_Cue, sig_idx)
-    LexDelay_in_Delay_sorted_Cue,_,_,_,onsets_cue,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Cue, epoc_LexDelay_in_Delay_Cue,
-                                                                            cluster_twin, [-0.5, 3], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,select_electrodes=False)
-    plot_chs(LexDelay_in_Delay_sorted_Cue, os.path.join(fig_save_dir,
-                                                        f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Cue_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-             f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
-
-    # if sig_tag=='all_sig':
-    #     cols = onsets2col(onsets_cue, chs_sel)
-    #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
-
-    # Go aligned
-    data_LexDelay_in_Delay_Go = select_electrodes(data_LexDelay_Go, sig_idx)
-    epoc_LexDelay_in_Delay_Go = select_electrodes(epoc_LexDelay_Go, sig_idx)
-    LexDelay_in_Delay_Go_sorted,_,_,_,onsets_go,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Go,
-                                                                          epoc_LexDelay_in_Delay_Go,
-                                                                          cluster_twin, [-2, 1], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,select_electrodes=False)
-    plot_chs(LexDelay_in_Delay_Go_sorted, os.path.join(fig_save_dir,
-                                                       f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Go_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-             f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
-
-    # if sig_tag=='all_sig':
-    #     cols = onsets2col(onsets_go, chs_sel)
-    #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
-
-    # Motor aligned
-    data_LexDelay_in_Delay_Resp = select_electrodes(data_LexDelay_Resp, sig_idx)
-    epoc_LexDelay_in_Delay_Resp = select_electrodes(epoc_LexDelay_Resp, sig_idx)
-    LexDelay_in_Delay_Resp_sorted,_,_,_,onsets_mot,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Resp,
-                                                                             epoc_LexDelay_in_Delay_Resp,
-                                                                             cluster_twin, [-2, 1], mask_data=True,sorted_indices=LexDelay_in_Delay_sorted_indices,chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,select_electrodes=False)
-    plot_chs(LexDelay_in_Delay_Resp_sorted, os.path.join(fig_save_dir,
-                                                         f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-             f"N chs = {len(sig_idx)}",percentage_vscale=False,vmin=0,vmax=3,is_colbar=False,fig_size=[4,10*(len(sig_idx)/250)])
-    _, _, _, _, _, paras,*_ = sort_chs_by_actonset(data_LexDelay_in_Delay_Resp,
-                                                   epoc_LexDelay_in_Delay_Resp,
-                                                   cluster_twin, [-1*(delay_len),-0.1], mask_data=True, sorted_indices=LexDelay_in_Delay_sorted_indices,
-                                                   chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx, select_electrodes=False)
-    DelNoDel_Aud_paras[f'{sig_tag}_Delay_motaligned']=paras
-    # for column_name in ['activity_length', 'peak_location']:
-    #     paras_col=paras[column_name]
-    #     cols = onsets2col(paras_col, chs_sel)
-    #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
-    if get_atlaslabels_from_ecogRecon:
-        atlas2_hist(ch_labels_roi, chs_sel, [0.5,0.5,0.5,0.4],
-                os.path.join(fig_save_dir, f'{groupsTag}-LexDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
-                ylim=[0,100])
-
-    # if sig_tag=='all_sig':
-    #     cols = onsets2col(onsets_mot, chs_sel)
-    #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.2)
-
-    if "LexNoDelay" in groupsTag:
-        # Cue alinged
-        data_LexNoDelay_in_Delay_Cue = select_electrodes(data_LexNoDelay_Cue, sig_idx)
-        epoc_LexNoDelay_in_Delay_Cue = select_electrodes(epoc_LexNoDelay_Cue, sig_idx)
-        LexNoDelay_in_Delay_sorted_Cue, _, _, _, onsets_cue, *_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Cue,
-                                                                                       epoc_LexNoDelay_in_Delay_Cue,
-                                                                                       cluster_twin, [-0.5, 3],
-                                                                                       mask_data=True,
-                                                                                       sorted_indices=LexDelay_in_Delay_sorted_indices,
-                                                                                       chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
-                                                                                       select_electrodes=False)
-        plot_chs(LexNoDelay_in_Delay_sorted_Cue, os.path.join(fig_save_dir,
-                                                              f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Cue_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-                 f"N chs = {len(sig_idx)}", percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
-                 fig_size=[4*(3/5), 10 * (len(sig_idx) / 250)])
-
-        # NoDelayAud
-        data_LexNoDelay_in_Delay_Aud = select_electrodes(data_LexNoDelay_Aud, sig_idx)
-        epoc_LexNoDelay_in_Delay_Aud = select_electrodes(epoc_LexNoDelay_Aud, sig_idx)
-        LexNoDelay_in_Delay_sorted_Aud,*_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Aud,
-                                                                 epoc_LexNoDelay_in_Delay_Aud,
-                                                                 cluster_twin, [-2, 3], mask_data=True,
-                                                                 sorted_indices=LexDelay_in_Delay_sorted_indices,
-                                                                 chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
-                                                                 select_electrodes=False)
-        plot_chs(LexNoDelay_in_Delay_sorted_Aud, os.path.join(fig_save_dir,
-                                                              f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-                 f"N chs = {len(sig_idx)}", percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
-                 fig_size=[4*(4/5), 10 * (len(sig_idx) / 250)])
-        _, _, _, _, _, paras, *_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Aud,
-                                                        epoc_LexNoDelay_in_Delay_Aud,
-                                                        cluster_twin, [0, mean_word_len+auditory_decay+delay_len], mask_data=True,
-                                                        sorted_indices=LexDelay_in_Delay_sorted_indices,
-                                                        chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
-                                                        select_electrodes=False)
-        DelNoDel_Aud_paras[f'{sig_tag}_NoDelay_stimaligned'] = paras
-        # for column_name in ['activity_length', 'peak_location']:
-        #     paras_col = paras[column_name]
-        #     cols = onsets2col(paras_col, chs_sel)
-        #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
-        if get_atlaslabels_from_ecogRecon:
-            atlas2_hist(ch_labels_roi, chs_sel, [0.5, 0.5, 0.5, 0.4],
-                        os.path.join(fig_save_dir,
-                                     f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Aud_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
-                        ylim=[0, 100])
-
-        # Motor aligned
-        data_LexNoDelay_in_Delay_Resp = select_electrodes(data_LexNoDelay_Resp, sig_idx)
-        epoc_LexNoDelay_in_Delay_Resp = select_electrodes(epoc_LexNoDelay_Resp, sig_idx)
-        LexNoDelay_in_Delay_Resp_sorted, _, _, _, onsets_mot, *_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Resp,
-                                                                                        epoc_LexNoDelay_in_Delay_Resp,
-                                                                                        cluster_twin, [-2, 1],
-                                                                                        mask_data=True,
-                                                                                        sorted_indices=LexDelay_in_Delay_sorted_indices,
-                                                                                        chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
-                                                                                        select_electrodes=False)
-        plot_chs(LexNoDelay_in_Delay_Resp_sorted, os.path.join(fig_save_dir,
-                                                               f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}.jpg'),
-                 f"N chs = {len(sig_idx)}", percentage_vscale=False, vmin=0, vmax=3, is_colbar=False,
-                 fig_size=[4*(3/5), 10 * (len(sig_idx) / 250)])
-        _, _, _, _, _, paras, *_ = sort_chs_by_actonset(data_LexNoDelay_in_Delay_Resp,
-                                                        epoc_LexNoDelay_in_Delay_Resp,
-                                                        cluster_twin, [-1*(mean_word_len+auditory_decay+delay_len),-0.1],
-                                                        mask_data=True,
-                                                        sorted_indices=LexDelay_in_Delay_sorted_indices,
-                                                        chs_s_all_idx=LexDelay_in_Delay_chs_s_all_idx,
-                                                        select_electrodes=False)
-        DelNoDel_Aud_paras[f'{sig_tag}_NoDelay_motaligned'] = paras
-        # for column_name in ['activity_length', 'peak_location']:
-        #     paras_col = paras[column_name]
-        #     cols = onsets2col(paras_col, chs_sel)
-        #     plot_brain(subjs, chs_sel, cols, None, dotsize=0.3)
-        if get_atlaslabels_from_ecogRecon:
-            atlas2_hist(ch_labels_roi, chs_sel, [0.5, 0.5, 0.5, 0.4],
-                        os.path.join(fig_save_dir,
-                                     f'{groupsTag}-LexNoDelay-{sig_tag}_in_Delay_Resp_{Delayseleted}_{stat_type}-{contrast}_atlas.jpg'),
-                        ylim=[0, 100])
-
-# Summing up key electrodes
-electrode_activity_length_dfs=[]
-electrode_peak_value_dfs=[]
-electrode_rms_value_dfs=[]
-
-# electrode_colorss=[]
-ele_grps=[]
-for sig_idx, sig_tag in zip(
-        (LexDelay_DelayOnly_sig_idx, LexDelay_Auditory_in_Delay_sig_idx, LexDelay_Sensorimotor_in_Delay_sig_idx,
-         LexDelay_Motor_in_Delay_sig_idx),
-        ('DelOnly', 'Auditory_Del', 'SM_Del', 'Motor_Del')
-):
-    # electrode_latency_df = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned'][['first_non_nan_location']]
-    electrode_latency_df = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned'][['activity_length']]
-
-    # Calculate 3 standard deviations for outlier removal
-    # 这种删数据的方法可能会被attack，以后再回来认真看看吧。
-    peak_values = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['peak_value']
-    rms_values = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['sum_value']
-
-    peak_3sd_threshold = peak_values.mean() + 3 * peak_values.std()
-    rms_3sd_threshold = rms_values.mean() + 3 * rms_values.std()
-
-    # Filter for values > 0 and <= 3SD
-    electrode_peak_value_df = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned'][['peak_value']][
-        (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['peak_value'] > 0) &
-        (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['peak_value'] <= peak_3sd_threshold)
-        ]
-    electrode_rms_value_df = DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned'][['rms_value']][
-        (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['rms_value'] > 0) &
-        (DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['rms_value'] <= rms_3sd_threshold)
-        ]
-    # electrode_colors=onsets2col(DelNoDel_Aud_paras[f'{sig_tag}_Delay_stimaligned']['activity_length'],data_LexDelay_Aud.labels[0][list(sig_idx)].tolist())
-    electrode_activity_length_dfs.append(electrode_latency_df)
-    electrode_peak_value_dfs.append(electrode_peak_value_df)
-    electrode_rms_value_dfs.append(electrode_rms_value_df)
-
-    # electrode_colorss.append(electrode_colors)
-    ele_grps.append(sig_tag)
-
-elegroup_strip(electrode_activity_length_dfs, ele_grps,[Delay_col,Auditory_col,Sensorimotor_col,Motor_col],'Accumulated cluster length')
-elegroup_strip(electrode_peak_value_dfs, ele_grps,[Delay_col,Auditory_col,Sensorimotor_col,Motor_col],'Peak of z-scores')
-elegroup_strip(electrode_rms_value_dfs, ele_grps,[Delay_col,Auditory_col,Sensorimotor_col,Motor_col],'Sum of z-scores')
-
 # %% reassign electrode indices by conditions
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
@@ -1234,10 +1009,20 @@ if groupsTag == "LexDelay":
                 ax.set_yticks([])
                 ax.yaxis.set_visible(False) # 禁用整个 Y 轴对象
             else:
-                # 仅在 Stim 图中保留加粗 Y 轴
+                # 老闆要求：Y 軸覆蓋 0, 0.5, 1, 1.5 且在 0 和 1.5 處精確結束
+                y_ticks = [0, 0.5, 1.0, 1.5]
+                ax.set_yticks(y_ticks)
+                
+                # 關鍵：設定軸線 (Spine) 的起止點，不超出刻度
                 ax.spines['left'].set_linewidth(3)
-                ax.set_ylim([-0.2, 1.5])
-                ax.tick_params(axis='y', labelsize=24, length=6, width=2.5)
+                ax.spines['left'].set_bounds(0, 1.5)
+                
+                # 數據顯示範圍稍微寬一點（-0.2），但軸線只顯示到 1.5
+                ax.set_ylim([-0.2, 1.6]) 
+                
+                # 設定刻度字體與格式 (0.0 -> 0, 1.0 -> 1)
+                ax.tick_params(axis='y', labelsize=24, length=6, width=2.5, direction='out')
+                ax.set_yticklabels(['0', '0.5', '1.0', '1.5'], fontweight='bold')
 
             # X 轴刻度设置
             xticks = [0, 0.5, 1.0, 1.5]
