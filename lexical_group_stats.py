@@ -5,9 +5,9 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
+#groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 get_atlaslabels_from_ecogRecon = False # whether get atlas labels for each electrode, which is used for later analysis of the distribution of electrodes in different ROIs. If True, it will take a long time to run the code. So we set it to False after we get the labels and save them in the utils folder.
@@ -2118,15 +2118,26 @@ elif groupsTag=="LexDelay&LexNoDelay":
         ax.spines['bottom'].set_bounds(curr_xlim[0], curr_xlim[1])
         # Y 轴线段：严格限制在 0 到 1 之间
         if ax == ax1:
-            ax.spines['left'].set_bounds(0, 0.5)
+            y_ticks = [0, 0.4, 0.8]
+            ax.set_yticks(y_ticks)
+            
+            # 關鍵：設定軸線 (Spine) 的起止點，不超出刻度
+            ax.spines['left'].set_linewidth(3)
+            ax.spines['left'].set_bounds(0, 0.8)
+            
+            # 設定刻度字體與格式 (0.0 -> 0, 1.0 -> 1)
+            ax.tick_params(axis='y', labelsize=30, length=6, width=2.5, direction='out')
+            ax.set_yticklabels(['0', '0.4', '0.8'])#, fontweight='bold')
         
         # E. 移除 Labels
+        # 數據顯示範圍稍微寬一點（-0.2），但軸線只顯示到 1.5
+        ax.set_ylim([-0.1, 0.9]) 
         ax.set_xlabel(''); ax.set_ylabel(''); ax.set_title('')
         
         # F. 辅助线与刻度样式 (24号字体)
         ax.axvline(x=0, linestyle='--', color='#444444', linewidth=1.5, dashes=(5, 5), zorder=0)
         ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=1, zorder=0)
-        ax.tick_params(axis='both', which='major', labelsize=24, direction='out', length=6, width=3)
+        ax.tick_params(axis='both', which='major', labelsize=30, direction='out', length=6, width=3)
         
         if ax == ax3:
             ax.set_yticklabels([])
@@ -2218,7 +2229,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
     # 2. 確定統一刻度
     all_vals = df_log[cols].values
     vmin, vmax = int(np.floor(all_vals.min())), int(np.ceil(all_vals.max()))
-    ticks = np.arange(-1, 1)
+    ticks = np.arange(-2, 2)
 
     # 3. 設置色彩與分組
     group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
@@ -2231,6 +2242,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
 
     # 4. 繪圖
     sns.set_style("ticks")
+    kde_contour = False
 
     for j, stage in enumerate(['Auditory', 'Motor']):
         
@@ -2251,18 +2263,21 @@ elif groupsTag=="LexDelay&LexNoDelay":
             
             # B. 繪製密度等高線 (KDE Contour) - 這是「錯開」視覺感的關鍵
             # levels=1 表示只畫出最核心的 50% 分佈區域
-            sns.kdeplot(x=x, y=y, ax=ax, color=color, levels=[0.3], 
-                        linewidths=3, alpha=0.95, zorder=2)
+            if kde_contour:
+                sns.kdeplot(x=x, y=y, ax=ax, color=color, levels=[0.3], 
+                            linewidths=3, alpha=0.95, zorder=2)
             
             # C. 散點圖 - 設置極高透明度，僅作為背景支撐
             sns.scatterplot(x=x, y=y, color=color, alpha=0.4, s=60, 
                             edgecolor='none', ax=ax, zorder=2)
         
         # 5. 坐標軸美化
-        ax.set_xlim(-2, vmax)
-        ax.set_ylim(-2, vmax)
+        ax.set_xlim(-2.1, 1.1)
+        ax.set_ylim(-2.1, 1.1)
         ax.set_xticks(ticks)
         ax.set_yticks(ticks)
+        ax.set_yticklabels(['-2.0', '-1.0', '0', '1.0'], fontweight='bold')
+        ax.set_xticklabels(['-2.0', '-1.0', '0', '1.0'], fontweight='bold')
         
         # 根據你的要求：不顯示 xtick labels
         #ax.set_xticklabels([])
@@ -2275,7 +2290,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
         ax.spines['bottom'].set_linewidth(5) # 底部軸線
         ax.spines['bottom'].set_bounds(ticks[0], ticks[-1])
         sns.despine(ax=ax, offset=10, trim=True)
-        ax.tick_params(axis='both', which='major',labelsize=40, direction='out')
+        ax.tick_params(axis='both', which='major',labelsize=40, length=6, width=3, direction='out')
 
 
         plt.tight_layout()
@@ -2285,14 +2300,18 @@ elif groupsTag=="LexDelay&LexNoDelay":
     #plt.show()
 
     # ==========================================
-    # 5. R-squared Analysis & Statistical Comparison
+    # 5. R-squared Analysis (FDR Corrected & Visual Floor)
     # ==========================================
     from sklearn.utils import resample
+    from statsmodels.stats.multitest import multipletests # 需要安裝 statsmodels
 
-    # --- 參數設置 ---
-    n_bootstrap = 1000  # Bootstrap 次數
-    group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
+    # --- 1. 參數與顏色設置 ---
+    n_bootstrap = 1000
+    visual_floor = 0.02  # 均值小於 0.02 的用 0.02 代替
+    group_order = ['All_Groups', 'Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
+
     color_map = {
+        'All_Groups': '#777777', 
         'Auditory_vWM': Auditory_col,
         'Sensory-motor_vWM': Sensorimotor_col,
         'Motor_vWM': Motor_col,
@@ -2305,21 +2324,24 @@ elif groupsTag=="LexDelay&LexNoDelay":
         if p < 0.05: return '*'
         return ''
 
-    # 儲存結果
+    # --- 2. 數據計算 (收集所有 p 值用於 FDR) ---
     results_list = []
 
     for stage in ['Auditory', 'Motor']:
         x_col, y_col = f'{stage}_NoDelay', f'{stage}_Delay'
         
         for g_name in group_order:
-            g_data = df_log[df_log['Group'] == g_name]
+            if g_name == 'All_Groups':
+                g_data = df_log.copy()
+            else:
+                g_data = df_log[df_log['Group'] == g_name]
+            
             if len(g_data) < 3: continue
             
-            # 1. 原始線性回歸
+            # 原始線性回歸
             slope, intercept, r_val, p_val, _ = stats.linregress(g_data[x_col], g_data[y_col])
-            r_sq = r_val**2
             
-            # 2. Bootstrap 獲取 R^2 的置信區間和分佈 (用於後續統計檢驗)
+            # Bootstrap 獲取 SEM
             boot_r2 = []
             for _ in range(n_bootstrap):
                 boot_sample = resample(g_data, replace=True)
@@ -2329,164 +2351,193 @@ elif groupsTag=="LexDelay&LexNoDelay":
             results_list.append({
                 'Stage': stage,
                 'Group': g_name,
-                'R2': r_sq,
-                'P_val': p_val,
-                'Boot_R2': boot_r2,
+                'R2': r_val**2,
+                'P_val': p_val, # 原始 p 值
                 'SEM': np.std(boot_r2)
             })
 
-    # 轉化為 DataFrame 方便繪圖
     df_res = pd.DataFrame(results_list)
 
-    # --- 繪製 R-squared Bar Plot ---
+    # --- 3. FDR 多重比較矯正 ---
+    # 這裡對所有計算出的 p 值進行統一矯正 (也可以按 Stage 分開矯正，通常統一矯正更嚴謹)
+    reject, pvals_corrected, _, _ = multipletests(df_res['P_val'], alpha=0.05, method='fdr_bh')
+    df_res['P_corrected'] = pvals_corrected
+
+    # --- 4. 繪圖 (與你之前的風格完美對齊) ---
     sns.set_style("ticks")
     for stage in ['Auditory', 'Motor']:
         fig, ax = plt.subplots(figsize=(8, 8))
+        stage_df = df_res[df_res['Stage'] == stage].copy()
         
-        stage_df = df_res[df_res['Stage'] == stage]
+        # 應用 Visual Floor: 均值小於 0.02 的用 0.02 代替
+        stage_df['R2_Visual'] = stage_df['R2'].apply(lambda x: max(x, visual_floor))
         
-        # 畫 Bar 圖
-        bars = sns.barplot(data=stage_df, x='Group', y='R2', palette=color_map, 
-                        order=group_order, ax=ax, edgecolor='none', alpha=0.9, linewidth=3)
+        # 畫 Bar 圖 (使用 R2_Visual)
+        bars = sns.barplot(data=stage_df, x='Group', y='R2_Visual', palette=color_map, 
+                            order=group_order, ax=ax, edgecolor='none', alpha=0.9)
         
-        # 加上誤差棒 (來自 Bootstrap 的標準差)
-        #ax.errorbar(x=range(len(group_order)), y=stage_df['R2'], 
-                    #yerr=stage_df['SEM'], fmt='none', c='k', capsize=10, elinewidth=3)
+        # 加上誤差棒 (保持在真實的 R2 位置)
+        ax.errorbar(x=range(len(group_order)), y=stage_df['R2'], yerr=stage_df['SEM'], 
+                    fmt='none', c='k', capsize=0, elinewidth=4, zorder=3)
 
-        # 標註回歸本身的顯著性星號 (是否顯著不為 0)
+        # 標註 FDR 矯正後的星號
         for i, g_name in enumerate(group_order):
+            if g_name not in stage_df['Group'].values: continue
             row = stage_df[stage_df['Group'] == g_name].iloc[0]
-            star = get_stars(row['P_val'])
-            ax.text(i, row['R2'] + row['SEM'] + 0.02, star, ha='center', fontsize=80, fontweight='bold')
+            star = get_stars(row['P_corrected']) # 使用矯正後的 p 值
+            if star:
+                # 標註位置考慮到 Visual Floor 和 SEM
+                text_y = max(row['R2'], visual_floor) + row['SEM'] + 0.02
+                ax.text(i, text_y, star, ha='center', va='bottom', fontsize=80, fontweight='bold')
 
-        # 座標軸美化 (延續你的硬核風格)
-        ax.set_ylim(-0, 0.8)
-        ax.set_yticks([0, 0.5])
-        ax.set_yticklabels(['0', '0.5'], fontsize=80, fontweight='bold')
-        ax.set_xticklabels([]) # 依你要求隱藏，若需顯示可註釋掉
+        # --- 5. 座標軸硬核美化 ---
+        ax.set_ylim(0, 1.1)
+        ax.set_yticks([0, 0.5,1.0])
+        ax.set_yticklabels(['0', '0.5', '1.0'], fontsize=80, fontweight='bold')
+        ax.set_xticklabels([])
+        ax.set_ylabel('')
+        ax.set_xlabel('')
         
         ax.spines['left'].set_linewidth(12)
         ax.spines['bottom'].set_linewidth(12)
-        ax.spines['left'].set_bounds(0, 1.0)
-        ax.spines['bottom'].set_bounds(0, 3)
+        ax.spines['left'].set_bounds(0, 0.5)
+        ax.spines['bottom'].set_bounds(0, 4)
         
-        ax.set_ylabel('')
-        ax.set_xlabel('')
-        sns.despine(offset=15, trim=True)
-        ax.tick_params(axis='both', width=4, length=12,labelsize=80)
+        ax.tick_params(axis='both', width=4, length=12, labelsize=80)
+        sns.despine(ax=ax, offset=15, trim=True)
 
         save_path = os.path.join(manuscript_save_dir, '..', 'Fig4', f"R2_Bar_{stage}.svg")
-        plt.savefig(save_path, format='svg', bbox_inches='tight',transparent=True,)
+        plt.savefig(save_path, format='svg', bbox_inches='tight', transparent=True)
         plt.show()
 
-
-    # --- 統計檢驗：R^2 之間的組間比較 (Bootstrap 檢驗) ---
-    print("\n--- R-squared Group Comparison (Bootstrap Test) ---")
-    for stage in ['Auditory', 'Motor']:
-        print(f"\nStage: {stage}")
-        # 舉例：比較 Sensorimotor vs Auditory
-        sm_r2 = np.array(df_res[(df_res['Stage'] == stage) & (df_res['Group'] == 'Sensory-motor_vWM')]['Boot_R2'].iloc[0])
-        au_r2 = np.array(df_res[(df_res['Stage'] == stage) & (df_res['Group'] == 'Auditory_vWM')]['Boot_R2'].iloc[0])
-        
-        # 計算 p 值：Sensorimotor R2 大於 Auditory R2 的概率
-        p_comp = np.mean(sm_r2 <= au_r2) 
-        print(f"Sensory-motor vs Auditory: p = {p_comp:.4f}")
-
-
-# ==========================================
-# 6. Sign Test Plot for Delay vs NoDelay
-# ==========================================
+    # ==========================================
+    # 6. Sign Test Plot for Delay vs NoDelay
+    # ==========================================
 
     import matplotlib.pyplot as plt
     import seaborn as sns
     import numpy as np
     import pandas as pd
     from scipy.stats import binomtest
+    from statsmodels.stats.multitest import multipletests
     import os
 
+    # --- 1. 數據預處理：計算 Diff 列 ---
+    df_plot = df_log.copy()
+
+    # 核心計算：Diff = Delay - NoDelay (在 log 空間中這代表了比例變化)
+    for stage in ['Auditory', 'Motor']:
+        delay_col = f'{stage}_Delay'
+        nodelay_col = f'{stage}_NoDelay'
+        diff_col = f'{stage}_Diff'
+        
+        if delay_col in df_plot.columns and nodelay_col in df_plot.columns:
+            df_plot[diff_col] = df_plot[delay_col] - df_plot[nodelay_col]
+            print(f"Successfully calculated {diff_col}")
+        else:
+            print(f"Error: Missing columns for {stage} calculation!")
+
+    # --- 2. 基礎參數設置 ---
     group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
-    df_plot=df_log.copy()
+    color_map = {
+        'Auditory_vWM': Auditory_col,
+        'Sensory-motor_vWM': Sensorimotor_col,
+        'Motor_vWM': Motor_col,
+        'Delay-only_vWM': Delay_col
+    }
 
+    # --- 3. 預計算統計結果並執行全局 FDR 矯正 ---
+    stats_results = []
+    stages = ['Auditory', 'Motor']
 
-    # --- 2. 核心繪圖函數 ---
-    def plot_vwm_sign_test_standardized(stage_name):
+    for stage in stages:
+        diff_col = f'{stage}_Diff'
+        for g_name in group_order:
+            group_diffs = df_plot[df_plot['Group'] == g_name][diff_col].dropna()
+            
+            if len(group_diffs) == 0:
+                p_raw = 1.0
+            else:
+                n_above = np.sum(group_diffs > 0)
+                n_total = len(group_diffs)
+                # Sign Test (二項檢驗)：檢驗中位數是否顯著偏離 0
+                res = binomtest(n_above, n_total, p=0.5, alternative='two-sided')
+                p_raw = res.pvalue
+            
+            stats_results.append({
+                'Stage': stage,
+                'Group': g_name,
+                'P_raw': p_raw
+            })
+
+    df_stats = pd.DataFrame(stats_results)
+
+    # 執行全局 FDR 矯正 (針對 8 個檢驗)
+    _, p_fdr, _, _ = multipletests(df_stats['P_raw'], alpha=0.05, method='fdr_bh')
+    df_stats['P_fdr'] = p_fdr
+
+    # --- 4. 核心繪圖函數 ---
+    def plot_vwm_sign_test_fdr_final(stage_name):
+        plt.rcParams['font.sans-serif'] = ['Arial']
+        plt.rcParams['pdf.fonttype'] = 42
         sns.set_style("ticks")
+        
         fig, ax = plt.subplots(figsize=(12, 10))
+        fig.patch.set_facecolor('none')
+        ax.set_facecolor('none')
         
         diff_col = f'{stage_name}_Diff'
         current_df = df_plot[df_plot['Group'].isin(group_order)].copy()
+        current_stats = df_stats[df_stats['Stage'] == stage_name]
         
         # A. Boxplot
         sns.boxplot(data=current_df, x='Group', y=diff_col, order=group_order, 
-                    whis=[5, 95], showfliers=False, width=0.3,
+                    whis=[5, 95], showfliers=False, width=0.35,
                     palette=color_map, 
-                    boxprops=dict(alpha=0.15, linewidth=2), 
-                    medianprops=dict(linewidth=5), # 中位數加粗以匹配大座標軸
+                    boxprops=dict(alpha=0.2, linewidth=2), 
+                    medianprops=dict(linewidth=10, color='k'), 
                     ax=ax)
         
         # B. Stripplot
         sns.stripplot(data=current_df, x='Group', y=diff_col, order=group_order,
-                    palette=color_map, alpha=0.5, s=12, jitter=0.25, ax=ax)
+                    palette=color_map, alpha=0.5, s=16, jitter=0.25, ax=ax, edgecolor='none')
 
         # C. y=0 基準線
-        ax.axhline(0, color='#333333', linestyle='--', linewidth=2, alpha=0.7)
+        ax.axhline(0, color='#333333', linestyle='--', linewidth=3, alpha=0.6, zorder=0)
         
-        # --- 關鍵修正：統一 Y 軸 Ticks 與範圍 ---
-        y_min_fixed, y_max_fixed = -1.5, 1.5
-        y_ticks = np.arange(-1, 1.1, 1) # -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5
-        ax.set_ylim(y_min_fixed, y_max_fixed)
+        # D. 坐標軸美化
+        ax.set_ylim(-1.6, 1.5)
+        y_ticks = [-1.5, -1.0, -0.5, 0.0, 0.5, 1.0]
         ax.set_yticks(y_ticks)
-        # 設定 Y 軸 Label 字體為 30
-        ax.set_yticklabels([f'{y:.1f}' for y in y_ticks], fontsize=40)
+        ax.set_yticklabels(['-1.5','-1.0', '-0.5', '0', '0.5', '1.0'], fontsize=60, fontweight='bold')
         
-        # D. Sign Test 統計與標註 (動態調整位置以適應固定量程)
+        # E. 標註 FDR 矯正星號
         for i, g_name in enumerate(group_order):
-            group_diffs = current_df[current_df['Group'] == g_name][diff_col].dropna()
-            if len(group_diffs) == 0: continue
+            p_corrected = current_stats[current_stats['Group'] == g_name]['P_fdr'].values[0]
+            stars = '***' if p_corrected < 0.001 else '**' if p_corrected < 0.01 else '*' if p_corrected < 0.05 else ''
             
-            n_above = np.sum(group_diffs > 0)
-            n_total = len(group_diffs)
-            res = binomtest(n_above, n_total, p=0.5, alternative='two-sided')
-            p_val = res.pvalue
-            
-            stars = '***' if p_val < 0.001 else '**' if p_val < 0.01 else '*' if p_val < 0.05 else ''
-            
-            # 星號標註在固定範圍的高處
-            ax.text(i, 1.2, stars, ha='center', va='bottom',
-                    fontsize=40, fontweight='bold', color='k')
+            if stars:
+                ax.text(i, 1.25, stars, ha='center', va='bottom', fontsize=70, fontweight='bold', color='k')
 
-        # --- 視覺優化：6pt 粗軸與 Tufte 截斷 ---
+        # F. 10pt 粗軸與 Tufte 樣式
         ax.spines['left'].set_linewidth(8)
         ax.spines['bottom'].set_linewidth(8)
-        
-        # 軸線絕對不超過 -1.5 和 1.5
-        ax.spines['left'].set_bounds(-1.5, 1.5)
+        ax.spines['left'].set_bounds(-1.0, 1.0)
         ax.spines['bottom'].set_bounds(0, len(group_order)-1)
         
-        # 設置刻度線參數
-        # 隱藏 X 軸標籤 (根據之前需求)
         ax.set_xticklabels([])
+        ax.set_xlabel(''); ax.set_ylabel(''); ax.set_title('')
+        ax.tick_params(axis='both', which='major', width=4, length=6, labelsize=60,direction='out', pad=15)
         
-        # 清除其餘標籤
-        ax.set_xlabel('')
-        ax.set_ylabel('')
-        ax.set_title('')
-        ax.tick_params(axis='both', which='major', labelsize=60,width=6, length=12, direction='out')
-        
-        # 移除頂部和右側
-        sns.despine(ax=ax, offset=20, trim=True)
-        
-        plt.tight_layout()
+        sns.despine(ax=ax, offset=25, trim=True)
         
         # 保存 SVG
         save_dir = os.path.join(manuscript_save_dir, '..', 'Fig4')
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-            
-        save_path = os.path.join(save_dir, f"Sign_test_{stage_name}.svg")
-        plt.savefig(save_path, format='svg', bbox_inches='tight')
-        plt.close()
+        if not os.path.exists(save_dir): os.makedirs(save_dir)
+        save_path = os.path.join(save_dir, f"Sign_Test_{stage_name}.svg")
+        plt.savefig(save_path, format='svg', bbox_inches='tight', transparent=True)
+        plt.show()
 
-    # --- 3. 執行繪圖 ---
-    plot_vwm_sign_test_standardized('Auditory')
-    plot_vwm_sign_test_standardized('Motor')
+    # --- 5. 執行 ---
+    plot_vwm_sign_test_fdr_final('Auditory')
+    plot_vwm_sign_test_fdr_final('Motor')
