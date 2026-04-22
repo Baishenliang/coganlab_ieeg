@@ -5,9 +5,9 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
+groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 get_atlaslabels_from_ecogRecon = False # whether get atlas labels for each electrode, which is used for later analysis of the distribution of electrodes in different ROIs. If True, it will take a long time to run the code. So we set it to False after we get the labels and save them in the utils folder.
@@ -1193,9 +1193,9 @@ if groupsTag == "LexDelay":
     Waveplot_wth=5 # Width of wave plots
     Waveplot_hgt=4 # Height of wave plots
     for Hickok_roi_gp, col, tag in zip(
-            (Spt_sig_idx, lPMC_sig_idx, lIFG_sig_idx,Wgw_p55b_sig_idx,Wgw_a55b_sig_idx),
-            (Auditory_col, Sensorimotor_col, Motor_col,WGW_p55b_col,WGW_a55b_col),
-            ('Spt', 'lPMC (dPCSA)', 'lIFG (vPCSA)','posterior 55b','anterior 55b')
+            (Spt_sig_idx, lPMC_sig_idx, lIFG_sig_idx),#,Wgw_p55b_sig_idx,Wgw_a55b_sig_idx),
+            (Auditory_col, Sensorimotor_col, Motor_col),#,WGW_p55b_col,WGW_a55b_col),
+            ('Spt', 'lPMC (dPCSA)', 'lIFG (vPCSA)')#,'posterior 55b','anterior 55b')
     ):
 
         if Hickok_roi_gp:
@@ -1207,11 +1207,11 @@ if groupsTag == "LexDelay":
 
 
             for data_epoch,epoc_epoch,wav_fig_size,wav_x_lim,epoch_tag in zip(
-                    (data_LexDelay_Resp,data_LexDelay_Aud,data_LexDelay_Go,data_LexDelay_Cue),
-                    (epoc_LexDelay_Resp,epoc_LexDelay_Aud,epoc_LexDelay_Go,epoc_LexDelay_Cue),
-                    ((Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt)),
-                    ([-0.5, 1.5],[-0.5, 1.5],[-0.5, 1.5],[-0.5, 1.5]),
-                    ('Resp','Stim','Go','Cue')
+                    (data_LexDelay_Resp,data_LexDelay_Aud,data_LexDelay_Go),#data_LexDelay_Cue),
+                    (epoc_LexDelay_Resp,epoc_LexDelay_Aud,epoc_LexDelay_Go),#epoc_LexDelay_Cue),
+                    ((Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt),(Waveplot_wth, Waveplot_hgt)),#,(Waveplot_wth, Waveplot_hgt)),
+                    ([-0.5, 1.5],[-0.5, 1.5],[-0.5, 1.5]),#,[-0.5, 1.5]),
+                    ('Resp','Stim','Go'),#,'Cue')
             ):
 
                 # for testing:
@@ -1231,28 +1231,29 @@ if groupsTag == "LexDelay":
                 # Export 
                 # %%
                 
-                for Hickok_ROI_data_type, Hickok_ROI_data_type_tag in zip(
-                    (Hickok_ROI_data, Hickok_ROI_epoch),
-                    ('mask','epoch')
-                ):
-                    # Create directory if it doesn't exist
-                    output_dir = os.path.join("projects", "Greg_ROIs", f"{tag}")
-                    os.makedirs(output_dir, exist_ok=True)
+                if epoch_tag != 'Cue': # No need to export Cue data
+                    for Hickok_ROI_data_type, Hickok_ROI_data_type_tag in zip(
+                        (Hickok_ROI_data, Hickok_ROI_epoch),
+                        ('mask','epoch')
+                    ):
+                        # Create directory if it doesn't exist
+                        output_dir = os.path.join("projects", "Greg_ROIs", f"{tag}")
+                        os.makedirs(output_dir, exist_ok=True)
 
-                    Hickok_ROI_data_type_dict = Hickok_ROI_data_type.to_dict()
-                    Hickok_ROI_data_type_frame = pd.DataFrame(Hickok_ROI_data_type_dict)
+                        Hickok_ROI_data_type_dict = Hickok_ROI_data_type.to_dict()
+                        Hickok_ROI_data_type_frame = pd.DataFrame(Hickok_ROI_data_type_dict)
 
-                    Hickok_ROI_data_type_frame.columns = Hickok_ROI_data_type_frame.columns.astype(str).str.replace("#", "", regex=False)
-                    Hickok_ROI_data_type_frame.index = Hickok_ROI_data_type_frame.index.astype(str).str.replace("#", "", regex=False)
+                        Hickok_ROI_data_type_frame.columns = Hickok_ROI_data_type_frame.columns.astype(str).str.replace("#", "", regex=False)
+                        Hickok_ROI_data_type_frame.index = Hickok_ROI_data_type_frame.index.astype(str).str.replace("#", "", regex=False)
 
 
-                    Hickok_rawdata_save_dir = os.path.join("projects", "Greg_ROIs", f"{tag}")
-                    os.makedirs(Hickok_rawdata_save_dir, exist_ok=True)
+                        Hickok_rawdata_save_dir = os.path.join("projects", "Greg_ROIs", f"{tag}")
+                        os.makedirs(Hickok_rawdata_save_dir, exist_ok=True)
 
-                    Hickok_ROI_data_type_frame.to_csv(
-                        os.path.join(Hickok_rawdata_save_dir, f"{tag}_{epoch_tag}_{Hickok_ROI_data_type_tag}.csv"),
-                        index=True
-                    )
+                        Hickok_ROI_data_type_frame.to_csv(
+                            os.path.join(Hickok_rawdata_save_dir, f"{tag}_{epoch_tag}_{Hickok_ROI_data_type_tag}.csv"),
+                            index=True
+                        )
 
                 if epoch_tag == 'Resp':
                     _, _, Hickok_ROI_epoch_sort_idx, _,_,Hickok_ROI_epoch_sort_paras_tab = sort_chs_by_actonset(Hickok_ROI_data,
