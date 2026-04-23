@@ -2745,24 +2745,54 @@ def read_sex_age_and_stats(
     subject_ids: List[str],
     xlsx_path: str
 ) -> Dict:
-
     subjects = {}
     ages = []
     n_female = 0
     today = date.today()
 
     for sid in subject_ids:
+        # --- A. 嘗試讀取 Excel 以獲取實驗日期 (Experiment Date) ---
+        sheet_candidates = [sid, normalize_subject_id(sid)]
+        df = None
+        exp_date = None
+
+        for sheet_name in dict.fromkeys(sheet_candidates):
+            try:
+                df = pd.read_excel(xlsx_path, sheet_name=sheet_name, engine="openpyxl")
+                break
+            except Exception:
+                continue
+
+        # 邏輯：在第一列搜尋 'lexical'，提取第二列的 YYMMDD
+        if df is not None:
+            try:
+                # 搜尋第一列 (index 0) 是否包含 'lexical'
+                mask = df.iloc[:, 0].astype(str).str.contains('lexical', case=False, na=False)
+                if mask.any():
+                    row_idx = mask.idxmax() # 找到第一個匹配的行索引
+                    # 獲取第二列 (index 1) 的日期字符串，例如 '190316'
+                    exp_date_str = str(df.iloc[row_idx, 1]).strip()
+                    # %y 匹配兩位數年份 (19 -> 2019)
+                    exp_date = datetime.strptime(exp_date_str, "%y%m%d").date()
+            except Exception as e:
+                print(f"[Info] Could not parse experiment date for {sid}, fallback to today: {e}")
+
+        # 如果沒找到實驗日期，則使用今天 (保持程序魯棒性)
+        reference_date = exp_date if exp_date else today
 
         # ----------------------------------------------------------
-        # 1. Hard-coded manual override (highest priority)
+        # 1. Hard-coded manual override (使用 reference_date)
         # ----------------------------------------------------------
         if normalize_subject_id(sid) in MANUAL_DEMOGRAPHICS:
             sex = MANUAL_DEMOGRAPHICS[normalize_subject_id(sid)]["sex"]
             dob_raw = MANUAL_DEMOGRAPHICS[normalize_subject_id(sid)]["dob_raw"]
             dob = datetime.strptime(dob_raw, "%Y%m%d").date()
-            age = today.year - dob.year - (
-                (today.month, today.day) < (dob.month, dob.day)
+            
+            # 使用實驗日期或今日日期減去出生日期
+            age = reference_date.year - dob.year - (
+                (reference_date.month, reference_date.day) < (dob.month, dob.day)
             )
+            
             subjects[sid] = {"sex": sex, "age": age}
             ages.append(age)
             if sex == "F":
@@ -2772,38 +2802,24 @@ def read_sex_age_and_stats(
         # ----------------------------------------------------------
         # 2. Automatic Excel-based reading
         # ----------------------------------------------------------
-        sheet_candidates = [sid, normalize_subject_id(sid)]
-        df = None
-
-        for sheet_name in dict.fromkeys(sheet_candidates):
-            try:
-                df = pd.read_excel(
-                    xlsx_path,
-                    sheet_name=sheet_name,
-                    engine="openpyxl"
-                )
-                break
-            except Exception:
-                continue
-
         try:
             if df is None:
-                raise FileNotFoundError("No matching worksheet")
+                raise FileNotFoundError("No matching worksheet found")
 
             dob_col = find_column_by_keyword(df.columns, "dob")
             sex_col = find_column_by_keyword(df.columns, "sex")
 
             if dob_col is None or sex_col is None:
-                raise ValueError("Required columns not found")
+                raise ValueError("Required columns (dob/sex) not found in header")
 
             row = df.iloc[0]
-
             sex = str(row[sex_col]).strip().upper()
             dob_raw = str(row[dob_col])
             dob = datetime.strptime(dob_raw, "%Y%m%d").date()
 
-            age = today.year - dob.year - (
-                (today.month, today.day) < (dob.month, dob.day)
+            # 使用實驗日期減去出生日期
+            age = reference_date.year - dob.year - (
+                (reference_date.month, reference_date.day) < (dob.month, dob.day)
             )
 
             subjects[sid] = {"sex": sex, "age": age}
@@ -2816,7 +2832,7 @@ def read_sex_age_and_stats(
             print(f"[Warning] Failed to process subject {sid}: {e}")
 
     # ----------------------------------------------------------
-    # Summary statistics
+    # Summary statistics (保持不變)
     # ----------------------------------------------------------
     n_total = len(ages)
     age_mean = sum(ages) // n_total if n_total > 0 else None
