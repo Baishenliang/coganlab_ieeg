@@ -87,8 +87,8 @@ vWM_lambda = '0.001'
 mean_word_len=0.65#0.65 # from utils/lexdelay_get_stim_length.m
 
 # Experiment Iterators
-opts_yn = ['_forSilence','_yn']#,'', '_yn','_forSilence'
-opts_yn_base = ['_forSilence','']#,'', '_yn','_forSilence'
+opts_yn = ['_yn']#,'', '_yn','_forSilence'
+opts_yn_base = ['']#,'', '_yn','_forSilence'
 opts_huge = ['onlysem',""] # 可以修改为 ['_huge', 'onlysem', 'onlysemproxy'] 等
 
 # Time Windows definition
@@ -109,9 +109,9 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
         ('Auditory', Auditory_col, unified_y_scale),
         ('Sensorymotor', Sensorimotor_col, unified_y_scale),
         ('Motor', Motor_col, unified_y_scale),
-        ('Delay_only', Delay_col, unified_y_scale),
-        ('Wgw_p55b', WGW_p55b_col, unified_y_scale),
-        ('Wgw_a55b', WGW_a55b_col, unified_y_scale)
+        ('Delay_only', Delay_col, unified_y_scale)
+        # ('Wgw_p55b', WGW_p55b_col, unified_y_scale),
+        # ('Wgw_a55b', WGW_a55b_col, unified_y_scale)
     ]
 
     # Define Alignments (Columns)
@@ -154,7 +154,8 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
 
                 for is_huge_opt in opts_huge:
                     current_is_huge = is_huge_opt
-                    if is_yn == '_forSilence' and is_huge_opt == 'onlysem':
+                    #if is_yn == '_forSilence' and is_huge_opt == 'onlysem':
+                    if is_huge_opt == 'onlysem':
                         current_is_huge = '_onlysem'
 
                     filename = f"results/{delay_nodelay_target}_{elec_grp}_{alignment}_All{is_yn}{current_is_huge}_testλ_{vWM_lambda}.csv"

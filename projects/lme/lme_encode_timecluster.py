@@ -233,7 +233,7 @@ mode = 'time_cluster'
 
 # 定义所有要画的电极组及其对应参数
 opts_yn = ['', '_yn']#,'', '_yn','_forSilence'
-opts_huge = ['','onlysem']#'onlysemproxy', '_huge', 'onlysem']
+opts_huge = ['','_onlysem']#'onlysemproxy', '_huge', 'onlysem']
 delay_nodelays = ["LexDelayRep",] #"LexDelay","LexNoDelay","LexDelayRep"
 
 for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_nodelays):
@@ -248,7 +248,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         case '_huge':
             unified_y_scale = 2   # [请调节] _huge
         case '':
-            unified_y_scale = 0.3   # [请调节] 默认值 (类似 else)
+            unified_y_scale = 0.5   # [请调节] 默认值 (类似 else)
 
     # --- 定义所有要画的电极组 (使用统一的 Scale) ---
     all_elec_configs = [
@@ -584,7 +584,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                         # Stats
                         raw_fea = raw_fea[['perm', 'time_point', 'rms']]
                         # For max:
-                        pthres = [1e-2, 2.5e-2]
+                        pthres = [0.1e-2, 0.25e-2]
                         # For average:
                         # pthres = [2e-3, 5e-2]
                         _, _, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1], mode=mode, target_fea='rms', input='R2')
