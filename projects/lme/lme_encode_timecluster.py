@@ -156,7 +156,7 @@ def get_traces_clus(raw, alpha:float=0.05, alpha_clus:float=0.05, mode:str='time
 
     return time_point, r2_i_full, stat_out_full
 
-def add_alignment_vlines(ax, alignment, lower_bound=0, upper_bound=0.25):
+def add_alignment_vlines(ax, alignment, lower_bound=-0.25, upper_bound=0.5):
     """
     为 matplotlib Axes 对象添加特定事件标记的垂直线段。
     
@@ -421,7 +421,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
     # 2. 绘制 Beta (Feature) 和 RMS 大图
     # =============================================================================
     print("Starting Beta and RMS Big Plots...")
-    Fig_dir = 'Fig6' #'Fig5'
+    Fig_dir = 'Fig5' #'Fig5'
     group_beta_type = 'max' # 'rms' or 'max' or 'avg'
     match is_huge:
         case '_onlysem':
@@ -472,7 +472,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         
         # 1. RMS 画布
         fig_rms, axes_rms = plt.subplots(n_rows, n_cols, 
-                                        figsize=(5 * n_cols, 5 * n_rows), 
+                                        figsize=(5 * n_cols, 3 * n_rows), 
                                         sharey=True)
         if n_cols == 1: axes_rms = [axes_rms]
         
@@ -584,7 +584,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                         # Stats
                         raw_fea = raw_fea[['perm', 'time_point', 'rms']]
                         # For max:
-                        pthres = [0.1e-2, 0.25e-2]
+                        pthres = [0.1e-20, 0.25e-2]
                         # For average:
                         # pthres = [2e-3, 5e-2]
                         _, _, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1], mode=mode, target_fea='rms', input='R2')
@@ -636,14 +636,18 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                     j_sig = 0
                     for beta_fea, rms_series in all_rms_data.items():
                         # ... (数值计算与平滑部分保持不变) ...
-                        rms_series = gaussian_filter1d(rms_series, sigma=4, mode='nearest')
+                        #rms_series = gaussian_filter1d(rms_series, sigma=4, mode='nearest')
+                        if is_normalize:
+                            baseline_mask = (rms_series.index >= -0.6) & (rms_series.index < 0)
+                            baseline_mean = rms_series[baseline_mask].mean()
+                            rms_series_corrected = rms_series - baseline_mean
                         color = feature_colors.get(beta_fea, '#333333')
                         linestyle = '--' if ':' in beta_fea else '-'
                         plot_label = feature_tags.get(beta_fea, beta_fea)
                         
                         # 2. 主线条绘制
                         if beta_fea != 'pho_gain':
-                            ax_r.plot(time_points_plot, rms_series, linewidth=2.5, 
+                            ax_r.plot(time_points_plot, rms_series_corrected, linewidth=2.5, 
                                     color=color, linestyle=linestyle, alpha=0.9, 
                                     solid_capstyle='round', zorder=2)
                         
@@ -670,7 +674,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
 
                     # 1. 基础参数与范围 (先设范围，防止 trim 误删)
                     ax_r.set_xlim(xlim_align)
-                    curr_ylim = [-0.05 * fea_plot_yscale, fea_plot_yscale * 1.1]
+                    curr_ylim = [-0.26 * fea_plot_yscale, fea_plot_yscale * 1.1]
                     ax_r.set_ylim(curr_ylim)
 
                     # 2. 显式控制 Y 轴可见性
@@ -699,13 +703,16 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                     if col_idx == 0:
                         ax_r.spines['left'].set_linewidth(3)
                         #ax_r.spines['left'].set_bounds(0,0.75)
-                        ax_r.spines['left'].set_bounds(0, fea_plot_yscale)
+                        ax_r.spines['left'].set_bounds(-0.25, fea_plot_yscale)
 
                     # 6. X 轴刻度步长与 0 刻度美化
                     xticks = [0, 0.5, 1.0, 1.5]
+                    yticks = [-0.25, 0.0, 0.25, 0.5]
                     xticks = [t for t in xticks if xlim_align[0] <= t <= xlim_align[1]]
                     ax_r.set_xticks(xticks)
                     ax_r.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.1f'))
+                    ax_r.set_yticks(yticks)
+                    ax_r.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
 
                     # 执行渲染并优化 0.0 -> 0
                     plt.draw()
@@ -734,9 +741,10 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         plt.tight_layout()
 
         # 保存设置
-        save_dir_rms = os.path.join('figs', 'publication_quality_plots')
-        os.makedirs(save_dir_rms, exist_ok=True)
-        save_name_rms = os.path.join(save_dir_rms, f'RMS_Dynamics_vWM_{vWM_lambda}.svg')
+        #save_dir_rms = os.path.join('figs', 'publication_quality_plots')
+        manuscript_save_dir = rf"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements\{Fig_dir}"
+        os.makedirs(manuscript_save_dir, exist_ok=True)
+        save_name_rms = os.path.join(manuscript_save_dir, f'results.svg')
         plt.savefig(save_name_rms, dpi=300) 
         plt.show()
         #plt.close(fig_rms)

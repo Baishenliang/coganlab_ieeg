@@ -1,6 +1,7 @@
 #%% Imports and Setup
 import os
 import sys
+from unittest import case
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,16 +12,6 @@ script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\
 current_dir = os.getcwd()
 if current_dir != script_dir:
     os.chdir(script_dir)
-
-# --- Configuration ---
-# 设置字体和绘图风格
-font_scale = 2
-plt.rcParams['font.size'] = 14 * font_scale
-plt.rcParams['axes.titlesize'] = 16 * font_scale
-plt.rcParams['axes.labelsize'] = 14 * font_scale
-plt.rcParams['xtick.labelsize'] = 12 * font_scale
-plt.rcParams['ytick.labelsize'] = 12 * font_scale
-plt.rcParams['legend.fontsize'] = 12 * font_scale
 
 # --- Colors ---
 MotorPrep_col = [1.0, 0.0784, 0.5765]
@@ -87,22 +78,46 @@ vWM_lambda = '0.001'
 mean_word_len=0.65#0.65 # from utils/lexdelay_get_stim_length.m
 
 # Experiment Iterators
-opts_yn = ['_yn']#,'', '_yn','_forSilence'
-opts_yn_base = ['']#,'', '_yn','_forSilence'
+Fig_dirs = ['Fig5','Fig6','Fig7'] # 可以根据需要修改为 ['Fig5', 'Fig6'] 或其他目录
+opts_yn = ['','','_yn']#,'', '_yn','_forSilence'
+opts_yn_base = [None,None,'']#,'', '_yn','_forSilence'
 opts_huge = ['onlysem',""] # 可以修改为 ['_huge', 'onlysem', 'onlysemproxy'] 等
 
 # Time Windows definition
 time_windows = [
-    (0.55, 0.75), (0.75, 0.95),
+    (0.55, 0.75), (0.75, 0.95), (0.95, 1.15),(0.55, 1.15),(1.15, 1.35),(1.35, 1.55)
 ]
-time_labels = ["0.55-0.75", "0.75-0.95"]
+time_labels = ["0.55-0.75", "0.75-0.95", "0.95-1.15", "0.55-1.15", "1.15-1.35", "1.35-1.55"]
 n_windows = len(time_windows)
 
 # Loop through all configuration combinations
-for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
+for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
     
-    unified_y_scale = 0.5 # Unified scale for combined plot
-    target_beta_features = ['pho_word', 'pho_nonword', 'sem']
+    match Fig_dir:
+        case "Fig5":
+            target_beta_features = ['aco_main', 'pho_main', 'sem']
+            unified_y_scale = 0.3 # Unified scale for combined plot
+            Fig_size=42
+            font_scale = 5
+        case "Fig6":
+            target_beta_features = ['pho_word', 'pho_nonword', 'pho_gain']
+            unified_y_scale = 0.12 # Unified scale for combined plot
+            Fig_size=42
+            font_scale = 5
+        case "Fig7":
+            target_beta_features = ['pho_word', 'pho_nonword', 'sem']
+            unified_y_scale = 0.4 # Unified scale for combined plot
+            Fig_size=16
+            font_scale = 2
+
+    # --- Configuration ---
+    # 设置字体和绘图风格
+    plt.rcParams['font.size'] = 14 * font_scale
+    plt.rcParams['axes.titlesize'] = 16 * font_scale
+    plt.rcParams['axes.labelsize'] = 14 * font_scale
+    plt.rcParams['xtick.labelsize'] = 12 * font_scale
+    plt.rcParams['ytick.labelsize'] = 12 * font_scale
+    plt.rcParams['legend.fontsize'] = 12 * font_scale
 
     # Define Electrode Groups
     all_elec_configs = [
@@ -122,7 +137,7 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
     # Split electrodes into chunks (3 rows per figure)
     elec_chunks = list(chunks(all_elec_configs, 4))
     
-    if is_yn == "_yn":
+    if is_yn == "_yn" or is_yn == "":
         delay_nodelay_target = 'LexDelayRep'
         delay_nodelay_base = 'LexDelayRep'
     elif is_yn == "_forSilence":
@@ -137,7 +152,7 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
         n_cols = 4
 
         # Initialize Figure - electrode groups as columns
-        fig_rms, axes_rms = plt.subplots(1, n_rows, figsize=(16, 7), sharey=True)
+        fig_rms, axes_rms = plt.subplots(1, n_rows, figsize=(Fig_size, 5), sharey=True)
         if n_rows == 1: 
             axes_rms = [axes_rms] # Ensure axes_rms is always a list for consistent indexing
         
@@ -159,13 +174,17 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
                         current_is_huge = '_onlysem'
 
                     filename = f"results/{delay_nodelay_target}_{elec_grp}_{alignment}_All{is_yn}{current_is_huge}_testλ_{vWM_lambda}.csv"
-                    filename_base = f"results/{delay_nodelay_base}_{elec_grp}_{alignment}_All{is_yn_base}{current_is_huge}_testλ_{vWM_lambda}.csv"
+                    if is_yn_base is not None:
+                        filename_base = f"results/{delay_nodelay_base}_{elec_grp}_{alignment}_All{is_yn_base}{current_is_huge}_testλ_{vWM_lambda}.csv"
+                        if not os.path.exists(filename) or not os.path.exists(filename_base):
+                            continue
 
-                    if not os.path.exists(filename) or not os.path.exists(filename_base):
-                        continue
-
-                    temp_raw = pd.read_csv(filename)
-                    temp_raw_base = pd.read_csv(filename_base)
+                    temp_raw = pd.read_csv(filename).astype(np.float32)
+                    if is_yn_base is not None:
+                        temp_raw_base = pd.read_csv(filename_base).astype(np.float32)
+                    else:
+                        temp_raw_base = temp_raw.copy()
+                        temp_raw_base.iloc[:, 2:] = 0
 
                     if raw is None:
                         raw = temp_raw
@@ -333,7 +352,7 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
 
                 # --- Perform Correction on ALL p-values ---
                 if len(all_raw_pvals) > 0:
-                    _, all_corrected_pvals, _, _ = multipletests(all_raw_pvals, alpha=0.05, method='holm')
+                    _, all_corrected_pvals, _, _ = multipletests(all_raw_pvals, alpha=0.05, method='bonferroni')
                 else:
                     all_corrected_pvals = []
                 
@@ -384,7 +403,11 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
                 ax.set_xticklabels([])
                 
                 # 严格锁定 Y 轴范围并增强“透气感”
-                ax.set_ylim(-0.2, 0.4)
+                if Fig_dir == "Fig7":
+                    ax.set_ylim(-0.4*fea_plot_yscale, fea_plot_yscale+0.01)
+                else:
+                    ax.set_ylim(0, fea_plot_yscale+0.01)
+                
                 if row_idx > 0:
                     ax.yaxis.set_visible(False)
                     sns.despine(ax=ax, offset=10, trim=True, left=True)
@@ -409,10 +432,10 @@ for is_yn, is_yn_base in zip(opts_yn, opts_yn_base):
 
         # --- Save Figure ---
         fig_rms.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust layout to prevent overlap
-        save_dir = os.path.join('figs', f'diff_combined{is_yn}_{delay_nodelay_base}')
+        save_dir = os.path.join('figs', f'Ahahahahahah Fig')
         os.makedirs(save_dir, exist_ok=True)
         
-        save_name = os.path.join(save_dir, f'BigPlot_Part{chunk_idx+1}_RMS_Bar_FDR_vWMλ_{vWM_lambda}.tif')
+        save_name = os.path.join(save_dir, f'results_{Fig_dir}.tif')
         
         plt.savefig(save_name, dpi=100)
         plt.close(fig_rms)
