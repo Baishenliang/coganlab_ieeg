@@ -105,8 +105,8 @@ final_times = []
 final_grps = None
 
 if groupsTag=="LexDelay":
-    elec_grps=('Spt',)
-    elec_idxs=('Hikock_Spt',)
+    elec_grps=('Spt','lPMC','lIFG')
+    elec_idxs=('Hikock_Spt','Hikock_lPMC','Hikock_lIFG')
     
     for epoc,t_range,epoc_tag in zip((epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
                                      ([-0.5, 1.5], [-0.5, 1], [-0.5, 1.25]),
@@ -266,11 +266,11 @@ Yellow_col = [1, 1, 0]        # 黄色 (RGB: 255, 255, 0)
 Purple_col = [0.5, 0, 0.5]    # 紫色 (RGB: 128, 0, 128)
 
 macro_color_dict = {
-    'Auditory_sustained': Yellow_col,
-    'Delay': Delay_col,
-    'Auditory_transient': Auditory_col,
-    'Auditory_Motor': Motor_col,
-    'Auditory_Motorprep': Purple_col
+    'Auditory_Motorprep': Yellow_col, 
+    'Auditory_sustained': Delay_col, 
+    'Delay': Auditory_col, 
+    'Auditory_transient': Motor_col, 
+    'Auditory_Motor': Purple_col 
 }
 
 
@@ -287,11 +287,15 @@ H = model.components_
 comp_names = [list(macro_color_dict.keys())[i] for i in range(n_components)]
 
 #%% 2. Plot NMF Component Traces (H Matrix)
-plt.figure(figsize=(10, 4))
-colors = plt.cm.tab10.colors
+target_macros = ['Auditory_transient', 'Auditory_sustained', 'Delay', 'Auditory_Motorprep', 'Auditory_Motor']
+name_to_idx = {name: i for i, name in enumerate(comp_names)}
 
-for i in range(n_components):
-    plt.plot(x_linear, H[i, :], label=comp_names[i], color=macro_color_dict.get(comp_names[i]), linewidth=2.5, alpha=0.85)
+plt.figure(figsize=(10, 4))
+
+for name in target_macros:
+    if name in name_to_idx:
+        idx = name_to_idx[name]
+        plt.plot(x_linear, H[idx, :], label=name, color=macro_color_dict.get(name), linewidth=2.5, alpha=0.85)
 
 for idx in zero_indices:
     plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
@@ -303,7 +307,7 @@ plt.xlabel('Time (s)', fontsize=12)
 plt.ylabel('Component Amplitude (a.u.)', fontsize=12)
 plt.gca().xaxis.set_major_locator(mticker.FixedLocator(tick_indices))
 plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(time_formatter))
-plt.legend(loc='upper right', bbox_to_anchor=(1.18, 1), frameon=False)
+plt.legend(loc='upper right', bbox_to_anchor=(1.25, 1), frameon=False)
 plt.gca().spines['top'].set_visible(False)
 plt.gca().spines['right'].set_visible(False)
 plt.tight_layout()
@@ -380,7 +384,7 @@ if 'color_dict' not in locals():
 fig, axes = plt.subplots(1, n_components, figsize=(4 * n_components, 5))
 if n_components == 1: axes = [axes]
 
-for i, col_name in enumerate(comp_names):
+for i, col_name in enumerate(target_macros):
     ax = axes[i]
     values = df_mean_weights[col_name]
     valid_idx = values > 0.01
@@ -398,7 +402,6 @@ plt.show()
 
 #%% 6. Plot Aligned Traces (Stim / Go / Resp)
 plot_groups = []
-target_macros = ['Auditory_transient', 'Auditory_sustained', 'Delay','Auditory_Motorprep','Auditory_Motor']
 
 for macro in target_macros:
     category_chs = set(df_weights[df_weights['Base_Comp'] == macro]['Channel'])
