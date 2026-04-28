@@ -51,6 +51,8 @@ plt.rcParams['xtick.labelsize'] = 12*font_scale
 plt.rcParams['ytick.labelsize'] = 12*font_scale
 plt.rcParams['legend.fontsize'] = 12*font_scale
 
+Fig_dir = 'Fig5' #'Fig5'
+
 MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
 Sensorimotor_col = [1, 0, 0]  # Sensorimotor
 Auditory_col = [0, 1, 0]  # Auditory
@@ -232,7 +234,7 @@ is_bsl_correct = True
 mode = 'time_cluster'
 
 # 定义所有要画的电极组及其对应参数
-opts_yn = ['', '_yn']#,'', '_yn','_forSilence'
+opts_yn = ['']#, '_yn']#,'', '_yn','_forSilence'
 opts_huge = ['','_onlysem']#'onlysemproxy', '_huge', 'onlysem']
 delay_nodelays = ["LexDelayRep",] #"LexDelay","LexNoDelay","LexDelayRep"
 
@@ -248,7 +250,10 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         case '_huge':
             unified_y_scale = 2   # [请调节] _huge
         case '':
-            unified_y_scale = 0.5   # [请调节] 默认值 (类似 else)
+            if Fig_dir == 'Fig5':
+                unified_y_scale = 0.5   # [请调节] Fig5
+            elif Fig_dir == 'Fig6':
+                unified_y_scale = 0.25   # [请调节] Fig6 
 
     # --- 定义所有要画的电极组 (使用统一的 Scale) ---
     all_elec_configs = [
@@ -411,17 +416,16 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                         
         fig.suptitle(f"ACC Aligned to {all_alignments[0][0]}", fontsize=20, fontweight='bold')
         plt.tight_layout(rect=[0, 0, 1, 0.95]) 
-        save_name = os.path.join('figs', f'z_score_unnormalized{is_yn}{is_huge}', 
-                                f'BigPlot_ACC_Part{chunk_idx+1}_vWMλ_{vWM_lambda}.tif')
-        plt.savefig(save_name, dpi=100)
-        plt.close()
+        # save_name = os.path.join('figs', f'z_score_unnormalized{is_yn}{is_huge}', 
+        #                         f'BigPlot_ACC_Part{chunk_idx+1}_vWMλ_{vWM_lambda}.tif')
+        # plt.savefig(save_name, dpi=100)
+        # plt.close()
 
 
     # =============================================================================
     # 2. 绘制 Beta (Feature) 和 RMS 大图
     # =============================================================================
     print("Starting Beta and RMS Big Plots...")
-    Fig_dir = 'Fig5' #'Fig5'
     group_beta_type = 'max' # 'rms' or 'max' or 'avg'
     match is_huge:
         case '_onlysem':
@@ -703,11 +707,17 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                     if col_idx == 0:
                         ax_r.spines['left'].set_linewidth(3)
                         #ax_r.spines['left'].set_bounds(0,0.75)
-                        ax_r.spines['left'].set_bounds(-0.25, fea_plot_yscale)
+                        if Fig_dir == 'Fig5':
+                            ax_r.spines['left'].set_bounds(-0.25, fea_plot_yscale)
+                        elif Fig_dir == 'Fig6':
+                            ax_r.spines['left'].set_bounds(0, fea_plot_yscale)
 
                     # 6. X 轴刻度步长与 0 刻度美化
                     xticks = [0, 0.5, 1.0, 1.5]
-                    yticks = [-0.25, 0.0, 0.25, 0.5]
+                    if Fig_dir == 'Fig5':
+                        yticks = [-0.25, 0.0, 0.25, 0.5]
+                    elif Fig_dir == 'Fig6':
+                        yticks = [0.0, 0.25]
                     xticks = [t for t in xticks if xlim_align[0] <= t <= xlim_align[1]]
                     ax_r.set_xticks(xticks)
                     ax_r.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.1f'))
@@ -744,7 +754,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         #save_dir_rms = os.path.join('figs', 'publication_quality_plots')
         manuscript_save_dir = rf"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements\{Fig_dir}"
         os.makedirs(manuscript_save_dir, exist_ok=True)
-        save_name_rms = os.path.join(manuscript_save_dir, f'results.svg')
+        save_name_rms = os.path.join(manuscript_save_dir, f'results{is_huge}.svg')
         plt.savefig(save_name_rms, dpi=300) 
         plt.show()
         #plt.close(fig_rms)

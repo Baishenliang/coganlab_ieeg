@@ -9,6 +9,7 @@ import seaborn as sns
 import itertools
 from statsmodels.stats.multitest import multipletests
 script_dir = os.path.dirname('D:\\bsliang_Coganlabcode\\coganlab_ieeg\\projects\\lme\\prepare_raw.py')
+manuscript_save_dir = r"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements"
 current_dir = os.getcwd()
 if current_dir != script_dir:
     os.chdir(script_dir)
@@ -85,9 +86,10 @@ opts_huge = ['onlysem',""] # 可以修改为 ['_huge', 'onlysem', 'onlysemproxy'
 
 # Time Windows definition
 time_windows = [
-    (0.55, 0.75), (0.75, 0.95), (0.95, 1.15),(0.55, 1.15),(1.15, 1.35),(1.35, 1.55)
+    (0.55, 0.75), (0.75, 0.95), (0.95, 1.15),(1.15, 1.35),(1.35, 1.55)
 ]
-time_labels = ["0.55-0.75", "0.75-0.95", "0.95-1.15", "0.55-1.15", "1.15-1.35", "1.35-1.55"]
+time_windows_avg = [0.6, 0.8, 1.0,1.2, 1.4] # For plotting x-axis positions
+time_labels = ["0.55-0.75", "0.75-0.95", "0.95-1.15", "1.15-1.35", "1.35-1.55"]
 n_windows = len(time_windows)
 
 # Loop through all configuration combinations
@@ -107,7 +109,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
         case "Fig7":
             target_beta_features = ['pho_word', 'pho_nonword', 'sem']
             unified_y_scale = 0.4 # Unified scale for combined plot
-            Fig_size=16
+            Fig_size=22
             font_scale = 2
 
     # --- Configuration ---
@@ -152,7 +154,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
         n_cols = 4
 
         # Initialize Figure - electrode groups as columns
-        fig_rms, axes_rms = plt.subplots(1, n_rows, figsize=(Fig_size, 5), sharey=True)
+        fig_rms, axes_rms = plt.subplots(1, n_rows, figsize=(Fig_size, 7), sharey=True)
         if n_rows == 1: 
             axes_rms = [axes_rms] # Ensure axes_rms is always a list for consistent indexing
         
@@ -432,12 +434,12 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
 
         # --- Save Figure ---
         fig_rms.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust layout to prevent overlap
-        save_dir = os.path.join('figs', f'Ahahahahahah Fig')
+        save_dir = os.path.join(manuscript_save_dir, Fig_dir)
         os.makedirs(save_dir, exist_ok=True)
         
-        save_name = os.path.join(save_dir, f'results_{Fig_dir}.tif')
+        save_name = os.path.join(save_dir, f'results_sig.svg')
         
-        plt.savefig(save_name, dpi=100)
+        plt.savefig(save_name, dpi=100,transparent=True,)
         plt.close(fig_rms)
         print(f"Saved: {save_name}")
 
