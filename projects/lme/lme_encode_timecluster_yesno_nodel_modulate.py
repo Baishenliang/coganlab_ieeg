@@ -86,10 +86,11 @@ opts_huge = ['onlysem',""] # 可以修改为 ['_huge', 'onlysem', 'onlysemproxy'
 
 # Time Windows definition
 time_windows = [
-    (0.55, 0.75), (0.75, 0.95), (0.95, 1.15),(1.15, 1.35),(1.35, 1.55)
+    #(0.55, 0.75), (0.75, 0.95), (0.95, 1.15),(1.15, 1.35),(1.35, 1.55)
+    (0.55,1.05),(1.05, 1.55)
 ]
-time_windows_avg = [0.6, 0.8, 1.0,1.2, 1.4] # For plotting x-axis positions
-time_labels = ["0.55-0.75", "0.75-0.95", "0.95-1.15", "1.15-1.35", "1.35-1.55"]
+time_windows_avg = [0.8, 1.3] # For plotting x-axis positions
+time_labels = ["0.8", "1.3"] # For plotting x-axis positions
 n_windows = len(time_windows)
 
 # Loop through all configuration combinations
