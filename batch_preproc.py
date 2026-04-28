@@ -25,73 +25,59 @@ from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_
 from matplotlib import pyplot as plt
 
 # %% Subj list
-# subject_processing_dict_org = {
-#     # "D0121": "gamma",
-#     # "D0128": "gamma",
-#     # "D0134": "gamma",
-#     # "D0137": "gamma",
-#     # "D0138": "gamma",
-#     # "D0140": "gamma"
-#     "D0023": "gamma",
-#     "D0024": "gamma",
-#     "D0026": "gamma",
-#     "D0027": "gamma",
-#     "D0028": "gamma",
-#     "D0029": "gamma",
-#     "D0032": "gamma",
-#     "D0035": "gamma",
-#     "D0038": "gamma",
-#     "D0042": "gamma",
-#     "D0044": "gamma",
-#     "D0047": "gamma",
-#     "D0053": "gamma",
-#     "D0054": "gamma",
-#     "D0055": "gamma",
-#     "D0057": "gamma",
-#     "D0059": "gamma",
-#     "D0063": "gamma",
-#     "D0065": "gamma",
-#     "D0066": "gamma",
-#     "D0068": "gamma",
-#     "D0069": "gamma",
-#     "D0070": "gamma",
-#     "D0071": "gamma",
-#     "D0077": "gamma",
-#     "D0079": "gamma",
-#     "D0080": "gamma",
-#     "D0081": "gamma",
-#     "D0084": "gamma",
-#     "D0086": "gamma",
-#     "D0090": "gamma",
-#     "D0092": "gamma",
-#     "D0094": "gamma",
-#     "D0096": "gamma",
-#     "D0100": "gamma",
-#     "D0101": "gamma",
-#     "D0102": "gamma",
-#     "D0103": "gamma",
-#     "D0107": "gamma",
-#     "D0115": "gamma",
-#     "D0117": "gamma"
-# }
-# subject_processing_dict_org = {
-#      "D0128": "gamma",
-# }
 subject_processing_dict_org = {
-    "D0138": "gamma"
+    "D0023": "gamma",
+    "D0024": "gamma",
+    "D0026": "gamma",
+    "D0027": "gamma",
+    "D0028": "gamma",
+    "D0029": "gamma",
+    "D0032": "gamma",
+    "D0035": "gamma",
+    "D0038": "gamma",
+    "D0042": "gamma",
+    "D0044": "gamma",
+    "D0047": "gamma",
+    "D0053": "gamma",
+    "D0054": "gamma",
+    "D0055": "gamma",
+    "D0057": "gamma",
+    "D0059": "gamma",
+    "D0063": "gamma",
+    "D0065": "gamma",
+    "D0066": "gamma",
+    "D0068": "gamma",
+    "D0069": "gamma",
+    "D0070": "gamma",
+    "D0071": "gamma",
+    "D0077": "gamma",
+    "D0079": "gamma",
+    "D0080": "gamma",
+    "D0081": "gamma",
+    "D0084": "gamma",
+    "D0086": "gamma",
+    "D0090": "gamma",
+    "D0092": "gamma",
+    "D0094": "gamma",
+    "D0096": "gamma",
+    "D0100": "gamma",
+    "D0101": "gamma",
+    "D0102": "gamma",
+    "D0103": "gamma",
+    "D0107": "gamma",
+    "D0115": "gamma",
+    "D0117": "gamma",
+    "D0127": "gamma",
+    "D0128": "gamma",
+    "D0129": "gamma",
+    "D0132": "gamma",
+    "D0135": "gamma",
+    "D0137": "gamma",
+    "D0138": "gamma",
+    "D0139": "gamma",
+    "D0140": "gamma",
+    "D0143": "gamma"
 }
-# subject_processing_dict_org = {
-#     "D0132": "linernoise/outlierchs/wavelet",
-#     "D0135": "linernoise/outlierchs/wavelet",
-#     "D0137": "linernoise/outlierchs/wavelet",
-#     "D0138": "linernoise/outlierchs/wavelet",
-#     "D0139": "linernoise/outlierchs/wavelet",
-# }
-# subject_processing_dict_org = {
-#     "D0140": "linernoise/outlierchs/wavelet",
-#     "D0143": "linernoise/outlierchs/wavelet"
-# }
-
 
 
 
@@ -665,10 +651,10 @@ for subject, processing_type in subject_processing_dict.items():
                 # )
 
                 gamma_epoc_zip = zip(
-                    ('Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT'),
-                    ('Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT'),
-                    ((-4.5, 2), (-5, 1.5)),
-                    ('Go_inYN', 'Resp_inYN'),
+                    ('Delay/Repeat/CORRECT','Delay/Yes_No/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Yes_No/CORRECT'),
+                    ((-0.5, 1.5), (-0.5, 1.5)),
+                    ('Delay_inRep', 'Delay_inYN'),
                     (True, True)
                 )
 
