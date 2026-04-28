@@ -5,9 +5,9 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
+#groupsTag="LexDelay"
 #groupsTag="LexNoDelay"
-#groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 get_atlaslabels_from_ecogRecon = False # whether get atlas labels for each electrode, which is used for later analysis of the distribution of electrodes in different ROIs. If True, it will take a long time to run the code. So we set it to False after we get the labels and save them in the utils folder.
@@ -2160,6 +2160,8 @@ elif groupsTag=="LexDelay&LexNoDelay":
     _, _, _, _, _, paras_mtr_Delay, *_ = sort_chs_by_actonset(data_LexDelay_Resp, epoc_LexDelay_Resp, cluster_twin, mtr_win, mask_data=False, select_electrodes=False)
     _, _, _, _, _, paras_aud_NoDelay, *_ = sort_chs_by_actonset(data_LexNoDelay_Aud, epoc_LexNoDelay_Aud, cluster_twin, aud_win, mask_data=False, select_electrodes=False)
     _, _, _, _, _, paras_mtr_NoDelay, *_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, mtr_win, mask_data=False, select_electrodes=False)
+    _, _, _, _, _, paras_aud_NoDelay_masked, *_ = sort_chs_by_actonset(data_LexNoDelay_Aud, epoc_LexNoDelay_Aud, cluster_twin, aud_win, mask_data=True, select_electrodes=False)
+    _, _, _, _, _, paras_mtr_NoDelay_masked, *_ = sort_chs_by_actonset(data_LexNoDelay_Resp, epoc_LexNoDelay_Resp, cluster_twin, mtr_win, mask_data=True, select_electrodes=False)
 
     import seaborn as sns
     import matplotlib.ticker as mticker
@@ -2207,6 +2209,27 @@ elif groupsTag=="LexDelay&LexNoDelay":
 
     df_final = pd.DataFrame(plot_data).dropna()
 
+    plot_data_masked = []
+
+    for g_name, labels in group_map.items():
+        if len(labels) == 0: continue
+        
+        for label in labels:
+            # 確保該 label 在所有 DataFrame 中都存在
+            dfs = [paras_aud_Delay, paras_mtr_Delay, paras_aud_NoDelay_masked, paras_mtr_NoDelay_masked]
+            if all(label in df.index for df in dfs):
+                plot_data_masked.append({
+                    'Label': label,
+                    'Group': g_name,
+                    'Auditory_Delay': paras_aud_Delay.loc[label, param],
+                    'Motor_Delay': paras_mtr_Delay.loc[label, param],
+                    'Auditory_NoDelay': paras_aud_NoDelay_masked.loc[label, param],
+                    'Motor_NoDelay': paras_mtr_NoDelay_masked.loc[label, param]
+                })
+
+    df_final_masked = pd.DataFrame(plot_data_masked).dropna()
+
+
     # ==========================================
     # 3. 绘图： Delay Nodelay scatter plot
     # ==========================================
@@ -2220,12 +2243,19 @@ elif groupsTag=="LexDelay&LexNoDelay":
 
     # 1. 數據預處理 (保持你的邏輯)
     df_filtered = df_final.copy()
+    df_filtered_masked = df_final_masked.copy()
+
+
     cols = [f'{s}_{d}' for s in ['Auditory', 'Motor'] for d in ['Delay', 'NoDelay']]
     # 僅保留所有階段均 > 1e-3 的電極
     df_filtered = df_filtered[(df_filtered[cols] > 1e-3).all(axis=1)]
+    df_filtered_masked = df_filtered_masked[(df_filtered_masked[cols] > 1e-3).all(axis=1)]
 
     df_log = df_filtered.copy()
     df_log[cols] = np.log10(df_log[cols])
+
+    df_log_masked = df_filtered_masked.copy()
+    df_log_masked[cols] = np.log10(df_log_masked[cols])
 
     # 2. 確定統一刻度
     all_vals = df_log[cols].values
@@ -2424,121 +2454,129 @@ elif groupsTag=="LexDelay&LexNoDelay":
     import os
 
     # --- 1. 數據預處理：計算 Diff 列 ---
-    df_plot = df_log.copy()
+    df_plot_unmasked = df_log.copy()
+    df_plot_masked = df_log_masked.copy()
 
-    # 核心計算：Diff = Delay - NoDelay (在 log 空間中這代表了比例變化)
-    for stage in ['Auditory', 'Motor']:
-        delay_col = f'{stage}_Delay'
-        nodelay_col = f'{stage}_NoDelay'
-        diff_col = f'{stage}_Diff'
-        
-        if delay_col in df_plot.columns and nodelay_col in df_plot.columns:
-            df_plot[diff_col] = df_plot[delay_col] - df_plot[nodelay_col]
-            print(f"Successfully calculated {diff_col}")
-        else:
-            print(f"Error: Missing columns for {stage} calculation!")
-
-    # --- 2. 基礎參數設置 ---
-    group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
-    color_map = {
-        'Auditory_vWM': Auditory_col,
-        'Sensory-motor_vWM': Sensorimotor_col,
-        'Motor_vWM': Motor_col,
-        'Delay-only_vWM': Delay_col
-    }
-
-    # --- 3. 預計算統計結果並執行全局 FDR 矯正 ---
-    stats_results = []
-    stages = ['Auditory', 'Motor']
-
-    for stage in stages:
-        diff_col = f'{stage}_Diff'
-        for g_name in group_order:
-            group_diffs = df_plot[df_plot['Group'] == g_name][diff_col].dropna()
+    for df_plot,df_plot_tag in zip(
+        [df_plot_unmasked, df_plot_masked],
+        ['', 'Masked']):
+        # 核心計算：Diff = Delay - NoDelay (在 log 空間中這代表了比例變化)
+        for stage in ['Auditory', 'Motor']:
+            delay_col = f'{stage}_Delay'
+            nodelay_col = f'{stage}_NoDelay'
+            diff_col = f'{stage}_Diff'
             
-            if len(group_diffs) == 0:
-                p_raw = 1.0
+            if delay_col in df_plot.columns and nodelay_col in df_plot.columns:
+                df_plot[diff_col] = df_plot[delay_col] - df_plot[nodelay_col]
+                print(f"Successfully calculated {diff_col}")
             else:
-                n_above = np.sum(group_diffs > 0)
-                n_total = len(group_diffs)
-                # Sign Test (二項檢驗)：檢驗中位數是否顯著偏離 0
-                res = binomtest(n_above, n_total, p=0.5, alternative='two-sided')
-                p_raw = res.pvalue
+                print(f"Error: Missing columns for {stage} calculation!")
+
+        # --- 2. 基礎參數設置 ---
+        match df_plot_tag:
+            case 'Masked':
+                group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM']
+            case _:
+                group_order = ['Auditory_vWM', 'Sensory-motor_vWM', 'Motor_vWM', 'Delay-only_vWM']
+        color_map = {
+            'Auditory_vWM': Auditory_col,
+            'Sensory-motor_vWM': Sensorimotor_col,
+            'Motor_vWM': Motor_col,
+            'Delay-only_vWM': Delay_col
+        }
+
+        # --- 3. 預計算統計結果並執行全局 FDR 矯正 ---
+        stats_results = []
+        stages = ['Auditory', 'Motor']
+
+        for stage in stages:
+            diff_col = f'{stage}_Diff'
+            for g_name in group_order:
+                group_diffs = df_plot[df_plot['Group'] == g_name][diff_col].dropna()
+                
+                if len(group_diffs) == 0:
+                    p_raw = 1.0
+                else:
+                    n_above = np.sum(group_diffs > 0)
+                    n_total = len(group_diffs)
+                    # Sign Test (二項檢驗)：檢驗中位數是否顯著偏離 0
+                    res = binomtest(n_above, n_total, p=0.5, alternative='greater')
+                    p_raw = res.pvalue
+                
+                stats_results.append({
+                    'Stage': stage,
+                    'Group': g_name,
+                    'P_raw': p_raw
+                })
+
+        df_stats = pd.DataFrame(stats_results)
+
+        # 執行全局 FDR 矯正 (針對 8 個檢驗)
+        _, p_fdr, _, _ = multipletests(df_stats['P_raw'], alpha=0.05, method='fdr_bh')
+        df_stats['P_fdr'] = p_fdr
+
+        # --- 4. 核心繪圖函數 ---
+        def plot_vwm_sign_test_fdr_final(stage_name):
+            plt.rcParams['font.sans-serif'] = ['Arial']
+            plt.rcParams['pdf.fonttype'] = 42
+            sns.set_style("ticks")
             
-            stats_results.append({
-                'Stage': stage,
-                'Group': g_name,
-                'P_raw': p_raw
-            })
-
-    df_stats = pd.DataFrame(stats_results)
-
-    # 執行全局 FDR 矯正 (針對 8 個檢驗)
-    _, p_fdr, _, _ = multipletests(df_stats['P_raw'], alpha=0.05, method='fdr_bh')
-    df_stats['P_fdr'] = p_fdr
-
-    # --- 4. 核心繪圖函數 ---
-    def plot_vwm_sign_test_fdr_final(stage_name):
-        plt.rcParams['font.sans-serif'] = ['Arial']
-        plt.rcParams['pdf.fonttype'] = 42
-        sns.set_style("ticks")
-        
-        fig, ax = plt.subplots(figsize=(12, 10))
-        fig.patch.set_facecolor('none')
-        ax.set_facecolor('none')
-        
-        diff_col = f'{stage_name}_Diff'
-        current_df = df_plot[df_plot['Group'].isin(group_order)].copy()
-        current_stats = df_stats[df_stats['Stage'] == stage_name]
-        
-        # A. Boxplot
-        sns.boxplot(data=current_df, x='Group', y=diff_col, order=group_order, 
-                    whis=[5, 95], showfliers=False, width=0.35,
-                    palette=color_map, 
-                    boxprops=dict(alpha=0.2, linewidth=2), 
-                    medianprops=dict(linewidth=10, color='k'), 
-                    ax=ax)
-        
-        # B. Stripplot
-        sns.stripplot(data=current_df, x='Group', y=diff_col, order=group_order,
-                    palette=color_map, alpha=0.5, s=16, jitter=0.25, ax=ax, edgecolor='none')
-
-        # C. y=0 基準線
-        ax.axhline(0, color='#333333', linestyle='--', linewidth=3, alpha=0.6, zorder=0)
-        
-        # D. 坐標軸美化
-        ax.set_ylim(-1.6, 1.5)
-        y_ticks = [-1.5, -1.0, -0.5, 0.0, 0.5, 1.0]
-        ax.set_yticks(y_ticks)
-        ax.set_yticklabels(['-1.5','-1.0', '-0.5', '0', '0.5', '1.0'], fontsize=60, fontweight='bold')
-        
-        # E. 標註 FDR 矯正星號
-        for i, g_name in enumerate(group_order):
-            p_corrected = current_stats[current_stats['Group'] == g_name]['P_fdr'].values[0]
-            stars = '***' if p_corrected < 0.001 else '**' if p_corrected < 0.01 else '*' if p_corrected < 0.05 else ''
+            fig, ax = plt.subplots(figsize=(12, 10))
+            fig.patch.set_facecolor('none')
+            ax.set_facecolor('none')
             
-            if stars:
-                ax.text(i, 1.25, stars, ha='center', va='bottom', fontsize=70, fontweight='bold', color='k')
+            diff_col = f'{stage_name}_Diff'
+            current_df = df_plot[df_plot['Group'].isin(group_order)].copy()
+            current_stats = df_stats[df_stats['Stage'] == stage_name]
+            
+            # A. Boxplot
+            sns.boxplot(data=current_df, x='Group', y=diff_col, order=group_order, 
+                        whis=[5, 95], showfliers=False, width=0.35,
+                        palette=color_map, 
+                        boxprops=dict(alpha=0.2, linewidth=2), 
+                        medianprops=dict(linewidth=10, color='k'), 
+                        ax=ax)
+            
+            # B. Stripplot
+            sns.stripplot(data=current_df, x='Group', y=diff_col, order=group_order,
+                        palette=color_map, alpha=0.5, s=16, jitter=0.25, ax=ax, edgecolor='none')
 
-        # F. 10pt 粗軸與 Tufte 樣式
-        ax.spines['left'].set_linewidth(8)
-        ax.spines['bottom'].set_linewidth(8)
-        ax.spines['left'].set_bounds(-1.0, 1.0)
-        ax.spines['bottom'].set_bounds(0, len(group_order)-1)
-        
-        ax.set_xticklabels([])
-        ax.set_xlabel(''); ax.set_ylabel(''); ax.set_title('')
-        ax.tick_params(axis='both', which='major', width=4, length=6, labelsize=60,direction='out', pad=15)
-        
-        sns.despine(ax=ax, offset=25, trim=True)
-        
-        # 保存 SVG
-        save_dir = os.path.join(manuscript_save_dir, '..', 'Fig4')
-        if not os.path.exists(save_dir): os.makedirs(save_dir)
-        save_path = os.path.join(save_dir, f"Sign_Test_{stage_name}.svg")
-        plt.savefig(save_path, format='svg', bbox_inches='tight', transparent=True)
-        plt.show()
+            # C. y=0 基準線
+            ax.axhline(0, color='#333333', linestyle='--', linewidth=3, alpha=0.6, zorder=0)
+            
+            # D. 坐標軸美化
+            ax.set_ylim(-1.6, 1.5)
+            y_ticks = [-1.5, -1.0, -0.5, 0.0, 0.5, 1.0]
+            ax.set_yticks(y_ticks)
+            ax.set_yticklabels(['-1.5','-1.0', '-0.5', '0', '0.5', '1.0'], fontsize=60, fontweight='bold')
+            
+            # E. 標註 FDR 矯正星號
+            for i, g_name in enumerate(group_order):
+                p_corrected = current_stats[current_stats['Group'] == g_name]['P_fdr'].values[0]
+                stars = '***' if p_corrected < 0.001 else '**' if p_corrected < 0.01 else '*' if p_corrected < 0.05 else ''
+                
+                if stars:
+                    ax.text(i, 1.25, stars, ha='center', va='bottom', fontsize=70, fontweight='bold', color='k')
 
-    # --- 5. 執行 ---
-    plot_vwm_sign_test_fdr_final('Auditory')
-    plot_vwm_sign_test_fdr_final('Motor')
+            # F. 10pt 粗軸與 Tufte 樣式
+            ax.spines['left'].set_linewidth(8)
+            ax.spines['bottom'].set_linewidth(8)
+            ax.spines['left'].set_bounds(-1.0, 1.0)
+            ax.spines['bottom'].set_bounds(0, len(group_order)-1)
+            
+            ax.set_xticklabels([])
+            ax.set_xlabel(''); ax.set_ylabel(''); ax.set_title('')
+            ax.tick_params(axis='both', which='major', width=4, length=6, labelsize=60,direction='out', pad=15)
+            
+            sns.despine(ax=ax, offset=25, trim=True)
+            
+            # 保存 SVG
+            save_dir = os.path.join(manuscript_save_dir, '..', 'Fig4')
+            if not os.path.exists(save_dir): os.makedirs(save_dir)
+            save_path = os.path.join(save_dir, f"Sign_Test_{stage_name}{df_plot_tag}.svg")
+            plt.savefig(save_path, format='svg', bbox_inches='tight', transparent=True)
+            plt.show()
+
+        # --- 5. 執行 ---
+        plot_vwm_sign_test_fdr_final('Auditory')
+        plot_vwm_sign_test_fdr_final('Motor')
