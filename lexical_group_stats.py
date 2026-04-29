@@ -5,8 +5,8 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-#groupsTag="LexDelay"
-groupsTag="LexDelay&LexNoDelay"
+groupsTag="LexDelay"
+#groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 get_atlaslabels_from_ecogRecon = False # whether get atlas labels for each electrode, which is used for later analysis of the distribution of electrodes in different ROIs. If True, it will take a long time to run the code. So we set it to False after we get the labels and save them in the utils folder.
@@ -80,6 +80,7 @@ if groupsTag=="LexDelay":
 
         data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
         #data_LexDelay_Cue, _ = load_stats(stat_type, 'Cue'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
+        data_LexDelay_Delay, _ = load_stats(stat_type, 'Delay'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
         data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
         data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
@@ -89,6 +90,7 @@ if groupsTag=="LexDelay":
 
         epoc_LexDelay_Aud,_=load_stats('zscore','Auditory'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         #poc_LexDelay_Cue,_=load_stats('zscore','Cue'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
+        epoc_LexDelay_Delay,_=load_stats('zscore','Delay'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         epoc_LexDelay_Go,_=load_stats('zscore','Go'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         epoc_LexDelay_Resp,_=load_stats('zscore','Resp'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
 
@@ -333,7 +335,7 @@ if groupsTag == "LexDelay":
     len_d=len(data_LexDelay_Aud.labels[0])
 
     # Plot the distribution of all included electrodes regardless of activation, to show the coverage of the dataset
-    cols = np.full((len_d, 3), 1)
+    cols = np.full((len_d, 3), 0)
     plot_brain(picks=data_LexDelay_Aud.labels[0], chs_coor=chs_coor, chs_cols= cols,dotsize=0.2, transparency=0.2)
 
     #Plot the distribution of different Delay electrodes within one brain
@@ -859,11 +861,11 @@ if groupsTag == "LexDelay":
     # Delay & whether they are still Encoding electrodes in NoDelay
     for elec_idx,elec_col in zip((LexDelay_Aud_NoMotor_sig_idx,LexDelay_Sensorimotor_sig_idx,LexDelay_Motor_sig_idx,LexDelay_DelayOnly_sig_idx),
                                  (Auditory_col,Sensorimotor_col,Motor_col,Delay_col)):
-        mode='with_delay' #'all','with delay', 'without_delay'
+        mode='without_delay'#'with_delay' #'all','with delay', 'without_delay'
         cols = np.full((len_d, 3), 0.5)
         cols[list(elec_idx & LexDelay_Delay_sig_idx), :] = elec_col
         if len(elec_idx - LexDelay_Delay_sig_idx)>0:
-            cols[list(elec_idx - LexDelay_Delay_sig_idx), :] = create_gradient(elec_col,6)[4]
+            cols[list(elec_idx - LexDelay_Delay_sig_idx), :] = create_gradient(elec_col,6)[0]#[4] # if >0, brighter for no delay
         print(f'In Delay {len(elec_idx & LexDelay_Delay_sig_idx)} Not in Delay {len(elec_idx - LexDelay_Delay_sig_idx)}')
         if mode=='all':
             cols_lst = cols[list(elec_idx)].tolist()
