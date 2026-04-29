@@ -948,6 +948,7 @@ if groupsTag == "LexDelay":
 
         alignments = [
             ('Stim', epoc_LexDelay_Aud, [-0.25, 1.5], True),
+            ('Delay', epoc_LexDelay_Delay, [-0.25, 1.5], range(round(631*1.4), 650)),
             ('Go', epoc_LexDelay_Go, [-0.25, 1.0], range(631, 650)),
             ('Resp', epoc_LexDelay_Resp, [-0.25, 1.0], range(631, 650))
         ]
