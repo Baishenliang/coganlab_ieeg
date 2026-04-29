@@ -5,8 +5,8 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
-#groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 get_atlaslabels_from_ecogRecon = False # whether get atlas labels for each electrode, which is used for later analysis of the distribution of electrodes in different ROIs. If True, it will take a long time to run the code. So we set it to False after we get the labels and save them in the utils folder.
@@ -2104,60 +2104,106 @@ elif groupsTag=="LexDelay&LexNoDelay":
     sns.set_style("ticks")
     kde_contour = False
 
-    for j, stage in enumerate(['Auditory', 'Motor']):
-        
-        fig, ax = plt.subplots(1, 1, figsize=(7, 6), constrained_layout=True)
-
-        x_col, y_col = f'{stage}_NoDelay', f'{stage}_Delay'
-        
-        # A. 基準對角線
-        line_range = np.array([vmin, vmax])
-        ax.plot(line_range, line_range, color='#777777', linestyle='--', linewidth=3, alpha=0.4, zorder=1)
-        
-        for i, g_name in enumerate(group_order):
-            group_data = df_log[df_log['Group'] == g_name]
-            if group_data.empty: continue
+    # for _, gg_name in enumerate([group_order,'All']):
+    for gg_name in group_order + ['All']:
+        for j, stage in enumerate(['Auditory', 'Motor']):
             
-            x, y = group_data[x_col], group_data[y_col]
-            color = color_map[g_name]
+            if gg_name== 'All':
+                fig, ax = plt.subplots(1, 1, figsize=(7, 6), constrained_layout=True)
+
+                x_col, y_col = f'{stage}_NoDelay', f'{stage}_Delay'
+                
+                # A. 基準對角線
+                line_range = np.array([vmin, vmax])
+                ax.plot(line_range, line_range, color='#777777', linestyle='--', linewidth=3, alpha=0.4, zorder=1)
+                
+                for i, g_name in enumerate(group_order):
+                    group_data = df_log[df_log['Group'] == g_name]
+                    if group_data.empty: continue
+                    
+                    x, y = group_data[x_col], group_data[y_col]
+                    color = color_map[g_name]
+                    
+                    # B. 繪製密度等高線 (KDE Contour) - 這是「錯開」視覺感的關鍵
+                    # levels=1 表示只畫出最核心的 50% 分佈區域
+                    if kde_contour:
+                        sns.kdeplot(x=x, y=y, ax=ax, color=color, levels=[0.3], 
+                                    linewidths=3, alpha=0.95, zorder=2)
+                    
+                    # C. 散點圖 - 設置極高透明度，僅作為背景支撐
+                    sns.scatterplot(x=x, y=y, color=color, alpha=0.4, s=60, 
+                                    edgecolor='none', ax=ax, zorder=2)
+
+            else:
+                g_name = gg_name
+                fig, ax = plt.subplots(1, 1, figsize=(7, 6), constrained_layout=True)
+
+                x_col, y_col = f'{stage}_NoDelay', f'{stage}_Delay'
+                
+                # A. 基準對角線
+                line_range = np.array([vmin, vmax])
+                ax.plot(line_range, line_range, color='#777777', linestyle='--', linewidth=3, alpha=0.4, zorder=1)
+                
+                group_data = df_log[df_log['Group'] == g_name]
+                if not group_data.empty:
+                    x, y = group_data[x_col], group_data[y_col]
+                    color = color_map[g_name]
+
+                    # B. 繪製密度等高線 (KDE Contour) - 這是「錯開」視覺感的關鍵
+                    # levels=1 表示只畫出最核心的 50% 分佈區域
+                    if kde_contour:
+                        sns.kdeplot(x=x, y=y, ax=ax, color=color, levels=[0.3],
+                                    linewidths=3, alpha=0.95, zorder=2)
+
+                    # C. 散點圖 - 設置極高透明度，僅作為背景支撐
+                    sns.scatterplot(x=x, y=y, color=color, alpha=0.4, s=60,
+                                    edgecolor='none', ax=ax, zorder=2)
+
+                    # D. 添加線性回歸擬合線
+                    if len(x) > 1:
+                        m, b = np.polyfit(x, y, 1)
+                        x_vals = np.array(ax.get_xlim())
+                        y_vals = m * x_vals + b
+                        
+                        # Calculate R-squared and p-value
+                        slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+                        r_squared = r_value**2
+                        
+                        ax.plot(x_vals, y_vals, color=color, linewidth=4, zorder=3, alpha=0.7)
+                        
+                        # Add regression formula and R-squared to the plot
+                        formula_text = f'y = {m:.2f}x + {b:.2f}\nR² = {r_squared:.2f}'
+                        ax.text(0.05, 0.95, formula_text, transform=ax.transAxes,
+                                fontsize=30, color=color, verticalalignment='top',
+                                bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.7))
+
+            # 5. 坐標軸美化
+            ax.set_xlim(-2.1, 1.1)
+            ax.set_ylim(-2.1, 1.1)
+            ax.set_xticks(ticks)
+            ax.set_yticks(ticks)
+            ax.set_yticklabels(['-2.0', '-1.0', '0', '1.0'], fontweight='bold')
+            ax.set_xticklabels(['-2.0', '-1.0', '0', '1.0'], fontweight='bold')
             
-            # B. 繪製密度等高線 (KDE Contour) - 這是「錯開」視覺感的關鍵
-            # levels=1 表示只畫出最核心的 50% 分佈區域
-            if kde_contour:
-                sns.kdeplot(x=x, y=y, ax=ax, color=color, levels=[0.3], 
-                            linewidths=3, alpha=0.95, zorder=2)
+            # 根據你的要求：不顯示 xtick labels
+            #ax.set_xticklabels([])
             
-            # C. 散點圖 - 設置極高透明度，僅作為背景支撐
-            sns.scatterplot(x=x, y=y, color=color, alpha=0.4, s=60, 
-                            edgecolor='none', ax=ax, zorder=2)
-        
-        # 5. 坐標軸美化
-        ax.set_xlim(-2.1, 1.1)
-        ax.set_ylim(-2.1, 1.1)
-        ax.set_xticks(ticks)
-        ax.set_yticks(ticks)
-        ax.set_yticklabels(['-2.0', '-1.0', '0', '1.0'], fontweight='bold')
-        ax.set_xticklabels(['-2.0', '-1.0', '0', '1.0'], fontweight='bold')
-        
-        # 根據你的要求：不顯示 xtick labels
-        #ax.set_xticklabels([])
-        
-        ax.set_title('')
-        ax.set_xlabel('')
-        ax.spines['left'].set_bounds(ticks[0], ticks[-1])
-        ax.spines['left'].set_linewidth(5)   # 左側軸線
-        ax.set_ylabel('')
-        ax.spines['bottom'].set_linewidth(5) # 底部軸線
-        ax.spines['bottom'].set_bounds(ticks[0], ticks[-1])
-        sns.despine(ax=ax, offset=10, trim=True)
-        ax.tick_params(axis='both', which='major',labelsize=40, length=6, width=3, direction='out')
+            ax.set_title('')
+            ax.set_xlabel('')
+            ax.spines['left'].set_bounds(ticks[0], ticks[-1])
+            ax.spines['left'].set_linewidth(5)   # 左側軸線
+            ax.set_ylabel('')
+            ax.spines['bottom'].set_linewidth(5) # 底部軸線
+            ax.spines['bottom'].set_bounds(ticks[0], ticks[-1])
+            sns.despine(ax=ax, offset=10, trim=True)
+            ax.tick_params(axis='both', which='major',labelsize=40, length=6, width=3, direction='out')
 
 
-        plt.tight_layout()
-        save_path = os.path.join(manuscript_save_dir, '..', 'Fig4', f"Scatter_{stage}.svg")
-        plt.savefig(save_path, format='svg', bbox_inches='tight')
-        plt.close()
-    #plt.show()
+            plt.tight_layout()
+            save_path = os.path.join(manuscript_save_dir, '..', 'Fig4', f"Scatter_{gg_name}_{stage}.svg")
+            plt.savefig(save_path, format='svg', bbox_inches='tight')
+            plt.close()
+        #plt.show()
 
     # ==========================================
     # 5. R-squared Analysis (FDR Corrected & Visual Floor)
