@@ -439,7 +439,12 @@ for align_tag, epoc_data, x_limits, bsl_val in alignments:
         else:
             sig_idx, label_text, group_col = plot_groups[target_macros.index(macro)]
             if len(sig_idx) == 0: continue
-            gp.plot_wave(epoc_data, sig_idx, f'{label_text}', group_col, '-', bsl_val, ylim=[-0.3, 6],average_trace=False)
+            for roi_tag, roi_elec_idx,roi_col in zip(elec_grps,
+                elec_idxs,
+                (Auditory_col,Sensorimotor_col,Motor_col)):
+                sig_idx_roi = LexDelay_twin_idxes[roi_elec_idx] & set(sig_idx)
+                if len(sig_idx_roi) == 0: continue
+                gp.plot_wave(epoc_data, sig_idx_roi, f'{roi_tag}', roi_col, '-', bsl_val, ylim=[-0.3, 6],average_trace=False)
              
 
         #ax.set_ylim([-0.3, 5])
@@ -471,10 +476,10 @@ for align_tag, epoc_data, x_limits, bsl_val in alignments:
         ax.axvline(x=0, linestyle='--', color='#444444', linewidth=1.5, dashes=(5, 5), zorder=0)
         ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=1.0, zorder=0)
 
-        # if align_tag == 'Resp':
-        #     ax.legend(loc='upper right', frameon=False, fontsize=12, handlelength=1.5)
-        # else:
-        #     if ax.get_legend(): ax.get_legend().remove()
+        if align_tag == 'Resp':
+            ax.legend(loc='upper right', frameon=False, fontsize=12, handlelength=1.5)
+        else:
+            if ax.get_legend(): ax.get_legend().remove()
         if ax.get_legend(): ax.get_legend().remove()
 
         plt.savefig(os.path.join(save_dir, f"Spt_trace_{macro}_{align_tag}.svg"), format='svg', dpi=300, bbox_inches=None)
