@@ -241,7 +241,7 @@ model_func <- function(current_data){
 
 #%% Parameters
 delay_nodelays <- c("LexDelayRep")#c("LexDelay","LexNoDelay","LexDelayRep")#c("LexDelayRep","LexDelay","LexNoDelay")
-alignments <- c("Aud")#,"Go","Resp")
+alignments <- c("Delay","Aud")#,"Go","Resp")
 #alignments <- c("Resp")
 # alignments <- c("Aud")
 #elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
