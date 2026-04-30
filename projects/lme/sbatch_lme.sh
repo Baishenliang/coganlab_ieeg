@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -e DCC_out/%a.err
 #SBATCH -a 1-20
-#SBATCH --mem=1000G
-#SBATCH --cpus-per-task=80
+#SBATCH --mem=300G
+#SBATCH --cpus-per-task=20
 #SBATCH --partition=common,scavenger
 #SBATCH --output=DCC_out/%a.out
 module load R
