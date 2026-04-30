@@ -191,6 +191,6 @@ for comp_idx in range(k):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
-    #axes[comp_idx, 0].set_ylim(-0.2, 5)
+    axes[comp_idx, 0].set_ylim(-0.2, 5)
 plt.tight_layout()
 plt.show()
