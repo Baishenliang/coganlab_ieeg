@@ -90,7 +90,7 @@ plt.show()
 # ---------------------------
 
 k = 5
-nmf = NMF(n_components=k, init='nndsvda', max_iter=2000, random_state=0)
+nmf = NMF(n_components=k, init='nndsvd', max_iter=2000, random_state=0)
 
 W = nmf.fit_transform(X)   # electrodes x components
 H = nmf.components_        # components x time
