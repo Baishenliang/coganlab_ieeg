@@ -89,7 +89,7 @@ plt.show()
 # 5. FINAL MODEL (k = 4)
 # ---------------------------
 
-k = 4
+k = 5
 nmf = NMF(n_components=k, init='nndsvda', max_iter=2000, random_state=0)
 
 W = nmf.fit_transform(X)   # electrodes x components
