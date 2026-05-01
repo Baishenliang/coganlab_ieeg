@@ -31,7 +31,7 @@ if (os_type == "Windows") {
   }
 }
 
-model_func <- function(current_data){
+model_func <- function(current_data,model_type){
   
   # Loading packages
   os_type <- Sys.info()['sysname']
@@ -150,9 +150,13 @@ model_func <- function(current_data){
   term_pho <- paste0('pho', 1:11, "*wordness")
   term_sem <- paste0('sem', 1:67)
   
-  #all_terms <- c(term_aco, term_pho, term_sem, "wordness")
-  #all_terms <- c(term_aco, term_pho, "wordness")
-  all_terms <- c(term_sem)
+  
+  all_terms <- switch(model_type,
+                      'full'     = c(term_aco, term_pho, term_sem, "wordness"),
+                      'speech'  = c(term_aco, term_pho, "wordness"),
+                      '_onlysem' = c(term_sem),
+                      stop("unknowned model type: 'full', 'aco_pho' or 'semantic'")
+  )
   
   fml <- as.formula(paste0("value ~ 1 + ", paste(all_terms, collapse = " + ")))
   
@@ -250,39 +254,6 @@ elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')#,'Wgw_p55b','Wgw_
 #elec_grps <- c('Motor')
 
 a = 0
-#Make fixed lambda (from cv or anything optimized)
-
-# ridge_lambda_speech <- data.frame( # lambda adjusted according to electrode size
-#   vWM = c(1e-5,  # Auditory vWM
-#           0.1, # Sensorymotor vWM
-#           1, # Motor vWM
-#           10, # Delay only vWM
-#           0.001,# Wgw_p55b
-#           0.001)# Wgw_a55b
-# )
-# rownames(ridge_lambda_speech) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
-# 
-# 
-# ridge_lambda_nonword <- data.frame( # lambda adjusted according to electrode size
-#   vWM = c(0.001,  # Auditory vWM
-#           0.001, # Sensorymotor vWM
-#           0.001, # Motor vWM
-#           0.001, # Delay only vWM
-#           0.001,# Wgw_p55b
-#           0.001)# Wgw_a55b
-# )
-# rownames(ridge_lambda_nonword) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
-# 
-# 
-# ridge_lambda_semantics <- data.frame( # lambda adjusted according to electrode size
-#   vWM = c(1e-5,  # Auditory vWM
-#           1, # Sensorymotor vWM
-#           1e-5, # Motor vWM
-#           10, # Delay only vWM
-#           0.001,# Wgw_p55b
-#           10)# Wgw_a55b
-# )
-# rownames(ridge_lambda_semantics) <- c("Auditory", "Sensorymotor", "Motor","Delay_only",'Wgw_p55b','Wgw_a55b')#,'SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
@@ -313,116 +284,111 @@ sem_fea_T$stim <- rownames(sem_fea_T)
 sem_fea_T <- sem_fea_T[, c("stim", setdiff(names(sem_fea_T), "stim"))]
 
 #%% Start looping
-#for (ridge_lambda in list(ridge_lambda_nonword)){#list(ridge_lambda1,ridge_lambda2)){
-#for (lambda_test in c(0.001,1,10)){
-#for (lambda_test in c(0.001)){
 lambda_test=0.001
-# for (lambda_test in c(0.001,1,10,100)){
-#for (lambda_test in c(0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,10000)){
-  #for (lambda_test in c(20,40,60,80,200,500,1000,10000)){
-  #for (lambda_test in c(0.2,0.4,0.6,0.8,2,4,6,8)){
-for (rep_yn in c('','_yn')){
-  #'_forSilence')){#,
-  for (delay_nodelay in delay_nodelays){
-    for (alignment in alignments){
-      for (elec_grp in elec_grps){
-        
-        if (delay_nodelay=='LexNoDelay' && elec_grp=='Delay_only'){
-          next
-        }
-        
-        if (delay_nodelay=='LexNoDelay' && alignment=='Go'){
-          next
-        }
-        
-        a <- a + 1
-        if (task_ID > 0 && a != task_ID) {
-          next
-        }
-        
-        
-        #%% Load files
-        cat("loading files \n")
-        # slurm task selection
-        # vwm electrodes
-        if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b' || elec_grp=='SM_vWM_Auditory_early' || 
-            elec_grp=='SM_vWM_Auditory_late' || elec_grp=='SM_vWM_Delay' || elec_grp=='SM_vWM_Motor'){
-          file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_",delay_nodelay,"_",alignment,"_",elec_grp,rep_yn,"_long.csv",
-                                      sep = "")
-        }else{
-          file_path_long_vwm <- paste(home_dir,
-                                      "data/epoc_",delay_nodelay,"_",alignment,"_",elec_grp,"_vWM",rep_yn,"_long.csv",
-                                      sep = "")
-        }
-        long_data <- read.csv(file_path_long_vwm)
-        
-        #%% get only word part of the "stim"
-        long_data <- long_data %>%
-          mutate(
-            stim = str_split_fixed(string = stim, pattern = "-", n = 2)[, 1]
-          )
-        
-        #%% append acoustic features
-        long_data <- left_join(long_data,aco_fea_T,by='stim')
-        
-        #%% append phonemic features
-        long_data <- left_join(long_data,pho_fea_T,by='stim')
-        
-        long_data$time <- as.numeric(long_data$time)
-        time_points <- unique(long_data$time)
-        
-        lex <- 'All'
-        sem_cols <- setdiff(names(sem_fea_T), "stim")
-        
-        if (lex == 'Word'){
-          word_data <- long_data[long_data['wordness'] == lex, ]
-          word_data <- left_join(word_data, sem_fea_T, by = 'stim')
+for (target_model in c('_onlysem','speech')){
+  for (rep_yn in c('','_yn')){
+    #'_forSilence')){#,
+    for (delay_nodelay in delay_nodelays){
+      for (alignment in alignments){
+        for (elec_grp in elec_grps){
           
-        } else if (lex == 'All') {
-          if (sem_tag == 'syllables_sem_proxy_pca'){
-            word_data <- left_join(long_data, sem_fea_T, by = 'stim')
-          } else {
-            word_data <- left_join(long_data, sem_fea_T, by = 'stim')
-            nonword_indices <- word_data$wordness == 'Nonword'
-            if (sum(nonword_indices) > 0) {
-              word_data[nonword_indices, sem_cols] <- 0
-            }
+          if (delay_nodelay=='LexNoDelay' && elec_grp=='Delay_only'){
+            next
           }
-        } else {
-          word_data <- long_data
+          
+          if (delay_nodelay=='LexNoDelay' && alignment=='Go'){
+            next
+          }
+          
+          a <- a + 1
+          if (task_ID > 0 && a != task_ID) {
+            next
+          }
+          
+          
+          #%% Load files
+          cat("loading files \n")
+          # slurm task selection
+          # vwm electrodes
+          if (elec_grp=='Delay_only' || elec_grp== 'Wgw_p55b' || elec_grp=='Wgw_a55b' || elec_grp=='SM_vWM_Auditory_early' || 
+              elec_grp=='SM_vWM_Auditory_late' || elec_grp=='SM_vWM_Delay' || elec_grp=='SM_vWM_Motor'){
+            file_path_long_vwm <- paste(home_dir,
+                                        "data/epoc_",delay_nodelay,"_",alignment,"_",elec_grp,rep_yn,"_long.csv",
+                                        sep = "")
+          }else{
+            file_path_long_vwm <- paste(home_dir,
+                                        "data/epoc_",delay_nodelay,"_",alignment,"_",elec_grp,"_vWM",rep_yn,"_long.csv",
+                                        sep = "")
+          }
+          long_data <- read.csv(file_path_long_vwm)
+          
+          #%% get only word part of the "stim"
+          long_data <- long_data %>%
+            mutate(
+              stim = str_split_fixed(string = stim, pattern = "-", n = 2)[, 1]
+            )
+          
+          #%% append acoustic features
+          long_data <- left_join(long_data,aco_fea_T,by='stim')
+          
+          #%% append phonemic features
+          long_data <- left_join(long_data,pho_fea_T,by='stim')
+          
+          long_data$time <- as.numeric(long_data$time)
+          time_points <- unique(long_data$time)
+          
+          lex <- 'All'
+          sem_cols <- setdiff(names(sem_fea_T), "stim")
+          
+          if (lex == 'Word'){
+            word_data <- long_data[long_data['wordness'] == lex, ]
+            word_data <- left_join(word_data, sem_fea_T, by = 'stim')
+            
+          } else if (lex == 'All') {
+            if (sem_tag == 'syllables_sem_proxy_pca'){
+              word_data <- left_join(long_data, sem_fea_T, by = 'stim')
+            } else {
+              word_data <- left_join(long_data, sem_fea_T, by = 'stim')
+              nonword_indices <- word_data$wordness == 'Nonword'
+              if (sum(nonword_indices) > 0) {
+                word_data[nonword_indices, sem_cols] <- 0
+              }
+            }
+          } else {
+            word_data <- long_data
+          }
+          
+          rm(long_data)
+          #%% Run computations
+          
+          #%% append ridge lambdas
+          # word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
+          word_data$ridge_lambda_vWM<-lambda_test
+          cat("Re-formatting long data \n")
+          data_by_time <- split(word_data, word_data$time)
+          #browser()
+          rm(word_data)
+          
+          cat("Starting modeling \n")
+          #%% Get core environment
+          cl <- makeCluster(num_cores)
+          registerDoParallel(cl)
+          clusterExport(cl, varlist = c("model_func"))
+          # Fot Duke HPC sbatch:
+          # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
+          # 13 tasks can be paralled at once.
+          perm_compare_df <- parLapply(cl, data_by_time, model_func, model_type = target_model)
+          stopCluster(cl)
+          perm_compare_df <- do.call(rbind, perm_compare_df)
+          perm_compare_df <- perm_compare_df %>% arrange(time_point)
+          
+          print(perm_compare_df)
+          if (target_model=='speech'){
+            target_model_write=''
+          }
+          write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,target_model_write,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+          
         }
-        
-        rm(long_data)
-        #%% Run computations
-        
-        #%% append ridge lambdas
-        # word_data$ridge_lambda_vWM<-ridge_lambda[elec_grp,'vWM']
-        word_data$ridge_lambda_vWM<-lambda_test
-        cat("Re-formatting long data \n")
-        data_by_time <- split(word_data, word_data$time)
-        #browser()
-        rm(word_data)
-        
-        cat("Starting modeling \n")
-        #%% Get core environment
-        cl <- makeCluster(num_cores)
-        registerDoParallel(cl)
-        clusterExport(cl, varlist = c("model_func"))
-        # Fot Duke HPC sbatch:
-        # No. CPU set as 30, memory limits set as 30GB, it takes 4~5 hours to complete one set of model fitting followed by 100 permutations with 1.2 seconds of trial length.
-        # 13 tasks can be paralled at once.
-        perm_compare_df<-parLapply(cl, data_by_time, model_func)
-        stopCluster(cl)
-        perm_compare_df <- do.call(rbind, perm_compare_df)
-        perm_compare_df <- perm_compare_df %>% arrange(time_point)
-        
-        print(perm_compare_df)
-        
-        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,"_vWMλ_",ridge_lambda[elec_grp,'vWM'],".csv",sep = ''),row.names = FALSE)
-        #write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
-        write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,"_onlysem_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
-        
       }
     }
   }
