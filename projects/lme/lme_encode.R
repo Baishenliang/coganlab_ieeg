@@ -383,9 +383,7 @@ for (target_model in c('_onlysem','speech')){
           perm_compare_df <- perm_compare_df %>% arrange(time_point)
           
           print(perm_compare_df)
-          if (target_model=='speech'){
-            target_model_write=''
-          }
+          target_model_write <- ifelse(target_model == "speech", "", target_model)
           write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,target_model_write,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
           
         }
