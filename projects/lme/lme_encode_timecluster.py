@@ -229,8 +229,8 @@ aco_col = [0, 0.502, 0.502]
 pho_col = [0.502, 0, 0.502]      
 wordness_col = [1, 0, 1] 
 
-is_normalize = True
-is_bsl_correct = True
+is_normalize = False
+is_bsl_correct = False
 mode = 'time_cluster'
 
 # 定义所有要画的电极组及其对应参数
@@ -269,7 +269,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
     # [修改] 定义列（Alignment）及其参数 - 现在 Go 在第二列，Resp 在第三列
     all_alignments = [
         # (Name, X-Lim)
-        ('Aud', [-0.25, 1.6]),
+        ('Delay', [-0.25, 1]),
         # ('Go', [-0.25, 1.5]),
         # ('Resp', [-0.25, 1.5])
     ]
@@ -426,7 +426,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
     # 2. 绘制 Beta (Feature) 和 RMS 大图
     # =============================================================================
     print("Starting Beta and RMS Big Plots...")
-    group_beta_type = 'max' # 'rms' or 'max' or 'avg'
+    group_beta_type = 'avg' # 'rms' or 'max' or 'avg'
     match is_huge:
         case '_onlysem':
             target_beta_features = ['sem'] 
@@ -581,14 +581,16 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                                 elif group_beta_type == 'rms':
                                     val = sensitivity_gain
 
-
-                        raw_fea['rms'] = val / np.sqrt(len(fea_columns)-1)
+                        if group_beta_type != 'max':
+                            raw_fea['rms'] = val
+                        else:
+                            raw_fea['rms'] = val / np.sqrt(len(fea_columns)-1)
                         all_rms_data[beta_fea] = raw_fea.loc[raw_fea['perm'] == 0].groupby('time_point')['rms'].mean()
 
                         # Stats
                         raw_fea = raw_fea[['perm', 'time_point', 'rms']]
                         # For max:
-                        pthres = [0.1e-20, 0.25e-2]
+                        pthres = [1e-3, 2.5e-2]
                         # For average:
                         # pthres = [2e-3, 5e-2]
                         _, _, mask_time_clus = get_traces_clus(raw_fea, pthres[0], pthres[1], mode=mode, target_fea='rms', input='R2')
@@ -640,11 +642,13 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                     j_sig = 0
                     for beta_fea, rms_series in all_rms_data.items():
                         # ... (数值计算与平滑部分保持不变) ...
-                        #rms_series = gaussian_filter1d(rms_series, sigma=4, mode='nearest')
+                        rms_series = gaussian_filter1d(rms_series, sigma=4, mode='nearest')
                         if is_normalize:
                             baseline_mask = (rms_series.index >= -0.6) & (rms_series.index < 0)
                             baseline_mean = rms_series[baseline_mask].mean()
                             rms_series_corrected = rms_series - baseline_mean
+                        else:
+                            rms_series_corrected = rms_series
                         color = feature_colors.get(beta_fea, '#333333')
                         linestyle = '--' if ':' in beta_fea else '-'
                         plot_label = feature_tags.get(beta_fea, beta_fea)

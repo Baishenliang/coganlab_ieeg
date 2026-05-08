@@ -70,6 +70,19 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
+def remove_outliers_and_mean(series):
+    """
+    Removes values beyond 3 standard deviations from the mean and then calculates the mean.
+    """
+    if len(series) < 2: # Need at least 2 points to calculate std dev
+        return series.mean()
+    mean_val = series.mean()
+    std_val = series.std()
+    lower_bound = mean_val - 3 * std_val
+    upper_bound = mean_val + 3 * std_val
+    filtered_series = series[(series >= lower_bound) & (series <= upper_bound)]
+    return filtered_series.mean()
+
 #%% Main Processing Loop
 
 # --- Parameters ---
@@ -84,17 +97,25 @@ opts_yn = ['','','_yn']#,'', '_yn','_forSilence'
 opts_yn_base = [None,None,'']#,'', '_yn','_forSilence'
 opts_huge = ['onlysem',""] # 可以修改为 ['_huge', 'onlysem', 'onlysemproxy'] 等
 
-# Time Windows definition
-time_windows = [
-    #(0.55, 0.75), (0.75, 0.95), (0.95, 1.15),(1.15, 1.35),(1.35, 1.55)
-    (0.55,1.05),(1.05, 1.55)
-]
-time_windows_avg = [0.8, 1.3] # For plotting x-axis positions
-time_labels = ["0.8", "1.3"] # For plotting x-axis positions
-n_windows = len(time_windows)
 
 # Loop through all configuration combinations
 for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
+    
+    if Fig_dir != "Fig7":
+        # Time Windows definition
+        time_windows = [
+            (0, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1.0)
+        ]
+        time_windows_avg = [0.125, 0.375, 0.625, 0.875] # For plotting x-axis positions
+        time_labels = ["0.125", "0.375", "0.625", "0.875"] # For plotting x-axis positions
+    else:
+        time_windows = [
+            (0, 0.25), (0.25, 0.5)
+        ]
+        time_windows_avg = [0.125, 0.375] # For plotting x-axis positions
+        time_labels = ["0.125", "0.375"] # For plotting x-axis positions
+
+    n_windows = len(time_windows)
     
     match Fig_dir:
         case "Fig5":
@@ -108,7 +129,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
             Fig_size=42
             font_scale = 5
         case "Fig7":
-            target_beta_features = ['pho_word', 'pho_nonword', 'sem']
+            target_beta_features = ['aco_main','pho_main', 'sem']#['pho_word', 'sem']
             unified_y_scale = 0.4 # Unified scale for combined plot
             Fig_size=22
             font_scale = 2
@@ -134,7 +155,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
 
     # Define Alignments (Columns)
     all_alignments = [ # Only plot Aud alignment
-        ('Aud', [-0.2, 1.75])
+        ('Delay', [-0.2, 1.75])
     ] 
 
     # Split electrodes into chunks (3 rows per figure)
@@ -213,7 +234,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
                 # --- PROCESS EACH FEATURE ---
                 for beta_fea in target_beta_features:
                     is_vWM = '_vWM'
-                    group_beta_type = 'max' # 'rms' or 'max' or 'avg'
+                    group_beta_type = 'avg' # 'rms' or 'max' or 'avg'
 
                     # --- 1. Identify Columns (基于 Feature Name) ---
                     fea_columns_aco_word = [col for col in raw.columns if col.startswith('aco') and ':' not in col and is_vWM in col]
@@ -270,13 +291,12 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
                     def aggregate_features(val_matrix, group_type):
                         """根据 group_beta_type 对特征维度 (axis=1) 进行聚合"""
                         if group_type == 'avg':
-                            return np.mean(val_matrix, axis=1)
+                            return np.apply_along_axis(remove_outliers_and_mean, 1, val_matrix) # fallback
                         elif group_type == 'max':
                             return np.max(val_matrix, axis=1)
                         elif group_type == 'rms':
                             # Root Mean Square across features
                             return np.sqrt(np.mean(val_matrix**2, axis=1))
-                        return np.mean(val_matrix, axis=1) # fallback
 
                     # --- 4. Process Data (Raw & Base) ---
                     
@@ -298,9 +318,13 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
                     n_feats = len(target_main_cols) 
                     
                     # 归一化
-                    raw_fea['rms'] = val_task / np.sqrt(n_feats)
-                    raw_fea_base['rms'] = val_base / np.sqrt(n_feats)
-                    
+                    if group_beta_type == 'max':
+                        raw_fea['rms'] = val_task / np.sqrt(n_feats)
+                        raw_fea_base['rms'] = val_base / np.sqrt(n_feats)
+                    else:
+                        raw_fea['rms'] = val_task
+                        raw_fea_base['rms'] = val_base
+    
                     # 减去基线 (Subtract Baseline)
                     raw_fea['rms'] = raw_fea['rms'] - raw_fea_base['rms']
 
@@ -324,19 +348,12 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
                         
                         # Calculate Two-tailed P-value
                         n_perms = len(null_means)
-                        if n_perms > 0:
-                            # 1. 计算右尾 (Observed >= Null) 的数量
+                        if n_perms > 0: # One-tailed test (larger): calculate the right tail
+                            # 计算右尾 (Observed >= Null) 的数量
                             n_ge = np.sum(null_means >= obs_mean)
                             
-                            # 2. 计算左尾 (Observed <= Null) 的数量
-                            n_le = np.sum(null_means <= obs_mean)
-                            
-                            # 3. 取较小的那个尾巴 (the more extreme tail)
-                            min_tail_count = min(n_ge, n_le)
-                            
-                            # 4. 双尾公式: (2 * min_count + 1) / (N + 1)
-                            # 乘以2是因为我们要看两个方向
-                            p_val = (2 * min_tail_count + 1) / (n_perms + 1)
+                            # 单尾公式 (larger): (n_ge + 1) / (N + 1)
+                            p_val = (n_ge + 1) / (n_perms + 1)
                             
                             # P值不能超过1.0
                             if p_val > 1.0: p_val = 1.0
@@ -355,7 +372,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
 
                 # --- Perform Correction on ALL p-values ---
                 if len(all_raw_pvals) > 0:
-                    _, all_corrected_pvals, _, _ = multipletests(all_raw_pvals, alpha=0.05, method='bonferroni')
+                    _, all_corrected_pvals, _, _ = multipletests(all_raw_pvals, alpha=0.05, method='fdr_bh')
                 else:
                     all_corrected_pvals = []
                 
