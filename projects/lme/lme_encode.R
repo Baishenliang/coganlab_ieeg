@@ -245,7 +245,7 @@ model_func <- function(current_data,model_type){
 
 #%% Parameters
 delay_nodelays <- c("LexDelayRep")#c("LexDelay","LexNoDelay","LexDelayRep")#c("LexDelayRep","LexDelay","LexNoDelay")
-alignments <- c("Delay","Aud")#,"Go","Resp")
+alignments <- c("Delay")#,"Aud")#,"Go","Resp")
 #alignments <- c("Resp")
 # alignments <- c("Aud")
 #elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only','Wgw_p55b','Wgw_a55b','SM_vWM_Auditory_early','SM_vWM_Auditory_late','SM_vWM_Delay','SM_vWM_Motor')
@@ -254,6 +254,7 @@ elec_grps <- c('Auditory','Sensorymotor','Motor','Delay_only')#,'Wgw_p55b','Wgw_
 #elec_grps <- c('Motor')
 
 a = 0
+vWM = '_novWM'
 
 #Load acoustic parameters
 aco_path <- paste(home_dir,
@@ -317,7 +318,7 @@ for (target_model in c('_onlysem','speech')){
                                         sep = "")
           }else{
             file_path_long_vwm <- paste(home_dir,
-                                        "data/epoc_",delay_nodelay,"_",alignment,"_",elec_grp,"_vWM",rep_yn,"_long.csv",
+                                        "data/epoc_",delay_nodelay,"_",alignment,"_",elec_grp,vWM,rep_yn,"_long.csv",
                                         sep = "")
           }
           long_data <- read.csv(file_path_long_vwm)
@@ -384,7 +385,7 @@ for (target_model in c('_onlysem','speech')){
           
           print(perm_compare_df)
           target_model_write <- ifelse(target_model == "speech", "", target_model)
-          write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,target_model_write,"_testλ_",lambda_test,".csv",sep = ''),row.names = FALSE)
+          write.csv(perm_compare_df,paste(home_dir,"results/",delay_nodelay,"_",elec_grp,"_",alignment,"_",lex,rep_yn,target_model_write,"_testλ_",lambda_test,vWM,".csv",sep = ''),row.names = FALSE)
           
         }
       }
