@@ -640,12 +640,20 @@ for subject, processing_type in subject_processing_dict.items():
             # gamma and permutation
             if Task_Tag == "LexicalDecRepDelay":
 
+                # gamma_epoc_zip = zip(
+                #     ('Auditory_stim/Repeat/CORRECT', 'Delay/Repeat/CORRECT','Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT', 'Auditory_stim/Yes_No/CORRECT', 'Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT','Delay/Yes_No/CORRECT'),
+                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT','Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT'),
+                #     ((-2.5, 4),(-0.5, 1.5),(-4.5, 2), (-5, 1.5), (-2.5, 4), (-4.5, 2), (-5, 1.5), (-0.5, 1.5)),
+                #     ('Auditory_inRep', 'Delay_inRep', 'Go_inRep', 'Resp_inRep', 'Auditory_inYN', 'Go_inYN', 'Resp_inYN','Delay_inYN'),
+                #     (True, True, True, True, True, True, True,True)
+                # )
+
                 gamma_epoc_zip = zip(
-                    ('Auditory_stim/Repeat/CORRECT', 'Delay/Repeat/CORRECT','Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT', 'Auditory_stim/Yes_No/CORRECT', 'Go/Yes_No/CORRECT', 'Resp/Yes_No/CORRECT','Delay/Yes_No/CORRECT'),
-                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT','Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT', 'Cue/Yes_No/CORRECT','Cue/Yes_No/CORRECT'),
-                    ((-2.5, 4),(-0.5, 1.5),(-4.5, 2), (-5, 1.5), (-2.5, 4), (-4.5, 2), (-5, 1.5), (-0.5, 1.5)),
-                    ('Auditory_inRep', 'Delay_inRep', 'Go_inRep', 'Resp_inRep', 'Auditory_inYN', 'Go_inYN', 'Resp_inYN','Delay_inYN'),
-                    (True, True, True, True, True, True, True,True)
+                    ('Delay/Yes_No/CORRECT',),
+                    ('Delay/Repeat/CORRECT',),
+                    ((-0.5, 1.5),),
+                    ('Delay_YN-Rep',),
+                    (False, )
                 )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
