@@ -94,7 +94,7 @@ mean_word_len=0.65#0.65 # from utils/lexdelay_get_stim_length.m
 # Experiment Iterators
 Fig_dirs = ['Fig5','Fig6','Fig7'] # 可以根据需要修改为 ['Fig5', 'Fig6'] 或其他目录
 opts_yn = ['','','_yn']#,'', '_yn','_forSilence'
-opts_yn_base = [None,None,'']#,'', '_yn','_forSilence'
+opts_yn_base = ['','','']#,'', '_yn','_forSilence'
 opts_huge = ['onlysem',""] # 可以修改为 ['_huge', 'onlysem', 'onlysemproxy'] 等
 
 
@@ -199,7 +199,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
 
                     filename = f"results/{delay_nodelay_target}_{elec_grp}_{alignment}_All{is_yn}{current_is_huge}_testλ_{vWM_lambda}.csv"
                     if is_yn_base is not None:
-                        filename_base = f"results/{delay_nodelay_base}_{elec_grp}_{alignment}_All{is_yn_base}{current_is_huge}_testλ_{vWM_lambda}.csv"
+                        filename_base = f"results/{delay_nodelay_base}_{elec_grp}_{alignment}_All{is_yn_base}{current_is_huge}_testλ_{vWM_lambda}_novWM.csv"
                         if not os.path.exists(filename) or not os.path.exists(filename_base):
                             continue
 
@@ -455,7 +455,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
         save_dir = os.path.join(manuscript_save_dir, Fig_dir)
         os.makedirs(save_dir, exist_ok=True)
         
-        save_name = os.path.join(save_dir, f'results_sig.svg')
+        save_name = os.path.join(save_dir, f'results_sig_-novWm.svg')
         
         plt.savefig(save_name, dpi=100,transparent=True,)
         plt.close(fig_rms)

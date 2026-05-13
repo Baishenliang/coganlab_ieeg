@@ -52,6 +52,7 @@ plt.rcParams['ytick.labelsize'] = 12*font_scale
 plt.rcParams['legend.fontsize'] = 12*font_scale
 
 Fig_dir = 'Fig5' #'Fig5'
+is_noVWM = '_novWM'#'' # '_noVWM'
 
 MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
 Sensorimotor_col = [1, 0, 0]  # Sensorimotor
@@ -318,7 +319,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                 add_alignment_vlines(ax, alignment)
                 
                 # --- 加载数据 ---
-                filename = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}.csv"
+                filename = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn}{is_huge}_testλ_{vWM_lambda}{is_noVWM}.csv"
                 if not os.path.exists(filename):
                     print(f"Warning: File not found {filename}")
                     continue
@@ -498,7 +499,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
 
                     raw = None
                     for is_huge_opt in opts_huge:
-                        filename = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn}{is_huge_opt}_testλ_{vWM_lambda}.csv"
+                        filename = f"results/{delay_nodelay}_{elec_grp}_{alignment}_All{is_yn}{is_huge_opt}_testλ_{vWM_lambda}{is_noVWM}.csv"
                         if not os.path.exists(filename):
                             print(f"Warning: File not found {filename}")
                             continue
@@ -758,7 +759,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         #save_dir_rms = os.path.join('figs', 'publication_quality_plots')
         manuscript_save_dir = rf"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elements\{Fig_dir}"
         os.makedirs(manuscript_save_dir, exist_ok=True)
-        save_name_rms = os.path.join(manuscript_save_dir, f'results{is_huge}.svg')
+        save_name_rms = os.path.join(manuscript_save_dir, f'results{is_huge}{is_noVWM}.svg')
         plt.savefig(save_name_rms, dpi=300) 
         plt.show()
         #plt.close(fig_rms)
