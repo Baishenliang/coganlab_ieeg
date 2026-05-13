@@ -81,6 +81,8 @@ if groupsTag=="LexDelay":
         data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay)
         #data_LexDelay_Cue, _ = load_stats(stat_type, 'Cue'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
         data_LexDelay_Delay, _ = load_stats(stat_type, 'Delay'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
+        data_LexDelay_Delay_YN, _ = load_stats(stat_type, 'Delay_inYN', contrast, stats_root_delay, stats_root_delay)
+        data_LexDelay_Delay_YN_Rep, _ = load_stats(stat_type, 'Delay_YN-Rep', contrast, stats_root_delay, stats_root_delay)
         data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
         data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
 
@@ -91,6 +93,8 @@ if groupsTag=="LexDelay":
         epoc_LexDelay_Aud,_=load_stats('zscore','Auditory'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         #poc_LexDelay_Cue,_=load_stats('zscore','Cue'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         epoc_LexDelay_Delay,_=load_stats('zscore','Delay'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
+        epoc_LexDelay_Delay_YN,_=load_stats('zscore','Delay_inYN','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
+        epoc_LexDelay_Delay_YN_Rep,_=load_stats('zscore','Delay_YN-Rep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         epoc_LexDelay_Go,_=load_stats('zscore','Go'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
         epoc_LexDelay_Resp,_=load_stats('zscore','Resp'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
 
@@ -949,13 +953,15 @@ if groupsTag == "LexDelay":
         alignments = [
             ('Stim', epoc_LexDelay_Aud, [-0.25, 1.5], True),
             ('Delay', epoc_LexDelay_Delay, [-0.25, 1.5], range(round(631*1.4), 650)),
+            ('Delay_YN', epoc_LexDelay_Delay_YN, [-0.25, 1.5], range(round(631*1.4), 650)),
+            ('Delay_YN-Rep', epoc_LexDelay_Delay_YN_Rep, [-0.25, 1.5], range(round(631*1.4), 650)),
             ('Go', epoc_LexDelay_Go, [-0.25, 1.0], range(631, 650)),
             ('Resp', epoc_LexDelay_Resp, [-0.25, 1.0], range(631, 650))
         ]
 
         for align_tag, epoc_data, x_limits, bsl_val in alignments:
             # --- 核心：判断是否保留 Y 轴并计算宽度 ---
-            has_y = (align_tag == 'Stim')
+            has_y = (align_tag == 'Stim' or 'Delay' in align_tag)  # Stim 和 Delay 相关的图保留 Y 轴，Go/Resp 不保留
             current_left_pad = left_padding_with_y if has_y else left_padding_no_y
             
             x_duration = x_limits[1] - x_limits[0]
@@ -985,7 +991,10 @@ if groupsTag == "LexDelay":
                 ax.yaxis.set_visible(False) # 禁用整个 Y 轴对象
             else:
                 # 老闆要求：Y 軸覆蓋 0, 0.5, 1, 1.5 且在 0 和 1.5 處精確結束
-                y_ticks = [0, 0.5, 1.0, 1.5]
+                if align_tag != 'Delay_YN-Rep': # 這個圖的數據範圍較小，刻度調整為 0, 0.25, 0.5, 0.75
+                    y_ticks = [0, 0.5, 1.0, 1.5]
+                else:
+                    y_ticks = [-0.5, 0, 0.5]
                 ax.set_yticks(y_ticks)
                 
                 # 關鍵：設定軸線 (Spine) 的起止點，不超出刻度
@@ -993,11 +1002,17 @@ if groupsTag == "LexDelay":
                 ax.spines['left'].set_bounds(0, 1.5)
                 
                 # 數據顯示範圍稍微寬一點（-0.2），但軸線只顯示到 1.5
-                ax.set_ylim([-0.2, 1.6]) 
+                if align_tag != 'Delay_YN-Rep':
+                    ax.set_ylim([-0.2, 1.6]) 
+                else:
+                    ax.set_ylim([-0.8, 0.8])
                 
                 # 設定刻度字體與格式 (0.0 -> 0, 1.0 -> 1)
                 ax.tick_params(axis='y', labelsize=24, length=6, width=2.5, direction='out')
-                ax.set_yticklabels(['0', '0.5', '1.0', '1.5'], fontweight='bold')
+                if align_tag != 'Delay_YN-Rep': # 這個圖的數據範圍較小，刻度調整為 0, 0.25, 0.5, 0.75
+                    ax.set_yticklabels(['0', '0.5', '1.0', '1.5'], fontweight='bold')
+                else:
+                    ax.set_yticklabels(['-0.5', '0', '0.5'], fontweight='bold')
 
             # X 轴刻度设置
             xticks = [0, 0.5, 1.0, 1.5]
