@@ -145,47 +145,42 @@ all_alignments = [ # Only plot Aud alignment
     ('Delay', [-0.2, 1.75])
 ] 
 
-# Split electrodes into chunks (3 rows per figure)
-elec_chunks = list(chunks(all_elec_configs, 4))
-
 delay_nodelay_target = 'LexDelayRep'
 delay_nodelay_base = 'LexDelayRep'
 
-# --- Iterate through chunks (Figures) ---
-for chunk_idx, current_chunk in enumerate(elec_chunks):
-    for chunk_idx_col, current_chunk_col in enumerate(elec_chunks):
+# --- Create one big 4x4 figure for the contrast matrix ---
+n_rows_grid = len(all_elec_configs)
+n_cols_grid = len(all_elec_configs)
+fig_rms, axes_rms = plt.subplots(n_rows_grid, n_cols_grid, figsize=(Fig_size, Fig_size*0.7), sharex=True, sharey=True)
 
-        baseline_label = current_chunk_col[0]# Use the first electrode group in the current column chunk as baseline label
-        n_rows = len(current_chunk)
-        n_cols = 4
+# --- Iterate through rows of the grid (target electrode group) ---
+for row_idx, (elec_grp, elec_col, fea_plot_yscale) in enumerate(all_elec_configs):
+    
+    # --- Iterate through columns of the grid (baseline electrode group) ---
+    for col_idx_base, (elec_grp_base, _, _) in enumerate(all_elec_configs):
 
-        # Initialize Figure - electrode groups as columns
-        fig_rms, axes_rms = plt.subplots(1, n_rows, figsize=(Fig_size, 7), sharey=True)
-        if n_rows == 1: 
-            axes_rms = [axes_rms] # Ensure axes_rms is always a list for consistent indexing
-        
-        # --- Iterate through Rows (Electrode Groups) ---
-        for row_idx, (elec_grp, elec_col, fea_plot_yscale) in enumerate(current_chunk):
-            
-            # --- Iterate through Columns (Alignments) ---
-            for col_idx, (alignment, xlim_align) in enumerate(all_alignments):
-                ax = axes_rms[row_idx] # Index by column
+        ax = axes_rms[row_idx, col_idx_base]
 
+        # --- Iterate through Columns (Alignments) ---
+        for col_idx, (alignment, xlim_align) in enumerate(all_alignments):
                 # --- Load and Merge Data from different 'is_huge' settings ---
                 raw = None
                 raw_base = None
 
                 filename = f"results/{delay_nodelay_target}_{elec_grp}_{alignment}_All_testλ_{vWM_lambda}.csv"
-                filename_base = f"results/{delay_nodelay_base}_{'Motor'}_{alignment}_All_testλ_{vWM_lambda}.csv"
+                filename_base = f"results/{delay_nodelay_base}_{elec_grp_base}_{alignment}_All_testλ_{vWM_lambda}.csv"
 
-                temp_raw = pd.read_csv(filename).astype(np.float32)
-                temp_raw_base = pd.read_csv(filename_base).astype(np.float32)
+                try:
+                    raw = pd.read_csv(filename).astype(np.float32)
+                    raw_base = pd.read_csv(filename_base).astype(np.float32)
+                except FileNotFoundError:
+                    ax.text(0.5, 0.5, "Data Missing", ha='center', va='center')
+                    ax.set_xticks([])
+                    ax.set_yticks([])
+                    sns.despine(ax=ax, left=True, bottom=True)
+                    continue
 
-                if raw is None:
-                    raw = temp_raw
-                    raw_base = temp_raw_base
-
-                if raw is None:
+                if raw is None or raw_base is None:
                     ax.text(0.5, 0.5, "Data Missing", ha='center', va='center')
                     continue
                 
@@ -376,36 +371,35 @@ for chunk_idx, current_chunk in enumerate(elec_chunks):
                             va = 'bottom' if height >= 0 else 'top'
                             
                             ax.text(rect.get_x() + rect.get_width()/2.0, y_text, star_text,
-                                    ha='center', va=va, fontsize=16, fontweight='bold', color='black')
+                                    ha='center', va=va, fontsize=40, fontweight='bold', color='black')
 
                 # --- 7. Formatting ---
                 ax.set_xticks(indices)
                 #ax.set_xticklabels(time_labels, rotation=45, ha='right', visible=False)
-                ax.set_xticklabels([])
+                ax.set_xticklabels([]) # Keep x-ticks invisible as in original
                 
-                # # 严格锁定 Y 轴范围并增强“透气感”
-                # if Fig_dir == "Fig7":
-                #     ax.set_ylim(-0.4*fea_plot_yscale, fea_plot_yscale+0.01)
-                # else:
-                #     ax.set_ylim(0, fea_plot_yscale+0.01)
-                
-                # if row_idx > 0:
-                #     ax.yaxis.set_visible(False)
-                #     sns.despine(ax=ax, offset=10, trim=True, left=True)
-                # else:
-                #     sns.despine(ax=ax, offset=10, trim=True)
-                #     ax.spines['left'].set_linewidth(3)
-                # ax.spines['bottom'].set_linewidth(3)
-                
-        # --- Save Figure ---
-        fig_rms.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust layout to prevent overlap
-        save_dir = os.path.join(manuscript_save_dir, Fig_dir)
-        os.makedirs(save_dir, exist_ok=True)
-        
-        save_name = os.path.join(save_dir, f'results_sig.svg')
-        
-        plt.savefig(save_name, dpi=100,transparent=True,)
-        plt.close(fig_rms)
-        print(f"Saved: {save_name}")
+                # Unified Y-axis for contrast, allowing for negative values
+                ax.set_ylim(-unified_y_scale, unified_y_scale)
+
+                # Set titles for rows (y-labels) and columns (titles)
+                if col_idx_base == 0:
+                    ax.set_ylabel('', fontsize=14 * font_scale)
+                if row_idx == 0:
+                    ax.set_title('', fontsize=14 * font_scale)
+
+                sns.despine(ax=ax, offset=10, trim=True)
+                ax.spines['bottom'].set_linewidth(3)
+                ax.spines['left'].set_linewidth(3)
+
+# --- Save Figure ---
+fig_rms.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust layout to prevent overlap
+save_dir = os.path.join(manuscript_save_dir, Fig_dir)
+os.makedirs(save_dir, exist_ok=True)
+
+save_name = os.path.join(save_dir, f'results_sig_contrast_matrix.svg')
+
+plt.savefig(save_name, dpi=100,transparent=True,)
+plt.show(fig_rms)
+print(f"Saved: {save_name}")
 
 # %%
