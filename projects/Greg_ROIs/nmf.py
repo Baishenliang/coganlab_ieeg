@@ -363,45 +363,48 @@ import os
 
 electrode_mapping_data = []
 
-for category in df_weights['Base_Comp'].dropna().unique():
-    category_chs = set(df_weights[df_weights['Base_Comp'] == category]['Channel'])
-    # try:
-    elec_labels = data_LexDelay_Aud.labels[0]
-    category_idx = set([i for i, x in enumerate(elec_labels) if x in category_chs])
-    
-    LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
-    
-    for idx in category_idx:
-        electrode_mapping_data.append({
-            'Electrode_ID': elec_labels[idx],
-            'NMF_Component': category
-        })
+for roi_group in df_weights['Group'].dropna().unique():
+    for category in df_weights['Base_Comp'].dropna().unique():
+        category_chs = set(df_weights[df_weights['Base_Comp'] == category]['Channel'])
+        group_chs = set(df_weights[df_weights['Group'] == roi_group]['Channel'])
+        # try:
+        elec_labels = data_LexDelay_Aud.labels[0]
+        category_idx = set([i for i, x in enumerate(elec_labels) if (x in group_chs) and (x in category_chs)])
+        
+        LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
+        
+        for idx in category_idx:
+            electrode_mapping_data.append({
+                'Electrode_ID': elec_labels[idx],
+                'NMF_Component': category
+            })
 
-    for mask,epoc,t_range,epoc_tag in zip(
-        (data_LexDelay_Aud,data_LexDelay_Go,data_LexDelay_Resp),
-        (epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
-                                    ([-0.5, 1.5], [-0.5, 1], [-0.5, 1.25]),
-                                    ('Stim','Go','Resp')):
-        mask_selected = gp.select_electrodes(mask, category_idx)
-        epoc_selected = gp.select_electrodes(epoc, category_idx)
-        if epoc_tag == 'Stim':
-            Hickok_ROI_epoch_sort,_,Hickok_ROI_epoch_sort_idx, *_ = gp.sort_chs_by_actonset(mask_selected, epoc_selected,
-                                                    cluster_twin, t_range,
-                                                    mask_data=True,
-                                                    select_electrodes=False)
-        else:
-            Hickok_ROI_epoch_sort,*_ = gp.sort_chs_by_actonset(mask_selected, epoc_selected,
-                                                    cluster_twin, t_range,
-                                                    mask_data=True,
-                                                    sorted_indices=Hickok_ROI_epoch_sort_idx,
-                                                    select_electrodes=False)
-        fname_save=os.path.join(save_dir, f"sig_mask_{category}_{epoc_tag}.svg")
+        for mask,epoc,t_range,epoc_tag in zip(
+            (data_LexDelay_Aud,data_LexDelay_Go,data_LexDelay_Resp),
+            (epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
+                                        ([-0.5, 1.5], [-0.5, 1], [-0.5, 1.25]),
+                                        ('Stim','Go','Resp')):
+            mask_selected = gp.select_electrodes(mask, category_idx)
+            epoc_selected = gp.select_electrodes(epoc, category_idx)
+            if np.shape(mask_selected)[0]>0:
+                if epoc_tag == 'Stim':
+                    Hickok_ROI_epoch_sort,_,Hickok_ROI_epoch_sort_idx, *_ = gp.sort_chs_by_actonset(mask_selected, epoc_selected,
+                                                            cluster_twin, t_range,
+                                                            mask_data=True,
+                                                            select_electrodes=False)
+                else:
+                    Hickok_ROI_epoch_sort,*_ = gp.sort_chs_by_actonset(mask_selected, epoc_selected,
+                                                            cluster_twin, t_range,
+                                                            mask_data=True,
+                                                            sorted_indices=Hickok_ROI_epoch_sort_idx,
+                                                            select_electrodes=False)
+                fname_save=os.path.join(save_dir, f"sig_mask_{roi_group}_{category}_{epoc_tag}.svg")
 
-        gp.plot_chs(Hickok_ROI_epoch_sort, fname_save,
-                                        f'{category}_{epoc_tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
-                                        fig_size=[4, 20 * (len(mask_selected.labels[0]) / 250)])
-    # except NameError:
-    #     pass 
+                gp.plot_chs(Hickok_ROI_epoch_sort, fname_save,
+                                                f'{roi_group}_{category}_{epoc_tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
+                                                fig_size=[4, 20 * (len(mask_selected.labels[0]) / 250)])
+        # except NameError:
+        #     pass 
 
 if electrode_mapping_data:
     df_mapping = pd.DataFrame(electrode_mapping_data)
@@ -431,8 +434,13 @@ except NameError:
     pass
 
 #%% 5. Anatomical Distribution Pie Charts
-df_mean_weights = df_weights.groupby('Group')[comp_names].mean()
-groups = df_mean_weights.index.tolist()
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 改用 crosstab 計算每個 ROI 中各個 Component 的「實際電極數量」
+count_df = pd.crosstab(df_weights['Group'], df_weights['Base_Comp'])
+
+groups = count_df.index.tolist()
 n_groups = len(groups)
 
 fig, axes = plt.subplots(1, n_groups, figsize=(4 * n_groups, 5), dpi=300)
@@ -442,12 +450,12 @@ if n_groups == 1:
 legend_patches = []
 legend_labels = []
 
+# 這個函數現在可以精準算出電極的「顆數」了
 def make_autopct(values):
     def my_autopct(pct):
         total = sum(values)
-        val = int(round(pct * total)) # 反推算出實際數量
+        val = int(round(pct * total / 100.0)) 
         
-        # 只有當數量大於 0 時才顯示標籤，保持圖面乾淨
         if val > 0:
             return f'{val} ({pct:.1f}%)'
         else:
@@ -457,50 +465,51 @@ def make_autopct(values):
 for i, group_name in enumerate(groups):
     ax = axes[i]
     
-    values = df_mean_weights.loc[group_name, target_macros]
-    valid_idx = values > 0.01
-    valid_values = values[valid_idx]
-    valid_macros = values.index[valid_idx]
+    # 提取該 ROI 的真實電極計數
+    values = count_df.loc[group_name]
+    
+    # 只保留數量大於 0 的 Component (這就解決了你說的 mismatch 問題)
+    valid_values = values[values > 0]
+    valid_macros = valid_values.index
     
     if len(valid_values) == 0: 
         continue
         
     pie_colors = [macro_color_dict.get(macro, [0.5, 0.5, 0.5]) for macro in valid_macros]
         
-    # 修改 1：拿掉 edgecolor 和 linewidth，去除白邊
     patches, texts, autotexts = ax.pie(
         valid_values, 
         labels=None, 
         autopct=make_autopct(valid_values), 
         colors=pie_colors, 
         startangle=140, 
-        textprops={'fontsize': 10},#, 'fontweight': 'bold'},
-        wedgeprops={'alpha': 0.85, 'linewidth': 0}  # <-- 這裡改為 linewidth: 0
+        textprops={'fontsize': 8},
+        wedgeprops={'alpha': 0.85, 'linewidth': 0}
     )
     
-    ax.set_title(f'{group_name}', fontsize=12, fontweight='bold', pad=8)
+    # 在標題顯示該 ROI 的總電極數
+    total_elecs = valid_values.sum()
+    ax.set_title(f'{group_name}\n(n={total_elecs})', fontsize=12, fontweight='bold', pad=8)
     
     for patch, macro in zip(patches, valid_macros):
         if macro not in legend_labels:
             legend_labels.append(macro)
             legend_patches.append(patch)
 
-# 為了給右上角的圖例留出空間，把所有的子圖稍微往左擠一點
 plt.subplots_adjust(right=0.85)
 
-# 修改 2：將圖例放置在右上角
+# (如果需要圖例，可以把這段取消註解)
 # fig.legend(
 #     legend_patches, 
 #     legend_labels, 
-#     loc='upper right',           # 定位點設為右上
-#     bbox_to_anchor=(0.98, 0.95), # 控制在畫布右上角的具體座標 (x, y)
-#     ncol=1,                      # 改為垂直單列排列
+#     loc='upper right',
+#     bbox_to_anchor=(0.98, 0.95),
+#     ncol=1,
 #     fontsize=12,
 #     frameon=False
 # )
 
 plt.show()
-
 #%% 6. Plot Aligned Traces (Stim / Go / Resp)
 plot_groups = []
 save_dir = '../Greg_ROIs/fig'
