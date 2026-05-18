@@ -92,10 +92,10 @@ vWM_lambda = '0.001'
 mean_word_len=0.65#0.65 # from utils/lexdelay_get_stim_length.m
 
 # Experiment Iterators
-Fig_dirs = ['Fig5','Fig6','Fig7'] # 可以根据需要修改为 ['Fig5', 'Fig6'] 或其他目录
-opts_yn = ['','','_yn']#,'', '_yn','_forSilence'
-opts_yn_base = ['','','']#,'', '_yn','_forSilence'
-opts_huge = ['onlysem',""] # 可以修改为 ['_huge', 'onlysem', 'onlysemproxy'] 等
+Fig_dirs = ['Fig6',] # 可以根据需要修改为 ['Fig5', 'Fig6'] 或其他目录
+opts_yn = ['',]#,'', '_yn','_forSilence'
+opts_yn_base = [None,]#,'', '_yn','_forSilence'
+opts_huge = ['',] # 可以修改为 ['_huge', 'onlysem', 'onlysemproxy'] 等
 
 
 # Loop through all configuration combinations
@@ -119,7 +119,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
     
     match Fig_dir:
         case "Fig5":
-            target_beta_features = ['aco_main', 'pho_main', 'sem']
+            target_beta_features = ['pho_main',]
             unified_y_scale = 0.3 # Unified scale for combined plot
             Fig_size=42
             font_scale = 5
@@ -199,7 +199,7 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
 
                     filename = f"results/{delay_nodelay_target}_{elec_grp}_{alignment}_All{is_yn}{current_is_huge}_testλ_{vWM_lambda}.csv"
                     if is_yn_base is not None:
-                        filename_base = f"results/{delay_nodelay_base}_{elec_grp}_{alignment}_All{is_yn_base}{current_is_huge}_testλ_{vWM_lambda}_novWM.csv"
+                        filename_base = f"results/{delay_nodelay_base}_{elec_grp}_{alignment}_All{is_yn_base}{current_is_huge}_testλ_{vWM_lambda}.csv"
                         if not os.path.exists(filename) or not os.path.exists(filename_base):
                             continue
 
@@ -346,18 +346,12 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
                         
                         feature_means.append(obs_mean)
                         
-                        # Calculate Two-tailed P-value
+                        # Calculate two-tailed p-value
                         n_perms = len(null_means)
-                        if n_perms > 0: # One-tailed test (larger): calculate the right tail
-                            # 计算右尾 (Observed >= Null) 的数量
-                            n_ge = np.sum(null_means >= obs_mean)
-                            
-                            # 单尾公式 (larger): (n_ge + 1) / (N + 1)
-                            p_val = (n_ge + 1) / (n_perms + 1)
-                            
-                            # P值不能超过1.0
-                            if p_val > 1.0: p_val = 1.0
-                            
+                        if n_perms > 0:
+                            # Two-tailed test: (number of null values more extreme than observed + 1) / (n_perms + 1)
+                            n_extreme = np.sum(np.abs(null_means) >= np.abs(obs_mean))
+                            p_val = (n_extreme + 1) / (n_perms + 1)
                         else:
                             p_val = 1.0
                         

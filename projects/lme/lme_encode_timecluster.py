@@ -51,8 +51,8 @@ plt.rcParams['xtick.labelsize'] = 12*font_scale
 plt.rcParams['ytick.labelsize'] = 12*font_scale
 plt.rcParams['legend.fontsize'] = 12*font_scale
 
-Fig_dir = 'Fig5' #'Fig5'
-is_noVWM = '_novWM'#'' # '_noVWM'
+Fig_dir = 'Fig6' #'Fig5'
+is_noVWM = ''#'' # '_noVWM'
 
 MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
 Sensorimotor_col = [1, 0, 0]  # Sensorimotor
@@ -270,6 +270,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
     # [修改] 定义列（Alignment）及其参数 - 现在 Go 在第二列，Resp 在第三列
     all_alignments = [
         # (Name, X-Lim)
+        #('Aud', [-0.5, 1]),
         ('Delay', [-0.25, 1]),
         # ('Go', [-0.25, 1.5]),
         # ('Resp', [-0.25, 1.5])
@@ -440,9 +441,9 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
             target_beta_features = ['aco_main', 'pho_main', 'sem']  
         case _:
             if Fig_dir == 'Fig5':
-                target_beta_features = ['aco_main','pho_main','sem']
+                target_beta_features = ['pho_main']
             elif Fig_dir == 'Fig6':
-                target_beta_features = ['pho_word','pho_nonword','pho_gain']
+                target_beta_features = ['pho_word','pho_nonword','pho_gain','pho_loss']
             #target_beta_features = ['aco_main','pho_main','sem']
 
     feature_colors = {
@@ -450,7 +451,8 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
         'wordnessNonword:aco': aco_col, 'wordnessNonword:pho': [0.5,0.5,0.5], 'sem': [101/255, 69/255, 1],
         'pho_word': [138/255,12/255,0/255],
         'pho_nonword': [1, 108/255, 93/255],  # Lighter purple for non-words
-        'pho_gain': Delay_col,          # Orange for gain
+        'pho_gain': Delay_col,          
+        'pho_loss': [0.5,0.5,0.5],# Orange for gain
         'aco_interact': [0.7, 0.7, 0.7], # Light grey
         'pho_interact': [0.4, 0.4, 0.4]  # Dark grey
     }
@@ -460,7 +462,8 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
     'pho_nonword': 'Phonemic nonwords',
     'pho_main': 'Phonemic main effects',
     'aco_main': 'Acoustic main effects',
-    'pho_gain': 'Phonemic nonword gain',
+    'pho_gain': 'Phonemic pseudoword > words',
+    'pho_loss': 'Phonemic pseudoword < words',
     'aco_interact': 'Aco Lex interaction',
     'pho_interact': 'Pho Lex interaction',
     'aco': 'Acoustic',
@@ -551,7 +554,7 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                                     val = raw_fea[fea_columns].abs().max(axis=1)
                                 elif group_beta_type == 'rms':
                                     val = np.sqrt(raw_fea[fea_columns].pow(2).mean(axis=1))
-                            case "aco_nonword" | "pho_nonword" | "aco_main" | "pho_main" | "aco_gain" | "pho_gain" | "aco_interact" | "pho_interact":
+                            case "aco_nonword" | "pho_nonword" | "aco_main" | "pho_main" | "aco_gain" | "pho_gain" | "pho_loss" | "aco_interact" | "pho_interact":
                                 if "aco" in beta_fea:
                                     fea_columns = fea_columns_aco_word
                                     fea_columns_diff = fea_columns_aco_diff
@@ -572,6 +575,9 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                                 elif "gain" in beta_fea:
                                     # gain of nonword - word
                                     sensitivity_gain = np.abs(word_vals + diff_vals) - np.abs(word_vals) 
+                                elif "loss" in beta_fea:
+                                    # loss of nonword - word
+                                    sensitivity_gain = np.abs(word_vals) - np.abs(word_vals + diff_vals)
                                 elif "interact" in beta_fea:
                                     # interaction effect
                                     sensitivity_gain = diff_vals       
@@ -655,10 +661,10 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                         plot_label = feature_tags.get(beta_fea, beta_fea)
                         
                         # 2. 主线条绘制
-                        if beta_fea != 'pho_gain':
-                            ax_r.plot(time_points_plot, rms_series_corrected, linewidth=2.5, 
-                                    color=color, linestyle=linestyle, alpha=0.9, 
-                                    solid_capstyle='round', zorder=2)
+                        #if beta_fea != 'pho_gain':
+                        ax_r.plot(time_points_plot, rms_series_corrected, linewidth=2.5, 
+                                color=color, linestyle=linestyle, alpha=0.9, 
+                                solid_capstyle='round', zorder=2)
                         
                         # 3. 显著性条绘制
                         true_indices = all_rms_data_sig[beta_fea]
@@ -683,46 +689,39 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
 
                     # 1. 基础参数与范围 (先设范围，防止 trim 误删)
                     ax_r.set_xlim(xlim_align)
-                    curr_ylim = [-0.26 * fea_plot_yscale, fea_plot_yscale * 1.1]
-                    ax_r.set_ylim(curr_ylim)
-
-                    # 2. 显式控制 Y 轴可见性
-                    if col_idx == 0:
-                        ax_r.yaxis.set_visible(True) # 强制开启 Y 轴对象
-                        ax_r.spines['left'].set_visible(True)
-                        ax_r.tick_params(axis='y', labelleft=True, left=True) # 确保刻度和标签都在
-                        despine_left = False # sns.despine 的 left=False 表示不移除左轴
+                    if Fig_dir == 'Fig6':
+                        ax_r.set_ylim([-0.1,0.3])
                     else:
-                        ax_r.yaxis.set_visible(False)
-                        ax_r.spines['left'].set_visible(False)
-                        despine_left = True  # 移除左轴
+                        curr_ylim = [-0.05 * fea_plot_yscale, fea_plot_yscale * 1.1]
+                        ax_r.set_ylim(curr_ylim)
+
+                    # 2. 显式控制 Y 轴可见性 (所有子图均开启 Y 轴，非首图仅隐藏数字标签)
+                    ax_r.yaxis.set_visible(True)          # 强制开启所有子图的 Y 轴对象
+                    ax_r.spines['left'].set_visible(True) # 确保左轴可见
+                    
+                    if col_idx == 0:
+                        ax_r.tick_params(axis='y', labelleft=True, left=True) # 第一个子图保留刻度和数字
+                    else:
+                        ax_r.tick_params(axis='y', labelleft=False, left=True) # 其余子图保留刻度线，隐藏数字标签
 
                     # 3. 基础格式：24号字体，加粗刻度线
                     ax_r.tick_params(axis='both', which='major', labelsize=24, length=6, width=2.5)
                     ax_r.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
 
-                    # 4. 核心：执行呼吸感 Offset
-                    # 注意：一定要把 left 状态传给 despine
-                    sns.despine(ax=ax_r, offset=10, trim=True, left=despine_left, top=True, right=True)
+                    # 4. 核心：执行 Seaborn despine 去除上方和右面的框线
+                    import seaborn as sns
+                    sns.despine(ax=ax_r, top=True, right=True, left=False, bottom=False)
 
                     # 5. 强制加粗与手动边界控制 (在 despine 之后再次确认)
                     ax_r.spines['bottom'].set_linewidth(3)
-                    ax_r.spines['bottom'].set_bounds(0, 1.5)
-
-                    if col_idx == 0:
-                        ax_r.spines['left'].set_linewidth(3)
-                        #ax_r.spines['left'].set_bounds(0,0.75)
-                        if Fig_dir == 'Fig5':
-                            ax_r.spines['left'].set_bounds(-0.25, fea_plot_yscale)
-                        elif Fig_dir == 'Fig6':
-                            ax_r.spines['left'].set_bounds(0, fea_plot_yscale)
+                    ax_r.spines['left'].set_linewidth(3)  # 确保所有子图的左轴线条都加粗
 
                     # 6. X 轴刻度步长与 0 刻度美化
                     xticks = [0, 0.5, 1.0, 1.5]
                     if Fig_dir == 'Fig5':
-                        yticks = [-0.25, 0.0, 0.25, 0.5]
+                        yticks = [0.0, 0.25, 0.5]
                     elif Fig_dir == 'Fig6':
-                        yticks = [0.0, 0.25]
+                        yticks = [0, 0.25]
                     xticks = [t for t in xticks if xlim_align[0] <= t <= xlim_align[1]]
                     ax_r.set_xticks(xticks)
                     ax_r.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.1f'))
