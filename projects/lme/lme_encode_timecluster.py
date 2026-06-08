@@ -51,7 +51,7 @@ plt.rcParams['xtick.labelsize'] = 12*font_scale
 plt.rcParams['ytick.labelsize'] = 12*font_scale
 plt.rcParams['legend.fontsize'] = 12*font_scale
 
-Fig_dir = 'Fig6' #'Fig5'
+Fig_dir = 'Fig7' #'Fig5'
 is_noVWM = ''#'' # '_noVWM'
 
 MotorPrep_col = [1.0, 0.0784, 0.5765] # Motor prepare
@@ -255,6 +255,8 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                 unified_y_scale = 0.5   # [请调节] Fig5
             elif Fig_dir == 'Fig6':
                 unified_y_scale = 0.25   # [请调节] Fig6 
+            elif Fig_dir == 'Fig7':
+                unified_y_scale = 0.5   # [请调节] Fig7 
 
     # --- 定义所有要画的电极组 (使用统一的 Scale) ---
     all_elec_configs = [
@@ -444,6 +446,9 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                 target_beta_features = ['pho_main']
             elif Fig_dir == 'Fig6':
                 target_beta_features = ['pho_word','pho_nonword','pho_gain','pho_loss']
+            elif Fig_dir == 'Fig7':
+                target_beta_features = ['wordnessNonword_vWM']
+
             #target_beta_features = ['aco_main','pho_main','sem']
 
     feature_colors = {
@@ -661,10 +666,10 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                         plot_label = feature_tags.get(beta_fea, beta_fea)
                         
                         # 2. 主线条绘制
-                        #if beta_fea != 'pho_gain':
-                        ax_r.plot(time_points_plot, rms_series_corrected, linewidth=2.5, 
-                                color=color, linestyle=linestyle, alpha=0.9, 
-                                solid_capstyle='round', zorder=2)
+                        if beta_fea != 'pho_gain' and beta_fea != 'pho_loss':
+                            ax_r.plot(time_points_plot, rms_series_corrected, linewidth=2.5, 
+                                    color=color, linestyle=linestyle, alpha=0.9, 
+                                    solid_capstyle='round', zorder=2)
                         
                         # 3. 显著性条绘制
                         true_indices = all_rms_data_sig[beta_fea]
@@ -722,6 +727,8 @@ for is_yn, is_huge,delay_nodelay in itertools.product(opts_yn, opts_huge,delay_n
                         yticks = [0.0, 0.25, 0.5]
                     elif Fig_dir == 'Fig6':
                         yticks = [0, 0.25]
+                    elif Fig_dir == 'Fig7':
+                        yticks = [0, 0.25, 0.5]
                     xticks = [t for t in xticks if xlim_align[0] <= t <= xlim_align[1]]
                     ax_r.set_xticks(xticks)
                     ax_r.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.1f'))

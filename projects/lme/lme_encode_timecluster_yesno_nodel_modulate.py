@@ -103,11 +103,10 @@ for Fig_dir,is_yn, is_yn_base in zip(Fig_dirs,opts_yn, opts_yn_base):
     
     if Fig_dir != "Fig7":
         # Time Windows definition
-        time_windows = [
-            (0, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1.0)
-        ]
-        time_windows_avg = [0.125, 0.375, 0.625, 0.875] # For plotting x-axis positions
-        time_labels = ["0.125", "0.375", "0.625", "0.875"] # For plotting x-axis positions
+        n_div = 10
+        time_windows = [(i/n_div, (i+1)/n_div) for i in range(n_div)]
+        time_windows_avg = [w[0] + (w[1]-w[0])/2 for w in time_windows]
+        time_labels = [f"{avg:.3f}" for avg in time_windows_avg]
     else:
         time_windows = [
             (0, 0.25), (0.25, 0.5)
