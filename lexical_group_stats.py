@@ -5,8 +5,8 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 datasource='hg' # 'glm_(Feature)' or 'hg'
-groupsTag="LexDelay"
-#groupsTag="LexDelay&LexNoDelay"
+#groupsTag="LexDelay"
+groupsTag="LexDelay&LexNoDelay"
 
 # %% define condition and load data
 get_atlaslabels_from_ecogRecon = False # whether get atlas labels for each electrode, which is used for later analysis of the distribution of electrodes in different ROIs. If True, it will take a long time to run the code. So we set it to False after we get the labels and save them in the utils folder.
@@ -2087,6 +2087,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
     import numpy as np
     import pandas as pd
     from scipy import stats
+    from statsmodels.stats.multitest import multipletests
 
     # 1. 數據預處理 (保持你的邏輯)
     df_filtered = df_final.copy()
@@ -2122,11 +2123,14 @@ elif groupsTag=="LexDelay&LexNoDelay":
     sns.set_style("ticks")
     kde_contour = False
 
+    raw_pvals_dict = {'Auditory': [], 'Motor': []}
+    results_storage = []
+
     # for _, gg_name in enumerate([group_order,'All']):
     for gg_name in group_order + ['All']:
         for j, stage in enumerate(['Auditory', 'Motor']):
             
-            if gg_name== 'All':
+            if gg_name == 'All':
                 fig, ax = plt.subplots(1, 1, figsize=(7, 6), constrained_layout=True)
 
                 x_col, y_col = f'{stage}_NoDelay', f'{stage}_Delay'
@@ -2135,12 +2139,20 @@ elif groupsTag=="LexDelay&LexNoDelay":
                 line_range = np.array([vmin, vmax])
                 ax.plot(line_range, line_range, color='#777777', linestyle='--', linewidth=3, alpha=0.4, zorder=1)
                 
+                # 初始化用於累積所有子組數據的列表
+                pooled_x = []
+                pooled_y = []
+                
                 for i, g_name in enumerate(group_order):
                     group_data = df_log[df_log['Group'] == g_name]
                     if group_data.empty: continue
                     
                     x, y = group_data[x_col], group_data[y_col]
                     color = color_map[g_name]
+                    
+                    # 將當前子組的數據追加到總列表中
+                    pooled_x.extend(x.tolist())
+                    pooled_y.extend(y.tolist())
                     
                     # B. 繪製密度等高線 (KDE Contour) - 這是「錯開」視覺感的關鍵
                     # levels=1 表示只畫出最核心的 50% 分佈區域
@@ -2151,6 +2163,40 @@ elif groupsTag=="LexDelay&LexNoDelay":
                     # C. 散點圖 - 設置極高透明度，僅作為背景支撐
                     sns.scatterplot(x=x, y=y, color=color, alpha=0.4, s=60, 
                                     edgecolor='none', ax=ax, zorder=2)
+
+                # =======================================================
+                # 【核心嵌入】對累積後的總數據 (Pooled Data) 進行大回歸與文本輸出（不使用 FDR）
+                # =======================================================
+                if len(pooled_x) > 2:  # 確保有足夠的數據點進行回歸
+                    pooled_x = np.array(pooled_x)
+                    pooled_y = np.array(pooled_y)
+                    
+                    # 1. 計算線性回歸
+                    slope, intercept, r_value, p_value, std_err = stats.linregress(pooled_x, pooled_y)
+                    r_squared = r_value**2
+                    
+                    # 2. 計算自由度與 F 統計量
+                    n_samples = len(pooled_x)
+                    df_model = 1
+                    df_residual = n_samples - 2
+                    
+                    if std_err > 0:
+                        t_stat = slope / std_err
+                        f_statistic = t_stat ** 2
+                    else:
+                        f_statistic = 0.0
+                    
+                    # 3. 處理 p 值格式 (小於 0.001 輸出 p < 0.001)
+                    if p_value < 0.001:
+                        p_string = "p < 0.001"
+                    else:
+                        p_string = f"p = {p_value:.3f}"
+                    
+                    # 4. 完美符合論文草稿的標準格式打印
+                    print(f"[Pooled All Subgroups - {stage}]: "
+                        f"R2 = {r_squared:.3f}, "
+                        f"F({df_model}, {df_residual}) = {f_statistic:.2f}, "
+                        f"{p_string}")
 
             else:
                 g_name = gg_name
@@ -2186,7 +2232,32 @@ elif groupsTag=="LexDelay&LexNoDelay":
                         # Calculate R-squared and p-value
                         slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
                         r_squared = r_value**2
+
+                        # 計算自由度
+                        n_samples = len(x)
+                        df_model = 1
+                        df_residual = n_samples - 2
                         
+                        # 從 t 檢驗推導 F 值
+                        if std_err > 0:
+                            t_stat = slope / std_err
+                            f_statistic = t_stat ** 2
+                        else:
+                            f_statistic = 0.0
+                            
+                        # 【核心步驟】收集原始 p 值到對應的 stage ('Auditory' 或 'Motor')
+                        raw_pvals_dict[stage].append(p_value)
+                        
+                        # 暫存當前組合的其他統計指標，方便後續結合 pFDR 輸出
+                        results_storage.append({
+                            'gg_name': gg_name,
+                            'stage': stage,
+                            'r_squared': r_squared,
+                            'df_model': df_model,
+                            'df_residual': df_residual,
+                            'f_statistic': f_statistic
+                        })     
+
                         ax.plot(x_vals, y_vals, color=color, linewidth=4, zorder=3, alpha=0.7)
                         
                         # Add regression formula and R-squared to the plot
@@ -2194,6 +2265,43 @@ elif groupsTag=="LexDelay&LexNoDelay":
                         ax.text(0.05, 0.95, formula_text, transform=ax.transAxes,
                                 fontsize=30, color=color, verticalalignment='top',
                                 bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.7))
+
+            # ==========================================
+            # 3. 分開對 Auditory 和 Motor 進行 FDR 校正
+            # ==========================================
+            fdr_pvals_dict = {}
+            for stage in ['Auditory', 'Motor']:
+                # 使用 Benjamini-Hochberg (fdr_bh) 方法進行校正
+                _, corrected_pvals, _, _ = multipletests(raw_pvals_dict[stage], alpha=0.05, method='fdr_bh')
+                fdr_pvals_dict[stage] = corrected_pvals
+
+            # ==========================================
+            # 4. 將校正後的 pFDR 填回對應的位置並打印輸出
+            # ==========================================
+            stage_counters = {'Auditory': 0, 'Motor': 0}
+
+            print("\n" + "="*20 + " 论文文本填写结果 (抄录用) " + "="*20)
+
+            for res in results_storage:
+                curr_stage = res['stage']
+                curr_idx = stage_counters[curr_stage]
+                
+                # 获取该 stage 对应的 pFDR
+                p_fdr = fdr_pvals_dict[curr_stage][curr_idx]
+                stage_counters[curr_stage] += 1 # 指针后移
+                
+                # 【核心修改】动态格式化 pFDR 的输出
+                if p_fdr < 0.001:
+                    p_string = "pFDR < 0.001"
+                else:
+                    p_string = f"pFDR = {p_fdr:.3f}" # 大于等于 0.001 时显示精确到 3 位小数的数值
+                
+                # 格式化输出
+                print(f"[{res['gg_name']} - {curr_stage}]: "
+                    f"R2 = {res['r_squared']:.3f}, "
+                    f"F({res['df_model']}, {res['df_residual']}) = {res['f_statistic']:.2f}, "
+                    f"{p_string}")
+
 
             # 5. 坐標軸美化
             ax.set_xlim(-2.1, 1.1)
@@ -2407,6 +2515,22 @@ elif groupsTag=="LexDelay&LexNoDelay":
         # 執行全局 FDR 矯正 (針對 8 個檢驗)
         _, p_fdr, _, _ = multipletests(df_stats['P_raw'], alpha=0.05, method='fdr_bh')
         df_stats['P_fdr'] = p_fdr
+
+
+        if df_plot_tag == '':
+            text_data = {}
+            for _, row in df_stats.iterrows():
+                stg = row['Stage']
+                grp = row['Group']
+                
+                group_diffs = df_plot[df_plot['Group'] == grp][f'{stg}_Diff'].dropna()
+                pct = (np.sum(group_diffs > 0) / len(group_diffs)) * 100 if len(group_diffs) > 0 else 0.0
+                
+                pfdr_val = row['P_fdr']
+                p_str = "pFDR < 0.001" if pfdr_val < 0.001 else f"pFDR = {pfdr_val:.3f}"
+                text_data[f"{grp}_{stg}"] = f"{pct:.1f}%, {p_str}"
+            
+            print(text_data)
 
         # --- 4. 核心繪圖函數 ---
         def plot_vwm_sign_test_fdr_final(stage_name):
