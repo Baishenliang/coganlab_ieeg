@@ -635,7 +635,7 @@ for i, comp in enumerate(comp_names):
     cols_lst = [list(base_col * val + np.array([1, 1, 1]) * (1 - val)) for val in w_norm]
     try:
         #gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, f'Weight: {comp}', 0.3, 0.2, hemi='lh')
-        gp.plot_brain(picks=df_weights.Channel.to_list(), chs_coor=chs_coor, chs_cols= cols_lst, dotsize=0.2, transparency=0.2)
+        gp.plot_brain(picks=df_weights.Channel.to_list(), chs_coor=chs_coor, chs_cols= cols_lst, dotsize=0.3, transparency=0.1)
 
     except Exception:
         pass
