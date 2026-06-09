@@ -2714,6 +2714,141 @@ def generate_neuro_publication_plot(data, title_label="Anatomy Distribution", sa
         plt.savefig(save_path, transparent=True, bbox_inches='tight')
     return fig, ax
 
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from scipy.stats import chi2_contingency
+
+def analyze_vwm_hemispheric_interaction(final_data, g_name):
+    """
+    Computes the Standardized Lateralization Index (SLI) for vWM and no-vWM conditions.
+    For the 'Delay-only' group, it limits computation strictly to SLI metrics. For all
+    other groups, it additionally executes a Chi-squared test of independence and a 
+    log-linear model (Poisson GLM) to test hemispheric main effects and interactions.
+    
+    Parameters:
+    -----------
+    final_data : dict
+        The nested dictionary containing voxel counts grouped by Hemi, vWM status, and ROI.
+    g_name : str
+        The name of the electrode group (e.g., 'Sensorimotor', 'Delay-only').
+        
+    Returns:
+    --------
+    dict
+        A dictionary containing the computed metrics relevant to the target group.
+    """
+    # --- Step 1: Collapse across individual ROIs and aggregate total counts ---
+    try:
+        vwm_lh = sum(final_data['LH']['vWM'].values())
+        vwm_rh = sum(final_data['RH']['vWM'].values())
+        novwm_lh = sum(final_data['LH']['no vWM'].values())
+        novwm_rh = sum(final_data['RH']['no vWM'].values())
+    except KeyError as e:
+        print(f"Error: Missing expected keys in final_data for group {g_name}. Details: {e}")
+        return None
+
+    # --- Step 3: Guard Clause for Delay-only Group ---
+    # If the group is Delay-only, output SLI and return immediately, skipping inferential stats
+    if g_name  == 'DelayOnly':
+
+        # --- Step 2: Compute Standardized Lateralization Index (SLI) ---
+        # Separated calculation for vWM and no-vWM blocks
+        sli_vwm = (vwm_lh - vwm_rh) / (vwm_lh + vwm_rh) if (vwm_lh + vwm_rh) > 0 else 0.0
+
+        print("\n" + "="*20 + f" [Group: {g_name}] Hemispheric Lateralization Analysis " + "="*20)
+        print(f"1. Accumulated Voxel Counts (vWM Window):")
+        print(f"   - LH (vWM): {vwm_lh}")
+        print(f"   - RH (vWM): {vwm_rh}")
+        print(f"\n2. Standardized Lateralization Index (SLI):")
+        print(f"   - vWM SLI      : {sli_vwm:.4f}")
+        print(f"\n* Note: Statistical tests and baseline contrasts omitted for Delay-only category.")
+        print("=" * 75 + "\n")
+        
+        return {
+            'SLI_vWM': sli_vwm,
+            'Chi2_Stat': None,
+            'Chi2_P': None,
+            'GLM_Model': None
+        }
+
+    # --- Step 2: Compute Standardized Lateralization Index (SLI) ---
+    # Separated calculation for vWM and no-vWM blocks
+    sli_vwm = (vwm_lh - vwm_rh) / (vwm_lh + vwm_rh) if (vwm_lh + vwm_rh) > 0 else 0.0
+    sli_novwm = (novwm_lh - novwm_rh) / (novwm_lh + novwm_rh) if (novwm_lh + novwm_rh) > 0 else 0.0
+    delta_sli = sli_vwm - sli_novwm
+
+    # --- Step 4: Perform Chi-squared Test of Independence (Standard Groups Only) ---
+    contingency_table = [[vwm_lh, novwm_lh], [vwm_rh, novwm_rh]]
+    chi2_res = chi2_contingency(contingency_table)
+    chi2_stat = chi2_res.statistic
+    chi2_p = chi2_res.pvalue
+
+    # --- Step 5: Construct Long Dataframe and Fit Poisson GLM (Standard Groups Only) ---
+    rows = [
+        {'Hemi': 'LH', 'vWM_Status': 'vWM',    'Count': vwm_lh},
+        {'Hemi': 'LH', 'vWM_Status': 'no_vWM', 'Count': novwm_lh},
+        {'Hemi': 'RH', 'vWM_Status': 'vWM',    'Count': vwm_rh},
+        {'Hemi': 'RH', 'vWM_Status': 'no_vWM', 'Count': novwm_rh}
+    ]
+    df_long = pd.DataFrame(rows)
+
+    formula = "Count ~ C(Hemi, Treatment(reference='RH')) * C(vWM_Status, Treatment(reference='no_vWM'))"
+    model = smf.glm(formula, data=df_long, family=sm.families.Poisson()).fit()
+
+    # --- Step 6: Formatted output for standard groups ---
+    print("\n" + "="*20 + f" [Group: {g_name}] Hemispheric Interaction Analysis " + "="*20)
+    print(f"1. Accumulated Voxel Counts (2x2 Contingency Table):")
+    print(f"   - LH (vWM / no-vWM): {vwm_lh} / {novwm_lh}")
+    print(f"   - RH (vWM / no-vWM): {vwm_rh} / {novwm_rh}")
+    
+    print(f"\n2. Standardized Lateralization Index (SLI):")
+    print(f"   - vWM SLI      : {sli_vwm:.4f}")
+    print(f"   - no-vWM SLI   : {sli_novwm:.4f}")
+    print(f"   - Delta SLI (Δ): {delta_sli:.4f}")
+    
+    print(f"\n3. Chi-Squared Test of Independence:")
+    chi2_p_str = "p < 0.001" if chi2_p < 0.001 else f"p = {chi2_p:.4f}"
+    print(f"   - Chi-squared statistic: chi2({chi2_res.dof}) = {chi2_stat:.4f}, {chi2_p_str}")
+    
+    print(f"\n4. Poisson GLM Regression Test (Log-Linear Model):")
+    p_values = model.pvalues
+    z_values = model.tvalues 
+    
+    hemi_key = [k for k in z_values.index if 'Hemi' in k and 'vWM' not in k][0]
+    vwm_key = [k for k in z_values.index if 'vWM_Status' in k and 'Hemi' not in k][0]
+    inter_key = [k for k in z_values.index if ':' in k][0]
+
+    # Main Effect: Hemisphere (LH vs RH)
+    hemi_z = z_values[hemi_key]  
+    hemi_p = p_values[hemi_key]
+    hemi_p_str = "p < 0.001" if hemi_p < 0.001 else f"p = {hemi_p:.4f}"
+    print(f"   - Main Effect of Hemisphere (LH vs. RH): z = {hemi_z:.4f}, {hemi_p_str}")
+    
+    # Main Effect: vWM Requirement (vWM vs no_vWM)
+    vwm_z = z_values[vwm_key]    
+    vwm_p = p_values[vwm_key]
+    vwm_p_str = "p < 0.001" if vwm_p < 0.001 else f"p = {vwm_p:.4f}"
+    print(f"   - Main Effect of vWM Requirement (vWM vs. no-vWM): z = {vwm_z:.4f}, {vwm_p_str}")
+    
+    # Interaction Effect
+    inter_p = p_values[inter_key]
+    inter_z = z_values[inter_key]
+    inter_p_str = "p < 0.001" if inter_p < 0.001 else f"p = {inter_p:.4f}"
+    print(f"   - Interaction (Hemi x vWM): z = {inter_z:.4f}, {inter_p_str}")
+        
+    print("=" * 75 + "\n")
+
+    return {
+        'SLI_vWM': sli_vwm,
+        'SLI_no_vWM': sli_novwm,
+        'Delta_SLI': delta_sli,
+        'Chi2_Stat': chi2_stat,
+        'Chi2_P': chi2_p,
+        'GLM_Model': model
+    }
+
 from datetime import date, datetime
 from typing import Dict, List
 import pandas as pd

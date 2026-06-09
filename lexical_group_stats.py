@@ -55,7 +55,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-from utils.group import bsliang_add_connecting_lines,generate_neuro_publication_plot,get_roi_subj_matrix,read_sex_age_and_stats,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient, process_and_plot_roi_labels 
+from utils.group import bsliang_add_connecting_lines,generate_neuro_publication_plot,get_roi_subj_matrix,read_sex_age_and_stats,get_subj_elec_idx, load_stats, sort_chs_by_actonset, plot_chs, plot_brain, plot_wave,set2arr, chs2atlas, atlas2_hist, plot_sig_roi_counts, get_sig_elecs_keyword, get_coor, hickok_roi_sphere, get_sig_roi_counts, plot_roi_counts_comparison, sort_chs_by_actonset_combined, select_electrodes,onsets2col,elegroup_strip, create_gradient, process_and_plot_roi_labels,analyze_vwm_hemispheric_interaction 
 import matplotlib.pyplot as plt
 import projects.GLM.glm_utils as glm
 
@@ -409,6 +409,158 @@ if groupsTag == "LexDelay":
     plt.savefig(save_path, format='svg', bbox_inches='tight')
     plt.show()
 
+
+    # Electrode distribution on cortical regions (BNA atlas) for different vWM electrodes
+     # %%
+    import numpy as np
+    import pandas as pd
+    import nibabel as nib
+    from nilearn import image
+
+    def identify_dominant_vwm_structures(labels_list, sig_idx, chs_coor_df, atlas_path, top_n=4):
+        """
+        Maps clinically selected electrodes to the Brainnetome Atlas (BNA) space by 
+        resampling the atlas to the custom 2mm density grid space, and identifies the 
+        top N active structures based on the exact updated BNA lookup table.
+        
+        Parameters:
+        -----------
+        labels_list : list of str
+            The full electrode labels list, e.g., ['D23-RASF1', 'D23-RASF2', ...]
+        sig_idx : set or list or np.ndarray
+            Indices of significant electrodes selected from labels_list.
+        chs_coor_df : pd.DataFrame
+            Coordinate reference table containing columns: ['subj', 'label', 'x', 'y', 'z']
+        atlas_path : str
+            Path to the 'BN_Atlas_246_1mm.nii.gz' file.
+        top_n : int, default 4
+            The maximum number of dominant ROI structures to return.
+            
+        Returns:
+        --------
+        pd.DataFrame
+            Summary of the top N structures sorted by significant electrode counts.
+        """
+        
+        # --- Step 1: Filter and Match Coordinates ---
+        selected_labels = [labels_list[idx] for idx in sig_idx]
+        
+        parsed_electrodes = []
+        for label_str in selected_labels:
+            if '-' in label_str:
+                subj, ch_label = label_str.split('-', 1)
+                parsed_electrodes.append({'subj': subj, 'label': ch_label})
+                
+        df_selected = pd.DataFrame(parsed_electrodes)
+        if df_selected.empty:
+            print("Warning: No electrodes matched the selection criteria.")
+            return pd.DataFrame()
+            
+        df_matched = pd.merge(df_selected, chs_coor_df, on=['subj', 'label'], how='inner')
+        
+        # --- Step 2: Spatial Coordinate Transformation & Resampling ---
+        grid_affine = np.array([
+            [2, 0, 0, -70],
+            [0, 2, 0, -100],
+            [0, 0, 2, -60],
+            [0, 0, 0, 1]
+        ])
+        grid_shape = (71, 86, 71)
+        
+        atlas_img = image.load_img(atlas_path)
+        dummy_grid_img = nib.Nifti1Image(np.zeros(grid_shape, dtype=np.float32), grid_affine)
+        
+        atlas_resampled = image.resample_to_img(atlas_img, dummy_grid_img, interpolation='nearest')
+        atlas_data = atlas_resampled.get_fdata()
+        inv_grid_affine = np.linalg.inv(grid_affine)
+        
+        def decode_bna_region(r_id):
+            if 1 <= r_id <= 14:       return 'SFG'     # 額上回
+            elif 15 <= r_id <= 28:    return 'MFG'     # 額中回
+            elif 29 <= r_id <= 40:    return 'IFG'     # 額下回
+            elif 41 <= r_id <= 52:    return 'OrG'     # 眶回 (注意:原表41-52均為OrG)
+            elif 53 <= r_id <= 64:    return 'PrG'     # 中央前回 (PreCG)
+            elif 65 <= r_id <= 68:    return 'PCL'     # 中央旁小葉
+            elif 69 <= r_id <= 80:    return 'STG'     # 顳上回
+            elif 81 <= r_id <= 88:    return 'MTG'     # 顳中回
+            elif 89 <= r_id <= 102:   return 'ITG'     # 顳下回
+            elif 103 <= r_id <= 108:  return 'FuG'     # 紡錘回
+            elif 109 <= r_id <= 120:  return 'PhG'     # 海馬旁回
+            elif 121 <= r_id <= 124:  return 'pSTS'    # 經後上溝
+            elif 125 <= r_id <= 134:  return 'SPL'     # 頂上小葉
+            elif 135 <= r_id <= 146:  return 'IPL'     # 頂下小葉
+            elif 147 <= r_id <= 154:  return 'PCun'    # 楔前葉
+            elif 155 <= r_id <= 162:  # 根據你的表155-162為PoG
+                return 'PoG'                           # 中央後回
+            elif 163 <= r_id <= 174:  # 根據你的表163-174為INS
+                return 'INS'                           # 島葉
+            else:
+                return None # 175以上為枕葉、皮層下結構或背景 (0)
+            
+        electrode_regions = []
+        
+        # --- Step 3: Core Spatial Query Loop ---
+        for _, row in df_matched.iterrows():
+            mni_coord = np.array([row['x'], row['y'], row['z'], 1.0])
+            
+            voxel_coord = inv_grid_affine @ mni_coord
+            vx, vy, vz = np.round(voxel_coord[:3]).astype(int)
+            
+            if (0 <= vx < atlas_data.shape[0] and 
+                0 <= vy < atlas_data.shape[1] and 
+                0 <= vz < atlas_data.shape[2]):
+                
+                region_id = int(atlas_data[vx, vy, vz])
+                cluster_name = decode_bna_region(region_id)
+                
+                if cluster_name:
+                    # 奇數為左腦 (LH)，偶數為右腦 (RH)
+                    hemi = 'LH' if region_id % 2 != 0 else 'RH'
+                    electrode_regions.append({
+                        'Subj': row['subj'],
+                        'Label': row['label'],
+                        'Cluster': cluster_name,
+                        'Hemi': hemi,
+                        'Region_ID': region_id
+                    })
+                    
+        df_mapped = pd.DataFrame(electrode_regions)
+        if df_mapped.empty:
+            print("Warning: None of the selected electrodes mapped onto the updated cortical clusters.")
+            return pd.DataFrame()
+            
+        # --- Step 4: Frequency Aggregation and Top-N Extraction ---
+        summary = df_mapped.groupby(['Cluster', 'Hemi']).size().reset_index(name='Electrode_Count')
+        
+        # 依電極數量降序排列
+        top_structures = summary.sort_values(by='Electrode_Count', ascending=False).head(top_n)
+        
+        return top_structures.reset_index(drop=True)
+
+    vwm_subgroups = {
+        'Sensory-motor vWM': LexDelay_Sensorimotor_in_Delay_sig_idx,
+        'Auditory vWM':      LexDelay_Auditory_in_Delay_sig_idx,
+        'Motor vWM':         LexDelay_Motor_in_Delay_sig_idx,
+        'Delay-only':        LexDelay_DelayOnly_sig_idx
+    }
+
+    for group_name, sig_idx in vwm_subgroups.items():
+        print(f"\n" + "="*15 + f" {group_name} (Top 3 Combined ROIs) " + "="*15)
+        
+        top_3_regions = identify_dominant_vwm_structures(
+            labels_list=data_LexDelay_Aud.labels[0],
+            sig_idx=sig_idx,
+            chs_coor_df=chs_coor,
+            atlas_path='BN_Atlas_246_1mm.nii.gz',
+            top_n=10
+        )
+        
+        if not top_3_regions.empty:
+            print(top_3_regions.to_string(index=False))
+        else:
+            print("沒有提取到任何有效的皮層電極分布。")
+            
+    print("=" * 60 + "\n")
 
     # Plot the distribution of different Delay electrodes in a surf plot
     import numpy as np
@@ -855,6 +1007,7 @@ if groupsTag == "LexDelay":
                                 'RH': {'SFG': 0, 'MFG': 0, 'IFG': 0, 'PreCG': 0}}
                 }
             final_data = swap_dict_layers(final_data)
+            analyze_vwm_hemispheric_interaction(final_data,g_name)
             # bar plots for frontal
             generate_neuro_publication_plot(final_data,save_path=os.path.join(manuscript_save_dir, f"frontal_distrib_{g_name}.svg"))
             # Desnity plots
