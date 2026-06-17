@@ -1206,6 +1206,9 @@ if groupsTag == "LexDelay":
     ## Plot Hikcok's ROI and traces:
 
     roi_idx_tag='Hickok ROI'
+    Hickok_ROI_save_dir = 'projects/Greg_ROIs/fig'
+    Waveplot_wth=5 # Width of wave plots
+    Waveplot_hgt=4 # Height of wave plots
 
     # Waves for Auditory, Delay, Motor_Prep, and Motor electrodes
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to auditory onset)
@@ -1225,7 +1228,7 @@ if groupsTag == "LexDelay":
     # pick_labels = list(data_LexDelay_Aud.labels[0][list(Spt_sig_idx | lPMC_sig_idx | lIPL_sig_idx | lIFG_sig_idx | Wgw_p55b_sig_idx | Wgw_a55b_sig_idx)])
     pick_labels = list(data_LexDelay_Aud.labels[0][list(Spt_sig_idx | lPMC_sig_idx | lIFG_sig_idx)])
     #plot_brain(subjs, pick_labels, cols_lst, None, os.path.join(fig_save_dir, f'{TypeLabel}_brain.tif'), 0.3, 0.2)
-    plot_brain(picks=pick_labels,chs_cols=cols_lst,chs_coor=chs_coor,dotsize=0.2,transparency=0.2,add_annotate=True)
+    plot_brain(picks=pick_labels,chs_cols=cols_lst,chs_coor=chs_coor,dotsize=0.3,transparency=0.2)#,add_annotate=True)
 
     plt.figure(figsize=(Waveplot_wth, Waveplot_hgt))
     # plt.title('High gamma z-score traces (Stim aligned)', fontsize=20)
@@ -1242,12 +1245,15 @@ if groupsTag == "LexDelay":
     plt.gca().spines[['top', 'right']].set_visible(False)
     plt.tight_layout()
     plt.xlim([-0.25, 1.6])
-    # plt.xlabel('(Time in secs')
-    plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_org_cat_Aud_{roi_idx_tag}.tif'), dpi=300)
+    plt.xlabel('Time (s)', fontsize=12)
+    plt.ylabel('HG z-score', fontsize=12)
+    plt.tight_layout()
+    plt.savefig(os.path.join(Hickok_ROI_save_dir, f'Trace_by_ROI_Stim.svg'), format='svg', dpi=300)
+    plt.savefig(os.path.join(Hickok_ROI_save_dir, f'Trace_by_ROI_Stim.tif'), format='tif', dpi=300)
     plt.close()
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to Go onset)
-    plt.figure(figsize=(Waveplot_wth * (100 / 350), Waveplot_hgt))
+    plt.figure(figsize=(Waveplot_wth * (1.25 / 1.85), Waveplot_hgt)) 
     wav_bsl_corr = False
     plot_wave(epoc_LexDelay_Go, Spt_sig_idx,f'Spt n={len(Spt_sig_idx)}',Auditory_col, '-', wav_bsl_corr, ylim=[-0.2, 2])
     plot_wave(epoc_LexDelay_Go, lPMC_sig_idx,f'lPMC n={len(lPMC_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 2])
@@ -1255,18 +1261,21 @@ if groupsTag == "LexDelay":
     plot_wave(epoc_LexDelay_Go, lIFG_sig_idx,f'lIFG n={len(lIFG_sig_idx)}', Motor_col, '-', wav_bsl_corr, ylim=[-0.2, 2])
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='gray')
-    plt.title('(Go aligned)', fontsize=20)
+    #plt.title('(Go aligned)', fontsize=20)
     plt.legend().set_visible(False)
     plt.tick_params(axis='both', labelsize=16)
     plt.xticks(rotation=45)
     plt.xlim([-0.25, 1])
     plt.gca().spines[['top', 'right']].set_visible(False)
+    plt.xlabel('Time (s)', fontsize=12)
+    plt.ylabel('HG z-score', fontsize=12)
     plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_org_cat_Go_{roi_idx_tag}.tif'), dpi=300)
+    plt.savefig(os.path.join(Hickok_ROI_save_dir, f'Trace_by_ROI_Go.svg'), format='svg', dpi=300)
+    plt.savefig(os.path.join(Hickok_ROI_save_dir, f'Trace_by_ROI_Go.tif'), format='tif', dpi=300)
     plt.close()
 
     # Plot Sensorimotor, Auditory, and Motor electrodes (Aligned to motor onset)
-    plt.figure(figsize=(Waveplot_wth * (100 / 350), Waveplot_hgt))
+    plt.figure(figsize=(Waveplot_wth * (1.75 / 1.85), Waveplot_hgt))
     wav_bsl_corr = False
     plot_wave(epoc_LexDelay_Resp, Spt_sig_idx,f'Spt n={len(Spt_sig_idx)}', Auditory_col, '-', wav_bsl_corr,ylim=[-0.2, 2])
     plot_wave(epoc_LexDelay_Resp, lPMC_sig_idx,f'lPMC n={len(lPMC_sig_idx)}', Sensorimotor_col, '-', wav_bsl_corr,ylim=[-0.2, 2])
@@ -1274,14 +1283,17 @@ if groupsTag == "LexDelay":
     plot_wave(epoc_LexDelay_Resp, lIFG_sig_idx,f'lIFG n={len(lIFG_sig_idx)}', Motor_col, '-', wav_bsl_corr, ylim=[-0.2, 2])
     plt.axvline(x=0, linestyle='--', color='k')
     plt.axhline(y=0, linestyle='--', color='gray')
-    plt.title('(Motor aligned)', fontsize=20)
+    #plt.title('(Motor aligned)', fontsize=20)
     plt.legend().set_visible(False)
     plt.tick_params(axis='both', labelsize=16)
     plt.xticks(rotation=45)
-    plt.xlim([-0.5, 1])
+    plt.xlim([-0.5, 1.25])
     plt.gca().spines[['top', 'right']].set_visible(False)
+    plt.xlabel('Time (s)', fontsize=12)
+    plt.ylabel('HG z-score', fontsize=12)
     plt.tight_layout()
-    plt.savefig(os.path.join(fig_save_dir, f'LexDelay_sig_zscore_org_cat_Resp_{roi_idx_tag}.tif'), dpi=300)
+    plt.savefig(os.path.join(Hickok_ROI_save_dir, f'Trace_by_ROI_Resp.svg'), format='svg', dpi=300)
+    plt.savefig(os.path.join(Hickok_ROI_save_dir, f'Trace_by_ROI_Resp.tif'), format='tif', dpi=300)
     plt.close()
 
     # Plot Hickok ROI waves by electrodes aligned to Motor onsets
@@ -1333,8 +1345,6 @@ if groupsTag == "LexDelay":
             plt.close()
 
     ele_codes = []
-    Waveplot_wth=5 # Width of wave plots
-    Waveplot_hgt=4 # Height of wave plots
     for Hickok_roi_gp, col, tag in zip(
             (Spt_sig_idx, lPMC_sig_idx, lIFG_sig_idx),#,Wgw_p55b_sig_idx,Wgw_a55b_sig_idx),
             (Auditory_col, Sensorimotor_col, Motor_col),#,WGW_p55b_col,WGW_a55b_col),

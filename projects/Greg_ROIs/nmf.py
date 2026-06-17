@@ -287,69 +287,130 @@ H = model.components_
 comp_names = [list(macro_color_dict.keys())[i] for i in range(n_components)]
 
 #%% 2. Plot NMF Component Traces (H Matrix)
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ==========================================
+# 1. 提取所需的基础变量与颜色字典
+# ==========================================
 target_macros = ['Auditory_transient', 'Auditory_sustained', 'Delay', 'Auditory_Motorprep', 'Auditory_Motor']
 name_to_idx = {name: i for i, name in enumerate(comp_names)}
 
-plt.figure(figsize=(10, 4))
+# ==========================================
+# 2. 获取并清洗时间轴数据
+# ==========================================
+t_aud_full  = np.array(epoc_LexDelayRep_Aud.labels[1]).astype(float)
+t_go_full   = np.array(epoc_LexDelayRep_Go.labels[1]).astype(float)
+t_resp_full = np.array(epoc_LexDelayRep_Resp.labels[1]).astype(float)
 
-for name in target_macros:
-    if name in name_to_idx:
-        idx = name_to_idx[name]
-        plt.plot(x_linear, H[idx, :], label=name, color=macro_color_dict.get(name), linewidth=2.5, alpha=0.85)
+# 假设你参与 NMF 计算的数据是从 -0.5 秒开始截取的
+nmf_tmin_stim, nmf_tmax_stim = -0.5, 1.5
+nmf_tmin_go,   nmf_tmax_go   = -0.5, 1.0
+nmf_tmin_resp, nmf_tmax_resp = -0.5, 1.25
 
-for idx in zero_indices:
-    plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
-for idx in minus_point_five_indices:
-    plt.axvline(x=idx, color='k', linestyle='-', linewidth=1, alpha=0.5)
+mask_stim = (t_aud_full >= nmf_tmin_stim) & (t_aud_full <= nmf_tmax_stim)
+mask_go   = (t_go_full >= nmf_tmin_go)    & (t_go_full <= nmf_tmax_go)
+mask_resp = (t_resp_full >= nmf_tmin_resp) & (t_resp_full <= nmf_tmax_resp)
 
-plt.title(f'Temporal Traces of the {n_components} NMF Components (H Matrix)', fontsize=14, fontweight='bold')
-plt.xlabel('Time (s)', fontsize=12)
-plt.ylabel('Component Amplitude (a.u.)', fontsize=12)
-plt.gca().xaxis.set_major_locator(mticker.FixedLocator(tick_indices))
-plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(time_formatter))
-plt.legend(loc='upper right', bbox_to_anchor=(1.25, 1), frameon=False)
-plt.gca().spines['top'].set_visible(False)
-plt.gca().spines['right'].set_visible(False)
-plt.tight_layout()
+t_Stim = t_aud_full[mask_stim]
+t_Go   = t_go_full[mask_go]
+t_Resp = t_resp_full[mask_resp]
+
+n_stim, n_go, n_resp = len(t_Stim), len(t_Go), len(t_Resp)
+
+# ==========================================
+# 3. 拆分连续的 H 矩阵
+# ==========================================
+total_pts = n_stim + n_go + n_resp
+if total_pts != H.shape[1]:
+    print(f"Warning: 提取的总时间点数({total_pts})与H矩阵长度({H.shape[1]})不匹配！")
+
+H_Stim = H[:, :n_stim]
+H_Go   = H[:, n_stim : n_stim + n_go]
+H_Resp = H[:, n_stim + n_go : n_stim + n_go + n_resp]
+
+# X 轴视图范围起点统一设为 -0.25
+alignments = [
+    ('Stim', H_Stim, t_Stim, [-0.25, 1.5]),
+    ('Go',   H_Go,   t_Go,   [-0.25, 1.0]),
+    ('Resp', H_Resp, t_Resp, [-0.25, 1.25])
+]
+
+# ==========================================
+# 4. 绘图参数设置
+# ==========================================
+unit_scale = 2.0
+left_padding_with_y = 1.6
+left_padding_no_y = 0.2
+right_padding = 0.4
+fig_height = 3.5
 
 save_dir = '../Greg_ROIs/fig'
-if not os.path.exists(save_dir): os.makedirs(save_dir)
-plt.savefig(os.path.join(save_dir, "Comp_traces.svg"), format='svg', dpi=300, bbox_inches='tight')
-plt.show()
+if not os.path.exists(save_dir): 
+    os.makedirs(save_dir)
 
-#%% 3. Hierarchical Clustering (Forcing 3 Macro Clusters)
-# dist_matrix = pdist(H, metric='correlation')
-# Z = linkage(dist_matrix, method='average')
+# ==========================================
+# 5. 循环绘图 (极简经典 L 型坐标轴)
+# ==========================================
+for align_tag, H_epoch, t_epoch, x_limits in alignments:
+    has_y = (align_tag == 'Stim')
+    current_left_pad = left_padding_with_y if has_y else left_padding_no_y
+    x_duration = x_limits[1] - x_limits[0]
+    
+    # 动态计算图幅宽度，保持三个图的物理时间跨度比例严格一致
+    fig_width = (x_duration * unit_scale) + current_left_pad + right_padding
+    
+    fig = plt.figure(figsize=(fig_width, fig_height), dpi=300)
+    fig.subplots_adjust(left=current_left_pad/fig_width, right=1.0 - (right_padding/fig_width), bottom=0.25, top=0.9)
+    ax = plt.gca()
 
-# target_macro_clusters = 3
-# macro_labels = fcluster(Z, target_macro_clusters, criterion='maxclust')
+    # 1. 绘制波形 (换回 X = t_epoch, Y = H_epoch)
+    for name in target_macros:
+        if name in name_to_idx:
+            idx = name_to_idx[name]
+            ax.plot(t_epoch, H_epoch[idx, :], label=name, 
+                    color=macro_color_dict.get(name, '#888888'), 
+                    linewidth=2.5, alpha=0.85)
 
-# unique_labels = sorted(np.unique(macro_labels))
-# custom_macro_names = ['SM_Auditory', 'SM_Motor', 'Sustained']
-# label_to_name = {label: custom_macro_names[i] for i, label in enumerate(unique_labels)}
-# macro_mapping = {comp_names[i]: label_to_name[macro_labels[i]] for i in range(n_components)}
+    # --- 极简坐标轴设定 ---
+    ax.spines[['top', 'right']].set_visible(False)
+    
+    # 2. 画 0 点辅助虚线 (x=0是时间, y=0是基线)
+    ax.axvline(x=0, linestyle='--', color='k', linewidth=1.5)
+    ax.axhline(y=0, linestyle='--', color='gray', linewidth=1.5)
 
-# plt.rcParams['font.sans-serif'] = ['Arial']
-# plt.rcParams['pdf.fonttype'] = 42
-# plt.rcParams['axes.linewidth'] = 2.0
-# plt.rcParams['lines.linewidth'] = 2.5
+    # 3. 设定显示范围
+    ax.set_xlim(x_limits)
+    ax.set_ylim([-0.2, 2.5]) 
 
-# fig = plt.figure(figsize=(6, 4), dpi=300)
-# ax = plt.gca()
-# dendro = dendrogram(Z, labels=comp_names, orientation='top', link_color_func=lambda x: 'tab:blue', ax=ax)
+    # 4. X 轴 (时间) 设定
+    xticks = [-0.25, 0, 0.5, 1.0, 1.5]
+    ax.set_xticks([t for t in xticks if x_limits[0] <= t <= x_limits[1]])
+    ax.tick_params(axis='x', labelsize=16, rotation=45)
+    ax.set_xlabel("Time(s)")
+    
+    ax.spines['bottom'].set_linewidth(1.5)
+    ax.spines['bottom'].set_zorder(10)
 
-# ax.spines[['top', 'right']].set_visible(False)
-# ax.spines['left'].set_linewidth(3)
-# ax.spines['bottom'].set_linewidth(3)
-# ax.tick_params(axis='y', labelsize=16, length=6, width=2.5)
-# ax.tick_params(axis='x', labelsize=16, length=0, width=2.5)
-# plt.ylabel('Distance (1 - Pearson r)', fontsize=18, labelpad=10)
+    # 5. Y 轴 (NMF weight) 设定与隐藏逻辑
+    # 只有 Stim 显示 Y 轴
+    ax.spines['left'].set_linewidth(1.5)
+    ax.spines['left'].set_zorder(10)
+    ax.set_yticks([0, 0.5, 1.0, 1.5, 2.0, 2.5])
+    ax.tick_params(axis='y', labelsize=16)
+    ax.set_ylabel("NMF weight")
 
-# sns.despine(ax=ax, offset=10, trim=True)
-# plt.tight_layout()
-# plt.savefig(os.path.join(save_dir, "Dendrogram_Macro_Clusters.svg"), format='svg', dpi=300, bbox_inches='tight')
-# plt.show()
-# plt.rcParams['lines.linewidth'] = 1.5
+    save_dir = '../Greg_ROIs/fig'
+    if not os.path.exists(save_dir): 
+        os.makedirs(save_dir)
+    
+    # 提示：如果你前面精确使用了 fig.subplots_adjust，建议注释掉 tight_layout，否则可能破坏你精心计算的比例
+    # plt.tight_layout() 
+    
+    plt.savefig(os.path.join(save_dir, f"Comp_traces_{align_tag}.svg"), format='svg', dpi=300, bbox_inches='tight')
+    plt.show()
+
 
 #%% 4. Hard Clustering & Saving Indices
 df_weights = pd.DataFrame(W, columns=comp_names)
@@ -357,54 +418,165 @@ df_weights.insert(0, 'Channel', final_chs)
 df_weights.insert(1, 'Group', final_grps)
 cluster_twin=0.011
 df_weights['Base_Comp'] = df_weights[comp_names].idxmax(axis=1)
+import matplotlib.patches as patches
+import matplotlib.ticker as mticker
+
 save_dir = '../Greg_ROIs/fig'
-import pandas as pd
-import os
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+
+target_order = [
+    'Auditory_transient',
+    'Auditory_sustained',
+    'Delay',
+    'Auditory_Motorprep',
+    'Auditory_Motor'
+]
+
+save_dir = '../Greg_ROIs/fig'
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
 
 electrode_mapping_data = []
 
-for roi_group in df_weights['Group'].dropna().unique():
-    for category in df_weights['Base_Comp'].dropna().unique():
-        category_chs = set(df_weights[df_weights['Base_Comp'] == category]['Channel'])
-        group_chs = set(df_weights[df_weights['Group'] == roi_group]['Channel'])
-        # try:
-        elec_labels = data_LexDelay_Aud.labels[0]
-        category_idx = set([i for i, x in enumerate(elec_labels) if (x in group_chs) and (x in category_chs)])
-        
-        LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
-        
-        for idx in category_idx:
-            electrode_mapping_data.append({
-                'Electrode_ID': elec_labels[idx],
-                'NMF_Component': category
-            })
+roi_groups = df_weights['Group'].dropna().unique()
+unique_categories = df_weights['Base_Comp'].dropna().unique()
 
-        for mask,epoc,t_range,epoc_tag in zip(
-            (data_LexDelay_Aud,data_LexDelay_Go,data_LexDelay_Resp),
-            (epoc_LexDelayRep_Aud,epoc_LexDelayRep_Go,epoc_LexDelayRep_Resp),
-                                        ([-0.5, 1.5], [-0.5, 1], [-0.5, 1.25]),
-                                        ('Stim','Go','Resp')):
+categories = [cat for cat in target_order if cat in unique_categories]
+for cat in unique_categories:
+    if cat not in categories:
+        categories.append(cat)
+
+for roi_group in roi_groups:
+    
+    sorting_cache = {}
+    
+    for mask, epoc, t_range, epoc_tag in zip(
+        (data_LexDelay_Aud, data_LexDelay_Go, data_LexDelay_Resp),
+        (epoc_LexDelayRep_Aud, epoc_LexDelayRep_Go, epoc_LexDelayRep_Resp),
+        ([-0.5, 1.5], [-0.5, 1], [-0.5, 1.25]),
+        ('Stim', 'Go', 'Resp')
+    ):
+        stacked_arrays = []
+        category_boundaries = []
+        current_y = 0
+        time_points = None
+        
+        for category in categories:
+            category_chs = set(df_weights[df_weights['Base_Comp'] == category]['Channel'])
+            group_chs = set(df_weights[df_weights['Group'] == roi_group]['Channel'])
+            
+            elec_labels = data_LexDelay_Aud.labels[0]
+            category_idx = set([i for i, x in enumerate(elec_labels) if (x in group_chs) and (x in category_chs)])
+            
+            if epoc_tag == 'Stim':
+                LexDelay_twin_idxes[f'LexDelay_Sensorimotor_in_Delay_sig_idx_{category}'] = category_idx
+                for idx in category_idx:
+                    electrode_mapping_data.append({
+                        'Electrode_ID': elec_labels[idx],
+                        'NMF_Component': category
+                    })
+            
+            if len(category_idx) == 0:
+                continue
+                
             mask_selected = gp.select_electrodes(mask, category_idx)
             epoc_selected = gp.select_electrodes(epoc, category_idx)
-            if np.shape(mask_selected)[0]>0:
+            
+            if np.shape(mask_selected)[0] > 0:
                 if epoc_tag == 'Stim':
-                    Hickok_ROI_epoch_sort,_,Hickok_ROI_epoch_sort_idx, *_ = gp.sort_chs_by_actonset(mask_selected, epoc_selected,
-                                                            cluster_twin, t_range,
-                                                            mask_data=True,
-                                                            select_electrodes=False)
+                    sorted_data, _, sort_idx, *_ = gp.sort_chs_by_actonset(
+                        mask_selected, epoc_selected, cluster_twin, t_range,
+                        mask_data=True, select_electrodes=False
+                    )
+                    sorting_cache[category] = sort_idx
                 else:
-                    Hickok_ROI_epoch_sort,*_ = gp.sort_chs_by_actonset(mask_selected, epoc_selected,
-                                                            cluster_twin, t_range,
-                                                            mask_data=True,
-                                                            sorted_indices=Hickok_ROI_epoch_sort_idx,
-                                                            select_electrodes=False)
-                fname_save=os.path.join(save_dir, f"sig_mask_{roi_group}_{category}_{epoc_tag}.svg")
+                    sort_idx = sorting_cache.get(category)
+                    sorted_data, *_ = gp.sort_chs_by_actonset(
+                        mask_selected, epoc_selected, cluster_twin, t_range,
+                        mask_data=True, sorted_indices=sort_idx, select_electrodes=False
+                    )
+                
+                data_arr = sorted_data.__array__()
+                stacked_arrays.append(data_arr)
+                
+                n_chs = data_arr.shape[0]
+                category_boundaries.append({
+                    'category': category,
+                    'start': current_y,
+                    'end': current_y + n_chs,
+                    'color': macro_color_dict.get(category, [0.5, 0.5, 0.5])
+                })
+                current_y += n_chs
+                
+                if time_points is None:
+                    time_points = np.array(sorted_data.labels[1]).astype(float)
+        
+        if len(stacked_arrays) == 0:
+            continue
+            
+        full_matrix = np.vstack(stacked_arrays)
+        total_electrodes = full_matrix.shape[0]
+        
+        fig_hgt = max(3.0, 20 * (total_electrodes / 250))
+        
+        fig, (ax_cat, ax_main) = plt.subplots(
+            1, 2, 
+            gridspec_kw={'width_ratios': [1, 25], 'wspace': 0.05}, 
+            figsize=(5, fig_hgt), dpi=300
+        )
+        
+        for bound in category_boundaries:
+            rect = patches.Rectangle(
+                (0, bound['start']), 1, bound['end'] - bound['start'], 
+                facecolor=bound['color'], edgecolor='none'
+            )
+            ax_cat.add_patch(rect)
+            
+            if bound['end'] < total_electrodes:
+                ax_main.axhline(
+                    y=bound['end'], 
+                    color='black',       
+                    linestyle='--',      
+                    linewidth=1.0, 
+                    alpha=0.6,           
+                    zorder=5
+                )
 
-                gp.plot_chs(Hickok_ROI_epoch_sort, fname_save,
-                                                f'{roi_group}_{category}_{epoc_tag}', percentage_vscale=False, vmin=0, vmax=2, is_colbar=False,
-                                                fig_size=[4, 20 * (len(mask_selected.labels[0]) / 250)])
-        # except NameError:
-        #     pass 
+        ax_cat.set_xlim([0, 1])
+        ax_cat.set_ylim([total_electrodes, 0])
+        ax_cat.axis('off') 
+        
+        t_min, t_max = time_points[0], time_points[-1]
+        im = ax_main.imshow(
+            full_matrix, 
+            aspect='auto', 
+            cmap='Blues',     
+            vmin=0, 
+            vmax=1.5,         
+            extent=[t_min, t_max, total_electrodes, 0], 
+            interpolation='none'
+        )
+        
+        ax_main.axvline(x=0, linestyle='--', color='black', linewidth=1.5, dashes=(4, 4), alpha=0.8)
+        
+        ax_main.spines[['top', 'right', 'left']].set_visible(False)
+        ax_main.spines['bottom'].set_linewidth(1.5)
+        
+        xticks = [-0.5, 0, 0.5, 1.0, 1.5]
+        ax_main.set_xticks([t for t in xticks if t_min <= t <= t_max])
+        ax_main.xaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f'))
+        ax_main.tick_params(axis='x', labelsize=12, length=4)
+        
+        ax_main.set_yticks([]) 
+        ax_main.set_xlabel('Time (s)', fontsize=12)
+        
+        #ax_main.set_title(f'{roi_group} ({epoc_tag}, n={total_electrodes})', fontsize=12, pad=10)
+        
+        plt.tight_layout()
+        fname_save = os.path.join(save_dir, f"Power_by_elec_{roi_group}_{epoc_tag}.svg")
+        plt.savefig(fname_save, format='svg', dpi=300, bbox_inches='tight')
+        #plt.show()
 
 if electrode_mapping_data:
     df_mapping = pd.DataFrame(electrode_mapping_data)
@@ -434,82 +606,101 @@ except NameError:
     pass
 
 #%% 5. Anatomical Distribution Pie Charts
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# 改用 crosstab 計算每個 ROI 中各個 Component 的「實際電極數量」
+save_dir = '../Greg_ROIs/fig'
+if not os.path.exists(save_dir): 
+    os.makedirs(save_dir)
+
 count_df = pd.crosstab(df_weights['Group'], df_weights['Base_Comp'])
 
-groups = count_df.index.tolist()
-n_groups = len(groups)
+group_color_dict = {
+    'Spt': Auditory_col,
+    'lPMC': Sensorimotor_col,
+    'lIFG': Motor_col
+}
 
-fig, axes = plt.subplots(1, n_groups, figsize=(4 * n_groups, 5), dpi=300)
-if n_groups == 1: 
-    axes = [axes]
-
-legend_patches = []
-legend_labels = []
-
-# 這個函數現在可以精準算出電極的「顆數」了
-def make_autopct(values):
-    def my_autopct(pct):
-        total = sum(values)
-        val = int(round(pct * total / 100.0)) 
-        
-        if val > 0:
-            return f'{val} ({pct:.1f}%)'
-        else:
-            return ''
-    return my_autopct
-
-for i, group_name in enumerate(groups):
-    ax = axes[i]
-    
-    # 提取該 ROI 的真實電極計數
+for group_name in count_df.index:
     values = count_df.loc[group_name]
-    
-    # 只保留數量大於 0 的 Component (這就解決了你說的 mismatch 問題)
     valid_values = values[values > 0]
-    valid_macros = valid_values.index
     
     if len(valid_values) == 0: 
         continue
         
+    valid_macros = valid_values.index
     pie_colors = [macro_color_dict.get(macro, [0.5, 0.5, 0.5]) for macro in valid_macros]
         
-    patches, texts, autotexts = ax.pie(
+    fig, ax = plt.subplots(figsize=(4, 4), dpi=300)
+    ax.pie(
         valid_values, 
         labels=None, 
-        autopct=make_autopct(valid_values), 
         colors=pie_colors, 
         startangle=140, 
-        textprops={'fontsize': 8},
         wedgeprops={'alpha': 0.85, 'linewidth': 0}
     )
     
-    # 在標題顯示該 ROI 的總電極數
-    total_elecs = valid_values.sum()
-    ax.set_title(f'{group_name}\n(n={total_elecs})', fontsize=12, fontweight='bold', pad=8)
+    plt.tight_layout()
+    save_path = os.path.join(save_dir, f"Pie_{group_name.replace('/', '_')}_Components_clean.svg")
+    plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
+    #plt.show()
+
+for comp_name in count_df.columns:
+    values = count_df[comp_name]
+    valid_values = values[values > 0]
     
-    for patch, macro in zip(patches, valid_macros):
-        if macro not in legend_labels:
-            legend_labels.append(macro)
-            legend_patches.append(patch)
+    if len(valid_values) == 0: 
+        continue
+        
+    valid_groups = valid_values.index
+    pie_colors = [group_color_dict.get(grp, [0.5, 0.5, 0.5]) for grp in valid_groups]
+        
+    fig, ax = plt.subplots(figsize=(4, 4), dpi=300)
+    ax.pie(
+        valid_values, 
+        labels=None, 
+        colors=pie_colors, 
+        startangle=140, 
+        wedgeprops={'alpha': 0.85, 'linewidth': 0}
+    )
+    
+    plt.tight_layout()
+    save_path = os.path.join(save_dir, f"PieChart_{comp_name}_by_Group_clean.svg")
+    plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
+    #plt.show()
 
-plt.subplots_adjust(right=0.85)
+pct_df_group = pd.crosstab(df_weights['Group'], df_weights['Base_Comp'], normalize='index') * 100
+table_group = pd.DataFrame(index=count_df.index, columns=count_df.columns)
 
-# (如果需要圖例，可以把這段取消註解)
-# fig.legend(
-#     legend_patches, 
-#     legend_labels, 
-#     loc='upper right',
-#     bbox_to_anchor=(0.98, 0.95),
-#     ncol=1,
-#     fontsize=12,
-#     frameon=False
-# )
+for col in count_df.columns:
+    for row in count_df.index:
+        cnt = count_df.loc[row, col]
+        pct = pct_df_group.loc[row, col]
+        table_group.loc[row, col] = f"{cnt} ({pct:.1f}%)" if cnt > 0 else "0 (0.0%)"
 
-plt.show()
+table_group['Total'] = count_df.sum(axis=1)
+
+pct_df_comp = pd.crosstab(df_weights['Group'], df_weights['Base_Comp'], normalize='columns') * 100
+table_comp = pd.DataFrame(index=count_df.index, columns=count_df.columns)
+
+for col in count_df.columns:
+    for row in count_df.index:
+        cnt = count_df.loc[row, col]
+        pct = pct_df_comp.loc[row, col]
+        table_comp.loc[row, col] = f"{cnt} ({pct:.1f}%)" if cnt > 0 else "0 (0.0%)"
+
+table_comp_t = table_comp.T
+table_comp_t['Total'] = count_df.sum(axis=0)
+
+print("\n" + "="*15 + " Distribution of Components within Groups " + "="*15)
+print(table_group.to_markdown())
+table_group.to_csv(os.path.join(save_dir, "Table_Components_in_Groups.csv"), encoding='utf-8-sig')
+
+print("\n" + "="*15 + " Distribution of Groups within Components " + "="*15)
+print(table_comp_t.to_markdown())
+table_comp_t.to_csv(os.path.join(save_dir, "Table_Groups_in_Components.csv"), encoding='utf-8-sig')
+
 #%% 6. Plot Aligned Traces (Stim / Go / Resp)
 plot_groups = []
 save_dir = '../Greg_ROIs/fig'
@@ -528,7 +719,7 @@ fig_height = 3.0
 alignments = [
     ('Stim', epoc_LexDelayRep_Aud, [-0.25, 1.5], True),
     ('Go', epoc_LexDelayRep_Go, [-0.25, 1.0], range(631, 650)),
-    ('Resp', epoc_LexDelayRep_Resp, [-0.25, 1.0], range(631, 650))
+    ('Resp', epoc_LexDelayRep_Resp, [-0.25, 1.25], range(631, 650))
 ]
 
 target_macros_as = target_macros + ['All']
@@ -543,6 +734,7 @@ for align_tag, epoc_data, x_limits, bsl_val in alignments:
         fig.subplots_adjust(left=current_left_pad/fig_width, right=1.0 - (right_padding/fig_width), bottom=0.25, top=0.9)
         ax = plt.gca()
 
+        # 绘制波形 (调用你自定义的 gp.plot_wave)
         if macro == 'All':
             for sig_idx, label_text, group_col in plot_groups:
                 if len(sig_idx) == 0: continue
@@ -556,45 +748,45 @@ for align_tag, epoc_data, x_limits, bsl_val in alignments:
                 sig_idx_roi = LexDelay_twin_idxes[roi_elec_idx] & set(sig_idx)
                 if len(sig_idx_roi) == 0: continue
                 gp.plot_wave(epoc_data, sig_idx_roi, f'{roi_tag}', roi_col, '-', bsl_val, ylim=[-0.3, 6],average_trace=False)
-             
-
-        #ax.set_ylim([-0.3, 5])
+              
+        # --- 极简经典 L 型坐标轴设定 ---
         ax.spines[['top', 'right']].set_visible(False)
-        ax.spines['bottom'].set_linewidth(3)
         
-        if not has_y:
-            ax.spines['left'].set_visible(False)
-            ax.set_yticks([])
-            ax.yaxis.set_visible(False) 
-        else:
-            ax.spines['left'].set_linewidth(3)
-            ax.set_yticks([0, 2, 4])
-            ax.tick_params(axis='y', labelsize=24, length=6, width=2.5)
+        # 底部 X 轴设定
+        #ax.spines['bottom'].set_linewidth(3)
+        ax.spines['bottom'].set_zorder(10) # 强制边框在最上层，像菜刀一样切齐波形的左侧溢出
+        
+        #ax.spines['left'].set_linewidth(3)
+        ax.spines['left'].set_zorder(10) # 强制边框在最上层
+        ax.set_yticks([0, 2, 4])
+        ax.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f'))
+        ax.tick_params(axis='y', labelsize=16, length=6)
 
-        xticks = [0, 0.5, 1.0, 1.5]
+        # X 轴刻度 (补上起点 -0.25，让交汇处有数字)
+        xticks = [-0.25, 0, 0.5, 1.0, 1.5]
         ax.set_xticks([t for t in xticks if x_limits[0] <= t <= x_limits[1]])
-        ax.xaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f'))
+        ax.xaxis.set_major_formatter(mticker.FormatStrFormatter('%.2f'))
         
         plt.draw()
-        ax.set_xticklabels(["0" if (l == "0.0" or l == ".0") else l for l in [l.get_text() for l in ax.get_xticklabels()]])
-        sns.despine(ax=ax, offset=10, trim=True, left=not has_y)
+        ax.set_xticklabels(["0.0" if (l == "0.0" or l == ".0") else l for l in [l.get_text() for l in ax.get_xticklabels()]])
+        
+        # 【注意】这里彻底删除了原代码的 sns.despine 和 ax.spines['bottom'].set_bounds
+        # 这样 Matplotlib 就会本分地在 x = -0.25 处形成完美闭合的 L 型
         
         ax.set_xlim(x_limits)
-        ax.tick_params(axis='x', labelsize=24, length=6, width=2.5)
-        ax.spines['bottom'].set_bounds(x_limits[0], x_limits[1])
-        ax.set_xlabel(''); ax.set_ylabel('')
+        ax.tick_params(axis='x', labelsize=16, length=6, rotation=45)
+        plt.xlabel('Time (s)', fontsize=12)
+        plt.ylabel('HG z-score', fontsize=12)
         
-        ax.axvline(x=0, linestyle='--', color='#444444', linewidth=1.5, dashes=(5, 5), zorder=0)
-        ax.axhline(y=0, linestyle='-', color='#DDDDDD', linewidth=1.0, zorder=0)
+        # 极简虚线标记 0 点
+        ax.axvline(x=0, linestyle='--', color='k', linewidth=1.5, zorder=0)
+        ax.axhline(y=0, linestyle='--', color='gray', linewidth=1.5, zorder=0)
 
-        if align_tag == 'Resp':
-            ax.legend(loc='upper right', frameon=False, fontsize=12, handlelength=1.5)
-        else:
-            if ax.get_legend(): ax.get_legend().remove()
-        if ax.get_legend(): ax.get_legend().remove()
-
-        plt.savefig(os.path.join(save_dir, f"Spt_trace_{macro}_{align_tag}.svg"), format='svg', dpi=300, bbox_inches=None)
-        plt.show()
+        # Legend 清理逻辑
+        #ax.legend(loc='upper right', frameon=False, fontsize=12, handlelength=1.5)
+        plt.tight_layout()
+        plt.savefig(os.path.join(save_dir, f"Trace_by_elec_{macro}_{align_tag}.svg"), format='svg', dpi=300, bbox_inches=None)
+        #plt.show()
 
     #
 
@@ -609,20 +801,20 @@ for comp in comp_names:
     traces = final_array[indices, :]
     comp_col = macro_color_dict[comp]
     
-    plt.figure(figsize=(10, 3), dpi=300)
-    plt.plot(x_linear, traces.T, color=comp_col, alpha=0.3, linewidth=1.5)
-    for idx in zero_indices:
-        plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
-    for idx in minus_point_five_indices:
-        plt.axvline(x=idx, color='k', linestyle='-', linewidth=1, alpha=0.5)
+    # plt.figure(figsize=(10, 3), dpi=300)
+    # plt.plot(x_linear, traces.T, color=comp_col, alpha=0.3, linewidth=1.5)
+    # for idx in zero_indices:
+    #     plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
+    # for idx in minus_point_five_indices:
+    #     plt.axvline(x=idx, color='k', linestyle='-', linewidth=1, alpha=0.5)
         
-    plt.title(f'Raw Traces | {comp} | n={len(indices)}', fontsize=12, fontweight='bold')
-    plt.xlabel('Time (s)', fontsize=12)
-    plt.gca().xaxis.set_major_locator(mticker.FixedLocator(tick_indices))
-    plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(time_formatter))
-    sns.despine(trim=True, offset=5)
-    plt.tight_layout()
-    plt.show()
+    # plt.title(f'Raw Traces | {comp} | n={len(indices)}', fontsize=12, fontweight='bold')
+    # plt.xlabel('Time (s)', fontsize=12)
+    # plt.gca().xaxis.set_major_locator(mticker.FixedLocator(tick_indices))
+    # plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(time_formatter))
+    # sns.despine(trim=True, offset=5)
+    # plt.tight_layout()
+    # plt.show()
 
 chs_coor=gp.get_coor(df_weights.Channel.to_list(),'group')
 
@@ -670,6 +862,23 @@ if len(w) > 0:
         gp.plot_brain(subjs, significant_elecs.Channel.to_list(), cols_lst, None, 'Participation Coef (Hubs)', 0.3, 0.2, hemi='lh')
     except Exception:
         pass
+
+picks = df_weights.Channel.to_list()
+chs_coor = gp.get_coor(picks, 'group')
+
+# Hard clustering
+cols_lst = [macro_color_dict.get(comp, [0.5, 0.5, 0.5]) for comp in df_weights['Base_Comp']]
+try:
+    print(f"Plotting hard-clustering brain map for {len(picks)} electrodes...")
+    gp.plot_brain(
+        picks=picks, 
+        chs_coor=chs_coor, 
+        chs_cols=cols_lst, 
+        dotsize=0.3, 
+        transparency=0.2
+    )
+except Exception as e:
+    print(f"Failed to plot brain map: {e}")
 
 #%% 8. Extract Power for Stats & Plot Brain Maps + Bar+Strip
 _, _, _, _, _, paras_aud, *_ = gp.sort_chs_by_actonset(data_LexDelay_Aud, epoc_LexDelayRep_Aud, 0.011, [0.05, 0.25], mask_data=True, select_electrodes=False)
@@ -795,7 +1004,7 @@ for col, ylabel, save_name in metrics:
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, save_name), format='svg', dpi=300, bbox_inches='tight')
     plt.show()
-# %%
+
 # %%
 import seaborn as sns
 from sklearn.linear_model import LinearRegression
