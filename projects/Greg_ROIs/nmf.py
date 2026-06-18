@@ -218,7 +218,7 @@ def auto_find_optimal_k_nmf(X, k_range=range(2, 10), plot=True):
     n_datapoints = n_samples * n_features
     bic_scores = []
     
-    print("正在计算各 k 值的 BIC 准则...")
+    print("Calculating BIC for each k...")
     for k in k_range:
         model = NMF(n_components=k, init='nndsvd', max_iter=500, random_state=42)
         model.fit(X)
@@ -229,7 +229,7 @@ def auto_find_optimal_k_nmf(X, k_range=range(2, 10), plot=True):
         print(f"  k={k} | RSS={rss:.2f} | Parameters={n_parameters} | BIC={bic:.2f}")
 
     optimal_k = k_range[np.argmin(bic_scores)]
-    print(f"\n✅ 根据 BIC 准则，最佳的 Component 数量 (k) 是: {optimal_k}")
+    print(f"\nOptimal number of components (k) based on BIC is: {optimal_k}")
     
     if plot:
         plt.figure(figsize=(8, 4))
@@ -251,6 +251,7 @@ def auto_find_optimal_k_nmf(X, k_range=range(2, 10), plot=True):
             os.makedirs(save_dir)
         save_filename = "auto_find_optimal_k_nmf.svg"
         plt.savefig(os.path.join(save_dir, save_filename), format='svg', dpi=300, bbox_inches='tight')
+        plt.savefig(os.path.join(save_dir, save_filename.replace('.svg', '.tif')), format='tif', dpi=300, bbox_inches='tight')
         plt.show()
         
     return optimal_k
@@ -262,8 +263,8 @@ Sensorimotor_col = [1, 0, 0]
 Auditory_col = [0, 1, 0]  
 Motor_col = [0, 0, 1]  
 Delay_col = [1, 0.65, 0]
-Yellow_col = [1, 1, 0]        # 黄色 (RGB: 255, 255, 0)
-Purple_col = [0.5, 0, 0.5]    # 紫色 (RGB: 128, 0, 128)
+Yellow_col = [1, 1, 0]
+Purple_col = [0.5, 0, 0.5]
 
 macro_color_dict = {
     'Auditory_Motorprep': Yellow_col, 
@@ -291,20 +292,13 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ==========================================
-# 1. 提取所需的基础变量与颜色字典
-# ==========================================
 target_macros = ['Auditory_transient', 'Auditory_sustained', 'Delay', 'Auditory_Motorprep', 'Auditory_Motor']
 name_to_idx = {name: i for i, name in enumerate(comp_names)}
 
-# ==========================================
-# 2. 获取并清洗时间轴数据
-# ==========================================
 t_aud_full  = np.array(epoc_LexDelayRep_Aud.labels[1]).astype(float)
 t_go_full   = np.array(epoc_LexDelayRep_Go.labels[1]).astype(float)
 t_resp_full = np.array(epoc_LexDelayRep_Resp.labels[1]).astype(float)
 
-# 假设你参与 NMF 计算的数据是从 -0.5 秒开始截取的
 nmf_tmin_stim, nmf_tmax_stim = -0.5, 1.5
 nmf_tmin_go,   nmf_tmax_go   = -0.5, 1.0
 nmf_tmin_resp, nmf_tmax_resp = -0.5, 1.25
@@ -319,27 +313,20 @@ t_Resp = t_resp_full[mask_resp]
 
 n_stim, n_go, n_resp = len(t_Stim), len(t_Go), len(t_Resp)
 
-# ==========================================
-# 3. 拆分连续的 H 矩阵
-# ==========================================
 total_pts = n_stim + n_go + n_resp
 if total_pts != H.shape[1]:
-    print(f"Warning: 提取的总时间点数({total_pts})与H矩阵长度({H.shape[1]})不匹配！")
+    print(f"Warning: Total number of time points extracted ({total_pts}) does not match H matrix length ({H.shape[1]})!")
 
 H_Stim = H[:, :n_stim]
 H_Go   = H[:, n_stim : n_stim + n_go]
 H_Resp = H[:, n_stim + n_go : n_stim + n_go + n_resp]
 
-# X 轴视图范围起点统一设为 -0.25
 alignments = [
     ('Stim', H_Stim, t_Stim, [-0.25, 1.5]),
     ('Go',   H_Go,   t_Go,   [-0.25, 1.0]),
     ('Resp', H_Resp, t_Resp, [-0.25, 1.25])
 ]
 
-# ==========================================
-# 4. 绘图参数设置
-# ==========================================
 unit_scale = 2.0
 left_padding_with_y = 1.6
 left_padding_no_y = 0.2
@@ -350,22 +337,17 @@ save_dir = '../Greg_ROIs/fig'
 if not os.path.exists(save_dir): 
     os.makedirs(save_dir)
 
-# ==========================================
-# 5. 循环绘图 (极简经典 L 型坐标轴)
-# ==========================================
 for align_tag, H_epoch, t_epoch, x_limits in alignments:
     has_y = (align_tag == 'Stim')
     current_left_pad = left_padding_with_y if has_y else left_padding_no_y
     x_duration = x_limits[1] - x_limits[0]
     
-    # 动态计算图幅宽度，保持三个图的物理时间跨度比例严格一致
     fig_width = (x_duration * unit_scale) + current_left_pad + right_padding
     
     fig = plt.figure(figsize=(fig_width, fig_height), dpi=300)
     fig.subplots_adjust(left=current_left_pad/fig_width, right=1.0 - (right_padding/fig_width), bottom=0.25, top=0.9)
     ax = plt.gca()
 
-    # 1. 绘制波形 (换回 X = t_epoch, Y = H_epoch)
     for name in target_macros:
         if name in name_to_idx:
             idx = name_to_idx[name]
@@ -373,18 +355,14 @@ for align_tag, H_epoch, t_epoch, x_limits in alignments:
                     color=macro_color_dict.get(name, '#888888'), 
                     linewidth=2.5, alpha=0.85)
 
-    # --- 极简坐标轴设定 ---
     ax.spines[['top', 'right']].set_visible(False)
     
-    # 2. 画 0 点辅助虚线 (x=0是时间, y=0是基线)
     ax.axvline(x=0, linestyle='--', color='k', linewidth=1.5)
     ax.axhline(y=0, linestyle='--', color='gray', linewidth=1.5)
 
-    # 3. 设定显示范围
     ax.set_xlim(x_limits)
     ax.set_ylim([-0.2, 2.5]) 
 
-    # 4. X 轴 (时间) 设定
     xticks = [-0.25, 0, 0.5, 1.0, 1.5]
     ax.set_xticks([t for t in xticks if x_limits[0] <= t <= x_limits[1]])
     ax.tick_params(axis='x', labelsize=16, rotation=45)
@@ -393,8 +371,6 @@ for align_tag, H_epoch, t_epoch, x_limits in alignments:
     ax.spines['bottom'].set_linewidth(1.5)
     ax.spines['bottom'].set_zorder(10)
 
-    # 5. Y 轴 (NMF weight) 设定与隐藏逻辑
-    # 只有 Stim 显示 Y 轴
     ax.spines['left'].set_linewidth(1.5)
     ax.spines['left'].set_zorder(10)
     ax.set_yticks([0, 0.5, 1.0, 1.5, 2.0, 2.5])
@@ -405,10 +381,8 @@ for align_tag, H_epoch, t_epoch, x_limits in alignments:
     if not os.path.exists(save_dir): 
         os.makedirs(save_dir)
     
-    # 提示：如果你前面精确使用了 fig.subplots_adjust，建议注释掉 tight_layout，否则可能破坏你精心计算的比例
-    # plt.tight_layout() 
-    
     plt.savefig(os.path.join(save_dir, f"Comp_traces_{align_tag}.svg"), format='svg', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(save_dir, f"Comp_traces_{align_tag}.tif"), format='tif', dpi=300, bbox_inches='tight')
     plt.show()
 
 
@@ -576,7 +550,7 @@ for roi_group in roi_groups:
         plt.tight_layout()
         fname_save = os.path.join(save_dir, f"Power_by_elec_{roi_group}_{epoc_tag}.svg")
         plt.savefig(fname_save, format='svg', dpi=300, bbox_inches='tight')
-        #plt.show()
+        plt.savefig(fname_save.replace(".svg", ".tif"), format='tif', dpi=300, bbox_inches='tight')
 
 if electrode_mapping_data:
     df_mapping = pd.DataFrame(electrode_mapping_data)
@@ -644,7 +618,7 @@ for group_name in count_df.index:
     plt.tight_layout()
     save_path = os.path.join(save_dir, f"Pie_{group_name.replace('/', '_')}_Components_clean.svg")
     plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
-    #plt.show()
+    plt.savefig(save_path.replace(".svg", ".tif"), format='tif', dpi=300, bbox_inches='tight')
 
 for comp_name in count_df.columns:
     values = count_df[comp_name]
@@ -666,9 +640,9 @@ for comp_name in count_df.columns:
     )
     
     plt.tight_layout()
-    save_path = os.path.join(save_dir, f"PieChart_{comp_name}_by_Group_clean.svg")
+    save_path = os.path.join(save_dir, f"Pie_{comp_name}_by_Group_clean.svg")
     plt.savefig(save_path, format='svg', dpi=300, bbox_inches='tight')
-    #plt.show()
+    plt.savefig(save_path.replace(".svg", ".tif"), format='tif', dpi=300, bbox_inches='tight')
 
 pct_df_group = pd.crosstab(df_weights['Group'], df_weights['Base_Comp'], normalize='index') * 100
 table_group = pd.DataFrame(index=count_df.index, columns=count_df.columns)
@@ -734,7 +708,6 @@ for align_tag, epoc_data, x_limits, bsl_val in alignments:
         fig.subplots_adjust(left=current_left_pad/fig_width, right=1.0 - (right_padding/fig_width), bottom=0.25, top=0.9)
         ax = plt.gca()
 
-        # 绘制波形 (调用你自定义的 gp.plot_wave)
         if macro == 'All':
             for sig_idx, label_text, group_col in plot_groups:
                 if len(sig_idx) == 0: continue
@@ -749,20 +722,15 @@ for align_tag, epoc_data, x_limits, bsl_val in alignments:
                 if len(sig_idx_roi) == 0: continue
                 gp.plot_wave(epoc_data, sig_idx_roi, f'{roi_tag}', roi_col, '-', bsl_val, ylim=[-0.3, 6],average_trace=False)
               
-        # --- 极简经典 L 型坐标轴设定 ---
         ax.spines[['top', 'right']].set_visible(False)
         
-        # 底部 X 轴设定
-        #ax.spines['bottom'].set_linewidth(3)
-        ax.spines['bottom'].set_zorder(10) # 强制边框在最上层，像菜刀一样切齐波形的左侧溢出
+        ax.spines['bottom'].set_zorder(10)
         
-        #ax.spines['left'].set_linewidth(3)
-        ax.spines['left'].set_zorder(10) # 强制边框在最上层
+        ax.spines['left'].set_zorder(10)
         ax.set_yticks([0, 2, 4])
         ax.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f'))
         ax.tick_params(axis='y', labelsize=16, length=6)
 
-        # X 轴刻度 (补上起点 -0.25，让交汇处有数字)
         xticks = [-0.25, 0, 0.5, 1.0, 1.5]
         ax.set_xticks([t for t in xticks if x_limits[0] <= t <= x_limits[1]])
         ax.xaxis.set_major_formatter(mticker.FormatStrFormatter('%.2f'))
@@ -770,23 +738,17 @@ for align_tag, epoc_data, x_limits, bsl_val in alignments:
         plt.draw()
         ax.set_xticklabels(["0.0" if (l == "0.0" or l == ".0") else l for l in [l.get_text() for l in ax.get_xticklabels()]])
         
-        # 【注意】这里彻底删除了原代码的 sns.despine 和 ax.spines['bottom'].set_bounds
-        # 这样 Matplotlib 就会本分地在 x = -0.25 处形成完美闭合的 L 型
-        
         ax.set_xlim(x_limits)
         ax.tick_params(axis='x', labelsize=16, length=6, rotation=45)
         plt.xlabel('Time (s)', fontsize=12)
         plt.ylabel('HG z-score', fontsize=12)
         
-        # 极简虚线标记 0 点
         ax.axvline(x=0, linestyle='--', color='k', linewidth=1.5, zorder=0)
         ax.axhline(y=0, linestyle='--', color='gray', linewidth=1.5, zorder=0)
 
-        # Legend 清理逻辑
-        #ax.legend(loc='upper right', frameon=False, fontsize=12, handlelength=1.5)
         plt.tight_layout()
         plt.savefig(os.path.join(save_dir, f"Trace_by_elec_{macro}_{align_tag}.svg"), format='svg', dpi=300, bbox_inches=None)
-        #plt.show()
+        plt.savefig(os.path.join(save_dir, f"Trace_by_elec_{macro}_{align_tag}.tif"), format='tif', dpi=300, bbox_inches=None)
 
     #
 
@@ -800,21 +762,6 @@ for comp in comp_names:
     if not indices: continue
     traces = final_array[indices, :]
     comp_col = macro_color_dict[comp]
-    
-    # plt.figure(figsize=(10, 3), dpi=300)
-    # plt.plot(x_linear, traces.T, color=comp_col, alpha=0.3, linewidth=1.5)
-    # for idx in zero_indices:
-    #     plt.axvline(x=idx, color='k', linestyle='--', linewidth=1, alpha=0.5)
-    # for idx in minus_point_five_indices:
-    #     plt.axvline(x=idx, color='k', linestyle='-', linewidth=1, alpha=0.5)
-        
-    # plt.title(f'Raw Traces | {comp} | n={len(indices)}', fontsize=12, fontweight='bold')
-    # plt.xlabel('Time (s)', fontsize=12)
-    # plt.gca().xaxis.set_major_locator(mticker.FixedLocator(tick_indices))
-    # plt.gca().xaxis.set_major_formatter(mticker.FuncFormatter(time_formatter))
-    # sns.despine(trim=True, offset=5)
-    # plt.tight_layout()
-    # plt.show()
 
 chs_coor=gp.get_coor(df_weights.Channel.to_list(),'group')
 
@@ -832,12 +779,6 @@ for i, comp in enumerate(comp_names):
     except Exception:
         pass
 
-# cols_lst = [macro_color_dict.get(comp, [0.5, 0.5, 0.5]) for comp in df_weights['Dominant_Comp']]
-# try:
-#     #gp.plot_brain(subjs, df_weights.Channel.to_list(), cols_lst, None, 'Dominant_Comp', 0.3, 0.2, hemi='lh')
-#     gp.plot_brain(picks=df_weights.Channel.to_list(), chs_coor=chs_coor, chs_cols= cols_lst, dotsize=0.2, transparency=0.2)
-# except Exception:
-#     pass
 
 print("\n--- Provincial Hubs (Top 5 per Component) ---")
 for comp in comp_names:
@@ -958,7 +899,6 @@ for col, ylabel, save_name in metrics:
     sns.stripplot(**plotting_params, palette=macro_color_dict, 
                   jitter=True, alpha=0.8, size=6, ax=ax, rasterized=True)
     
-    # 手动执行统计检验，以应用FDR校正和自定义星号
     pvalues = [mannwhitneyu(
         df_stats[df_stats['Macro_Cluster'] == p[0]][col],
         df_stats[df_stats['Macro_Cluster'] == p[1]][col],
@@ -966,10 +906,8 @@ for col, ylabel, save_name in metrics:
     ).pvalue for p in pairs]
 
     if pvalues:
-        # 应用FDR (Benjamini-Hochberg) 校正
         _, pvals_corrected, _, _ = multipletests(pvalues, alpha=0.05, method='fdr_bh')
 
-        # 自定义显著性阈值 (最多三个星)
         pvalue_thresholds = [(0.001, '***'), (0.01, '**'), (0.05, '*')]
         
         def p_to_stars(p):
@@ -979,7 +917,6 @@ for col, ylabel, save_name in metrics:
         
         annotations = [p_to_stars(p) for p in pvals_corrected]
         
-        # 过滤掉不显著的配对，使图形更清晰
         annot_pairs = [pair for i, pair in enumerate(pairs) if annotations[i] != 'ns']
         annot_texts = [text for text in annotations if text != 'ns']
 
@@ -994,7 +931,6 @@ for col, ylabel, save_name in metrics:
     ax.spines['bottom'].set_linewidth(3)
     
     ax.tick_params(axis='y', labelsize=16, length=6, width=2.5)
-    #ax.tick_params(axis='x', labelsize=14, length=6, width=2.5)
     ax.tick_params(axis='x', bottom=False, labelbottom=False)
     
     plt.ylabel(ylabel, fontsize=16, fontweight='bold')
@@ -1003,6 +939,7 @@ for col, ylabel, save_name in metrics:
     sns.despine(ax=ax, offset=10, trim=True)
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, save_name), format='svg', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(save_dir, save_name.replace('.svg', '.tif')), format='tif', dpi=300, bbox_inches='tight')
     plt.show()
 
 # %%
@@ -1072,6 +1009,7 @@ for name, z_vals, base_col in analysis_targets:
     if not os.path.exists(save_dir): 
         os.makedirs(save_dir)
     plt.savefig(os.path.join(save_dir, f"Gradient_Scatter_2D_{name}.svg"), format='svg', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(save_dir, f"Gradient_Scatter_2D_{name}.tif"), format='tif', dpi=300, bbox_inches='tight')
     plt.show()
 
     fig2 = plt.figure(figsize=(6, 6), dpi=300)
@@ -1115,5 +1053,6 @@ for name, z_vals, base_col in analysis_targets:
     
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, f"Gradient_3D_Vector_{name}.svg"), format='svg', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(save_dir, f"Gradient_3D_Vector_{name}.tif"), format='tif', dpi=300, bbox_inches='tight')
     plt.show()
 # %%
