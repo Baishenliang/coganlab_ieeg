@@ -2859,9 +2859,18 @@ import re
 # Manually specified demographics (PLACEHOLDER VALUES)
 # TODO: replace with correct information
 # ------------------------------------------------------------------
+# MANUAL_DEMOGRAPHICS = {
+#     #"D24": {"sex": "X", "dob_raw": 99999999}
+#     #PHI protected: please fill in the correct values before use
+# }
+
 MANUAL_DEMOGRAPHICS = {
-    #"D24": {"sex": "X", "dob_raw": 99999999}
-    #PHI protected: please fill in the correct values before use
+"D23": {"sex": "M", "dob_raw": "0"},
+"D24": {"sex": "F", "dob_raw": "0"},
+"D26": {"sex": "F", "dob_raw": "0"},
+"D27": {"sex": "F", "dob_raw": "0"},
+"D28": {"sex": "M", "dob_raw": "0"},
+"D29": {"sex": "F", "dob_raw": "0"}
 }
 
 def normalize_subject_id(sid: str) -> str:
