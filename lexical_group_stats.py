@@ -328,6 +328,32 @@ Lex_idxes['Hikock_lIFG']=lIFG_sig_idx
 with open(os.path.join('projects','GLM','data', f'Lex_twin_idxes_{datasource}.npy'), "wb") as f:
     pickle.dump(Lex_idxes, f)
 
+#%% store active electrodes and subjs
+output_dir = "projects/active_electrodes"
+os.makedirs(output_dir, exist_ok=True)
+
+sig_indices_dict = {
+    "Aud": LexDelay_Aud_sig_idx,
+    "Delay": LexDelay_Delay_sig_idx,
+    "Go": LexDelay_Go_sig_idx,
+    "Motor_Resp": LexDelay_Motor_Resp_sig_idx,
+}
+
+all_labels = data_LexDelay_Aud.labels[0]
+
+for name, sig_idx in sig_indices_dict.items():
+    active_labels = [all_labels[idx] for idx in sig_idx]
+    df = pd.DataFrame(active_labels, columns=["full_label"])
+
+    if not df.empty:
+        df[["subj", "electrode"]] = df["full_label"].str.split("-", n=1, expand=True)
+        output_df = df[["subj", "electrode"]]
+    else:
+        output_df = pd.DataFrame(columns=["subj", "electrode"])
+
+    file_path = os.path.join(output_dir, f"{name}.csv")
+    output_df.to_csv(file_path, index=False)
+
 # %% reassign electrode indices by conditions
 Waveplot_wth=10 # Width of wave plots
 Waveplot_hgt=4 # Height of wave plots
