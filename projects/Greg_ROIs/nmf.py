@@ -375,7 +375,7 @@ for align_tag, H_epoch, t_epoch, x_limits in alignments:
     ax.spines['left'].set_zorder(10)
     ax.set_yticks([0, 0.5, 1.0, 1.5, 2.0, 2.5])
     ax.tick_params(axis='y', labelsize=16)
-    ax.set_ylabel("NMF weight")
+    ax.set_ylabel("Component temporal profile (a.u.)")
 
     save_dir = '../Greg_ROIs/fig'
     if not os.path.exists(save_dir): 
