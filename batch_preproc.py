@@ -22,6 +22,7 @@ from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.timefreq import gamma, utils
 from ieeg.viz.parula import parula_map
 from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_chs, plot_save_gammamask
+from utils.batch import bipolar_reference
 from matplotlib import pyplot as plt
 
 # %% Subj list
@@ -349,6 +350,7 @@ for subject, processing_type in subject_processing_dict.items():
         print('=========================\n')
 
         reref=True
+        reference_method = "bipolar"  # "average" or "bipolar"; used when reref=True
 
         log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
@@ -370,17 +372,27 @@ for subject, processing_type in subject_processing_dict.items():
             del raw1
             raw.load_data()
 
-            # ref to average
-            
-            ch_type = raw.get_channel_types(only_data_chs=True)[0]
+            # Select the reference after dropping bad channels.
             if reref:
-                raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
+                if reference_method == "average":
+                    ch_type = raw.get_channel_types(only_data_chs=True)[0]
+                    raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
+                elif reference_method == "bipolar":
+                    raw = bipolar_reference(raw)
+                else:
+                    raise ValueError("reference_method must be 'average' or 'bipolar'")
+
+            multitaper_folder = (
+                'multitaper_4cons_bipolar'
+                if reref and reference_method == "bipolar"
+                else 'multitaper_4cons'
+            )
 
             # make direction
             if not os.path.exists(os.path.join(save_dir, subject)):
                 os.mkdir(os.path.join(save_dir, subject))
-            if not os.path.exists(os.path.join(save_dir, subject, 'multitaper_4cons')):
-                os.mkdir(os.path.join(save_dir, subject, 'multitaper_4cons'))
+            if not os.path.exists(os.path.join(save_dir, subject, multitaper_folder)):
+                os.mkdir(os.path.join(save_dir, subject, multitaper_folder))
 
             # run multitaper
             if Task_Tag=="LexicalDecRepDelay":
@@ -514,7 +526,7 @@ for subject, processing_type in subject_processing_dict.items():
                             if baseline_data is not None:
                                 spectra_multitaper = rescale(spectra_multitaper, baseline_data, copy=True, mode='ratio')
                             
-                            save_path = os.path.join(save_dir, subject, 'multitaper_4cons')
+                            save_path = os.path.join(save_dir, subject, multitaper_folder)
                             if not os.path.exists(save_path): os.makedirs(save_path)
                             
                             filename = os.path.join(save_path, f'{tag}-tfr.h5')
