@@ -6,6 +6,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
+class NoSEEGChannelsError(ValueError):
+    """No sEEG contacts remain for bipolar referencing."""
+
+
 def bipolar_reference(raw, max_pair_dist_mm=20.0, max_turn_deg=60.0,
                       copy=True, return_pairs=False):
     """Apply Nanlin-style geometry-gated bipolar referencing to loaded sEEG.
@@ -19,7 +23,8 @@ def bipolar_reference(raw, max_pair_dist_mm=20.0, max_turn_deg=60.0,
     signals A1 minus A3 and midpoint coordinates. Unpaired contacts are omitted.
     MNE preserves recording timing, annotations (including run boundaries), and
     source filenames. Input is unchanged by default; copy=False reduces memory
-    use but modifies raw. Data must already be loaded and all channels be sEEG.
+    use but modifies raw. Data must already be loaded. Non-sEEG channels are
+    excluded before referencing; NoSEEGChannelsError is raised if none remain.
 
     Parameters
     ----------
@@ -49,10 +54,12 @@ def bipolar_reference(raw, max_pair_dist_mm=20.0, max_turn_deg=60.0,
         raise TypeError("raw must be an MNE Raw object")
     if not raw.preload:
         raise ValueError("Load data with raw.load_data() before referencing")
-    if raw.info['bads']:
+    seeg_names = [name for name, kind in zip(raw.ch_names, raw.get_channel_types())
+                  if kind == 'seeg']
+    if not seeg_names:
+        raise NoSEEGChannelsError("No sEEG channels remain after channel removal")
+    if set(raw.info['bads']).intersection(seeg_names):
         raise ValueError("Drop bad channels before bipolar_reference()")
-    if set(raw.get_channel_types()) != {'seeg'}:
-        raise ValueError("bipolar_reference expects only sEEG channels")
     if not np.isfinite(max_pair_dist_mm) or max_pair_dist_mm <= 0:
         raise ValueError("max_pair_dist_mm must be positive and finite")
     if not np.isfinite(max_turn_deg) or not 0 <= max_turn_deg <= 180:
@@ -63,7 +70,7 @@ def bipolar_reference(raw, max_pair_dist_mm=20.0, max_turn_deg=60.0,
     positions = montage.get_positions()
     coords = positions['ch_pos']
     groups = {}
-    for name in raw.ch_names:
+    for name in seeg_names:
         match = re.fullmatch(r'(.+?)(\d+)', name)
         if match is None:
             raise ValueError(f"Cannot parse contact name: {name}")
@@ -111,10 +118,14 @@ def bipolar_reference(raw, max_pair_dist_mm=20.0, max_turn_deg=60.0,
     if not accepted:
         raise ValueError("No bipolar pairs passed the geometry checks")
     names = [row['bipolar_name'] for row in accepted]
+    # Remove other channel types before MNE's matrix multiplication, so their
+    # signals (including any NaNs) cannot affect the bipolar data.
+    working = raw.copy() if copy else raw
+    working.pick(seeg_names)
     referenced = mne.set_bipolar_reference(
-        raw, anode=[row['ch1'] for row in accepted],
+        working, anode=[row['ch1'] for row in accepted],
         cathode=[row['ch2'] for row in accepted], ch_name=names,
-        copy=copy, drop_refs=True)
+        copy=False, drop_refs=True)
     # MNE drops paired sources; explicitly remove any unpaired originals too.
     referenced.pick(names)
     midpoints = {row['bipolar_name']: (coords[row['ch1']] + coords[row['ch2']]) / 2

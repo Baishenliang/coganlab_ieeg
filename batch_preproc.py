@@ -22,7 +22,7 @@ from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.timefreq import gamma, utils
 from ieeg.viz.parula import parula_map
 from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_chs, plot_save_gammamask
-from utils.batch import bipolar_reference
+from utils.batch import bipolar_reference, NoSEEGChannelsError
 from matplotlib import pyplot as plt
 
 # %% Subj list
@@ -598,6 +598,9 @@ for subject, processing_type in subject_processing_dict.items():
             del raw, layout
             log_file.write(f"{datetime.datetime.now()}, {subject}, Multitaper  %%% completed %%% \n")
 
+        except NoSEEGChannelsError as e:
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Multitaper skipped: {e}\n")
+            del raw, layout
         except Exception as e:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Multitaper !!! failed with error !!! : {str(e)}\n")
 
