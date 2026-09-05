@@ -6,6 +6,125 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
+def bipolar_reference(raw, max_pair_dist_mm=20.0, max_turn_deg=60.0,
+                      copy=True, return_pairs=False):
+    """Apply Nanlin-style geometry-gated bipolar referencing to loaded sEEG.
+
+    Call after dropping bad channels. Contacts are grouped by name prefix and
+    sorted numerically; gaps such as A1--A3 are allowed. Following Nanlin's
+    ``lib/shaft_bipolar.py``, a distance or turning-angle break starts a new
+    shaft segment. Coordinates must be valid MNE montage coordinates in meters.
+
+    The output contains only accepted bipolar channels, named ``A1-A3``, with
+    signals A1 minus A3 and midpoint coordinates. Unpaired contacts are omitted.
+    MNE preserves recording timing, annotations (including run boundaries), and
+    source filenames. Input is unchanged by default; copy=False reduces memory
+    use but modifies raw. Data must already be loaded and all channels be sEEG.
+
+    Parameters
+    ----------
+    raw : mne.io.BaseRaw
+        Preloaded, not-yet-referenced data with bad channels already removed.
+    max_pair_dist_mm : float
+        Maximum distance between remaining neighboring contacts (default 20).
+    max_turn_deg : float
+        Maximum turn within a segment (default 60 degrees).
+    copy : bool
+        Copy the input before applying the reference (default True).
+    return_pairs : bool
+        Also return a DataFrame of every candidate pair, with acceptance and
+        rejection reason, for inspection or saving as TSV.
+
+    Returns
+    -------
+    referenced : mne.io.BaseRaw
+        Bipolar data in prefix/numeric order.
+    pairs : pandas.DataFrame
+        Only returned when return_pairs=True. Angles are NaN at segment starts
+        or when the distance gate already rejects the candidate.
+    """
+    import mne
+
+    if not isinstance(raw, mne.io.BaseRaw):
+        raise TypeError("raw must be an MNE Raw object")
+    if not raw.preload:
+        raise ValueError("Load data with raw.load_data() before referencing")
+    if raw.info['bads']:
+        raise ValueError("Drop bad channels before bipolar_reference()")
+    if set(raw.get_channel_types()) != {'seeg'}:
+        raise ValueError("bipolar_reference expects only sEEG channels")
+    if not np.isfinite(max_pair_dist_mm) or max_pair_dist_mm <= 0:
+        raise ValueError("max_pair_dist_mm must be positive and finite")
+    if not np.isfinite(max_turn_deg) or not 0 <= max_turn_deg <= 180:
+        raise ValueError("max_turn_deg must be between 0 and 180")
+    montage = raw.get_montage()
+    if montage is None:
+        raise ValueError("A montage with contact coordinates is required")
+    positions = montage.get_positions()
+    coords = positions['ch_pos']
+    groups = {}
+    for name in raw.ch_names:
+        match = re.fullmatch(r'(.+?)(\d+)', name)
+        if match is None:
+            raise ValueError(f"Cannot parse contact name: {name}")
+        if name not in coords or not np.isfinite(coords[name]).all():
+            raise ValueError(f"Missing or invalid coordinate for {name}")
+        prefix, number = match.groups()
+        groups.setdefault(prefix, []).append((int(number), name))
+
+    rows = []
+    for prefix, contacts in sorted(groups.items()):
+        contacts.sort()
+        if len({number for number, _ in contacts}) != len(contacts):
+            raise ValueError(f"Duplicate contact numbers in {prefix}")
+        segment = [contacts[0][1]]
+        segment_id = 0
+        for _, ch2 in contacts[1:]:
+            ch1 = segment[-1]
+            vector = (coords[ch2] - coords[ch1]) * 1000.0
+            distance = float(np.linalg.norm(vector))
+            angle = np.nan
+            reason = 'distance' if distance > max_pair_dist_mm else ''
+            if not reason and len(segment) >= 2:
+                previous = (coords[ch1] - coords[segment[-2]]) * 1000.0
+                norm = np.linalg.norm(previous)
+                angle = 0.0
+                if norm >= 1e-12 and distance >= 1e-12:
+                    cosine = np.dot(previous, vector) / (norm * distance)
+                    angle = float(np.degrees(np.arccos(np.clip(cosine, -1, 1))))
+                if angle > max_turn_deg:
+                    reason = 'turn_angle'
+            rows.append(dict(prefix=prefix, segment_id=segment_id,
+                             ch1=ch1, ch2=ch2, bipolar_name=f'{ch1}-{ch2}',
+                             dist_mm=distance, turn_deg=angle,
+                             accepted=not bool(reason), reason=reason))
+            if reason:
+                segment = [ch2]
+                segment_id += 1
+            else:
+                segment.append(ch2)
+
+    pairs = pd.DataFrame(rows, columns=[
+        'prefix', 'segment_id', 'ch1', 'ch2', 'bipolar_name',
+        'dist_mm', 'turn_deg', 'accepted', 'reason'])
+    accepted = [row for row in rows if row['accepted']]
+    if not accepted:
+        raise ValueError("No bipolar pairs passed the geometry checks")
+    names = [row['bipolar_name'] for row in accepted]
+    referenced = mne.set_bipolar_reference(
+        raw, anode=[row['ch1'] for row in accepted],
+        cathode=[row['ch2'] for row in accepted], ch_name=names,
+        copy=copy, drop_refs=True)
+    # MNE drops paired sources; explicitly remove any unpaired originals too.
+    referenced.pick(names)
+    midpoints = {row['bipolar_name']: (coords[row['ch1']] + coords[row['ch2']]) / 2
+                 for row in accepted}
+    referenced.set_montage(mne.channels.make_dig_montage(
+        ch_pos=midpoints, coord_frame=positions['coord_frame'],
+        nasion=positions['nasion'], lpa=positions['lpa'], rpa=positions['rpa']))
+    return (referenced, pairs) if return_pairs else referenced
+
+
 def update_tsv(subj, search_dir,task_tag):
     """
     Searches for all TSV files matching the given `subj` identifier, processes each one by removing specific rows,
