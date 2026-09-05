@@ -19,3 +19,21 @@ projects/lme/data
 projects/lme/figs
 projects/lme/results
 
+# Keep only Python source files under Greg_ROIs, including subdirectories.
+/projects/Greg_ROIs/**
+!/projects/Greg_ROIs/**/
+!/projects/Greg_ROIs/**/*.py
+
+# Keep only Python source files in these project trees.
+/projects/PCA_LDA/**
+!/projects/PCA_LDA/**/
+!/projects/PCA_LDA/**/*.py
+/projects/active_electrodes/**
+!/projects/active_electrodes/**/
+!/projects/active_electrodes/**/*.py
+
+# Keep only Python source files under the root figs directory.
+/figs/**
+!/figs/**/
+!/figs/**/*.py
+
