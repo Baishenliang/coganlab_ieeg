@@ -27,57 +27,57 @@ from matplotlib import pyplot as plt
 
 # %% Subj list
 subject_processing_dict_org = {
-    "D0023": "multitaper",
-    "D0024": "multitaper",
-    "D0026": "multitaper",
-    "D0027": "multitaper",
-    "D0028": "multitaper",
-    "D0029": "multitaper",
-    "D0032": "multitaper",
-    "D0035": "multitaper",
-    "D0038": "multitaper",
-    "D0042": "multitaper",
-    "D0044": "multitaper",
-    "D0047": "multitaper",
-    "D0053": "multitaper",
-    "D0054": "multitaper",
-    "D0055": "multitaper",
-    "D0057": "multitaper",
-    "D0059": "multitaper",
-    "D0063": "multitaper",
-    "D0065": "multitaper",
-    "D0066": "multitaper",
-    "D0068": "multitaper",
-    "D0069": "multitaper",
-    "D0070": "multitaper",
-    "D0071": "multitaper",
-    "D0077": "multitaper",
-    "D0079": "multitaper",
-    "D0080": "multitaper",
-    "D0081": "multitaper",
-    "D0084": "multitaper",
-    "D0086": "multitaper",
-    "D0090": "multitaper",
-    "D0092": "multitaper",
-    "D0094": "multitaper",
-    "D0096": "multitaper",
-    "D0100": "multitaper",
-    "D0101": "multitaper",
-    "D0102": "multitaper",
-    "D0103": "multitaper",
-    "D0107": "multitaper",
-    "D0115": "multitaper",
-    "D0117": "multitaper",
-    "D0127": "multitaper",
-    "D0128": "multitaper",
-    "D0129": "multitaper",
-    "D0132": "multitaper",
-    "D0135": "multitaper",
-    "D0137": "multitaper",
-    "D0138": "multitaper",
-    "D0139": "multitaper",
-    "D0140": "multitaper",
-    "D0143": "multitaper"
+    "D0023": "gamma",
+    "D0024": "gamma",
+    "D0026": "gamma",
+    "D0027": "gamma",
+    "D0028": "gamma",
+    "D0029": "gamma",
+    "D0032": "gamma",
+    "D0035": "gamma",
+    "D0038": "gamma",
+    "D0042": "gamma",
+    "D0044": "gamma",
+    "D0047": "gamma",
+    "D0053": "gamma",
+    "D0054": "gamma",
+    "D0055": "gamma",
+    "D0057": "gamma",
+    "D0059": "gamma",
+    "D0063": "gamma",
+    "D0065": "gamma",
+    "D0066": "gamma",
+    "D0068": "gamma",
+    "D0069": "gamma",
+    "D0070": "gamma",
+    "D0071": "gamma",
+    "D0077": "gamma",
+    "D0079": "gamma",
+    "D0080": "gamma",
+    "D0081": "gamma",
+    "D0084": "gamma",
+    "D0086": "gamma",
+    "D0090": "gamma",
+    "D0092": "gamma",
+    "D0094": "gamma",
+    "D0096": "gamma",
+    "D0100": "gamma",
+    "D0101": "gamma",
+    "D0102": "gamma",
+    "D0103": "gamma",
+    "D0107": "gamma",
+    "D0115": "gamma",
+    "D0117": "gamma",
+    "D0127": "gamma",
+    "D0128": "gamma",
+    "D0129": "gamma",
+    "D0132": "gamma",
+    "D0135": "gamma",
+    "D0137": "gamma",
+    "D0138": "gamma",
+    "D0139": "gamma",
+    "D0140": "gamma",
+    "D0143": "gamma"
 }
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
@@ -612,6 +612,8 @@ for subject, processing_type in subject_processing_dict.items():
         print(f'Gamma band-pass filter and permutation {subject}\n')
         print('=========================\n')
     
+        gamma_reference_method = "bipolar"  # "average" or "bipolar"
+
         ## Gamma_pool
         log_file = open(os.path.join(log_file_path,f'{subject}.txt'), 'a')
         try:
@@ -632,9 +634,15 @@ for subject, processing_type in subject_processing_dict.items():
             del raw1
             raw.load_data()
 
-            # ref to average
-            ch_type = raw.get_channel_types(only_data_chs=True)[0]
-            raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
+            # Select reference after dropping bad channels.
+            if gamma_reference_method == "average":
+                ch_type = raw.get_channel_types(only_data_chs=True)[0]
+                raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
+            elif gamma_reference_method == "bipolar":
+                raw = bipolar_reference(raw)
+            else:
+                raise ValueError("gamma_reference_method must be 'average' or 'bipolar'")
+            gamma_suffix = "_bipolar" if gamma_reference_method == "bipolar" else ""
 
             # make direction
             if not os.path.exists(os.path.join(save_dir, subject)):
@@ -663,12 +671,20 @@ for subject, processing_type in subject_processing_dict.items():
                 #     (True, True, True, True, True, True, True,True)
                 # )
 
+                # gamma_epoc_zip = zip(
+                #     ('Delay/Yes_No/CORRECT',),
+                #     ('Delay/Repeat/CORRECT',),
+                #     ((-0.5, 1.5),),
+                #     ('Delay_YN-Rep',),
+                #     (False, )
+                # )
+
                 gamma_epoc_zip = zip(
-                    ('Delay/Yes_No/CORRECT',),
-                    ('Delay/Repeat/CORRECT',),
-                    ((-0.5, 1.5),),
-                    ('Delay_YN-Rep',),
-                    (False, )
+                    ('Auditory_stim/Repeat/CORRECT', 'Delay/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                    ((-2.5, 4), (-0.5, 1.5), (-4.5, 2), (-5, 1.5)),
+                    ('Auditory_inRep', 'Delay_inRep', 'Go_inRep', 'Resp_inRep'),
+                    (True, True, True, True)
                 )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
@@ -756,13 +772,13 @@ for subject, processing_type in subject_processing_dict.items():
                 epoch = out[0]
                 t = t_phase
                 tag = tag_phase
-                epoch.save(subj_gamma_stats_dir + f"/{tag}_rawpower-epo.fif", overwrite=True,fmt='double')
+                epoch.save(subj_gamma_stats_dir + f"/{tag}_rawpower{gamma_suffix}-epo.fif", overwrite=True,fmt='double')
 
                 # baseline correction
                 power = scaling.rescale(epoch, base, 'mean', copy=True)
                 z_score = scaling.rescale(epoch, base, 'zscore', copy=True) # average of the baseline by trial and by time
-                power.save(subj_gamma_stats_dir + f"/{tag}_power-epo.fif", overwrite=True,fmt='double')
-                z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore-epo.fif", overwrite=True,fmt='double')
+                power.save(subj_gamma_stats_dir + f"/{tag}_power{gamma_suffix}-epo.fif", overwrite=True,fmt='double')
+                z_score.save(subj_gamma_stats_dir + f"/{tag}_zscore{gamma_suffix}-epo.fif", overwrite=True,fmt='double')
 
                 sig1 = epoch.get_data(tmin=t[0], tmax=t[1], copy=True)
 
@@ -781,7 +797,7 @@ for subject, processing_type in subject_processing_dict.items():
                                                 tmin=t[0])
 
                     # plot mask
-                    plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}.jpg')
+                    plot_save_gammamask(mask[tag],epoch_mask,subj_gamma_dir,f'{tag}{gamma_suffix}.jpg')
 
                     # Calculate the p-value
                     p_vals = mne.EvokedArray(p_act, epoch_mask.info, tmin=t[0])
@@ -789,16 +805,19 @@ for subject, processing_type in subject_processing_dict.items():
                     data.append((tag, epoch_mask.copy(),p_vals.copy()))
 
                     for tag, epoch_mask, p_vals in data:
-                        epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask-ave.fif", overwrite=True)
-                        p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval-ave.fif", overwrite=True)
+                        epoch_mask.save(subj_gamma_stats_dir + f"/{tag}_mask{gamma_suffix}-ave.fif", overwrite=True)
+                        p_vals.save(subj_gamma_stats_dir + f"/{tag}_pval{gamma_suffix}-ave.fif", overwrite=True)
 
 
                     if is_bsl_correct:
-                        base.save(subj_gamma_stats_dir + f"/base-epo.fif", overwrite=True)
+                        base.save(subj_gamma_stats_dir + f"/base{gamma_suffix}-epo.fif", overwrite=True)
                 del data, sig1, sig2, base, mask
 
             log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation  %%% completed %%% \n")
 
+        except NoSEEGChannelsError as e:
+            log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma skipped: {e}\n")
+            del raw, layout
         except Exception as e:
             log_file.write(f"{datetime.datetime.now()}, {subject}, Gamma band-pass and permutation !!! failed with error !!! : {str(e)}\n")
 
