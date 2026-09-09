@@ -37,3 +37,8 @@ projects/lme/results
 !/figs/**/
 !/figs/**/*.py
 
+# Keep only Python source files under bipolar figures.
+/projects/bipolar/figs/**
+!/projects/bipolar/figs/**/
+!/projects/bipolar/figs/**/*.py
+

@@ -25,6 +25,51 @@ from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_
 from utils.batch import bipolar_reference, NoSEEGChannelsError
 from matplotlib import pyplot as plt
 
+
+def ensure_bipolar_montage(raw, subject, log_file):
+    """Prefer existing sEEG coordinates; fall back to individual reconstruction.
+
+    Replace the whole coordinate set on fallback to avoid mixing spaces.
+    Reconstruction coordinates returned in mm are converted to MNE meters.
+    D107 and D139 always use reconstruction via their D107B/D139A aliases.
+    """
+    names = [name for name, kind in zip(raw.ch_names, raw.get_channel_types())
+             if kind == 'seeg']
+    if not names:
+        raise NoSEEGChannelsError("No sEEG channels remain after channel removal")
+    montage = raw.get_montage()
+    coords = montage.get_positions()['ch_pos'] if montage is not None else {}
+    missing = [name for name in names
+               if name not in coords or not np.isfinite(coords[name]).all()]
+    # BIDS D0027 -> reconstruction D27; get_coor handles D107/D139 and D128.
+    subj = f"D{int(subject.removeprefix('sub-')[1:])}"
+    force_recon = subj in {'D107', 'D139'}
+    if not missing and not force_recon:
+        log_file.write(f"{subject}, Bipolar coordinates: existing raw montage\n")
+        return raw
+
+    from utils.group import get_coor
+
+    log_file.write(f"{subject}, Bipolar coordinate fallback: get_coor individual, "
+                   f"interpolate=False; forced reconstruction: {force_recon}; "
+                   f"missing montage coordinates: {missing}\n")
+    frame = get_coor([f'{subj}-{name}' for name in names],
+                     method='individual', interpolate=False)
+    if frame['label'].duplicated().any():
+        raise ValueError(f"Duplicate reconstruction coordinate labels for {subject}")
+    frame = frame.set_index('label').reindex(names)
+    xyz = frame[['x', 'y', 'z']].to_numpy(dtype=float)
+    invalid = [name for name, valid in zip(names, np.isfinite(xyz).all(axis=1))
+               if not valid]
+    if invalid:
+        raise ValueError(f"Missing or invalid reconstruction coordinates for {subject}: {invalid}")
+    raw.set_montage(mne.channels.make_dig_montage(
+        ch_pos=dict(zip(names, xyz / 1000.0)), coord_frame='mri'),
+        on_missing='ignore')
+    log_file.write(f"{subject}, Bipolar coordinates: reconstruction, "
+                   f"{len(names)} sEEG contacts, no interpolation\n")
+    return raw
+
 # %% Subj list
 subject_processing_dict_org = {
     "D0023": "gamma",
@@ -378,6 +423,7 @@ for subject, processing_type in subject_processing_dict.items():
                     ch_type = raw.get_channel_types(only_data_chs=True)[0]
                     raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
                 elif reference_method == "bipolar":
+                    raw = ensure_bipolar_montage(raw, subject, log_file)
                     raw = bipolar_reference(raw)
                 else:
                     raise ValueError("reference_method must be 'average' or 'bipolar'")
@@ -639,6 +685,7 @@ for subject, processing_type in subject_processing_dict.items():
                 ch_type = raw.get_channel_types(only_data_chs=True)[0]
                 raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
             elif gamma_reference_method == "bipolar":
+                raw = ensure_bipolar_montage(raw, subject, log_file)
                 raw = bipolar_reference(raw)
             else:
                 raise ValueError("gamma_reference_method must be 'average' or 'bipolar'")

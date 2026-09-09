@@ -2485,7 +2485,7 @@ def fill_missing_coords(df, reference_coords=None):
 
     return df
 
-def get_coor(chs,method: str='individual'):
+def get_coor(chs,method: str='individual', interpolate: bool=True):
     """
     Given a list of channels like ['D23-RASF1', 'D23-RASF2', ...],
     this function reads each subject's electrode file and returns
@@ -2495,6 +2495,9 @@ def get_coor(chs,method: str='individual'):
         'individual': get individual electrode coordinates
         'group': use fs_average to transform to group space
         'ras': old method. read ras locations directly. ! May be wrong!
+    interpolate:
+        Fill missing coordinates by linear fitting when True (default).
+        False preserves missing coordinates as NaN. Output units are mm.
     """
     # Parse into (subject, label)
     import pandas as pd
@@ -2579,7 +2582,8 @@ def get_coor(chs,method: str='individual'):
             else:
                 df_coords.loc[len(df_coords)] = [subj, label, np.nan, np.nan, np.nan]
 
-    df_coords = fill_missing_coords(df_coords)
+    if interpolate:
+        df_coords = fill_missing_coords(df_coords)
 
     return df_coords
 
