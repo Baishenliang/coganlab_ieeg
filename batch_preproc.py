@@ -48,7 +48,7 @@ def ensure_bipolar_montage(raw, subject, log_file):
         log_file.write(f"{subject}, Bipolar coordinates: existing raw montage\n")
         return raw
 
-    from utils.group import get_coor
+    from utils.global_func import get_coor
 
     log_file.write(f"{subject}, Bipolar coordinate fallback: get_coor individual, "
                    f"interpolate=False; forced reconstruction: {force_recon}; "

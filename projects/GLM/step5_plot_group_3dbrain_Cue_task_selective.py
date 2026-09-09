@@ -14,6 +14,7 @@ import glm_utils as glm
 import numpy as np
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
+from utils.global_func import get_coor
 import json
 import pickle
 from matplotlib_venn import venn3,venn2
@@ -64,7 +65,7 @@ hickok_roi_all = pd.DataFrame()
 masks, _, _ = glm.load_stats(f'Cue_{event_suffix}', 'mask', task_Tag, 'cluster_mask', glm_feas[0], subjs, chs,
                              times, 'ALL')
 chs_all = masks.labels[0]
-chs_coor = gp.get_coor(chs_all, 'group')
+chs_coor = get_coor(chs_all, 'group')
 ch_labels_roi, _ = gp.chs2atlas(subjs, chs_all)
 hickok_roi_labels, _ = gp.hickok_roi_sphere(chs_coor)
 

@@ -18,6 +18,7 @@ from statsmodels.stats.multitest import multipletests
 
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
+from utils.global_func import get_coor
 from ieeg.calc.fast import mixup
 
 HOME = os.path.expanduser("~")
@@ -97,7 +98,7 @@ if groupsTag=="LexDelay":
     epoc_LexDelayRep_Go,_=gp.load_stats('zscore','Go_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=False,cbind_subjs=False)
     epoc_LexDelayRep_Resp,_=gp.load_stats('zscore','Resp_inRep','epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels,keeptrials=False,cbind_subjs=False)
 
-    chs_coor=gp.get_coor(data_LexDelay_Aud.labels[0],'group')
+    chs_coor=get_coor(data_LexDelay_Aud.labels[0],'group')
 
 arrays_to_hstack = []
 final_chs = None
@@ -763,7 +764,7 @@ for comp in comp_names:
     traces = final_array[indices, :]
     comp_col = macro_color_dict[comp]
 
-chs_coor=gp.get_coor(df_weights.Channel.to_list(),'group')
+chs_coor=get_coor(df_weights.Channel.to_list(),'group')
 
 for i, comp in enumerate(comp_names):
     w = df_weights[comp].values
@@ -805,7 +806,7 @@ if len(w) > 0:
         pass
 
 picks = df_weights.Channel.to_list()
-chs_coor = gp.get_coor(picks, 'group')
+chs_coor = get_coor(picks, 'group')
 
 # Hard clustering
 cols_lst = [macro_color_dict.get(comp, [0.5, 0.5, 0.5]) for comp in df_weights['Base_Comp']]
@@ -946,7 +947,7 @@ for col, ylabel, save_name in metrics:
 import seaborn as sns
 from sklearn.linear_model import LinearRegression
 
-chs_coor_stats = gp.get_coor(df_stats['Channel'].tolist(), 'group')
+chs_coor_stats = get_coor(df_stats['Channel'].tolist(), 'group')
 
 analysis_targets = [
     ('Auditory_Power_Z', aud_z, np.array(plt.cm.tab10.colors[2][:3])),

@@ -4,6 +4,7 @@ import os
 import sys
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
+from utils.global_func import get_coor
 
 # %% groups of patients
 from pickle import FALSE
@@ -114,7 +115,7 @@ elif groupsTag=="LexDelay&LexNoDelay":
     epoc_LexDelayRep_Resp,_=gp.load_stats('pval','Resp_inRep','ave',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels)
     epoc_LexNoDelayRep_Resp,_=gp.load_stats('pval','Resp_inRep','ave',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
-chs_coor=gp.get_coor(data_LexDelayRep_Aud.labels[0],'group')
+chs_coor=get_coor(data_LexDelayRep_Aud.labels[0],'group')
 hickok_roi_labels, hickok_roi_sig_idx=gp.hickok_roi_sphere(chs_coor)
 
 # %% Get Auditory, Sensory-motor, and Motor electrodes for Repeat and YesNo compared to baseline：

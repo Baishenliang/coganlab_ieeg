@@ -13,6 +13,7 @@ manuscript_save_dir = r"D:\lbs\Little_projects\Greg_LexDelay\materials\figs_elem
 import sys
 sys.path.append(os.path.abspath(os.path.join("..", "..")))
 import utils.group as gp
+from utils.global_func import get_coor
 from scipy.spatial.distance import cdist
 import pandas as pd
 import numpy as np
@@ -86,7 +87,7 @@ hickok_roi_sets={'All':set(),'lIFG':set(),'lIPL':set(),'Spt':set(),'lPMC':set(),
 
 chs=data_LexDelay_Aud.labels[0]
 # Load coordinates
-chs_coor=gp.get_coor(chs,get_coord_method)
+chs_coor=get_coor(chs,get_coord_method)
 hickok_roi_labels=gp.hickok_roi_sphere(chs_coor)
 for i,item in enumerate(hickok_roi_labels[0].values()):
     hickok_roi_sets['All'].add(i)

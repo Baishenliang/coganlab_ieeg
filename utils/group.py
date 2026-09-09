@@ -1357,6 +1357,7 @@ def plot_brain_window(mask, data, cluster_twin, wins_para, save_dir, col: list =
 
     # save hickok roi hist
     if mode=="save_hickok_roi":
+        from utils.global_func import get_coor
         for i, cut_win in enumerate(cut_wins):
             sig = sigs[i]
             chs_coor = get_coor(chs_all, 'group')
@@ -2462,9 +2463,9 @@ def fill_missing_coords(df, reference_coords=None):
             mask = (df['subj'] == subj) & (df['label'].str.startswith(prefix)) & (~df['x'].isna())
             current_known = df[mask].copy()
             current_known['prefix_num'] = current_known['label'].apply(lambda x: split_label(x)[1])
-            
-            indices = current_known['prefix_num'].values
-            coords = current_known[['x', 'y', 'z']].values
+            import pandas as pd
+            import numpy as np
+            import re
 
             # 如果參考點不足 2 個，嘗試從全域參考字典中補
             if len(indices) < 2 and reference_coords:
@@ -2626,7 +2627,6 @@ def generate_neuro_publication_plot(data, title_label="Anatomy Distribution", sa
     import numpy as np
     import matplotlib.ticker as ticker
 
-    # 1. 顶级期刊规格设置 (针对 1/3 Letter 纸张优化)
     plt.rcParams.update({
         'font.family': 'sans-serif',
         'font.sans-serif': ['Arial'],
