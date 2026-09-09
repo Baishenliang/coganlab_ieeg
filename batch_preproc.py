@@ -31,7 +31,7 @@ def ensure_bipolar_montage(raw, subject, log_file):
 
     Replace the whole coordinate set on fallback to avoid mixing spaces.
     Reconstruction coordinates returned in mm are converted to MNE meters.
-    D107 and D139 always use reconstruction via their D107B/D139A aliases.
+    D107, D128 and D139 always use reconstruction with get_coor name mappings.
     """
     names = [name for name, kind in zip(raw.ch_names, raw.get_channel_types())
              if kind == 'seeg']
@@ -43,7 +43,7 @@ def ensure_bipolar_montage(raw, subject, log_file):
                if name not in coords or not np.isfinite(coords[name]).all()]
     # BIDS D0027 -> reconstruction D27; get_coor handles D107/D139 and D128.
     subj = f"D{int(subject.removeprefix('sub-')[1:])}"
-    force_recon = subj in {'D107', 'D139'}
+    force_recon = subj in {'D107', 'D128', 'D139'}
     if not missing and not force_recon:
         log_file.write(f"{subject}, Bipolar coordinates: existing raw montage\n")
         return raw
@@ -72,57 +72,16 @@ def ensure_bipolar_montage(raw, subject, log_file):
 
 # %% Subj list
 subject_processing_dict_org = {
-    "D0023": "gamma",
-    "D0024": "gamma",
-    "D0026": "gamma",
     "D0027": "gamma",
-    "D0028": "gamma",
     "D0029": "gamma",
     "D0032": "gamma",
     "D0035": "gamma",
-    "D0038": "gamma",
-    "D0042": "gamma",
-    "D0044": "gamma",
-    "D0047": "gamma",
-    "D0053": "gamma",
-    "D0054": "gamma",
-    "D0055": "gamma",
-    "D0057": "gamma",
-    "D0059": "gamma",
-    "D0063": "gamma",
-    "D0065": "gamma",
-    "D0066": "gamma",
-    "D0068": "gamma",
-    "D0069": "gamma",
-    "D0070": "gamma",
-    "D0071": "gamma",
-    "D0077": "gamma",
-    "D0079": "gamma",
-    "D0080": "gamma",
-    "D0081": "gamma",
-    "D0084": "gamma",
-    "D0086": "gamma",
     "D0090": "gamma",
     "D0092": "gamma",
-    "D0094": "gamma",
-    "D0096": "gamma",
-    "D0100": "gamma",
-    "D0101": "gamma",
-    "D0102": "gamma",
-    "D0103": "gamma",
-    "D0107": "gamma",
-    "D0115": "gamma",
     "D0117": "gamma",
-    "D0127": "gamma",
     "D0128": "gamma",
-    "D0129": "gamma",
-    "D0132": "gamma",
-    "D0135": "gamma",
     "D0137": "gamma",
-    "D0138": "gamma",
-    "D0139": "gamma",
-    "D0140": "gamma",
-    "D0143": "gamma"
+    "D0140": "gamma"
 }
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
