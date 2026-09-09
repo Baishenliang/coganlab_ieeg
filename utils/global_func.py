@@ -53,7 +53,8 @@ def fill_missing_coords(df, reference_coords=None):
     return df
 
 
-def get_coor(chs, method: str = 'individual', interpolate: bool = True):
+def get_coor(chs, method: str = 'individual', interpolate: bool = True,
+             subjects_dir=None):
     """Return electrode coordinates for channels in individual or group space."""
     import os
     import re
@@ -82,7 +83,8 @@ def get_coor(chs, method: str = 'individual', interpolate: bool = True):
         if method == 'individual':
             trans = mne.transforms.Transform(fro='head', to='mri')
         elif method == 'group':
-            to_fsaverage = mne.read_talxfm(subject_tag, get_sub_dir())
+            to_fsaverage = mne.read_talxfm(
+                subject_tag, get_sub_dir(subjects_dir))
             trans = mne.transforms.Transform(
                 fro='head', to='mri', trans=to_fsaverage['trans'])
         elif method == 'ras':
@@ -109,7 +111,7 @@ def get_coor(chs, method: str = 'individual', interpolate: bool = True):
             raise ValueError(f"Unknown coordinate method: {method}")
 
         if method in ('individual', 'group'):
-            info = subject_to_info(subject_tag)
+            info = subject_to_info(subject_tag, subjects_dir=subjects_dir)
             montage = info.get_montage()
             force2frame(montage, trans.from_str)
             montage.apply_trans(trans)

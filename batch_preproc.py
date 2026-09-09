@@ -54,7 +54,8 @@ def ensure_bipolar_montage(raw, subject, log_file):
                    f"interpolate=False; forced reconstruction: {force_recon}; "
                    f"missing montage coordinates: {missing}\n")
     frame = get_coor([f'{subj}-{name}' for name in names],
-                     method='individual', interpolate=False)
+                     method='individual', interpolate=False,
+                     subjects_dir=os.path.join(LAB_root, 'ECoG_Recon'))
     if frame['label'].duplicated().any():
         raise ValueError(f"Duplicate reconstruction coordinate labels for {subject}")
     frame = frame.set_index('label').reindex(names)
