@@ -73,16 +73,11 @@ def ensure_bipolar_montage(raw, subject, log_file):
 
 # %% Subj list
 subject_processing_dict_org = {
-    "D0027": "gamma",
-    "D0029": "gamma",
-    "D0032": "gamma",
-    "D0035": "gamma",
-    "D0090": "gamma",
-    "D0092": "gamma",
-    "D0117": "gamma",
+    "D0066": "gamma",
+    "D0080": "gamma",
+    "D0086": "gamma",
     "D0128": "gamma",
-    "D0137": "gamma",
-    "D0140": "gamma"
+    "D0135": "gamma"
 }
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
@@ -679,19 +674,19 @@ for subject, processing_type in subject_processing_dict.items():
                 # )
 
                 # gamma_epoc_zip = zip(
-                #     ('Delay/Yes_No/CORRECT',),
-                #     ('Delay/Repeat/CORRECT',),
-                #     ((-0.5, 1.5),),
-                #     ('Delay_YN-Rep',),
-                #     (False, )
+                #     ('Auditory_stim/Repeat/CORRECT', 'Delay/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                #     ((-2.5, 4), (-0.5, 1.5), (-4.5, 2), (-5, 1.5)),
+                #     ('Auditory_inRep', 'Delay_inRep', 'Go_inRep', 'Resp_inRep'),
+                #     (True, True, True, True)
                 # )
 
                 gamma_epoc_zip = zip(
-                    ('Auditory_stim/Repeat/CORRECT', 'Delay/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                    ((-2.5, 4), (-0.5, 1.5), (-4.5, 2), (-5, 1.5)),
-                    ('Auditory_inRep', 'Delay_inRep', 'Go_inRep', 'Resp_inRep'),
-                    (True, True, True, True)
+                    ('Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                    ((-4.5, 2), (-5, 1.5)),
+                    ('Go_inRep', 'Resp_inRep'),
+                    (True, True)
                 )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
