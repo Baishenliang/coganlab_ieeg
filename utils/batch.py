@@ -10,6 +10,34 @@ class NoSEEGChannelsError(ValueError):
     """No sEEG contacts remain for bipolar referencing."""
 
 
+def drop_unlocalized_seeg(raw, coord_map, subject='', log_file=None):
+    """Drop sEEG contacts without finite XYZ coordinates, in place.
+
+    coord_map must describe the selected coordinate source; units do not affect
+    validity checking. Non-sEEG channels are left unchanged. Return (raw, dropped).
+    Remaining contacts can bridge removed numbers in subsequent bipolar pairing,
+    subject to the usual distance and turning-angle gates. No interpolation.
+    Raise NoSEEGChannelsError if no localized sEEG contacts remain.
+    """
+    names = [name for name, kind in zip(raw.ch_names, raw.get_channel_types())
+             if kind == 'seeg']
+    dropped = []
+    for name in names:
+        xyz = np.asarray(coord_map.get(name, []), dtype=float)
+        if xyz.shape != (3,) or not np.isfinite(xyz).all():
+            dropped.append(name)
+    message = (f"{subject}, Coordinate QC: excluding {len(dropped)} unlocalized "
+               f"sEEG contacts: {dropped}; remaining: {len(names) - len(dropped)}")
+    if log_file is not None:
+        log_file.write(message + '\n')
+    print(message)
+    if len(dropped) == len(names):
+        raise NoSEEGChannelsError("No sEEG contacts with valid localization remain")
+    if dropped:
+        raw.drop_channels(dropped)
+    return raw, dropped
+
+
 def bipolar_reference(raw, max_pair_dist_mm=20.0, max_turn_deg=60.0,
                       copy=True, return_pairs=False):
     """Apply Nanlin-style geometry-gated bipolar referencing to loaded sEEG.

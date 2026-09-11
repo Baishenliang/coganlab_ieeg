@@ -22,7 +22,7 @@ from ieeg.timefreq.utils import crop_pad, wavelet_scaleogram
 from ieeg.timefreq import gamma, utils
 from ieeg.viz.parula import parula_map
 from utils.batch import update_tsv, detect_outlier, load_eeg_chs, update_muscle_chs, plot_save_gammamask
-from utils.batch import bipolar_reference, NoSEEGChannelsError
+from utils.batch import bipolar_reference, NoSEEGChannelsError, drop_unlocalized_seeg
 from matplotlib import pyplot as plt
 
 
@@ -32,6 +32,7 @@ def ensure_bipolar_montage(raw, subject, log_file):
     Replace the whole coordinate set on fallback to avoid mixing spaces.
     Reconstruction coordinates returned in mm are converted to MNE meters.
     D107, D128 and D139 always use reconstruction with get_coor name mappings.
+    Contacts still missing reconstruction coordinates are dropped and logged.
     """
     names = [name for name, kind in zip(raw.ch_names, raw.get_channel_types())
              if kind == 'seeg']
@@ -60,12 +61,11 @@ def ensure_bipolar_montage(raw, subject, log_file):
         raise ValueError(f"Duplicate reconstruction coordinate labels for {subject}")
     frame = frame.set_index('label').reindex(names)
     xyz = frame[['x', 'y', 'z']].to_numpy(dtype=float)
-    invalid = [name for name, valid in zip(names, np.isfinite(xyz).all(axis=1))
-               if not valid]
-    if invalid:
-        raise ValueError(f"Missing or invalid reconstruction coordinates for {subject}: {invalid}")
+    coord_map = dict(zip(names, xyz / 1000.0))
+    raw, dropped = drop_unlocalized_seeg(raw, coord_map, subject, log_file)
+    names = [name for name in names if name not in dropped]
     raw.set_montage(mne.channels.make_dig_montage(
-        ch_pos=dict(zip(names, xyz / 1000.0)), coord_frame='mri'),
+        ch_pos={name: coord_map[name] for name in names}, coord_frame='mri'),
         on_missing='ignore')
     log_file.write(f"{subject}, Bipolar coordinates: reconstruction, "
                    f"{len(names)} sEEG contacts, no interpolation\n")
@@ -73,11 +73,8 @@ def ensure_bipolar_montage(raw, subject, log_file):
 
 # %% Subj list
 subject_processing_dict_org = {
-    "D0066": "gamma",
-    "D0080": "gamma",
-    "D0086": "gamma",
-    "D0128": "gamma",
-    "D0135": "gamma"
+    "D0137": "gamma",
+    "D0140": "gamma"
 }
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
