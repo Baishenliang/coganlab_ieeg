@@ -670,21 +670,21 @@ for subject, processing_type in subject_processing_dict.items():
                 #     (True, True, True, True, True, True, True,True)
                 # )
 
-                # gamma_epoc_zip = zip(
-                #     ('Auditory_stim/Repeat/CORRECT', 'Delay/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                #     ((-2.5, 4), (-0.5, 1.5), (-4.5, 2), (-5, 1.5)),
-                #     ('Auditory_inRep', 'Delay_inRep', 'Go_inRep', 'Resp_inRep'),
-                #     (True, True, True, True)
-                # )
-
                 gamma_epoc_zip = zip(
-                    ('Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                    ('Auditory_stim/Repeat/CORRECT', 'Delay/Repeat/CORRECT'),
                     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                    ((-4.5, 2), (-5, 1.5)),
-                    ('Go_inRep', 'Resp_inRep'),
+                    ((-2.5, 4), (-0.5, 1.5)),
+                    ('Auditory_inRep', 'Delay_inRep'),
                     (True, True)
                 )
+
+                # gamma_epoc_zip = zip(
+                #     ('Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                #     ((-4.5, 2), (-5, 1.5)),
+                #     ('Go_inRep', 'Resp_inRep'),
+                #     (True, True)
+                # )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
                 # gamma_epoc_zip=zip(
