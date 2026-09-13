@@ -4,10 +4,12 @@ from pyqtgraph.util.cprint import color
 from sqlalchemy.testing.plugin.plugin_base import warnings
 
 
-def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0,trial_labels: str='CORRECT',keeptrials: bool=False,cbind_subjs:bool=True,testsubj=False):
+def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,split_half=0,trial_labels: str='CORRECT',keeptrials: bool=False,cbind_subjs:bool=True,testsubj=False,reference='average'):
     """
     Load patient level stats files (e.g., *.fif) for further group level analysis
     output is an ieeg LabeledArray
+    reference='bipolar' reads *_bipolar FIFs and preserves virtual pair labels;
+    the default 'average' retains original single-contact alignment.
 
     e.g.:
     stat_type = 'mask'
@@ -40,6 +42,11 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
         warnings.warn("applying cbind subjects needed to first set keeptrials as True. Set as False automatically now.")
         cbind_subjs=False
 
+    if reference not in ('average', 'bipolar'):
+        raise ValueError("reference must be 'average' or 'bipolar'")
+    if reference == 'bipolar' and stat_type == 'glm':
+        raise ValueError("Bipolar GLM loading is not supported")
+    suffix = '_bipolar' if reference == 'bipolar' else ''
     match stat_type:
         case "zscore":
             fif_read = lambda f: mne.read_epochs(f, False, preload=True)
@@ -55,6 +62,8 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
             fif_read = mne.read_evokeds
         case "glm":
             fif_read = np.load
+        case _:
+            raise ValueError(f"Unsupported stat_type: {stat_type}")
 
     if not testsubj:
         subjs = [name for name in os.listdir(stats_root_readID) if os.path.isdir(os.path.join(stats_root_readID, name)) and name.startswith('D')]
@@ -70,6 +79,7 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
     chs = []
     data_lst = []
     valid_subjs = []
+    data = {}
 
     clean_root_readdata = stats_root_readdata.replace('stats', 'clean')
 
@@ -83,17 +93,16 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
         if stat_type == 'glm':
             file_dir = os.path.join(subj_gamma_stats_dir, f'GLM_{con}_{contrast}.npy')
         else:
-            file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}-{contrast}.fif')
+            file_dir = os.path.join(subj_gamma_stats_dir, f'{con}_{stat_type}{suffix}-{contrast}.fif')
 
         if not os.path.exists(file_dir):
             continue
-        else:
-            valid_subjs.append(subject)
 
         # read patient data
         try:
             subj_dataset = fif_read(file_dir)
         except Exception as e:
+            warnings.warn(f"Could not read {file_dir}: {type(e).__name__}: {e}")
             continue
 
         match stat_type:
@@ -178,7 +187,8 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
 
         # read original channel labels (before outlier and muscle channel removals)
         subj_chs_org_pattern = os.path.join(subj_gamma_clean_dir, f"*_acq-*_run-*_desc-clean_channels.tsv")
-        subj_chs_org_file_list = glob.glob(subj_chs_org_pattern)
+        subj_chs_org_file_list = (glob.glob(subj_chs_org_pattern)
+                                  if reference == 'average' else [])
 
         org_labeled_chs = []
 
@@ -203,9 +213,16 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
             add_subj_labels=False
         else:
             add_subj_labels=True
-        aligned_data,aligned_chs = align_channel_data(subj_data, good_labeled_chs, org_labeled_chs,add_subj_labels=add_subj_labels)
+        if reference == 'bipolar':
+            aligned_data = subj_data
+            subj_short = 'D' + subject[1:].lstrip('0')
+            aligned_chs = ([f'{subj_short}-{ch}' for ch in subj_chs]
+                           if add_subj_labels else list(subj_chs))
+        else:
+            aligned_data,aligned_chs = align_channel_data(subj_data, good_labeled_chs, org_labeled_chs,add_subj_labels=add_subj_labels)
 
         data_lst.append(aligned_data)
+        valid_subjs.append(subject)
         chs.extend(aligned_chs)
 
         # The following codes just do not take the outlier or muscle electrodes for considerations
@@ -224,11 +241,12 @@ def load_stats(stat_type,con,contrast,stats_root_readID,stats_root_readdata,spli
                 subj_dict = subj_arr
             del subj_arr,aligned_data
             subject = 'D' + subject[1:].lstrip('0')
-            if i==0:
-                data=dict()
             data[subject]=subj_dict
             del subj_dict
 
+    if not data_lst:
+        raise ValueError(f"No statistics loaded: {con}_{stat_type}{suffix}-{contrast}.fif "
+                         f"under {stats_root_readdata}. Check files and read warnings.")
     if keeptrials and cbind_subjs==True:
         data_dict=cb_dict(data,(0,2),'-')
         del data
