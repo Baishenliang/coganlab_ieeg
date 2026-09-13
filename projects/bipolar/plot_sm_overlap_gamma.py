@@ -1,7 +1,7 @@
-"""Plot SM overlap groups across four epochs; run this file without arguments.
+"""Plot SM_vWM overlap groups across four epochs; run this file without arguments.
 
-Uses sm_comparison/SM_contacts.csv from compare_sm_electrodes.py.
-Each row is one SM group; solid/dashed curves show average/bipolar reference.
+Uses sm_vwm_comparison/SM_vWM_contacts.csv from compare_sm_electrodes.py.
+Each row is one SM_vWM group; solid/dashed curves show average/bipolar reference.
 Stored gamma z-scores are trial-averaged by load_stats, then contact-averaged.
 No extra baseline subtraction or smoothing is applied.
 """
@@ -27,13 +27,17 @@ EPOCHS = [('Auditory', (-0.25, 1.5)), ('Delay', (-0.25, 1.5)),
 
 def load_groups(path):
     table = pd.read_csv(path)
+    required = {'subject', 'contact', 'average_SM_vWM', 'anode_of_bipolar_SM_vWM'}
+    if not required.issubset(table.columns):
+        raise ValueError('Expected SM vWM comparison columns. Run compare_sm_electrodes.py '
+                         'first to generate SM_vWM_contacts.csv; old SM tables cannot be used.')
     groups = {'Intersection': set(), 'Average only': set(), 'Bipolar only': set()}
     for row in table.itertuples():
         key = parse_label(f'{row.subject}-{row.contact}', False)
         if key[0] in EXCLUDED:
             continue
-        average = str(row.average_SM).lower() == 'true'
-        bipolar = str(row.anode_of_bipolar_SM).lower() == 'true'
+        average = str(row.average_SM_vWM).lower() == 'true'
+        bipolar = str(row.anode_of_bipolar_SM_vWM).lower() == 'true'
         if average or bipolar:
             tag = 'Intersection' if average and bipolar else 'Average only' if average else 'Bipolar only'
             groups[tag].add(key)
@@ -101,21 +105,21 @@ def plot_groups(stats_root, contacts_path, output_dir):
                 ax.set_ylabel(f'{group} (N={len(contacts)})\nHigh-gamma z-score')
             if row == 2:
                 ax.set_xlabel('Time from event (s)')
-    fig.suptitle('SM overlap groups: average vs bipolar reference', fontsize=15)
+    fig.suptitle('SM_vWM overlap groups: average vs bipolar reference', fontsize=15)
     fig.text(0.5, 0.01, 'Matched by subject + first contact; D24/D26 excluded. '
              'Mean ± SEM across available contacts (not subjects).', ha='center', fontsize=9)
     fig.tight_layout(rect=(0, 0.04, 1, 0.96))
     for extension in ('png', 'svg'):
-        fig.savefig(output / f'SM_overlap_gamma.{extension}', dpi=300)
+        fig.savefig(output / f'SM_vWM_overlap_gamma.{extension}', dpi=300)
     plt.close(fig)
     pd.DataFrame(audit, columns=['epoch', 'reference', 'group', 'subject', 'contact', 'available']).to_csv(
-        output / 'SM_overlap_gamma_channels.csv', index=False)
+        output / 'SM_vWM_overlap_gamma_channels.csv', index=False)
     pd.DataFrame(waves, columns=['epoch', 'reference', 'group', 'time', 'mean', 'sem', 'n_valid']).to_csv(
-        output / 'SM_overlap_gamma_traces.csv', index=False)
-    (output / 'SM_overlap_gamma_notes.txt').write_text(
+        output / 'SM_vWM_overlap_gamma_traces.csv', index=False)
+    (output / 'SM_vWM_overlap_gamma_notes.txt').write_text(
         f'Groups from: {contacts_path}\nStats from: {stats_root}\n'
         'Four epochs, CORRECT trials; stored z-scores, no additional baseline or smoothing.\n'
-        'Group membership is fixed by SM_contacts.csv; only first contacts are matched.\n'
+        'Group membership is fixed by SM_vWM_contacts.csv; only first contacts are matched.\n'
         'Only groups include contacts absent from the other reference dataset.\n'
         'Each reference uses its available contacts; see availability CSV and panel n.\n'
         'Trials are averaged independently within each reference; trials are not paired.\n'
@@ -128,7 +132,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--stats-root', type=Path, default=Path.home() / 'Box/CoganLab'
                         / 'BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/stats')
-    parser.add_argument('--contacts', type=Path, default=HERE / 'sm_comparison/SM_contacts.csv')
-    parser.add_argument('--output-dir', type=Path, default=HERE / 'figs/sm_overlap_gamma')
+    parser.add_argument('--contacts', type=Path, default=HERE / 'sm_vwm_comparison/SM_vWM_contacts.csv')
+    parser.add_argument('--output-dir', type=Path, default=HERE / 'figs/sm_vwm_overlap_gamma')
     args = parser.parse_args()
     plot_groups(args.stats_root, args.contacts, args.output_dir)
