@@ -73,8 +73,57 @@ def ensure_bipolar_montage(raw, subject, log_file):
 
 # %% Subj list
 subject_processing_dict_org = {
+    "D0023": "gamma",
+    "D0024": "gamma",
+    "D0026": "gamma",
+    "D0027": "gamma",
+    "D0028": "gamma",
+    "D0029": "gamma",
+    "D0032": "gamma",
+    "D0035": "gamma",
+    "D0038": "gamma",
+    "D0042": "gamma",
+    "D0044": "gamma",
+    "D0047": "gamma",
+    "D0053": "gamma",
+    "D0054": "gamma",
+    "D0055": "gamma",
+    "D0057": "gamma",
+    "D0059": "gamma",
+    "D0063": "gamma",
+    "D0065": "gamma",
+    "D0066": "gamma",
+    "D0068": "gamma",
+    "D0069": "gamma",
+    "D0070": "gamma",
+    "D0071": "gamma",
+    "D0077": "gamma",
+    "D0079": "gamma",
+    "D0080": "gamma",
+    "D0081": "gamma",
+    "D0084": "gamma",
+    "D0086": "gamma",
+    "D0090": "gamma",
+    "D0092": "gamma",
+    "D0094": "gamma",
+    "D0096": "gamma",
+    "D0100": "gamma",
+    "D0101": "gamma",
+    "D0102": "gamma",
+    "D0103": "gamma",
+    "D0107": "gamma",
+    "D0115": "gamma",
+    "D0117": "gamma",
+    "D0127": "gamma",
+    "D0128": "gamma",
+    "D0129": "gamma",
+    "D0132": "gamma",
+    "D0135": "gamma",
     "D0137": "gamma",
-    "D0140": "gamma"
+    "D0138": "gamma",
+    "D0139": "gamma",
+    "D0140": "gamma",
+    "D0143": "gamma"
 }
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
@@ -364,24 +413,33 @@ for subject, processing_type in subject_processing_dict.items():
             raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                     preload=False)
 
-            # drop bad channels
-            raw = raw1.copy().drop_channels(raw1.info['bads'])
+            # Keep bad/muscle contacts only for the bipolar rerun.
+            raw = raw1.copy()
+            if not (reref and reference_method == "bipolar"):
+                raw.drop_channels(raw.info['bads'])
             del raw1
             raw.load_data()
 
-            # Select the reference after dropping bad channels.
+            # Select the reference; bipolar retains noisy/muscle contacts.
             if reref:
                 if reference_method == "average":
                     ch_type = raw.get_channel_types(only_data_chs=True)[0]
                     raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
                 elif reference_method == "bipolar":
+                    retained_bads = list(raw.info['bads'])
+                    log_file.write(f"{subject}, Bipolar retaining originally bad/noisy/muscle "
+                                   f"contacts: {retained_bads}\n")
+                    log_file.flush()
+                    # Preserve the original flags in the log, but clear active
+                    # exclusions so referencing and epoching include these contacts.
+                    raw.info['bads'] = []
                     raw = ensure_bipolar_montage(raw, subject, log_file)
                     raw = bipolar_reference(raw)
                 else:
                     raise ValueError("reference_method must be 'average' or 'bipolar'")
 
             multitaper_folder = (
-                'multitaper_4cons_bipolar'
+                'multitaper_4cons_bipolar_allchs'
                 if reref and reference_method == "bipolar"
                 else 'multitaper_4cons'
             )
@@ -627,21 +685,30 @@ for subject, processing_type in subject_processing_dict.items():
             raw1 = raw_from_layout(layout.derivatives['derivatives/clean'], subject=subject, desc='clean', extension='.edf',
                                   preload=False)
 
-            # drop bad channels
-            raw = raw1.copy().drop_channels(raw1.info['bads'])
+            # Keep bad/muscle contacts only for the bipolar rerun.
+            raw = raw1.copy()
+            if gamma_reference_method != "bipolar":
+                raw.drop_channels(raw.info['bads'])
             del raw1
             raw.load_data()
 
-            # Select reference after dropping bad channels.
+            # Select reference; bipolar retains noisy/muscle contacts.
             if gamma_reference_method == "average":
                 ch_type = raw.get_channel_types(only_data_chs=True)[0]
                 raw.set_eeg_reference(ref_channels="average", ch_type=ch_type)
             elif gamma_reference_method == "bipolar":
+                retained_bads = list(raw.info['bads'])
+                log_file.write(f"{subject}, Bipolar retaining originally bad/noisy/muscle "
+                               f"contacts: {retained_bads}\n")
+                log_file.flush()
+                # Clear active exclusions only on this working Raw; the source
+                # channel flags remain available in the TSV and the log.
+                raw.info['bads'] = []
                 raw = ensure_bipolar_montage(raw, subject, log_file)
                 raw = bipolar_reference(raw)
             else:
                 raise ValueError("gamma_reference_method must be 'average' or 'bipolar'")
-            gamma_suffix = "_bipolar" if gamma_reference_method == "bipolar" else ""
+            gamma_suffix = "_bipolar_allchs" if gamma_reference_method == "bipolar" else ""
 
             # make direction
             if not os.path.exists(os.path.join(save_dir, subject)):
