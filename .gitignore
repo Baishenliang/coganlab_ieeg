@@ -42,3 +42,6 @@ projects/lme/results
 !/projects/bipolar/figs/**/
 !/projects/bipolar/figs/**/*.py
 
+# Local inputs for Greg's stimulation association analysis.
+/projects/bipolar/cogan_scripts/lexdelay_bipolar_physiology_esm_reproducibility/data/
+
