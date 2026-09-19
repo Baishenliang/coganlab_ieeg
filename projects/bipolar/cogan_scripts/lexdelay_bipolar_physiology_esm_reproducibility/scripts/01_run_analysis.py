@@ -228,7 +228,7 @@ def conditional_logit_multi(df, preds, group_cols):
 # ------------------------------------------------------------------
 # Build pair-level analysis dataset
 # ------------------------------------------------------------------
-phys = pd.read_csv(DATA / "bipolar_physiology.csv")
+phys = pd.read_csv(ROOT.parents[1] / "esm_comparison" / "bipolar_physiology.csv")
 esm = pd.read_csv(DATA / "lexdelay_esm_sitelevel.csv")
 
 phys["pair_canon"] = phys["match_pair"].map(canonical_pair)
