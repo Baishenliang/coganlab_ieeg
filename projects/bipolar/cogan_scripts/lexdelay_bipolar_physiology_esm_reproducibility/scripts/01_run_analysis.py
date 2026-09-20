@@ -35,7 +35,7 @@ from statsmodels.discrete.conditional_models import ConditionalLogit
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
-OUT = ROOT / "outputs"
+OUT = ROOT / "outputs_overlap"
 OUT.mkdir(exist_ok=True)
 
 N_PERM = 10000
@@ -228,7 +228,7 @@ def conditional_logit_multi(df, preds, group_cols):
 # ------------------------------------------------------------------
 # Build pair-level analysis dataset
 # ------------------------------------------------------------------
-phys = pd.read_csv(ROOT.parents[1] / "esm_comparison" / "bipolar_physiology.csv")
+phys = pd.read_csv(ROOT.parents[1] / "esm_comparison_overlap" / "bipolar_physiology.csv")
 esm = pd.read_csv(DATA / "lexdelay_esm_sitelevel.csv")
 
 phys["pair_canon"] = phys["match_pair"].map(canonical_pair)

@@ -19,8 +19,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "outputs"
-FIG = ROOT / "figures"
+OUT = ROOT / "outputs_overlap"
+FIG = ROOT / "figures_overlap"
 FIG.mkdir(exist_ok=True)
 
 # ---------------- Figure 1: exact classes ----------------
@@ -33,6 +33,7 @@ order = [
     "Auditory vWM",
     "Motor vWM",
     "Delay-only",
+    "Sensory-motor no-vWM",
     "Auditory no-vWM",
     "Motor no-vWM",
     "Other / unclassified",
@@ -48,18 +49,7 @@ upper = class_rates["Wilson95_high"].to_numpy() - y
 fig = plt.figure(figsize=(11.2, 6.5))
 plt.bar(x, y)
 plt.errorbar(x, y, yerr=np.vstack([lower, upper]), fmt="none", ecolor="black", capsize=4)
-plt.xticks(
-    x,
-    [
-        "Sensory-motor\nvWM",
-        "Auditory\nvWM",
-        "Motor\nvWM",
-        "Delay-only",
-        "Auditory\nno-vWM",
-        "Motor\nno-vWM",
-        "Other /\nunclassified",
-    ],
-)
+plt.xticks(x, [str(v).replace(" ", "\n", 1) for v in class_rates["liang_class"]])
 plt.ylabel("ESM language-positive rate")
 plt.ylim(0, 1.08)
 plt.title("Exact bipolar LexicalDelay physiology classes at ESM-tested sites")

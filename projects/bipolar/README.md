@@ -105,3 +105,31 @@ Of the earlier analysis's 37 SM vWM rows, 25 match and 12 do not. The difference
 4. **Additional figure (step 6):** plot class rates and adjusted effects. Repeat-versus-Decision analysis is a later extension requiring consistent physiological definitions for both conditions.
 
 No new inferential ESM tests or association figures have been completed. Generated tables and plots remain local; rerunning scripts overwrites same-named outputs.
+
+
+## Reference-agreement experiment
+
+Branch: `experiment/esm-reference-overlap`.
+Run `python projects/bipolar/prepare_overlap_experiment.py`, then Greg's
+`01_run_analysis.py` and `02_make_figures.py` in the reproducibility bundle.
+The experiment retains bipolar pairs only when their first contact has the same
+full class in average reference, including vWM/no-vWM status. Other/unclassified
+is also compared as its own category; missing average data is not agreement.
+It uses the existing bipolar physiology CSV (not newly computed allchs results).
+As with the original workflow, average indices must correspond to the currently
+loaded channel order; historical order cannot be verified from indices alone.
+Inputs and rejected rows are audited in `esm_comparison_overlap/class_agreement_audit.csv`.
+The filtered inventory goes to `esm_comparison_overlap/bipolar_physiology.csv`.
+Greg's scripts on this branch write `outputs_overlap/` and `figures_overlap/`;
+original outputs are preserved. This is a selected agreement subset, so its
+association estimates apply to that subset rather than all bipolar recordings.
+
+Archived trial result (2026-09-20): 3,589 of 5,762 bipolar pairs retained,
+including 242 SM vWM pairs. ESM matching yielded 57 pairs and 11 positives;
+SM vWM was 5/6 positive, Auditory vWM 0/3, Motor no-vWM 3/3,
+Auditory no-vWM 0/2, and Other/unclassified 3/43. No Motor vWM,
+Delay-only, or SM no-vWM pairs matched. The pooled SM-vWM-versus-rest
+Fisher test gave OR 37.5 and p approximately 0.000598, but conditional
+models produced extreme estimates and overflowing confidence intervals.
+This sparse exploratory subset does not support reliable adjusted inference.
+Keep this experiment on its archive branch; do not merge it into main.

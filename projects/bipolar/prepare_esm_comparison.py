@@ -20,7 +20,7 @@ from projects.bipolar.compare_sm_electrodes import load_analysis_labels, parse_l
 DEFAULT_BOOK = Path.home() / 'Box/CoganLab/Papers/2026/SM_VerbalWorkingMemory/Stim/lexdelay_esm_paper_analysis.xlsx'
 
 
-def physiology_table(labels, indices_path):
+def physiology_table(labels, indices_path, bipolar=True):
     with open(indices_path, 'rb') as stream:
         saved = pickle.load(stream)
     if saved.get('groupsTag') != 'LexDelay':
@@ -35,7 +35,9 @@ def physiology_table(labels, indices_path):
         raise ValueError('Inconsistent physiological class indices')
     rows = []
     for i, label in enumerate(labels):
-        subject, a, b = parse_label(label, True)
+        parsed = parse_label(label, bipolar)
+        subject, a = parsed[:2]
+        b = parsed[2] if bipolar else ''
         encoding = i in aud or i in sm
         preparation = i in sm or i in motor
         wm = i in delay
