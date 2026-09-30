@@ -127,17 +127,22 @@ def ensure_bipolar_montage(raw, subject, log_file):
 # }
 
 subject_processing_dict_org = {
-    "D0024": "gamma",
-    "D0026": "gamma",
-    "D0027": "gamma",
-    "D0029": "gamma",
-    "D0032": "gamma",
-    "D0035": "gamma",
-    "D0090": "gamma",
-    "D0092": "gamma",
+    "D0038": "gamma",
+    "D0047": "gamma",
+    "D0057": "gamma",
+    "D0059": "gamma",
+    "D0065": "gamma",
+    "D0070": "gamma",
+    "D0079": "gamma",
+    "D0080": "gamma",
+    "D0081": "gamma",
+    "D0084": "gamma",
+    "D0086": "gamma",
+    "D0094": "gamma",
+    "D0103": "gamma",
     "D0107": "gamma",
-    "D0117": "gamma",
     "D0128": "gamma",
+    "D0129": "gamma",
     "D0137": "gamma",
     "D0138": "gamma",
     "D0139": "gamma",
@@ -755,12 +760,20 @@ for subject, processing_type in subject_processing_dict.items():
                 #     (True, True, True, True, True, True, True,True)
                 # )
 
+                # gamma_epoc_zip = zip(
+                #     ('Auditory_stim/Repeat/CORRECT', 'Delay/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                #     ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                #     ((-2.5, 4), (-0.5, 1.5), (-4.5, 2), (-5, 1.5)),
+                #     ('Auditory_inRep', 'Delay_inRep', 'Go_inRep', 'Resp_inRep'),
+                #     (True, True, True, True)
+                # )
+
                 gamma_epoc_zip = zip(
-                    ('Auditory_stim/Repeat/CORRECT', 'Delay/Repeat/CORRECT', 'Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                    ((-2.5, 4), (-0.5, 1.5), (-4.5, 2), (-5, 1.5)),
-                    ('Auditory_inRep', 'Delay_inRep', 'Go_inRep', 'Resp_inRep'),
-                    (True, True, True, True)
+                    ('Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
+                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
+                    ((-4.5, 2), (-5, 1.5)),
+                    ('Go_inRep', 'Resp_inRep'),
+                    (True, True)
                 )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
