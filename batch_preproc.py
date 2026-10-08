@@ -127,25 +127,11 @@ def ensure_bipolar_montage(raw, subject, log_file):
 # }
 
 subject_processing_dict_org = {
-    "D0038": "gamma",
-    "D0057": "gamma",
-    "D0059": "gamma",
-    "D0065": "gamma",
-    "D0070": "gamma",
-    "D0079": "gamma",
-    "D0080": "gamma",
-    "D0081": "gamma",
-    "D0084": "gamma",
-    "D0086": "gamma",
-    "D0094": "gamma",
-    "D0103": "gamma",
     "D0107": "gamma",
     "D0128": "gamma",
-    "D0129": "gamma",
     "D0137": "gamma",
     "D0138": "gamma",
     "D0139": "gamma",
-    "D0140": "gamma"
 }
 
 # "D0100": "linernoise/outlierchs/wavelet/multitaper/gamma"
@@ -768,11 +754,11 @@ for subject, processing_type in subject_processing_dict.items():
                 # )
 
                 gamma_epoc_zip = zip(
-                    ('Go/Repeat/CORRECT', 'Resp/Repeat/CORRECT'),
-                    ('Cue/Repeat/CORRECT', 'Cue/Repeat/CORRECT'),
-                    ((-4.5, 2), (-5, 1.5)),
-                    ('Go_inRep', 'Resp_inRep'),
-                    (True, True)
+                    ('Resp/Repeat/CORRECT',),
+                    ('Cue/Repeat/CORRECT',),
+                    ((-5, 1.5),),
+                    ('Resp_inRep',),
+                    (True,)
                 )
 
             elif Task_Tag == "LexicalDecRepNoDelay":
