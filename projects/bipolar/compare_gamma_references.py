@@ -120,7 +120,7 @@ if __name__ == "__main__":
     parser.add_argument("--common", type=Path,
                         default=DEFAULT_STATS / "Auditory_inRep_zscore-epo.fif")
     parser.add_argument("--bipolar", type=Path,
-                        default=DEFAULT_STATS / "Auditory_inRep_zscore_bipolar-epo.fif")
+                        default=DEFAULT_STATS / "Auditory_inRep_zscore_bipolar_allchs-epo.fif")
     parser.add_argument("--output-dir", type=Path,
                         default=Path(__file__).resolve().parent / "figs" / "D0023")
     parser.add_argument("--rows", type=int, default=4)

@@ -1,6 +1,6 @@
 """Plot SM_vWM overlap groups across four epochs; run this file without arguments.
 
-Uses sm_vwm_comparison/SM_vWM_contacts.csv from compare_sm_electrodes.py.
+Uses sm_vwm_comparison_allchs/SM_vWM_contacts.csv from compare_sm_electrodes.py.
 Each row is one SM_vWM group; solid/dashed curves show average/bipolar reference.
 Stored gamma z-scores are trial-averaged by load_stats, then contact-averaged.
 No extra baseline subtraction or smoothing is applied.
@@ -69,7 +69,7 @@ def plot_groups(stats_root, contacts_path, output_dir):
         for reference, color, style in [('average', '#2878B5', '-'), ('bipolar', '#D55E00', '--')]:
             print(f'Loading {event}: {reference}', flush=True)
             data, _ = load_stats('zscore', event + '_inRep', 'epo', root, root,
-                                 trial_labels='CORRECT', reference=reference)
+                                 trial_labels='CORRECT', reference='bipolar_allchs' if reference == 'bipolar' else reference)
             times = np.asarray(data.labels[1], dtype=float)
             for row, (group, contacts) in enumerate(groups.items()):
                 ax = axes[row, col]
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--stats-root', type=Path, default=Path.home() / 'Box/CoganLab'
                         / 'BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/stats')
-    parser.add_argument('--contacts', type=Path, default=HERE / 'sm_vwm_comparison/SM_vWM_contacts.csv')
-    parser.add_argument('--output-dir', type=Path, default=HERE / 'figs/sm_vwm_overlap_gamma')
+    parser.add_argument('--contacts', type=Path, default=HERE / 'sm_vwm_comparison_allchs/SM_vWM_contacts.csv')
+    parser.add_argument('--output-dir', type=Path, default=HERE / 'figs/sm_vwm_overlap_gamma_allchs')
     args = parser.parse_args()
     plot_groups(args.stats_root, args.contacts, args.output_dir)

@@ -175,25 +175,25 @@ if groupsTag=="LexDelay":
 
     if datasource=='hg':
 
-        data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay, reference='bipolar')
+        data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_delay,stats_root_delay, reference='bipolar_allchs')
         #data_LexDelay_Cue, _ = load_stats(stat_type, 'Cue'+Delayseleted, contrast, stats_root_delay, stats_root_delay)
-        data_LexDelay_Delay, _ = load_stats(stat_type, 'Delay'+Delayseleted, contrast, stats_root_delay, stats_root_delay, reference='bipolar')
-        data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay, reference='bipolar')
-        data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay, reference='bipolar')
+        data_LexDelay_Delay, _ = load_stats(stat_type, 'Delay'+Delayseleted, contrast, stats_root_delay, stats_root_delay, reference='bipolar_allchs')
+        data_LexDelay_Go, _ = load_stats(stat_type, 'Go'+Delayseleted, contrast, stats_root_delay, stats_root_delay, reference='bipolar_allchs')
+        data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_delay, stats_root_delay, reference='bipolar_allchs')
 
         # Get the ROI of labels
         if get_atlaslabels_from_ecogRecon:
             ch_labels_roi,ch_labels=chs2atlas(subjs,data_LexDelay_Aud.labels[0])
 
-        epoc_LexDelay_Aud,_=load_stats('zscore','Auditory'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels, reference='bipolar')
+        epoc_LexDelay_Aud,_=load_stats('zscore','Auditory'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels, reference='bipolar_allchs')
         #poc_LexDelay_Cue,_=load_stats('zscore','Cue'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels)
-        epoc_LexDelay_Delay,_=load_stats('zscore','Delay'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels, reference='bipolar')
-        epoc_LexDelay_Go,_=load_stats('zscore','Go'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels, reference='bipolar')
-        epoc_LexDelay_Resp,_=load_stats('zscore','Resp'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels, reference='bipolar')
+        epoc_LexDelay_Delay,_=load_stats('zscore','Delay'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels, reference='bipolar_allchs')
+        epoc_LexDelay_Go,_=load_stats('zscore','Go'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels, reference='bipolar_allchs')
+        epoc_LexDelay_Resp,_=load_stats('zscore','Resp'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels=trial_labels, reference='bipolar_allchs')
 
         if trial_labels == 'Word':
-            epoc_LexDelay_Aud_nonword,_=load_stats('zscore','Auditory'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels='Nonword', reference='bipolar')
-            epoc_LexDelay_Resp_nonword,_=load_stats('zscore','Resp'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels='Nonword', reference='bipolar')
+            epoc_LexDelay_Aud_nonword,_=load_stats('zscore','Auditory'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels='Nonword', reference='bipolar_allchs')
+            epoc_LexDelay_Resp_nonword,_=load_stats('zscore','Resp'+Delayseleted,'epo',stats_root_delay,stats_root_delay,trial_labels='Nonword', reference='bipolar_allchs')
 
     elif datasource.split('_')[0]=='glm':
         subjs, _, _, chs, times = glm.fifread('Auditory_inRep', 'zscore', 'Repeat','ALL')
@@ -206,34 +206,34 @@ if groupsTag=="LexDelay":
 elif groupsTag=="LexDelay&LexNoDelay":
 
     # first get the patient inform from no delay tasks and then extract the corresponding
-    data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_nodelay,stats_root_delay, reference='bipolar')
-    data_LexNoDelay_Aud,_=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay, reference='bipolar')
+    data_LexDelay_Aud,subjs=load_stats(stat_type,'Auditory'+Delayseleted,contrast,stats_root_nodelay,stats_root_delay, reference='bipolar_allchs')
+    data_LexNoDelay_Aud,_=load_stats(stat_type,'Auditory_inRep',contrast,stats_root_nodelay,stats_root_nodelay, reference='bipolar_allchs')
     # data_LexNoDelay_Silence_Aud,_=load_stats(stat_type,'Auditory_inSilence',contrast,stats_root_nodelay,stats_root_nodelay)
 
     # Get the ROI of labels
     if get_atlaslabels_from_ecogRecon:
         ch_labels_roi, ch_labels = chs2atlas(subjs, data_LexDelay_Aud.labels[0])
 
-    data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_nodelay, stats_root_delay, reference='bipolar')
-    data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay, reference='bipolar')
+    data_LexDelay_Resp, _ = load_stats(stat_type, 'Resp'+Delayseleted, contrast, stats_root_nodelay, stats_root_delay, reference='bipolar_allchs')
+    data_LexNoDelay_Resp, _ = load_stats(stat_type, 'Resp_inRep', contrast, stats_root_nodelay, stats_root_nodelay, reference='bipolar_allchs')
 
-    epoc_LexDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels, reference='bipolar')
-    epoc_LexNoDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels, reference='bipolar')
+    epoc_LexDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels, reference='bipolar_allchs')
+    epoc_LexNoDelay_Aud,_=load_stats('zscore','Auditory_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels, reference='bipolar_allchs')
     # epoc_LexNoDelay_Silence_Aud,_=load_stats('zscore','Auditory_inSilence','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels)
 
-    data_LexDelay_Go, _ = load_stats(stat_type, 'Go' + Delayseleted, contrast, stats_root_nodelay, stats_root_delay, reference='bipolar')
+    data_LexDelay_Go, _ = load_stats(stat_type, 'Go' + Delayseleted, contrast, stats_root_nodelay, stats_root_delay, reference='bipolar_allchs')
     epoc_LexDelay_Go, _ = load_stats('zscore', 'Go' + Delayseleted, 'epo', stats_root_nodelay, stats_root_delay,
-                                     trial_labels=trial_labels, reference='bipolar')
+                                     trial_labels=trial_labels, reference='bipolar_allchs')
 
-    data_LexDelay_Cue, _ = load_stats(stat_type, 'Cue' + Delayseleted, contrast, stats_root_nodelay, stats_root_delay, reference='bipolar')
+    data_LexDelay_Cue, _ = load_stats(stat_type, 'Cue' + Delayseleted, contrast, stats_root_nodelay, stats_root_delay, reference='bipolar_allchs')
     epoc_LexDelay_Cue, _ = load_stats('zscore', 'Cue' + Delayseleted, 'epo', stats_root_nodelay, stats_root_delay,
-                                      trial_labels =trial_labels, reference='bipolar')
+                                      trial_labels =trial_labels, reference='bipolar_allchs')
 
-    data_LexNoDelay_Cue, _ = load_stats(stat_type, 'Cue_inRep', contrast, stats_root_nodelay, stats_root_nodelay, reference='bipolar')
-    epoc_LexNoDelay_Cue,_=load_stats('zscore','Cue_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels, reference='bipolar')
+    data_LexNoDelay_Cue, _ = load_stats(stat_type, 'Cue_inRep', contrast, stats_root_nodelay, stats_root_nodelay, reference='bipolar_allchs')
+    epoc_LexNoDelay_Cue,_=load_stats('zscore','Cue_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels, reference='bipolar_allchs')
 
-    epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels, reference='bipolar')
-    epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels, reference='bipolar')
+    epoc_LexDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_delay,trial_labels=trial_labels, reference='bipolar_allchs')
+    epoc_LexNoDelay_Resp,_=load_stats('zscore','Resp_inRep','epo',stats_root_nodelay,stats_root_nodelay,trial_labels=trial_labels, reference='bipolar_allchs')
 
 array_names = [f'{kind}_LexDelay_{event}' for kind in ('data', 'epoc')
                for event in ('Aud', 'Delay', 'Go', 'Resp')]
@@ -423,11 +423,11 @@ Lex_idxes['Hikock_lIFG']=lIFG_sig_idx
 # Lex_idxes['Wgw_p55b']=Wgw_p55b_sig_idx
 # Lex_idxes['Wgw_a55b']=Wgw_a55b_sig_idx
 
-with open(Path(__file__).resolve().parent / f'Lex_twin_idxes_{datasource}_bipolar.npy', "wb") as f:
+with open(Path(__file__).resolve().parent / f'Lex_twin_idxes_{datasource}_bipolar_allchs.npy', "wb") as f:
     pickle.dump(Lex_idxes, f)
 
 #%% store active electrodes and subjs
-output_dir = REPO_ROOT / "projects" / "active_electrodes" / "bipolar"
+output_dir = REPO_ROOT / "projects" / "active_electrodes" / "bipolar_allchs"
 os.makedirs(output_dir, exist_ok=True)
 
 sig_indices_dict = {

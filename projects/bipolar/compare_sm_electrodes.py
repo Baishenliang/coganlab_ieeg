@@ -41,7 +41,7 @@ def load_analysis_labels(stats_root):
         for event in ('Auditory', 'Delay', 'Go', 'Resp'):
             print(f'Loading bipolar {event}_inRep {stat} labels...', flush=True)
             data, _ = load_stats(stat, event + '_inRep', contrast, root, root,
-                                 trial_labels='CORRECT', reference='bipolar')
+                                 trial_labels='CORRECT', reference='bipolar_allchs')
             labels = list(data.labels[0])
             del data
             if len(set(labels)) != len(labels):
@@ -117,7 +117,7 @@ def plot_sm_overlap(contacts, output_dir):
 
 
 def compare_sm(bipolar_labels, average_labels, output_dir=None,
-               bipolar_indices=HERE / 'Lex_twin_idxes_hg_bipolar.npy',
+               bipolar_indices=HERE / 'Lex_twin_idxes_hg_bipolar_allchs.npy',
                average_indices=REPO / 'projects/GLM/data/Lex_twin_idxes_hg.npy'):
     """Return/write tables; labels must match the original saved index order.
 
@@ -168,7 +168,7 @@ def compare_sm(bipolar_labels, average_labels, output_dir=None,
                 'not_in_average_data', 'not_in_bipolar_anodes')},
         })
     summary = pd.DataFrame(summary_rows)
-    output = Path(output_dir) if output_dir else HERE / 'sm_vwm_comparison'
+    output = Path(output_dir) if output_dir else HERE / 'sm_vwm_comparison_allchs'
     output.mkdir(parents=True, exist_ok=True)
     tables = dict(summary=summary, pairs=pairs, contacts=contacts)
     for name, table in tables.items():

@@ -146,10 +146,10 @@ def prepare(workbook, labels, indices_path, output_dir):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--workbook', type=Path, default=DEFAULT_BOOK)
-    parser.add_argument('--indices', type=Path, default=HERE / 'Lex_twin_idxes_hg_bipolar.npy')
+    parser.add_argument('--indices', type=Path, default=HERE / 'Lex_twin_idxes_hg_bipolar_allchs.npy')
     parser.add_argument('--labels', type=Path, help='Optional original full_label CSV in saved index order')
     parser.add_argument('--stats-root', type=Path, default=Path.home() / 'Box/CoganLab/BIDS-1.0_LexicalDecRepDelay/BIDS/derivatives/stats')
-    parser.add_argument('--output-dir', type=Path, default=HERE / 'esm_comparison')
+    parser.add_argument('--output-dir', type=Path, default=HERE / 'esm_comparison_allchs')
     args = parser.parse_args()
     labels = pd.read_csv(args.labels).full_label.tolist() if args.labels else load_analysis_labels(args.stats_root)[0]
     prepare(args.workbook, labels, args.indices, args.output_dir)
